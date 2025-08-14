@@ -1,69 +1,85 @@
-# React + TypeScript + Vite
+# 🎲 Stavanger Brettspillklubb – Board Gaming in Stavanger
+![SBSK Banner](https://github.com/mamf92/sbsk-website/blob/main/src/assets/images/sbsk-banner.png?raw=true)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Stavanger Brettspillklubb** is a responsive web application developed for a local board game club in Stavanger, Norway.  
+The platform serves as a central hub for event information, their board game collection, and news updates, with content managed through a user-friendly CMS.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 📋 Description
 
-## Expanding the ESLint configuration
+The SBSK website is designed to make it easy for board game enthusiasts in Stavanger to connect, discover games, and stay informed about upcoming activities.  
+The application uses a CMS-driven approach, allowing content to be updated without requiring technical knowledge.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+**Current Features:**
+- 📅 **Events Calendar** – Overview of club nights, tournaments, and special gatherings
+- 🎲 **Board Game Library** – Browse and explore the club’s collection
+- 📰 **News Section** – Read the latest updates and announcements
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+**Upcoming Milestones:**
+- 🏆 **Event Pages** – Display schedules, information, and sign-up
+- 🔍 **Game Overview** – Search through games owned by the club
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+## ⚙️ Built With
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+**Frontend:**
+- [React.js](https://reactjs.org/) ![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB) – Component-based architecture for maintainable UI
+- [TypeScript](https://www.typescriptlang.org/) ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white) – Type safety for improved reliability
+- [Vite](https://vitejs.dev/) ![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat&logo=vite&logoColor=white) – Fast development environment and build process
+- [Tailwind CSS](https://tailwindcss.com/) ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=flat&logo=tailwindcss&logoColor=white) – Utility-first CSS for responsive design
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+**Backend / CMS:**
+- [Sanity.io](https://www.sanity.io/) ![Sanity](https://img.shields.io/badge/Sanity-F03E2F?style=flat&logo=sanity&logoColor=white) – Flexible content management and structured data handling
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+**Project Management:**
+- GitHub Projects – Task tracking and milestone planning
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
+
+## 🚀 Getting Started
+
+### 🔧 Installing
+
+1. Clone the repository:  
+   `git clone https://github.com/mamf92/sbsk-website.git`
+
+2. Install dependencies:  
+   `npm install`
+
+### ▶️ Running the App
+
+Start the local development server:  
+`npm run dev`  
+
+Open the provided local URL in a browser to view the application.
+
+---
+
+### 🌐 Live Demo Coming Soon! 
+
+Check out the deployed application here:  
+👉 **Coming Soon** 
+
+---
+
+## 👤 Contact
+
+- [LinkedIn – Martin Fischer](https://www.linkedin.com/in/mamf92/)
+- [GitHub – @mamf92](https://github.com/mamf92)
+
+---
+
+## 📄 License
+
+© 2025 Martin Fischer. All rights reserved.
+
+This project and its source code are protected under copyright law.  
+Reproduction, distribution, modification, or use of any part of this project without explicit written permission from the author is prohibited.
+
+---
+
+## 🙏 Acknowledgments
+
+- Inspired by the passion and love for board gaming
+- A thank you to SBSK for letting me play around with this build
