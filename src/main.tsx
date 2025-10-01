@@ -6,6 +6,8 @@ import App from './App';
 import Home from './pages/Home';
 import LargeEvent from './pages/LargeEvent';
 import SmallEvent from './pages/SmallEvent';
+import OurGames from './pages/OurGames';
+import BecomeAMember from './pages/BecomeAMember';
 import NotFound from './pages/NotFound';
 
 const router = createBrowserRouter([
@@ -14,8 +16,10 @@ const router = createBrowserRouter([
     element: <App />,
     children: [
       { index: true, element: <Home /> },
-      { path: 'about', element: <LargeEvent /> },
-      { path: 'events', element: <SmallEvent /> },
+      { path: 'largeevent', element: <LargeEvent /> },
+      { path: 'smallevent', element: <SmallEvent /> },
+      { path: 'ourgames', element: <OurGames /> },
+      { path: 'becomeamember', element: <BecomeAMember /> },
       { path: '*', element: <NotFound /> },
     ],
   },

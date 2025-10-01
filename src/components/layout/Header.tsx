@@ -3,6 +3,10 @@ import { Button } from '../ui/Buttons';
 
 import Logo from '../../assets/logos/dicelogosm.png';
 
+function toggleDarkMode() {
+  document.documentElement.classList.toggle('dark');
+}
+
 const linkBase = 'font-heading text-sm hover:underline decoration-[0.123rem] transition';
 const getLink = ({ isActive }: { isActive: boolean }) =>
   `${linkBase} ${isActive ? 'underline' : ''}`;
@@ -31,9 +35,14 @@ export default function Header() {
             Kontakt oss
           </a>
         </nav>
-        <Button variant="primary" size="md" arrow="right">
-          Bli medlem
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button onClick={toggleDarkMode} variant="toggle" size="xs" icon="moon" className="">
+            DM
+          </Button>
+          <Button variant="primary" size="md" icon="right">
+            Bli medlem
+          </Button>
+        </div>
       </div>
     </header>
   );
