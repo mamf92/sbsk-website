@@ -10,20 +10,25 @@ import OurGames from './pages/OurGames';
 import BecomeAMember from './pages/BecomeAMember';
 import NotFound from './pages/NotFound';
 
-const router = createBrowserRouter([
+const router = createBrowserRouter(
+  [
+    {
+      path: '/',
+      element: <App />,
+      children: [
+        { index: true, element: <Home /> },
+        { path: 'largeevent', element: <LargeEvent /> },
+        { path: 'smallevent', element: <SmallEvent /> },
+        { path: 'ourgames', element: <OurGames /> },
+        { path: 'becomeamember', element: <BecomeAMember /> },
+        { path: '*', element: <NotFound /> },
+      ],
+    },
+  ],
   {
-    path: '/',
-    element: <App />,
-    children: [
-      { index: true, element: <Home /> },
-      { path: 'largeevent', element: <LargeEvent /> },
-      { path: 'smallevent', element: <SmallEvent /> },
-      { path: 'ourgames', element: <OurGames /> },
-      { path: 'becomeamember', element: <BecomeAMember /> },
-      { path: '*', element: <NotFound /> },
-    ],
+    basename: import.meta.env.BASE_URL,
   },
-]);
+);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
