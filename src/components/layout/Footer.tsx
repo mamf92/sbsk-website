@@ -68,7 +68,7 @@ export default function Footer() {
                 placeholder="E-postadresse"
                 className="text-darkestblue placeholder:text-darkblue w-full border-0 bg-white px-4 py-4 text-sm"
               />
-              <Button variant="primary" size="sm" arrow="right" className="mt-0">
+              <Button variant="primary" size="sm" icon="right" className="mt-0">
                 Meld på
               </Button>
             </div>

@@ -6,8 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "format": "prettier --write .",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prepare": "husky && husky install"
   },
   "dependencies": {
     "react": "^19.1.1",
@@ -19,6 +21,7 @@
   "devDependencies": {
     "@eslint/js": "^9.33.0",
     "@tailwindcss/vite": "^4.1.11",
+    "@types/node": "^25.0.10",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "@types/react-router-dom": "^5.3.3",
@@ -28,6 +31,8 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.3.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.6.14",
     "tailwindcss": "^4.1.12",
@@ -35,5 +40,9 @@
     "typescript-eslint": "^8.39.1",
     "vite": "^7.1.2",
     "vite-plugin-svgr": "^4.3.0"
+  },
+  "lint-staged": {
+    "*.{js,ts,css,md}": "prettier --write",
+    "*.js,.ts,.tsx": "eslint --cache --fix"
   }
 }
