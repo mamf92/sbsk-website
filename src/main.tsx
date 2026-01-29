@@ -9,6 +9,9 @@ import SmallEvent from './pages/SmallEvent';
 import OurGames from './pages/OurGames';
 import BecomeAMember from './pages/BecomeAMember';
 import NotFound from './pages/NotFound';
+import { initTheme } from './utils/theme';
+
+initTheme();
 
 const router = createBrowserRouter([
   {
