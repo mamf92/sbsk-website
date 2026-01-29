@@ -18,7 +18,7 @@ const variants = {
   primary: 'bg-orange text-darkblue hover:bg-darkorange',
   secondary: 'bg-darkorange text-darkestblue hover:bg-orange',
   tertiary: 'bg-darkblue text-white hover:bg-darkestblue',
-  toggle: 'dark:bg-orange text-darkblue bg-darkestblue text-white rounded-lg',
+  toggle: 'bg-darkestblue text-white dark:bg-orange dark:text-darkblue',
 } as const;
 
 const sizes = {
