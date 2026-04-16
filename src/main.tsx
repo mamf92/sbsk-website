@@ -20,28 +20,31 @@ import { initTheme } from './utils/theme';
 
 initTheme();
 
-const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <App />,
-    children: [
-      { index: true, element: <Home /> },
-      { path: 'kalender', element: <Calendar /> },
-      { path: 'board-game-masters', element: <BoardGameMasters /> },
-      { path: 'våre-spill', element: <OurGames /> },
-      { path: 'om-oss', element: <AboutUs /> },
-      { path: 'kontakt-oss', element: <ContactUs /> },
-      { path: 'bli-medlem', element: <BecomeAMember /> },
-      { path: 'arrangementer/:id', element: <Events /> },
-      { path: 'arrangementer/:id/edit', element: <Events /> },
-      { path: 'våre-partnere', element: <OurPartners /> },
-      { path: 'login', element: <Login /> },
-      { path: 'min-profil', element: <MyProfile /> },
-      { path: 'styreportal', element: <BoardPortal /> },
-      { path: '*', element: <NotFound /> },
-    ],
-  },
-]);
+const router = createBrowserRouter(
+  [
+    {
+      path: '/',
+      element: <App />,
+      children: [
+        { index: true, element: <Home /> },
+        { path: 'kalender', element: <Calendar /> },
+        { path: 'board-game-masters', element: <BoardGameMasters /> },
+        { path: 'våre-spill', element: <OurGames /> },
+        { path: 'om-oss', element: <AboutUs /> },
+        { path: 'kontakt-oss', element: <ContactUs /> },
+        { path: 'bli-medlem', element: <BecomeAMember /> },
+        { path: 'arrangementer/:id', element: <Events /> },
+        { path: 'arrangementer/:id/edit', element: <Events /> },
+        { path: 'våre-partnere', element: <OurPartners /> },
+        { path: 'login', element: <Login /> },
+        { path: 'min-profil', element: <MyProfile /> },
+        { path: 'styreportal', element: <BoardPortal /> },
+        { path: '*', element: <NotFound /> },
+      ],
+    },
+  ],
+  { basename: import.meta.env.VITE_BASE },
+);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
