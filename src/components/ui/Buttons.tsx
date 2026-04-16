@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useNavigate } from 'react-router-dom';
 import arrowRight from '../../assets/icons/arrows/arrowright.svg?react';
 import arrowLeft from '../../assets/icons/arrows/arrowleft.svg?react';
 import arrowDown from '../../assets/icons/arrows/arrowdown.svg?react';
@@ -10,6 +11,7 @@ type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: 'primary' | 'secondary' | 'tertiary' | 'toggle';
   size?: 'xs' | 'sm' | 'md' | 'lg';
   icon?: 'left' | 'right' | 'down' | 'expand' | 'sun' | 'moon' | 'none';
+  onclick?: React.MouseEventHandler<HTMLButtonElement>;
 };
 
 const base = 'inline-flex whitespace-nowrap items-center justify-center font-heading text-sm ';

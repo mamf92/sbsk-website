@@ -1,13 +1,8 @@
-import { Outlet } from 'react-router-dom';
-
-export default function Home() {
+export default function OurGames() {
   return (
     <>
       <main className="min-h-[60vh] bg-white">
-        <div className="text-darkestblue font-heading text-6xl font-bold">
-          Stavanger Brettspillklubb
-        </div>
-        <Outlet />
+        <div className="text-darkestblue font-heading text-6xl font-bold">Våre spill</div>
       </main>
     </>
   );
