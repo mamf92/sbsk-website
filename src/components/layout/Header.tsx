@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Buttons';
 import { toggleTheme } from '../../utils/theme';
 
@@ -11,7 +11,7 @@ const getLink = ({ isActive }: { isActive: boolean }) =>
 
 export default function Header() {
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
-
+  const navigate = useNavigate();
   function handleToggleTheme() {
     const next = toggleTheme();
     setIsDark(next === 'dark');
@@ -26,22 +26,25 @@ export default function Header() {
           </NavLink>
         </div>
 
-        <nav className="flex items-center justify-center gap-12 px-4">
+        <nav className="flex items-center justify-center gap-10 px-4">
           <NavLink to="/" end className={getLink}>
             Hjem
           </NavLink>
-          <a href="#calendar" className={linkBase}>
+          <NavLink to="/kalender" className={getLink}>
             Kalender
-          </a>
-          <NavLink to="/vårespill" className={linkBase}>
+          </NavLink>
+          <NavLink to="/board-game-masters" className={getLink}>
+            Board Game Masters
+          </NavLink>
+          <NavLink to="/våre-spill" className={getLink}>
             Våre spill
           </NavLink>
-          <a href="#aboutus" className={linkBase}>
+          <NavLink to="/om-oss" className={getLink}>
             Om oss
-          </a>
-          <a href="#contact" className={linkBase}>
+          </NavLink>
+          <NavLink to="/kontakt-oss" className={getLink}>
             Kontakt oss
-          </a>
+          </NavLink>
         </nav>
 
         <div className="flex items-center justify-end gap-8">
@@ -54,7 +57,7 @@ export default function Header() {
           >
             {isDark ? 'LM' : 'DM'}
           </Button>
-          <Button variant="primary" size="md" icon="right">
+          <Button variant="primary" size="md" icon="right" onClick={() => navigate('/bli-medlem')}>
             Bli medlem
           </Button>
         </div>

@@ -1,5 +1,4 @@
 import { NavLink } from 'react-router-dom';
-import { HashLink } from 'react-router-hash-link';
 import { SocialIcon } from 'react-social-icons';
 import Logo from '../../assets/logos/dicelogosm.png';
 import { Button } from '../ui/Buttons';
@@ -27,31 +26,35 @@ export default function Footer() {
             </div>
             <div className="flex flex-1 flex-row">
               <nav className="flex flex-1 flex-col items-start gap-4">
-                <HashLink to="/blimedlem" className="font-bold">
+                <NavLink to="/bli-medlem" className="font-bold">
                   Bli medlem nå!
-                </HashLink>
-                <HashLink smooth to="/#kalender">
-                  Events
-                </HashLink>
-                <HashLink to="/vårespill">Våre spill</HashLink>
-                <HashLink smooth to="/#omoss">
+                </NavLink>
+                <NavLink to="/kalender" className="font-bold">
+                  Kalender
+                </NavLink>
+                <NavLink to="/våre-spill" className="font-bold">
+                  Våre spill
+                </NavLink>
+                <NavLink to="/om-oss" className="font-bold">
                   Om oss
-                </HashLink>
-                <HashLink smooth to="/#kontaktoss">
+                </NavLink>
+                <NavLink to="/kontakt-oss" className="font-bold">
                   Kontakt oss
-                </HashLink>
+                </NavLink>
               </nav>
               <nav className="flex flex-1 flex-col items-start gap-4">
-                <NavLink to="/vårepartnere" className="font-bold">
+                <NavLink to="/våre-partnere" className="font-bold">
                   Våre partnere
                 </NavLink>
                 <a href="https://www.outland.no/" target="_blank">
                   Outland.no
                 </a>
-                <NavLink to="/vårespill">Kjøp spill med rabatt</NavLink>
-                <HashLink smooth to="/#kontaktoss">
+                <NavLink to="/våre-spill" className="font-bold">
+                  Kjøp spill med rabatt
+                </NavLink>
+                <NavLink to="/kontakt-oss" className="font-bold">
                   Bli støttespiller
-                </HashLink>
+                </NavLink>
               </nav>
             </div>
             <div className="flex flex-1 flex-col flex-nowrap items-start gap-2">
