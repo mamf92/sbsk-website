@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { SocialIcon } from 'react-social-icons';
-import Logo from '../../assets/logos/dicelogosm.png';
+import Logo from '../../assets/logos/dicelogo.png';
 import { Button } from '../ui/Buttons';
 
 export default function Footer() {

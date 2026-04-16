@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Buttons';
 import { toggleTheme } from '../../utils/theme';
 
-import Logo from '../../assets/logos/dicelogosm.png';
+import Logo from '../../assets/logos/dicelogo.png';
 
 const linkBase = 'font-body text-sm hover:underline decoration-[0.123rem] transition';
 const getLink = ({ isActive }: { isActive: boolean }) =>
