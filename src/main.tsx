@@ -17,6 +17,8 @@ import MyProfile from './pages/MyProfile';
 import BoardPortal from './pages/BoardPortal';
 import NotFound from './pages/NotFound';
 import { initTheme } from './utils/theme';
+import StudioRoute from './pages/Studio';
+import { loader as homeLoader } from './sanity/queryHelpers/posts';
 
 initTheme();
 
@@ -26,7 +28,7 @@ const router = createBrowserRouter(
       path: '/',
       element: <App />,
       children: [
-        { index: true, element: <Home /> },
+        { index: true, element: <Home />, loader: homeLoader },
         { path: 'kalender', element: <Calendar /> },
         { path: 'board-game-masters', element: <BoardGameMasters /> },
         { path: 'våre-spill', element: <OurGames /> },
@@ -39,6 +41,13 @@ const router = createBrowserRouter(
         { path: 'login', element: <Login /> },
         { path: 'min-profil', element: <MyProfile /> },
         { path: 'styreportal', element: <BoardPortal /> },
+        {
+          path: 'studio',
+          children: [
+            { index: true, element: <StudioRoute /> },
+            { path: '*', element: <StudioRoute /> },
+          ],
+        },
         { path: '*', element: <NotFound /> },
       ],
     },

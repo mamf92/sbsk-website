@@ -12,7 +12,7 @@ export default function App() {
         Skip to content
       </a>
       <Header />
-      <main>
+      <main id="main">
         <Outlet />
       </main>
       <Footer />
