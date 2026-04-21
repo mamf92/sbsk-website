@@ -10,6 +10,7 @@ import OurGames from './pages/OurGames';
 import AboutUs from './pages/AboutUs';
 import ContactUs from './pages/ContactUs';
 import BecomeAMember from './pages/BecomeAMember';
+import Event from './pages/SingleEventPage';
 import Events from './pages/Events';
 import OurPartners from './pages/OurPartners';
 import Login from './pages/Login';
@@ -19,6 +20,7 @@ import NotFound from './pages/NotFound';
 import { initTheme } from './utils/theme';
 import StudioRoute from './pages/Studio';
 import { loader as homeLoader } from './sanity/queryHelpers/posts';
+import { eventsListLoader, eventDetailLoader } from './sanity/queryHelpers/events';
 
 initTheme();
 
@@ -35,8 +37,8 @@ const router = createBrowserRouter(
         { path: 'om-oss', element: <AboutUs /> },
         { path: 'kontakt-oss', element: <ContactUs /> },
         { path: 'bli-medlem', element: <BecomeAMember /> },
-        { path: 'arrangementer/:id', element: <Events /> },
-        { path: 'arrangementer/:id/edit', element: <Events /> },
+        { path: 'arrangementer', element: <Events />, loader: eventsListLoader },
+        { path: 'arrangementer/:id', element: <Event />, loader: eventDetailLoader },
         { path: 'våre-partnere', element: <OurPartners /> },
         { path: 'login', element: <Login /> },
         { path: 'min-profil', element: <MyProfile /> },
