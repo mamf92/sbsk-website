@@ -1,11 +1,38 @@
 import type { SanityDocument } from '@sanity/client';
 import { Link, useLoaderData } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
+
+interface Admin {
+  id: number;
+  name: string;
+  email: string;
+}
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supbaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+const supabase = createClient(supabaseUrl, supbaseKey);
 
 export default function Home() {
   const { posts } = useLoaderData() as { posts: SanityDocument[] };
+  const [admins, setAdmins] = useState<Admin[]>([]);
+
+  useEffect(() => {
+    getAdmins();
+  }, []);
+
+  async function getAdmins() {
+    const { data, error } = await supabase.from('admins').select('*');
+    if (error) {
+      console.error('Error fetching admins:', error);
+    } else {
+      setAdmins(data);
+    }
+  }
+
   return (
     <>
-      <main className="dark:bg-darkestblue min-h-[60vh] bg-white dark:text-white">
+      <div className="dark:bg-darkestblue min-h-[60vh] bg-white dark:text-white">
         <div className="text-orange font-heading text-6xl font-bold">Stavanger Brettspillklubb</div>
         <h1 className="mb-8 text-4xl font-bold">Posts</h1>
         <ul className="flex flex-col gap-y-4">
@@ -18,7 +45,15 @@ export default function Home() {
             </li>
           ))}
         </ul>
-      </main>
+        <ul className="flex flex-col gap-y-4">
+          {admins.map((admin) => (
+            <li key={admin.id}>
+              <h3 className="text-xl font-semibold">{admin.name}</h3>
+              <p>{admin.email}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
     </>
   );
 }
