@@ -27,3 +27,7 @@ export function toggleTheme() {
   localStorage.setItem(STORAGE_KEY, next);
   return next;
 }
+
+export function getInitialTheme(): Theme {
+  return getStoredTheme() ?? getSystemTheme();
+}
