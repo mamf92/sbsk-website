@@ -1,25 +1,15 @@
 ---
-name: '🧹 Chore / Refactor'
-about: 'Track a non-feature task (docs, cleanup, setup, refactor, CI/CD)'
-title: 'Chore: <short title>'
+name: Chore
+about: Track a chore or refactor
+title: 'chore: '
 labels: ['chore']
 assignees: ''
 ---
 
-## 🔨 Task
+## Description
 
-Brief description of the task.
+What needs to be done and why?
 
----
+## Acceptance criteria
 
-## ✅ Acceptance Criteria
-
-- [ ] Code / config updated
-- [ ] Tests still passing
-- [ ] No negative impact on existing features
-
----
-
-## 📎 Notes
-
-Add context, related issues, or links if needed.
+- [ ] What is needed for the chore or refactor to be done?
