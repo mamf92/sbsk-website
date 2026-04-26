@@ -3,31 +3,61 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../hooks/ThemeContext';
 
 interface HomeHeroProps {
-  title: string;
-  subtitle: string;
+  title?: string;
+  subtitle?: string;
   imageUrl?: string;
-  imageLicense?: string;
+  imageSource?: string;
   imageSourceUrl?: string;
   links?: { label: string; url: string }[];
   sponsors?: { name: string; logoUrl: string; websiteUrl: string }[];
 }
 
-export default function HomeHero({ title, subtitle, imageUrl, links, sponsors }: HomeHeroProps) {
+const FALLBACK_HERO = {
+  title: 'Stavanger Brettspillklubb',
+  subtitle:
+    'Bli med på ukentlige brettspillkvelder og prøv ut ny og kjente spill sammen med andre spilleglade folk.',
+  imageUrl: 'src/assets/images/hero-placeholder.jpg',
+  imageSource: 'Designed by Freepik',
+  imageSourceUrl: 'www.freepik.com',
+};
+
+export default function HomeHero({
+  title,
+  subtitle,
+  imageUrl,
+  imageSource,
+  imageSourceUrl,
+  links,
+  sponsors,
+}: HomeHeroProps = {}) {
   const navigate = useNavigate();
   const { isDarkMode } = useTheme();
+
+  const resolvedTitle = title || FALLBACK_HERO.title;
+  const resolvedSubtitle = subtitle || FALLBACK_HERO.subtitle;
+  const resolvedImage = imageUrl || FALLBACK_HERO.imageUrl;
+  const hasCustomLinks = links !== undefined && links.length > 0;
+  const resolvedImageSource = imageSource || FALLBACK_HERO.imageSource;
+  const resolvedImageSourceUrl = imageSourceUrl || FALLBACK_HERO.imageSourceUrl;
+
   return (
-    <div
-      className={
-        imageUrl
-          ? `relative flex h-screen flex-col items-center justify-center p-4 text-center`
-          : 'flex h-screen flex-col items-center justify-center bg-[url(src/assets/images/hero-placeholder.jpg)] bg-cover bg-center p-4 text-center'
-      }
-    >
-      {imageUrl && (
-        <div className="absolute inset-0">
-          <img src={imageUrl} alt="" className="h-full w-full object-cover" />
-        </div>
-      )}
+    <div className={'relative flex h-screen flex-col items-center justify-center p-4 text-center'}>
+      <div className="absolute inset-0">
+        <img src={resolvedImage} alt="" className="h-full w-full object-cover" />
+        {resolvedImageSource && resolvedImageSourceUrl && (
+          <div className="absolute right-4 bottom-4 flex flex-col gap-2">
+            <span className="text-sm text-white">{resolvedImageSource}</span>
+            <a
+              href={resolvedImageSourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-white underline"
+            >
+              {resolvedImageSourceUrl}
+            </a>
+          </div>
+        )}
+      </div>
       <div
         className={
           isDarkMode
@@ -35,36 +65,48 @@ export default function HomeHero({ title, subtitle, imageUrl, links, sponsors }:
             : 'absolute inset-0 flex h-screen flex-col items-center justify-center bg-white/50 p-4 text-center'
         }
       >
-        <h1 className="text-4xl font-bold">{title || 'Stavanger Brettspillklubb'}</h1>
-        <p className="text-xl">
-          {subtitle ||
-            'Bli med på ukentlige brettspillkvelder og prøv ut ny og kjente spill sammen med andre spilleglade folk. '}{' '}
-        </p>
-        {links && (
-          <div className="mt-8">
-            {links.map((link, index) => (
+        <div className="flex flex-col items-start gap-4">
+          <h1 className="text-darkestblue text-left text-4xl font-bold dark:text-white">
+            {resolvedTitle}
+          </h1>
+          <p className="text-darkestblue text-xl dark:text-white">{resolvedSubtitle}</p>
+          {hasCustomLinks && (
+            <div className="mt-8">
+              {links.map((link, index) => (
+                <Button
+                  key={index}
+                  onClick={() => navigate(link.url)}
+                  variant={index % 2 === 0 ? 'primary' : 'secondary'}
+                  size="lg"
+                  className="mx-2"
+                  icon="right"
+                >
+                  {link.label}
+                </Button>
+              ))}
+            </div>
+          )}
+          {!hasCustomLinks && (
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
               <Button
-                key={index}
-                onClick={() => navigate(link.url)}
-                variant={links.length % 2 === 0 ? 'primary' : 'secondary'}
-                size="md"
-                className="mx-2"
+                onClick={() => navigate('/kalender')}
+                variant="primary"
+                size="lg"
+                icon="right"
               >
-                {link.label}
+                Se kalender
               </Button>
-            ))}
-          </div>
-        )}
-        {!links && (
-          <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-            <Button onClick={() => navigate('/kalender')} variant="primary" size="md">
-              Se kalender
-            </Button>
-            <Button onClick={() => navigate('/kalender')} variant="primary" size="md">
-              Se kalender
-            </Button>
-          </div>
-        )}
+              <Button
+                onClick={() => navigate('/bli-medlem')}
+                variant="secondary"
+                size="lg"
+                icon="right"
+              >
+                Bli medlem
+              </Button>
+            </div>
+          )}
+        </div>
         {sponsors && (
           <div className="mt-8">
             {sponsors.map((sponsor, index) => (

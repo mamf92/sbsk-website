@@ -10,20 +10,6 @@ interface Admin {
   email: string;
 }
 
-const exampleContent = {
-  title: 'Velkommen til Stavanger Brettspillklubb',
-  subtitle: 'Din destinasjon for brettspillglede i Stavanger',
-  imageUrl:
-    'https://img.freepik.com/premium-photo/people-having-fun-while-playing-board-game_146671-2342.jpg?w=1480',
-  imageAlt: 'Brettspill på bordet',
-  imageLicense: 'CC BY-SA 4.0',
-  imageSourceUrl: 'https://example.com/image',
-  links: [
-    { label: 'Bli medlem', url: '/bli-medlem' },
-    { label: 'Se arrangementer', url: '/arrangementer' },
-  ],
-};
-
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supbaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
@@ -49,7 +35,7 @@ export default function Home() {
   return (
     <>
       <div className="dark:bg-darkestblue min-h-[60vh] bg-white dark:text-white">
-        <HomeHero {...exampleContent} />
+        <HomeHero />
         <h1 className="mb-8 text-4xl font-bold">Posts</h1>
         <ul className="flex flex-col gap-y-4">
           {posts.map((post) => (
