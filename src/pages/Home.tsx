@@ -15,6 +15,22 @@ const supbaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 const supabase = createClient(supabaseUrl, supbaseKey);
 
+const testdata = {
+  title: 'Stavanger Brettspillklubb',
+  subtitle: 'Dette er en annen tekst.',
+  imageUrl:
+    'https://images.unsplash.com/photo-1676482721063-75c432590cdd?q=80&w=3432&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  imageSource: 'Designed by Freepik',
+  imageSourceUrl: 'www.freepik.com',
+  links: [
+    { label: 'Kalender med velding lang link tekst', url: '/kalender' },
+    {
+      label: 'Om oss. ',
+      url: '/om-oss',
+    },
+  ],
+};
+
 export default function Home() {
   const { posts } = useLoaderData() as { posts: SanityDocument[] };
   const [admins, setAdmins] = useState<Admin[]>([]);
