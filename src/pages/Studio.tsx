@@ -3,6 +3,7 @@ import { structureTool } from 'sanity/structure';
 import { postType } from '../sanity/schemaTypes/postType';
 import { visionTool } from '@sanity/vision';
 import { eventType } from '../sanity/schemaTypes/eventType';
+import { homeHeroType } from '../sanity/schemaTypes/heroType';
 
 const config = defineConfig({
   projectId: '85tc4tb0',
@@ -10,7 +11,7 @@ const config = defineConfig({
   basePath: '/studio',
   plugins: [structureTool(), visionTool()],
   schema: {
-    types: [postType, eventType],
+    types: [homeHeroType, postType, eventType],
   },
 });
 

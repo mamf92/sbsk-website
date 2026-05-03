@@ -1,8 +1,9 @@
-import type { SanityDocument } from '@sanity/client';
 import { Link, useLoaderData } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import HomeHero from '../components/sections/HomeHero';
+import type { Post } from '../sanity/queryHelpers/posts';
+import type { HomeHeroType } from '../sanity/queryHelpers/home-hero';
 
 interface Admin {
   id: number;
@@ -15,25 +16,13 @@ const supbaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 const supabase = createClient(supabaseUrl, supbaseKey);
 
-const testdata = {
-  title: 'Stavanger Brettspillklubb',
-  subtitle: 'Dette er en annen tekst.',
-  imageUrl:
-    'https://images.unsplash.com/photo-1676482721063-75c432590cdd?q=80&w=3432&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-  imageSource: 'Designed by Freepik',
-  imageSourceUrl: 'www.freepik.com',
-  links: [
-    { label: 'Kalender med velding lang link tekst', url: '/kalender' },
-    {
-      label: 'Om oss. ',
-      url: '/om-oss',
-    },
-  ],
-};
-
 export default function Home() {
-  const { posts } = useLoaderData() as { posts: SanityDocument[] };
+  const { posts, homeHero } = useLoaderData() as {
+    posts: Post[];
+    homeHero: HomeHeroType | null;
+  };
   const [admins, setAdmins] = useState<Admin[]>([]);
+  console.log('Home loader data:', { posts });
 
   useEffect(() => {
     getAdmins();
@@ -51,7 +40,7 @@ export default function Home() {
   return (
     <>
       <div className="dark:bg-darkestblue min-h-[60vh] bg-white dark:text-white">
-        <HomeHero />
+        {homeHero ? <HomeHero {...homeHero} /> : <HomeHero />}
         <h1 className="mb-8 text-4xl font-bold">Posts</h1>
         <ul className="flex flex-col gap-y-4">
           {posts.map((post) => (

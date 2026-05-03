@@ -48,19 +48,6 @@ export default function HomeHero({
     >
       <div className="absolute inset-0">
         <img src={resolvedImage} alt="" className="h-full w-full object-cover" />
-        {resolvedImageSource && resolvedImageSourceUrl && (
-          <div className="absolute right-4 bottom-4 flex flex-col gap-2">
-            <span className="text-sm dark:text-white">{resolvedImageSource}</span>
-            <a
-              href={resolvedImageSourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm underline dark:text-white"
-            >
-              {resolvedImageSourceUrl}
-            </a>
-          </div>
-        )}
       </div>
       <div
         className={
@@ -69,6 +56,19 @@ export default function HomeHero({
             : 'absolute inset-0 flex h-[calc(100vh-4rem)] flex-col items-center justify-center bg-white/50 p-4 text-center'
         }
       >
+        {resolvedImageSource && resolvedImageSourceUrl && (
+          <div className="absolute right-4 bottom-4 flex flex-col gap-2">
+            <span className="text-darkestblue text-sm dark:text-white">{resolvedImageSource}</span>
+            <a
+              href={resolvedImageSourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-darkestblue text-sm underline dark:text-white"
+            >
+              {resolvedImageSourceUrl}
+            </a>
+          </div>
+        )}
         <div className="flex flex-col items-start gap-12 md:w-[calc(60%)]">
           <div className="flex max-w-150 flex-col items-start gap-4">
             <h1 className="text-darkestblue text-left text-4xl font-bold dark:text-white">
