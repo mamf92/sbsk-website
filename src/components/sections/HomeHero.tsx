@@ -1,44 +1,37 @@
 import { Button } from '../ui/Buttons';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../hooks/ThemeContext';
-
-interface HomeHeroProps {
-  title?: string;
-  subtitle?: string;
-  imageUrl?: string;
-  imageSource?: string;
-  imageSourceUrl?: string;
-  links?: { label: string; url: string }[];
-  sponsors?: { name: string; logoUrl: string; websiteUrl: string }[];
-}
+import type { HomeHeroType } from '../../sanity/queryHelpers/home-hero';
+import { urlFor } from '../../sanity/sanityImageUrl';
 
 const FALLBACK_HERO = {
   title: 'Stavanger Brettspillklubb',
   subtitle:
     'Bli med på ukentlige brettspillkvelder og prøv ut ny og kjente spill sammen med andre spilleglade folk.',
   imageUrl: 'src/assets/images/hero-placeholder.jpg',
-  imageSource: 'Designed by Freepik',
+  imageSourceName: 'Designed by Freepik',
   imageSourceUrl: 'www.freepik.com',
 };
 
 export default function HomeHero({
   title,
   subtitle,
-  imageUrl,
+  image,
   imageSource,
-  imageSourceUrl,
   links,
   sponsors,
-}: HomeHeroProps = {}) {
+}: HomeHeroType = {}) {
   const navigate = useNavigate();
   const { isDarkMode } = useTheme();
+  const imageUrl = image ? urlFor(image).url() : undefined;
 
   const resolvedTitle = title || FALLBACK_HERO.title;
   const resolvedSubtitle = subtitle || FALLBACK_HERO.subtitle;
   const resolvedImage = imageUrl || FALLBACK_HERO.imageUrl;
   const hasCustomLinks = links !== undefined && links.length > 0;
-  const resolvedImageSource = imageSource || FALLBACK_HERO.imageSource;
-  const resolvedImageSourceUrl = imageSourceUrl || FALLBACK_HERO.imageSourceUrl;
+  const resolvedImageSource = imageSource?.imageSourceName || FALLBACK_HERO.imageSourceName;
+  const resolvedImageSourceUrl = imageSource?.imageSourceUrl || FALLBACK_HERO.imageSourceUrl;
+  const sponsorsExist = sponsors !== undefined && sponsors.length > 0;
 
   return (
     <div
@@ -56,20 +49,7 @@ export default function HomeHero({
             : 'absolute inset-0 flex h-[calc(100vh-4rem)] flex-col items-center justify-center bg-white/50 p-4 text-center'
         }
       >
-        {resolvedImageSource && resolvedImageSourceUrl && (
-          <div className="absolute right-4 bottom-4 flex flex-col gap-2">
-            <span className="text-darkestblue text-sm dark:text-white">{resolvedImageSource}</span>
-            <a
-              href={resolvedImageSourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-darkestblue text-sm underline dark:text-white"
-            >
-              {resolvedImageSourceUrl}
-            </a>
-          </div>
-        )}
-        <div className="flex flex-col items-start gap-12 md:w-[calc(60%)]">
+        <div className="flex flex-1 flex-col justify-center gap-12 md:w-[calc(60%)]">
           <div className="flex max-w-150 flex-col items-start gap-4">
             <h1 className="text-darkestblue text-left text-4xl font-bold dark:text-white">
               {resolvedTitle}
@@ -114,21 +94,43 @@ export default function HomeHero({
             </div>
           )}
         </div>
-        {sponsors && (
-          <div className="mt-8">
-            {sponsors.map((sponsor, index) => (
+        <div className="flex w-full flex-col pb-2 lg:w-[calc(80%)]">
+          {sponsorsExist && (
+            <div className="flex flex-col items-start gap-4">
+              <h2 className="text-darkestblue text-left text-xl font-bold dark:text-white">
+                Vi samarbeider med:
+              </h2>
+              <div className="flex w-full flex-col items-start justify-between gap-2 self-baseline rounded p-4 sm:flex-row md:gap-0 dark:bg-white/50">
+                {sponsors.map((sponsor, index) => (
+                  <a
+                    key={index}
+                    href={sponsor.websiteUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <img
+                      src={urlFor(sponsor.logoImage).url()}
+                      alt={sponsor.name}
+                      className="h-14 w-auto lg:h-20"
+                    />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+          {resolvedImageSource && resolvedImageSourceUrl && (
+            <div className="absolute right-4 bottom-2 flex flex-col gap-2 lg:bottom-6">
               <a
-                key={index}
-                href={sponsor.websiteUrl}
+                href={resolvedImageSourceUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mx-2"
+                className="text-darkestblue text-sm underline dark:text-white"
               >
-                <img src={sponsor.logoUrl} alt={sponsor.name} className="h-16 w-auto" />
+                {resolvedImageSource}
               </a>
-            ))}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

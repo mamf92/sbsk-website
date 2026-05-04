@@ -18,7 +18,6 @@ export async function eventDetailLoader({ params }: LoaderFunctionArgs) {
   if (!slug) throw new Response('Missing event slug', { status: 400 });
 
   const event = await client.fetch(EVENT_BY_SLUG_QUERY, { slug });
-  console.log('Fetched event:', event);
   if (!event) throw new Response('Event not found', { status: 404 });
 
   return { event };

@@ -7,33 +7,56 @@ export const homeHeroType = defineType({
 
   fields: [
     defineField({
+      title: 'Tittel',
       name: 'title',
       type: 'string',
+      validation: (rule) => rule.max(60).error('Tittelen må være på maks 60 tegn'),
     }),
     defineField({
+      title: 'Undertittel',
       name: 'subtitle',
       type: 'string',
+      validation: (rule) => rule.max(100).error('Undertittelen må være på maks 100 tegn'),
     }),
     defineField({
-      name: 'imageUrl',
-      type: 'url',
+      title: 'Bilde',
+      name: 'image',
+      type: 'image',
+      description: 'Bilde som vises i hero-seksjonen. Valgfritt.',
+      options: { hotspot: true },
     }),
     defineField({
+      title: 'Bildekilde',
       name: 'imageSource',
-      type: 'string',
+      type: 'object',
+      description: 'Kilde for bildet (f.eks. fotografens navn og nettsted). Valgfritt.',
+      fields: [
+        {
+          title: 'Bildekilde navn',
+          name: 'imageSourceName',
+          type: 'string',
+          description: 'Navn på kilden for bildet.',
+        },
+        {
+          title: 'Bildekilde URL',
+          name: 'imageSourceUrl',
+          type: 'url',
+          description: 'URL til kilden for bildet.',
+        },
+      ],
     }),
     defineField({
-      name: 'imageSourceUrl',
-      type: 'url',
-    }),
-    defineField({
+      title: 'Lenker',
       name: 'link',
       type: 'array',
+      description: 'Lenker som vises i hero-seksjonen som knapper. Valgfritt.',
       of: [{ type: 'url' }],
     }),
     defineField({
+      title: 'Sponsorer',
       name: 'sponsors',
       type: 'array',
+      description: 'Sponsorer som vises i hero-seksjonen. Valgfritt.',
       of: [
         {
           type: 'object',
@@ -41,14 +64,17 @@ export const homeHeroType = defineType({
             defineField({
               name: 'name',
               type: 'string',
+              description: 'Navn på sponsoren. Valgfritt.',
             }),
             defineField({
-              name: 'logoUrl',
-              type: 'url',
+              name: 'logoImage',
+              type: 'image',
+              description: 'Logoen til sponsoren. Valgfritt.',
             }),
             defineField({
               name: 'websiteUrl',
               type: 'url',
+              description: 'Lenke til sponsorens nettsted. Valgfritt.',
             }),
           ],
         },

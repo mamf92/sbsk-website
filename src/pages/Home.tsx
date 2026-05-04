@@ -22,7 +22,6 @@ export default function Home() {
     homeHero: HomeHeroType | null;
   };
   const [admins, setAdmins] = useState<Admin[]>([]);
-  console.log('Home loader data:', { posts });
 
   useEffect(() => {
     getAdmins();
