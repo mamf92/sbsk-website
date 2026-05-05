@@ -19,7 +19,7 @@ import BoardPortal from './pages/BoardPortal';
 import NotFound from './pages/NotFound';
 import { initTheme } from './utils/theme';
 import StudioRoute from './pages/Studio';
-import { loader as homeLoader } from './sanity/queryHelpers/posts';
+import { homeLoader } from './loaders/home';
 import { eventsListLoader, eventDetailLoader } from './sanity/queryHelpers/events';
 
 initTheme();

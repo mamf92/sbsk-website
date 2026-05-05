@@ -1,20 +1,26 @@
-import type { SanityDocument } from '@sanity/client';
 import { Link, useLoaderData } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import HomeHero from '../components/sections/HomeHero';
+import type { Post } from '../sanity/queryHelpers/posts';
+import type { HomeHeroType } from '../sanity/queryHelpers/home-hero';
 
 interface Admin {
   id: number;
   name: string;
   email: string;
 }
+
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supbaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 const supabase = createClient(supabaseUrl, supbaseKey);
 
 export default function Home() {
-  const { posts } = useLoaderData() as { posts: SanityDocument[] };
+  const { posts, homeHero } = useLoaderData() as {
+    posts: Post[];
+    homeHero: HomeHeroType | null;
+  };
   const [admins, setAdmins] = useState<Admin[]>([]);
 
   useEffect(() => {
@@ -33,7 +39,7 @@ export default function Home() {
   return (
     <>
       <div className="dark:bg-darkestblue min-h-[60vh] bg-white dark:text-white">
-        <div className="text-orange font-heading text-6xl font-bold">Stavanger Brettspillklubb</div>
+        {homeHero ? <HomeHero {...homeHero} /> : <HomeHero />}
         <h1 className="mb-8 text-4xl font-bold">Posts</h1>
         <ul className="flex flex-col gap-y-4">
           {posts.map((post) => (
