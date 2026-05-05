@@ -12,7 +12,7 @@ export interface HomeHeroType {
 
 const HOME_HERO_QUERY = `*[
   _type == "homeHero"
-]{_id, title, subtitle, image{asset, crop, hotspot}, imageSource{imageSourceName, imageSourceUrl}, link, sponsors}[0]`;
+]{_id, title, subtitle, image{asset, crop, hotspot}, imageSource{imageSourceName, imageSourceUrl}, links, sponsors}[0]`;
 
 export async function homeHeroLoader() {
   return { homeHero: await client.fetch<HomeHeroType | null>(HOME_HERO_QUERY) };

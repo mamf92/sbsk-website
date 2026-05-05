@@ -47,10 +47,22 @@ export const homeHeroType = defineType({
     }),
     defineField({
       title: 'Lenker',
-      name: 'link',
+      name: 'links',
       type: 'array',
       description: 'Lenker som vises i hero-seksjonen som knapper. Valgfritt.',
-      of: [{ type: 'url' }],
+      of: [
+        {
+          type: 'object',
+          fields: [
+            defineField({
+              name: 'label',
+              type: 'string',
+              description: 'Tekst som vises på knappen.',
+            }),
+            defineField({ name: 'url', type: 'url', description: 'URL for lenken.' }),
+          ],
+        },
+      ],
     }),
     defineField({
       title: 'Sponsorer',

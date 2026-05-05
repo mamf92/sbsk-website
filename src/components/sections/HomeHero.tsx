@@ -23,15 +23,12 @@ export default function HomeHero({
 }: HomeHeroType = {}) {
   const navigate = useNavigate();
   const { isDarkMode } = useTheme();
-  const imageUrl = image ? urlFor(image).url() : undefined;
-
   const resolvedTitle = title || FALLBACK_HERO.title;
   const resolvedSubtitle = subtitle || FALLBACK_HERO.subtitle;
-  const resolvedImage = imageUrl || FALLBACK_HERO.imageUrl;
-  const hasCustomLinks = links !== undefined && links.length > 0;
+  const hasCustomLinks = links && links.length > 0;
   const resolvedImageSource = imageSource?.imageSourceName || FALLBACK_HERO.imageSourceName;
   const resolvedImageSourceUrl = imageSource?.imageSourceUrl || FALLBACK_HERO.imageSourceUrl;
-  const sponsorsExist = sponsors !== undefined && sponsors.length > 0;
+  const sponsorsExist = sponsors && sponsors.length > 0;
 
   return (
     <div
@@ -40,7 +37,23 @@ export default function HomeHero({
       }
     >
       <div className="absolute inset-0">
-        <img src={resolvedImage} alt="" className="h-full w-full object-cover" />
+        {image && (
+          <img
+            src={urlFor(image).width(1440).fit('crop').url()}
+            srcSet={[
+              `${urlFor(image).width(400).fit('crop').url()} 400w`,
+              `${urlFor(image).width(800).fit('crop').url()} 800w`,
+              `${urlFor(image).width(1200).fit('crop').url()} 1200w`,
+              `${urlFor(image).width(1440).fit('crop').url()} 1440w`,
+            ].join(', ')}
+            sizes="(max-width: 400px) 400px, (max-width: 800px) 800px, (max-width: 1200px) 1200px, 1440px"
+            alt=""
+            className="h-full w-full object-cover"
+          />
+        )}
+        {!image && (
+          <img src={FALLBACK_HERO.imageUrl} alt="" className="h-full w-full object-cover" />
+        )}
       </div>
       <div
         className={
