@@ -5,10 +5,16 @@ import { visionTool } from '@sanity/vision';
 import { eventType } from '../sanity/schemaTypes/eventType';
 import { homeHeroType } from '../sanity/schemaTypes/heroType';
 
+const appBase = import.meta.env.VITE_BASE ?? '/';
+const basePrefix = appBase === '/' ? '' : appBase.replace(/\/$/, '');
+const studioBasePath = `${basePrefix}/studio`;
+
 const config = defineConfig({
   projectId: '85tc4tb0',
   dataset: 'production',
-  basePath: '/studio',
+  basePath: studioBasePath,
+  title: 'SBSK Studio',
+  subtitle: 'production',
   plugins: [structureTool(), visionTool()],
   schema: {
     types: [homeHeroType, postType, eventType],

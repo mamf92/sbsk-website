@@ -43,13 +43,7 @@ const router = createBrowserRouter(
         { path: 'login', element: <Login /> },
         { path: 'min-profil', element: <MyProfile /> },
         { path: 'styreportal', element: <BoardPortal /> },
-        {
-          path: 'studio',
-          children: [
-            { index: true, element: <StudioRoute /> },
-            { path: '*', element: <StudioRoute /> },
-          ],
-        },
+        { path: 'studio/*', element: <StudioRoute /> },
         { path: '*', element: <NotFound /> },
       ],
     },
