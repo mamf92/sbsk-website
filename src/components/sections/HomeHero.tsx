@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../hooks/ThemeContext';
 import type { HomeHeroType } from '../../sanity/queryHelpers/home-hero';
 import { urlFor } from '../../sanity/sanityImageUrl';
+import heroPlaceholderImage from '../../assets/images/hero-placeholder.jpg';
 
 const FALLBACK_HERO = {
   title: 'Stavanger Brettspillklubb',
   subtitle:
     'Bli med på ukentlige brettspillkvelder og prøv ut ny og kjente spill sammen med andre spilleglade folk.',
-  imageUrl: 'src/assets/images/hero-placeholder.jpg',
+  imageUrl: heroPlaceholderImage,
   imageSourceName: 'Designed by Freepik',
   imageSourceUrl: 'www.freepik.com',
 };
