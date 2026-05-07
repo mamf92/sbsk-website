@@ -2,6 +2,7 @@ import { Link, useLoaderData } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import HomeHero from '../components/sections/HomeHero';
+import Calendar from '../components/sections/Calendar';
 import type { Post } from '../sanity/queryHelpers/posts';
 import type { HomeHeroType } from '../sanity/queryHelpers/home-hero';
 
@@ -40,6 +41,7 @@ export default function Home() {
     <>
       <div className="dark:bg-darkestblue min-h-[60vh] bg-white dark:text-white">
         {homeHero ? <HomeHero {...homeHero} /> : <HomeHero />}
+        <Calendar />
         <h1 className="mb-8 text-4xl font-bold">Posts</h1>
         <ul className="flex flex-col gap-y-4">
           {posts.map((post) => (
