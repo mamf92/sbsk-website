@@ -1,5 +1,6 @@
 import { Button } from '../ui/Buttons';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { urlFor } from '../../sanity/sanityImageUrl';
 import calendarPlaceholderImage from '../../assets/images/calendar-placeholder.png';
 import { type SanityImageSource } from '@sanity/image-url';
@@ -12,6 +13,18 @@ interface CalendarHeroProps {
   imageSourceName?: string;
   imageSourceUrl?: string;
 }
+
+interface CalendarListProps {
+  events: CalendarEvent[];
+}
+
+interface CalendarEvent {
+  id: number;
+  title: string;
+  date: string;
+  category: string;
+}
+/* Should be typed somewhere else */
 
 const FALLBACK_CALENDAR = {
   title: 'Kalender',
@@ -26,8 +39,7 @@ export default function Calendar() {
   return (
     <div className="flex flex-col items-center gap-12 py-12">
       <CalendarHero />
-      {/* <CalendarSearch /> */}
-      {/* <EventList /> */}
+      <EventList events={[]} />
     </div>
   );
   /* ... */
@@ -88,12 +100,45 @@ function CalendarHero({
   );
 }
 
-function CalendarSearch() {
-  /* ... */
+function EventList({ events }: CalendarListProps) {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+
+  const filteredEvents = events.filter((event) => {
+    const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesCategory =
+      selectedCategory === 'all' || event.category.toLowerCase() === selectedCategory;
+
+    return matchesSearch && matchesCategory;
+  });
+
+  function clearFilters() {
+    setSearchTerm('');
+    setSelectedCategory('all');
+  }
+  if (events.length === 0 || !events) {
+    return (
+      <div className="mx-auto max-w-5xl px-2 sm:px-0">
+        <div className="mx-auto max-w-5xl px-5 py-8">
+          <h2 className="text-darkestblue mb-2 text-3xl font-bold md:text-4xl dark:text-white">
+            Ingen arrangementer
+          </h2>
+          <p className="text-darkestblue mb-6 text-base dark:text-white">
+            Det ser ikke ut til å være noen kommende arrangementer for øyeblikket. Vennligst sjekk
+            igjen senere.
+          </p>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="flex flex-col items-center gap-8">
+      <EventCard />
+    </div>
+  );
 }
-function EventList() {
-  /* ... */
-}
+
 function EventCard() {
-  /* ... */
+  return <div className="flex h-16 flex-col gap-4 rounded border bg-amber-700 p-4"></div>;
 }
