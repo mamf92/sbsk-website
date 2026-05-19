@@ -1,6 +1,6 @@
 import { Button } from '../ui/Buttons';
 import { useNavigate } from 'react-router-dom';
-import type { HomeHeroType } from '../../sanity/queryHelpers/home-hero';
+import type { HomeHeroTypes } from '../../sanity/queryHelpers/home-hero';
 import { urlFor } from '../../sanity/sanityImageUrl';
 import heroPlaceholderImage from '../../assets/images/hero-placeholder.jpg';
 
@@ -20,7 +20,7 @@ export default function HomeHero({
   imageSource,
   links,
   sponsors,
-}: HomeHeroType = {}) {
+}: HomeHeroTypes = {}) {
   const navigate = useNavigate();
   const resolvedTitle = title || FALLBACK_HERO.title;
   const resolvedSubtitle = subtitle || FALLBACK_HERO.subtitle;

@@ -1,9 +1,10 @@
 import { defineConfig, Studio } from 'sanity';
 import { structureTool } from 'sanity/structure';
-import { postType } from '../sanity/schemaTypes/postType';
 import { visionTool } from '@sanity/vision';
-import { eventType } from '../sanity/schemaTypes/eventType';
 import { homeHeroType } from '../sanity/schemaTypes/heroType';
+import { calendarHeroType } from '../sanity/schemaTypes/calendarHeroType';
+import { eventType } from '../sanity/schemaTypes/eventType';
+import { postType } from '../sanity/schemaTypes/postType';
 
 const appBase = import.meta.env.VITE_BASE ?? '/';
 const basePrefix = appBase === '/' ? '' : appBase.replace(/\/$/, '');
@@ -17,7 +18,7 @@ const config = defineConfig({
   subtitle: 'production',
   plugins: [structureTool(), visionTool()],
   schema: {
-    types: [homeHeroType, postType, eventType],
+    types: [homeHeroType, eventType, calendarHeroType, postType],
   },
 });
 

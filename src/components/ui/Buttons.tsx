@@ -5,11 +5,12 @@ import arrowDown from '../../assets/icons/arrows/arrowdown.svg?react';
 import expand from '../../assets/icons/arrows/expand.svg?react';
 import sun from '../../assets/icons/symbols/sun.svg?react';
 import moon from '../../assets/icons/symbols/moon.svg?react';
+import backspace from '../../assets/icons/symbols/backspace.svg?react';
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: 'primary' | 'secondary' | 'tertiary' | 'toggle';
   size?: 'xs' | 'sm' | 'md' | 'lg';
-  icon?: 'left' | 'right' | 'down' | 'expand' | 'sun' | 'moon' | 'none';
+  icon?: 'left' | 'right' | 'down' | 'expand' | 'sun' | 'moon' | 'backspace' | 'none';
 };
 
 const base = 'inline-flex whitespace-nowrap items-center justify-center font-heading text-sm ';
@@ -40,6 +41,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       expand: expand,
       sun: sun,
       moon: moon,
+      backspace: backspace,
       none: null,
     };
 

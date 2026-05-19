@@ -1,7 +1,7 @@
 import { client } from '../client';
 import { type SanityImageSource } from '@sanity/image-url';
 
-export interface HomeHeroType {
+export interface HomeHeroTypes {
   title?: string;
   subtitle?: string;
   image?: SanityImageSource;
@@ -15,5 +15,5 @@ const HOME_HERO_QUERY = `*[
 ]{_id, title, subtitle, image{asset, crop, hotspot}, imageSource{imageSourceName, imageSourceUrl}, links, sponsors}[0]`;
 
 export async function homeHeroLoader() {
-  return { homeHero: await client.fetch<HomeHeroType | null>(HOME_HERO_QUERY) };
+  return { homeHero: await client.fetch<HomeHeroTypes | null>(HOME_HERO_QUERY) };
 }

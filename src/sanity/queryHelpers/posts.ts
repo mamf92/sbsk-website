@@ -1,6 +1,6 @@
 import { client } from '../client';
 
-export interface Post {
+export interface PostTypes {
   _id: string;
   title: string;
   slug: { current: string };
@@ -15,5 +15,5 @@ const POSTS_QUERY = `*[
 ]|order(publishedAt desc)[0...12]{_id, title, slug, publishedAt, image, body}`;
 
 export async function postsLoader() {
-  return { posts: await client.fetch<Post[]>(POSTS_QUERY) };
+  return { posts: await client.fetch<PostTypes[]>(POSTS_QUERY) };
 }
