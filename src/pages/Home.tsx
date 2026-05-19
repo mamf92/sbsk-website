@@ -2,8 +2,11 @@ import { Link, useLoaderData } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import HomeHero from '../components/sections/HomeHero';
-import type { Post } from '../sanity/queryHelpers/posts';
-import type { HomeHeroType } from '../sanity/queryHelpers/home-hero';
+import Calendar from '../components/sections/Calendar';
+import type { PostTypes } from '../sanity/queryHelpers/posts';
+import type { HomeHeroTypes } from '../sanity/queryHelpers/home-hero';
+import type { CalendarHeroTypes } from '../sanity/queryHelpers/calendar-hero';
+import type { CalendarEventTypes } from '../sanity/queryHelpers/events';
 
 interface Admin {
   id: number;
@@ -17,9 +20,11 @@ const supbaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 const supabase = createClient(supabaseUrl, supbaseKey);
 
 export default function Home() {
-  const { posts, homeHero } = useLoaderData() as {
-    posts: Post[];
-    homeHero: HomeHeroType | null;
+  const { posts, homeHero, calendarHero, events } = useLoaderData() as {
+    posts: PostTypes[];
+    homeHero: HomeHeroTypes | null;
+    calendarHero: CalendarHeroTypes | null;
+    events: CalendarEventTypes[];
   };
   const [admins, setAdmins] = useState<Admin[]>([]);
 
@@ -40,6 +45,11 @@ export default function Home() {
     <>
       <div className="dark:bg-darkestblue min-h-[60vh] bg-white dark:text-white">
         {homeHero ? <HomeHero {...homeHero} /> : <HomeHero />}
+        {calendarHero ? (
+          <Calendar calendarHero={calendarHero} events={events} />
+        ) : (
+          <Calendar events={events} />
+        )}
         <h1 className="mb-8 text-4xl font-bold">Posts</h1>
         <ul className="flex flex-col gap-y-4">
           {posts.map((post) => (

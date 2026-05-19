@@ -1,7 +1,6 @@
 import { Button } from '../ui/Buttons';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../hooks/ThemeContext';
-import type { HomeHeroType } from '../../sanity/queryHelpers/home-hero';
+import type { HomeHeroTypes } from '../../sanity/queryHelpers/home-hero';
 import { urlFor } from '../../sanity/sanityImageUrl';
 import heroPlaceholderImage from '../../assets/images/hero-placeholder.jpg';
 
@@ -21,9 +20,8 @@ export default function HomeHero({
   imageSource,
   links,
   sponsors,
-}: HomeHeroType = {}) {
+}: HomeHeroTypes = {}) {
   const navigate = useNavigate();
-  const { isDarkMode } = useTheme();
   const resolvedTitle = title || FALLBACK_HERO.title;
   const resolvedSubtitle = subtitle || FALLBACK_HERO.subtitle;
   const hasCustomLinks = links && links.length > 0;
@@ -56,13 +54,7 @@ export default function HomeHero({
           <img src={FALLBACK_HERO.imageUrl} alt="" className="h-full w-full object-cover" />
         )}
       </div>
-      <div
-        className={
-          isDarkMode
-            ? 'absolute inset-0 flex h-[calc(100vh-4rem)] flex-col items-center justify-center bg-black/50 p-4 text-center'
-            : 'absolute inset-0 flex h-[calc(100vh-4rem)] flex-col items-center justify-center bg-white/50 p-4 text-center'
-        }
-      >
+      <div className="absolute inset-0 flex h-[calc(100vh-4rem)] flex-col items-center justify-center bg-white/50 p-4 text-center dark:bg-black/50">
         <div className="flex flex-1 flex-col justify-center gap-12 md:w-[calc(60%)]">
           <div className="flex max-w-150 flex-col items-start gap-4">
             <h1 className="text-darkestblue text-left text-4xl font-bold dark:text-white">
@@ -133,7 +125,7 @@ export default function HomeHero({
             </div>
           )}
           {resolvedImageSource && resolvedImageSourceUrl && (
-            <div className="absolute right-4 bottom-2 flex flex-col gap-2 lg:bottom-6">
+            <div className="absolute right-4 bottom-2 flex flex-col lg:bottom-6">
               <a
                 href={resolvedImageSourceUrl}
                 target="_blank"
