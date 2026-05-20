@@ -34,7 +34,6 @@ export const postType = defineType({
             { title: 'Normal', value: 'normal' },
             { title: 'Heading 1', value: 'h2' },
             { title: 'Heading 2', value: 'h3' },
-            { title: 'Quote', value: 'blockquote' },
           ],
           marks: {
             decorators: [
@@ -46,7 +45,9 @@ export const postType = defineType({
               {
                 name: 'link',
                 type: 'object',
-                title: 'link',
+                title: 'Extern lenke',
+                icon: ExternalLink,
+                description: 'Brukes for lenker til eksterne nettsider',
                 fields: [
                   {
                     name: 'url',
@@ -57,13 +58,12 @@ export const postType = defineType({
               {
                 name: 'internalLink',
                 type: 'object',
-                title: 'Intedrnal link',
-                icon: ExternalLink,
+                title: 'Intern lenke',
+                description: 'Brukes for lenker til andre sider på nettstedet',
                 fields: [
                   {
-                    name: 'reference',
-                    type: 'reference',
-                    to: [{ type: 'event' }],
+                    name: 'url',
+                    type: 'url',
                   },
                 ],
               },
@@ -71,7 +71,31 @@ export const postType = defineType({
           },
         },
         {
+          name: 'image',
+          title: 'Bilde',
           type: 'image',
+          options: { hotspot: true },
+          fields: [
+            {
+              title: 'Bildetekst',
+              name: 'alt',
+              type: 'string',
+              description:
+                'Beskrivelse av bildet for tilgjengelighet og SEO. Valgfritt, men anbefales.',
+            },
+            {
+              title: 'Bildekilde navn',
+              name: 'imageSourceName',
+              type: 'string',
+              description: 'Navn på kilden for bildet.',
+            },
+            {
+              title: 'Bildekilde URL',
+              name: 'imageSourceUrl',
+              type: 'url',
+              description: 'URL til kilden for bildet.',
+            },
+          ],
         },
       ],
     }),
