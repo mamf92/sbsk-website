@@ -25,7 +25,7 @@ const FALLBACK_CALENDAR = {
 
 export default function Calendar({ calendarHero, events }: CalendarProps) {
   return (
-    <div className="flex flex-col items-center gap-12 py-12">
+    <div className="flex flex-col items-center gap-2 py-12">
       {calendarHero ? <CalendarHero {...calendarHero} /> : <CalendarHero />}
       <EventList events={events} />
     </div>
@@ -163,7 +163,7 @@ function EventList({ events }: { events: CalendarEventTypes[] }) {
     );
   }
   return (
-    <div className="flex w-full max-w-5xl flex-col items-center gap-4 px-2 sm:gap-8 sm:px-0">
+    <div className="flex w-full max-w-5xl flex-col items-center gap-2 px-2 sm:px-0">
       <input
         type="text"
         placeholder="Søk etter arrangementer..."
