@@ -27,12 +27,7 @@ export default function Home() {
     calendarHero: CalendarHeroTypes | null;
     events: CalendarEventTypes[];
   };
-  const base = import.meta.env.VITE_BASE;
-  console.log('Base URL:', base);
-  const host = window.location.host;
-  console.log('Current host:', host);
   const [admins, setAdmins] = useState<Admin[]>([]);
-  console.log('Fetched posts:', posts);
   useEffect(() => {
     getAdmins();
   }, []);
