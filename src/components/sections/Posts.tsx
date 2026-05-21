@@ -122,7 +122,7 @@ function PostsList({ posts }: { posts: PostTypes[] }) {
   function clearFilters() {
     setSearchTerm('');
     setSelectedCategory('all');
-    setSelectedSort('date-asc');
+    setSelectedSort('date-desc');
   }
 
   if (posts.length === 0 || !posts) {
