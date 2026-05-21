@@ -8,6 +8,7 @@ import Clock from '../../assets/icons/symbols/clock.svg?react';
 import ArrowRight from '../../assets/icons/arrows/arrowright.svg?react';
 import type { CalendarEventTypes } from '../../sanity/queryHelpers/events';
 import type { CalendarHeroTypes } from '../../sanity/queryHelpers/calendar-hero';
+import { useNavigate } from 'react-router-dom';
 
 interface CalendarProps {
   calendarHero?: CalendarHeroTypes;
@@ -25,12 +26,11 @@ const FALLBACK_CALENDAR = {
 
 export default function Calendar({ calendarHero, events }: CalendarProps) {
   return (
-    <div className="flex flex-col items-center gap-12 py-12">
+    <div className="flex flex-col items-center gap-2 py-12">
       {calendarHero ? <CalendarHero {...calendarHero} /> : <CalendarHero />}
       <EventList events={events} />
     </div>
   );
-  /* ... */
 }
 
 function CalendarHero({
@@ -163,15 +163,15 @@ function EventList({ events }: { events: CalendarEventTypes[] }) {
     );
   }
   return (
-    <div className="flex w-full max-w-5xl flex-col items-center gap-4 px-2 sm:gap-8 sm:px-0">
+    <div className="flex w-full max-w-5xl flex-col items-center gap-2 px-2 sm:px-0">
       <input
         type="text"
         placeholder="Søk etter arrangementer..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        className="focus:ring-orange w-full border border-gray-200 px-4 py-3 text-gray-700 placeholder:text-gray-400 focus:ring-2 focus:outline-none"
+        className="focus:ring-orange border-darkblue dark:border-orange placeholder:text-placeholder text-darkblue w-full border px-4 py-3 focus:ring-2 focus:outline-none"
       />
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-2">
         {categories.map((category) => (
           <button
             key={category}
@@ -186,7 +186,7 @@ function EventList({ events }: { events: CalendarEventTypes[] }) {
           </button>
         ))}
       </div>
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-2">
         {sortOptions.map((option) => (
           <button
             key={option.value}
@@ -225,6 +225,9 @@ function EventList({ events }: { events: CalendarEventTypes[] }) {
 
 function EventCard({ calendarEvent }: { calendarEvent: CalendarEventTypes }) {
   const [expandedEvent, setExpandedEvent] = useState(false);
+  const INTERNAL_ORIGIN = 'https://www.mamf92.github.io/sbsk-website';
+  const navigate = useNavigate();
+
   const backgroundColor = {
     spillkveld: 'darkblue',
     turnering: 'orange',
@@ -357,18 +360,35 @@ function EventCard({ calendarEvent }: { calendarEvent: CalendarEventTypes }) {
             )}
             {calendarEvent.links && calendarEvent.links.length > 0 && (
               <div className="flex flex-row flex-wrap gap-2">
-                {calendarEvent.links.map((link, index) => (
-                  <Button
-                    variant={calendarEvent.category === 'annet' ? 'tertiary' : 'primary'}
-                    size="sm"
-                    icon="right"
-                    key={index}
-                    onClick={() => window.open(link.url, '_blank')}
-                    rel="noopener noreferrer"
-                  >
-                    {link.label}
-                  </Button>
-                ))}
+                {calendarEvent.links.map((link, index) => {
+                  const isInternal = link.url.startsWith(INTERNAL_ORIGIN);
+                  if (isInternal) {
+                    const path = new URL(link.url, window.location.href).pathname;
+                    return (
+                      <Button
+                        variant={calendarEvent.category === 'annet' ? 'tertiary' : 'primary'}
+                        size="sm"
+                        icon="right"
+                        key={index}
+                        onClick={() => navigate(path)}
+                      >
+                        {link.label}
+                      </Button>
+                    );
+                  }
+                  return (
+                    <Button
+                      variant={calendarEvent.category === 'annet' ? 'tertiary' : 'primary'}
+                      size="sm"
+                      icon="right"
+                      key={index}
+                      onClick={() => window.open(link.url, '_blank')}
+                      rel="noopener noreferrer"
+                    >
+                      {link.label}
+                    </Button>
+                  );
+                })}
               </div>
             )}
           </div>
