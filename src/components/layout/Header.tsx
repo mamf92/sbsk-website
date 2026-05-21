@@ -2,9 +2,8 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Buttons';
 import { useTheme } from '../../hooks/ThemeContext';
 import Logo from '../../assets/logos/dicelogo.png';
-import Burger from '../../assets/icons/symbols/burger.svg?react';
-import { useEffect, useState } from 'react';
-
+import { useEffect, useRef, useState } from 'react';
+import { Cross as Hamburger } from 'hamburger-react';
 const linkBase = 'font-body text-lg lg:text-sm hover:underline decoration-[0.123rem] transition';
 const getLink = ({ isActive }: { isActive: boolean }) =>
   `${linkBase} ${isActive ? 'underline' : ''}`;
@@ -24,6 +23,24 @@ export default function Header() {
     media.addEventListener('change', handleChange);
     return () => media.removeEventListener('change', handleChange);
   }, []);
+
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isMobileMenuOpen]);
 
   return (
     <header className="bg-darkblue font-heading relative flex h-25.25 w-full justify-center px-6 text-white">
@@ -69,12 +86,13 @@ export default function Header() {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Meny"
           >
-            <Burger />
+            <Hamburger toggled={isMobileMenuOpen} />
           </button>
         </div>
 
         <nav
           className={`bg-darkestblue absolute top-25.25 left-0 z-50 flex w-full flex-col items-center gap-6 px-4 py-8 ${isMobileMenuOpen ? '' : 'hidden'}`}
+          ref={menuRef}
         >
           <NavLink to="/" end className={getLink}>
             Hjem
