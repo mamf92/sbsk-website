@@ -16,7 +16,7 @@ export default function App() {
       <main id="main">
         <Outlet />
       </main>
-      <Footer />
+      {/* <Footer /> */}
     </ThemeProvider>
   );
 }
