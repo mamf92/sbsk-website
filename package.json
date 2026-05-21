@@ -12,7 +12,7 @@
     "prepare": "husky && husky install"
   },
   "dependencies": {
-    "@portabletext/react": "^6.0.3",
+    "@portabletext/react": "^6.2.0",
     "@sanity/client": "^7.21.0",
     "@sanity/image-url": "^2.1.1",
     "@sanity/vision": "^5.21.0",
