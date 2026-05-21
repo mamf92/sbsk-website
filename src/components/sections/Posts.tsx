@@ -51,7 +51,7 @@ const sortOptions = [
 
 export default function Posts({ postsHero, posts }: PostsProps) {
   return (
-    <div className="flex flex-col items-center gap-2 py-12">
+    <div className="flex flex-col items-center gap-6">
       {postsHero ? <PostsHero {...postsHero} /> : <PostsHero />}
       <PostsList posts={posts} />
     </div>
