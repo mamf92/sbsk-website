@@ -6,11 +6,12 @@ import expand from '../../assets/icons/arrows/expand.svg?react';
 import sun from '../../assets/icons/symbols/sun.svg?react';
 import moon from '../../assets/icons/symbols/moon.svg?react';
 import backspace from '../../assets/icons/symbols/backspace.svg?react';
+import block from '../../assets/icons/symbols/block.svg?react';
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'primary' | 'secondary' | 'tertiary' | 'toggle';
+  variant?: 'primary' | 'secondary' | 'tertiary' | 'toggle' | 'disabled';
   size?: 'xs' | 'sm' | 'md' | 'lg';
-  icon?: 'left' | 'right' | 'down' | 'expand' | 'sun' | 'moon' | 'backspace' | 'none';
+  icon?: 'left' | 'right' | 'down' | 'expand' | 'sun' | 'moon' | 'backspace' | 'block' | 'none';
 };
 
 const base = 'inline-flex whitespace-nowrap items-center justify-center font-heading text-sm ';
@@ -19,6 +20,7 @@ const variants = {
   primary: 'bg-orange text-darkblue hover:bg-darkorange',
   secondary: 'bg-darkorange text-darkestblue hover:bg-orange',
   tertiary: 'bg-darkblue text-white hover:bg-darkestblue',
+  disabled: 'bg-gray-300 text-gray-500 cursor-not-allowed',
   toggle: 'bg-darkestblue text-white dark:bg-orange dark:text-darkblue',
 } as const;
 
@@ -42,6 +44,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       sun: sun,
       moon: moon,
       backspace: backspace,
+      block: block,
       none: null,
     };
 

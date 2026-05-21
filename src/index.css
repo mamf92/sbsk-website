@@ -27,6 +27,8 @@
   --color-darkestorange: #b75f04;
   --color-placeholder: #727a88;
 
+  --breakpoint-xs: 25rem;
+
   --font-heading: 'Noto Sans', sans-serif;
   --font-body: 'Open Sans', sans-serif;
 }
