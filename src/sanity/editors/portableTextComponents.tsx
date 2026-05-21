@@ -21,12 +21,7 @@ export const components: PortableTextComponents = {
     underline: ({ children }) => <u className="underline">{children}</u>,
     link: ({ value, children }) => {
       return (
-        <a
-          href={value.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 hover:underline"
-        >
+        <a href={value.url} target="_blank" rel="noopener noreferrer" className="underline">
           {children}
         </a>
       );
