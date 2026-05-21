@@ -32,16 +32,16 @@ export default function Footer() {
                 <NavLink to="/bli-medlem" className="font-bold">
                   Bli medlem nå!
                 </NavLink>
-                <NavLink to="/kalender" className="font-bold">
+                <NavLink to="/kalender" className="font-body">
                   Kalender
                 </NavLink>
-                <NavLink to="/våre-spill" className="font-bold">
+                <NavLink to="/våre-spill" className="font-body">
                   Våre spill
                 </NavLink>
-                <NavLink to="/om-oss" className="font-bold">
+                <NavLink to="/om-oss" className="font-body">
                   Om oss
                 </NavLink>
-                <NavLink to="/kontakt-oss" className="font-bold">
+                <NavLink to="/kontakt-oss" className="font-body">
                   Kontakt oss
                 </NavLink>
               </nav>
@@ -52,10 +52,10 @@ export default function Footer() {
                 <a href="https://www.outland.no/" target="_blank">
                   Outland.no
                 </a>
-                <NavLink to="/våre-spill" className="font-bold">
+                <NavLink to="/våre-spill" className="font-body">
                   Kjøp spill med rabatt
                 </NavLink>
-                <NavLink to="/kontakt-oss" className="font-bold">
+                <NavLink to="/kontakt-oss" className="font-body">
                   Bli støttespiller
                 </NavLink>
               </nav>
