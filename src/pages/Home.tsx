@@ -1,6 +1,4 @@
 import { useLoaderData } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import HomeHero from '../components/sections/HomeHero';
 import Calendar from '../components/sections/Calendar';
 import Posts from '../components/sections/Posts';
@@ -8,38 +6,16 @@ import type { PostTypes } from '../sanity/queryHelpers/posts';
 import type { HomeHeroTypes } from '../sanity/queryHelpers/home-hero';
 import type { CalendarHeroTypes } from '../sanity/queryHelpers/calendar-hero';
 import type { CalendarEventTypes } from '../sanity/queryHelpers/events';
-
-interface Admin {
-  id: number;
-  name: string;
-  email: string;
-}
-
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supbaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-const supabase = createClient(supabaseUrl, supbaseKey);
+import type { AdminTypes } from '../supabase/queryHelpers/getAdmins';
 
 export default function Home() {
-  const { posts, homeHero, calendarHero, events } = useLoaderData() as {
+  const { posts, homeHero, calendarHero, events, admins } = useLoaderData() as {
     posts: PostTypes[];
     homeHero: HomeHeroTypes | null;
     calendarHero: CalendarHeroTypes | null;
     events: CalendarEventTypes[];
+    admins: AdminTypes[];
   };
-  const [admins, setAdmins] = useState<Admin[]>([]);
-  useEffect(() => {
-    getAdmins();
-  }, []);
-
-  async function getAdmins() {
-    const { data, error } = await supabase.from('admins').select('*');
-    if (error) {
-      console.error('Error fetching admins:', error);
-    } else {
-      setAdmins(data);
-    }
-  }
 
   return (
     <>
@@ -51,12 +27,16 @@ export default function Home() {
           <Calendar events={events} />
         )}
         <Posts posts={posts} />
-        {admins.map((admin) => (
-          <li key={admin.id}>
-            <h3 className="text-xl font-semibold">{admin.name}</h3>
-            <p>{admin.email}</p>
-          </li>
-        ))}
+        {admins && admins.length > 0 && (
+          <ul>
+            {admins.map((admin) => (
+              <li key={admin.id}>
+                <h3 className="text-xl font-semibold">{admin.name}</h3>
+                <p>{admin.email}</p>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </>
   );
