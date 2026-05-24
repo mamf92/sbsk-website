@@ -1,26 +1,14 @@
 import { createContext, useContext } from 'react';
-
-export interface FullUser {
-  name: string;
-  email: string;
-  bio: string | null;
-  avatar: {
-    url: string;
-    alt: string;
-  };
-  banner: {
-    url: string;
-    alt: string;
-  };
-  accessToken: string;
-}
+import type { Profile } from '../../supabase/queryHelpers/getProfil';
 
 export interface AuthContextType {
   isAuthenticated: boolean;
+  isAdmin: boolean;
   token: string | null;
-  user: FullUser | null;
-  login: (userData: FullUser) => void;
+  user: Profile | null;
+  login: (userData: Profile) => void;
   logout: () => void;
+  refreshSession: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
