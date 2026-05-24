@@ -1,19 +1,20 @@
-import ProfileCard from './profileCard';
+import ProfileCard from './ProfileCard';
 import type { Profile } from '../../../supabase/queryHelpers/getProfil';
-import BoardPortalHeader from './BoardPortalHeader';
+import PortalHeader from './PortalHeader';
 import MemberSearchList from './MemberSearchList';
 
 interface BoardPortalSectionProps {
   member: Profile;
+  members: Profile[];
 }
 
-export default function BoardPortalSection({ member }: BoardPortalSectionProps) {
+export default function BoardPortalSection({ member, members }: BoardPortalSectionProps) {
   return (
     <>
       <div className="flex flex-col items-center gap-4">
-        <BoardPortalHeader boardmember={member} />
+        <PortalHeader boardmember={member} />
         <ProfileCard member={member} />
-        <MemberSearchList members={[member]} />
+        <MemberSearchList members={members} />
       </div>
     </>
   );

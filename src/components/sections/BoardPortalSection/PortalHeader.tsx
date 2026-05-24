@@ -2,7 +2,7 @@ import { type Profile } from '../../../supabase/queryHelpers/getProfil';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../ui/Buttons';
 
-export default function BoardLandingHeader({ boardmember }: { boardmember: Profile }) {
+export default function PortalHeader({ boardmember }: { boardmember: Profile }) {
   const navigate = useNavigate();
   return (
     <div className="bg-darkestblue mx-auto flex w-full max-w-150 flex-col items-start gap-6 px-2 py-12 md:max-w-200">

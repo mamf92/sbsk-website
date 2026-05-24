@@ -1,10 +1,11 @@
 import { supabase } from '../client';
+import type { Profile } from './getProfil';
 
-export default async function getMembers() {
-  const { data, error } = await supabase.from('members').select('*');
-  if (error) {
-    console.error('Error fetching members:', error);
-  } else {
-    return data;
-  }
+export async function getMembers(): Promise<Profile[]> {
+  const { data, error } = await supabase.from('profiles').select('*');
+
+  if (error) throw error;
+  if (!data) throw new Error('Profiles not found');
+
+  return data;
 }

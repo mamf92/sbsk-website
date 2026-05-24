@@ -15,17 +15,10 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
     searchTerm,
     setSearchTerm,
     selectedSortField,
-    selectedMember,
-    setSelectedMember,
     sortOptions,
     sortOrder,
-    showForm,
-    showMemberDetails,
-    setShowForm,
-    setShowMemberDetails,
     handleSortClick,
     handleMemberClick,
-    handleEditMemberClick,
     handleAddMemberClick,
     filteredMembers,
     sortedMembers,
@@ -90,10 +83,10 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
           </div>
         )}
         {members.length === 0 && (
-          <p className="text-copy">Det finnes ingen medlemmer i databasen.</p>
+          <p className="font-body text-white">Det finnes ingen medlemmer i databasen.</p>
         )}
         {filteredMembers.length === 0 && searchTerm !== '' && (
-          <p className="text-copy">Ingen medlemmer matcher ditt søk.</p>
+          <p className="font-body text-white">Ingen medlemmer matcher ditt søk.</p>
         )}
         {sortedMembers.length > 0 && selectedSortField && (
           <div className="flex flex-col bg-white px-2 py-4">
