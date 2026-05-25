@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { ThemeContext } from './ThemeContext';
-import { getInitialTheme } from '../utils/theme';
+import { getInitialTheme } from '../../utils/theme';
 
 type Theme = 'light' | 'dark';
 

@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
-import { ThemeProvider } from './hooks/ThemeProvider';
+import { ThemeProvider } from './hooks/theme/ThemeProvider';
 
 export default function App() {
   return (

@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Buttons';
-import { useTheme } from '../../hooks/ThemeContext';
+import { useTheme } from '../../hooks/theme/ThemeContext';
 import Logo from '../../assets/logos/dicelogo.png';
 import { useEffect, useRef, useState } from 'react';
 import { Cross as Hamburger } from 'hamburger-react';

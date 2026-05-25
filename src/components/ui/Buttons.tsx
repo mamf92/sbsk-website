@@ -7,11 +7,26 @@ import sun from '../../assets/icons/symbols/sun.svg?react';
 import moon from '../../assets/icons/symbols/moon.svg?react';
 import backspace from '../../assets/icons/symbols/backspace.svg?react';
 import block from '../../assets/icons/symbols/block.svg?react';
+import AscIcon from '../../assets/icons/symbols/asc.svg?react';
+import DescIcon from '../../assets/icons/symbols/desc.svg?react';
+import Add from '../../assets/icons/symbols/add.svg?react';
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: 'primary' | 'secondary' | 'tertiary' | 'toggle' | 'disabled';
   size?: 'xs' | 'sm' | 'md' | 'lg';
-  icon?: 'left' | 'right' | 'down' | 'expand' | 'sun' | 'moon' | 'backspace' | 'block' | 'none';
+  icon?:
+    | 'left'
+    | 'right'
+    | 'down'
+    | 'expand'
+    | 'sun'
+    | 'moon'
+    | 'backspace'
+    | 'block'
+    | 'asc'
+    | 'desc'
+    | 'add'
+    | 'none';
 };
 
 const base = 'inline-flex whitespace-nowrap items-center justify-center font-heading text-sm ';
@@ -25,10 +40,10 @@ const variants = {
 } as const;
 
 const sizes = {
-  xs: 'h-8 px-2 text-xs',
-  sm: 'h-9 px-3 text-sm',
-  md: 'py-2 px-3 text-base',
-  lg: 'h-12 px-6 text-lg',
+  xs: 'h-8 px-2 text-xs gap-1',
+  sm: 'h-9 px-3 text-sm gap-2',
+  md: 'py-2 px-3 text-base gap-2',
+  lg: 'h-12 px-6 text-lg gap-2',
 } as const;
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -45,6 +60,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       moon: moon,
       backspace: backspace,
       block: block,
+      asc: AscIcon,
+      desc: DescIcon,
+      add: Add,
       none: null,
     };
 
@@ -55,9 +73,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={[base, variants[variant], sizes[size], className].join(' ')}
         {...props}
       >
-        {icon === 'left' && Icon ? <Icon className="mr-2 fill-current" /> : null}
+        {icon === 'left' && Icon ? <Icon className="w-5fill-current h-3 min-h-3 min-w-2" /> : null}
         {children}
-        {icon !== 'left' && Icon ? <Icon className="ml-2 fill-current" /> : null}
+        {icon !== 'left' && Icon ? <Icon className="h-5 min-h-2 w-3 min-w-3 fill-current" /> : null}
       </button>
     );
   },

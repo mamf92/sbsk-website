@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import AuthProvider from './hooks/authContext/authProvider';
 import './index.css';
 import App from './App';
 import Home from './pages/Home';
@@ -19,8 +20,9 @@ import BoardPortal from './pages/BoardPortal';
 import NotFound from './pages/NotFound';
 import { initTheme } from './utils/theme';
 import StudioRoute from './pages/Studio';
-import { homeLoader } from './loaders/home';
+import { homeLoader } from './loaders/home-loader';
 import { eventsListLoader, eventDetailLoader } from './sanity/queryHelpers/events';
+import { boardPortalLoader } from './loaders/board-portal-loader';
 
 initTheme();
 
@@ -42,7 +44,7 @@ const router = createBrowserRouter(
         { path: 'våre-partnere', element: <OurPartners /> },
         { path: 'login', element: <Login /> },
         { path: 'min-profil', element: <MyProfile /> },
-        { path: 'styreportal', element: <BoardPortal /> },
+        { path: 'styreportal', element: <BoardPortal />, loader: boardPortalLoader },
         { path: 'studio/*', element: <StudioRoute /> },
         { path: '*', element: <NotFound /> },
       ],
@@ -53,6 +55,8 @@ const router = createBrowserRouter(
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   </React.StrictMode>,
 );
