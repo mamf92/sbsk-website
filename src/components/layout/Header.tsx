@@ -124,8 +124,8 @@ export default function Header() {
           >
             {isDarkMode ? 'LM' : 'DM'}
           </Button>
-          <Button variant="primary" size="md" icon="right" onClick={() => navigate('/bli-medlem')}>
-            Bli medlem
+          <Button variant="primary" size="md" icon="right" onClick={() => navigate('/login')}>
+            Logg inn
           </Button>
         </div>
       </div>

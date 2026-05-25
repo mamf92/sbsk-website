@@ -44,10 +44,15 @@ export default function LoginSection({ reason }: { reason?: string }) {
             </p>
           )}
           <p className="text-body w-full text-center text-white">
-            Er du medlem i klubben kan du lage din egen medlemsprofil ved å klikke på lenken under.
+            Her kan du logge inn på din medlemsprofil og få tilgang til arrangementer,
+            medlemsfordeler og mer!
           </p>
-          <Link to="/lag-medlemsprofil" className="text-white hover:underline">
-            Er du medlem kan du registrere deg her!
+          <p className="text-body w-full text-center text-white">
+            Ingen konto enda? Er du medlem i klubben kan du lage din egen medlemsprofil ved å klikke
+            på lenken under.
+          </p>
+          <Link to="/lag-medlemsprofil" className="text-white underline">
+            Registrere deg her!
           </Link>
         </div>
 

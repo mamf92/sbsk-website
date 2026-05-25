@@ -140,7 +140,7 @@ function PostsList({ posts }: { posts: PostTypes[] }) {
     );
   }
   return (
-    <div className="flex w-full max-w-5xl flex-col items-center gap-2 px-2 sm:px-0">
+    <div className="flex w-full max-w-5xl flex-col items-center gap-2 px-2 pb-2 sm:px-0 sm:pb-4">
       <input
         type="text"
         placeholder="Søk etter innlegg..."
@@ -275,46 +275,46 @@ function PostCard({ post }: { post: PostWithExtras }) {
           >
             {post.content && <PortableText value={post.content} components={components} />}
           </div>
-        </div>
-      )}
-      {post.links && post.links.length > 0 && (
-        <div
-          className={`${categoryStyles.expandWrapper} flex w-full flex-col px-2 pt-0 pb-2 sm:px-4 sm:pt-0 sm:pb-4`}
-        >
-          <div className="flex flex-row flex-wrap gap-2">
-            {post.links.map((link, index) => {
-              const isInternal = link.url.startsWith(INTERNAL_ORIGIN);
+          {post.links && post.links.length > 0 && (
+            <div
+              className={`${categoryStyles.expandWrapper} flex w-full flex-col px-2 pt-2 pb-0 sm:px-4 sm:pt-4 sm:pb-0`}
+            >
+              <div className="flex flex-row flex-wrap gap-2">
+                {post.links.map((link, index) => {
+                  const isInternal = link.url.startsWith(INTERNAL_ORIGIN);
 
-              if (isInternal) {
-                const path = new URL(link.url, window.location.href).pathname;
-                return (
-                  <Button
-                    variant={postCategory === 'arrangementer' ? 'tertiary' : 'primary'}
-                    size="sm"
-                    icon="right"
-                    key={index}
-                    onClick={() => navigate(path)}
-                  >
-                    {link.label}
-                  </Button>
-                );
-              }
+                  if (isInternal) {
+                    const path = new URL(link.url, window.location.href).pathname;
+                    return (
+                      <Button
+                        variant={postCategory === 'arrangementer' ? 'tertiary' : 'primary'}
+                        size="sm"
+                        icon="right"
+                        key={index}
+                        onClick={() => navigate(path)}
+                      >
+                        {link.label}
+                      </Button>
+                    );
+                  }
 
-              return (
-                <Button
-                  key={index}
-                  variant={postCategory === 'arrangementer' ? 'tertiary' : 'primary'}
-                  size="sm"
-                  icon="right"
-                  onClick={() => {
-                    window.location.href = link.url;
-                  }}
-                >
-                  {link.label}
-                </Button>
-              );
-            })}
-          </div>
+                  return (
+                    <Button
+                      key={index}
+                      variant={postCategory === 'arrangementer' ? 'tertiary' : 'primary'}
+                      size="sm"
+                      icon="right"
+                      onClick={() => {
+                        window.location.href = link.url;
+                      }}
+                    >
+                      {link.label}
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
