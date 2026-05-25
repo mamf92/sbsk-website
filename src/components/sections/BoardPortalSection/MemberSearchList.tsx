@@ -1,5 +1,6 @@
-// import MemberForm from './MemberForm';
+import MemberForm from './MemberForm';
 // import MemberDetails from './MemberDetails';
+import { createMember } from '../../../supabase/queryHelpers/createMember';
 import Search from '../../../assets/icons/symbols/search.svg?react';
 import { type Profile } from '../../../supabase/queryHelpers/getProfil';
 import { Button } from '../../ui/Buttons';
@@ -15,6 +16,10 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
     searchTerm,
     setSearchTerm,
     selectedSortField,
+    showForm,
+    setShowForm,
+    selectedMember,
+    setSelectedMember,
     sortOptions,
     sortOrder,
     handleSortClick,
@@ -123,12 +128,27 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
           </div>
         )}
       </div>
-      {/* {showForm && (
+      {showForm && (
         <MemberForm
           member={selectedMember || undefined}
-          onSubmitMember={() => {
-            setShowForm(false);
-            setSelectedMember(null);
+          onSubmitMember={async (memberData) => {
+            if (memberData.id) {
+              // updateMember(...)
+            } else {
+              {
+                await createMember({
+                  name: memberData.name,
+                  surname: memberData.surname,
+                  address: memberData.address,
+                  postcode: memberData.postcode,
+                  city: memberData.city,
+                  phone: memberData.phone,
+                  email: memberData.email,
+                  is_admin: memberData.is_admin,
+                });
+                // setShowForm(false);
+              }
+            }
           }}
           onClose={() => {
             setShowForm(false);
@@ -136,7 +156,7 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
           }}
         />
       )}
-      {showMemberDetails && selectedMember && (
+      {/* {showMemberDetails && selectedMember && (
         <MemberDetails
           member={selectedMember}
           onDeleteMember={() => {
