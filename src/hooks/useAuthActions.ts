@@ -20,7 +20,6 @@ export const useAuthActions = () => {
     const profile = await getProfile(data.session.user.id);
     login(profile);
     await refreshSession();
-    console.log('[auth] signInWithPassword success', { profile });
     return profile;
   };
 

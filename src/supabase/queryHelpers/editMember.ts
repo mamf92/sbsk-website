@@ -1,6 +1,7 @@
 import { supabase } from '../client';
 
 export interface MemberData {
+  id: string;
   name: string | null;
   surname: string | null;
   address: string | null;
@@ -11,10 +12,10 @@ export interface MemberData {
   is_admin: boolean;
 }
 
-export async function createMember(member: MemberData) {
+export async function editMember(member: MemberData) {
   const { data, error } = await supabase
     .from('members')
-    .insert({
+    .update({
       name: member.name,
       surname: member.surname,
       address: member.address,
@@ -25,6 +26,7 @@ export async function createMember(member: MemberData) {
       is_admin: member.is_admin,
     })
     .select()
+    .eq('id', member.id)
     .single();
 
   if (error) throw error;

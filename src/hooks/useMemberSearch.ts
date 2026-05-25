@@ -58,12 +58,6 @@ export function useMemberSearch(members: Profile[]) {
 
   const handleMemberClick = (member: Profile) => {
     setSelectedMember(member);
-    setShowMemberDetails(true);
-  };
-
-  const handleEditMemberClick = (member: Profile) => {
-    setSelectedMember(member);
-    setShowMemberDetails(false);
     setShowForm(true);
   };
 
@@ -90,7 +84,6 @@ export function useMemberSearch(members: Profile[]) {
     sortedMembers,
     handleSortClick,
     handleMemberClick,
-    handleEditMemberClick,
     handleAddMemberClick,
   };
 }

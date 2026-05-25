@@ -1,10 +1,11 @@
 import MemberForm from './MemberForm';
-// import MemberDetails from './MemberDetails';
 import { createMember } from '../../../supabase/queryHelpers/createMember';
+import { editMember } from '../../../supabase/queryHelpers/editMember';
 import Search from '../../../assets/icons/symbols/search.svg?react';
 import { type Profile } from '../../../supabase/queryHelpers/getProfil';
 import { Button } from '../../ui/Buttons';
 import { useMemberSearch } from '../../../hooks/useMemberSearch';
+import { useRevalidator } from 'react-router-dom';
 
 interface MemberSearchSectionProps {
   members: Profile[];
@@ -28,6 +29,7 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
     filteredMembers,
     sortedMembers,
   } = useMemberSearch(members);
+  const revalidator = useRevalidator();
 
   return (
     <div className="bg-darkblue mx-auto mb-4 flex w-full max-w-150 flex-col gap-2 px-2 py-24 md:max-w-200">
@@ -101,7 +103,7 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
                 key={member.id}
                 onClick={() => handleMemberClick(member)}
               >
-                <div className="flex w-full justify-between border-y border-black py-4 text-start">
+                <div className="flex w-full justify-between border-b border-black py-4 text-start">
                   <div className="w-[20%]">
                     <p className="text-sm hyphens-auto capitalize sm:text-base" lang="no">
                       {member.name}
@@ -133,7 +135,19 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
           member={selectedMember || undefined}
           onSubmitMember={async (memberData) => {
             if (memberData.id) {
-              // updateMember(...)
+              await editMember({
+                id: memberData.id,
+                name: memberData.name,
+                surname: memberData.surname,
+                address: memberData.address,
+                postcode: memberData.postcode,
+                city: memberData.city,
+                phone: memberData.phone,
+                email: memberData.email,
+                is_admin: memberData.is_admin,
+              });
+              revalidator.revalidate();
+              setShowForm(false);
             } else {
               {
                 await createMember({
@@ -146,7 +160,8 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
                   email: memberData.email,
                   is_admin: memberData.is_admin,
                 });
-                // setShowForm(false);
+                revalidator.revalidate();
+                setShowForm(false);
               }
             }
           }}
@@ -156,20 +171,6 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
           }}
         />
       )}
-      {/* {showMemberDetails && selectedMember && (
-        <MemberDetails
-          member={selectedMember}
-          onDeleteMember={() => {
-            setShowMemberDetails(false);
-            setSelectedMember(null);
-          }}
-          onEditMemberClick={handleEditMemberClick}
-          onClose={() => {
-            setShowMemberDetails(false);
-            setSelectedMember(null);
-          }}
-        />
-      )} */}
     </div>
   );
 }

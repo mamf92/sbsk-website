@@ -6,7 +6,6 @@ import type { PostTypes } from '../sanity/queryHelpers/posts';
 import type { HomeHeroTypes } from '../sanity/queryHelpers/home-hero';
 import type { CalendarHeroTypes } from '../sanity/queryHelpers/calendar-hero';
 import type { CalendarEventTypes } from '../sanity/queryHelpers/events';
-import type { AdminTypes } from '../supabase/queryHelpers/getAdmins';
 
 export default function Home() {
   const { posts, homeHero, calendarHero, events } = useLoaderData() as {
@@ -14,7 +13,6 @@ export default function Home() {
     homeHero: HomeHeroTypes | null;
     calendarHero: CalendarHeroTypes | null;
     events: CalendarEventTypes[];
-    admins: AdminTypes[];
   };
 
   return (

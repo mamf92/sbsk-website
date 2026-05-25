@@ -50,8 +50,6 @@ export default function MemberForm({ member, onSubmitMember, onClose }: MemberFo
       email: String(formData.get('email') ?? ''),
       is_admin: formData.get('is_admin') === 'on',
     };
-
-    // TODO: Wire up create vs update via Supabase query helpers.
     onSubmitMember(memberData);
     onClose();
   };
