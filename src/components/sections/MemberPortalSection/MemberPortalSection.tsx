@@ -1,5 +1,5 @@
 import ProfileCard from '../BoardPortalSection/ProfileCard';
-import type { Profile } from '../../../supabase/queryHelpers/getProfil';
+import type { Profile } from '../../../supabase/queryHelpers/getProfile';
 import PortalHeader from './MemberPortalHeader';
 
 interface MemberPortalSectionProps {
@@ -9,7 +9,7 @@ interface MemberPortalSectionProps {
 export default function MemberPortalSection({ profile }: MemberPortalSectionProps) {
   return (
     <>
-      <div className="flex flex-col items-center gap-4">
+      <div className="flex flex-col items-center gap-4 py-2">
         <PortalHeader profile={profile} />
         <ProfileCard member={profile} />
       </div>

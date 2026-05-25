@@ -1,5 +1,5 @@
 import { supabase } from '../supabase/client';
-import { getProfile } from '../supabase/queryHelpers/getProfil';
+import { getProfile } from '../supabase/queryHelpers/getProfile';
 import { canViewMembers } from '../supabase/queryHelpers/canViewMembers';
 import { useAuth } from './authContext/authContext';
 

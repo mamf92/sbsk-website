@@ -1,4 +1,4 @@
-import { type Profile } from '../../../supabase/queryHelpers/getProfil';
+import { type Profile } from '../../../supabase/queryHelpers/getProfile';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../ui/Buttons';
 

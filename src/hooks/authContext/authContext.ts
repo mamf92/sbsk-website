@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import type { Profile } from '../../supabase/queryHelpers/getProfil';
+import type { Profile } from '../../supabase/queryHelpers/getProfile';
 
 export interface AuthContextType {
   isAuthenticated: boolean;
