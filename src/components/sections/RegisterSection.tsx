@@ -3,9 +3,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '../ui/Buttons';
 import { useAuthActions } from '../../hooks/useAuthActions';
 
-export default function LoginSection({ reason }: { reason?: string }) {
+export default function RegisterSection() {
   const navigate = useNavigate();
-  const { signInWithPassword } = useAuthActions();
+  const { registerWithPassword } = useAuthActions();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,13 +20,19 @@ export default function LoginSection({ reason }: { reason?: string }) {
     setError(null);
 
     try {
-      const profile = await signInWithPassword({ email, password });
-      navigate(profile.is_admin ? '/styreportal' : '/');
+      const profile = await registerWithPassword({ email, password });
+      navigate(profile.is_admin ? '/styreportal' : '/medlemsportal');
     } catch (err: unknown) {
       if (err instanceof Error) {
-        setError(err.message);
+        setError(
+          'Noe gikk galt: ' +
+            err.message +
+            '. Er du nylig blitt medlem av klubben? Det kan ta litt tid før kontoen din er klar til bruk. Prøv igjen senere, eller kontakt oss hvis problemet vedvarer.',
+        );
       } else {
-        setError('Something went wrong');
+        setError(
+          'Noe gikk galt. Er du nylig blitt medlem av klubben? Det kan ta litt tid før kontoen din er klar til bruk. Prøv igjen senere, eller kontakt oss hvis problemet vedvarer.',
+        );
       }
     } finally {
       setLoading(false);
@@ -37,17 +43,13 @@ export default function LoginSection({ reason }: { reason?: string }) {
     <div className="bg-darkblue my-4 flex w-full max-w-150 items-center justify-center px-4">
       <div className="flex w-full flex-col gap-8 py-24">
         <div className="flex flex-col items-center gap-4">
-          <h1 className="font-heading text-center text-3xl text-white">Velkommen tilbake!</h1>
-          {reason === 'not_authenticated' && (
-            <p className="text-body text-orange text-center">
-              Det ser ut som at du ikke er logget inn. Logg inn igjen for å fortsette.
-            </p>
-          )}
+          <h1 className="font-heading text-center text-3xl text-white">Lag medlemsprofil</h1>
           <p className="text-body w-full text-center text-white">
-            Er du medlem i klubben kan du lage din egen medlemsprofil ved å klikke på lenken under.
+            Er du medlem i klubben kan du lage din egen medlemsprofil for å melde deg på
+            arrangementer, se medlemsfordeler og på mye mer!
           </p>
-          <Link to="/lag-medlemsprofil" className="text-white hover:underline">
-            Er du medlem kan du registrere deg her!
+          <Link to="/login" className="text-white hover:underline">
+            Har du allerede en profil kan du logge inn her!
           </Link>
         </div>
 
@@ -71,7 +73,7 @@ export default function LoginSection({ reason }: { reason?: string }) {
               <input
                 type="password"
                 id="password"
-                autoComplete="current-password"
+                autoComplete="new-password"
                 placeholder="••••••••"
                 className="focus:ring-orange border-darkblue dark:border-orange placeholder:text-placeholder text-darkblue placeholder:font-body w-full border bg-white px-3 py-2 focus:ring-2 focus:outline-none md:px-4 md:py-3"
                 value={password}
@@ -83,7 +85,7 @@ export default function LoginSection({ reason }: { reason?: string }) {
             {error && <div className="text-orange text-sm">{error}</div>}
 
             <Button type="submit" variant="primary" size="md" icon="right">
-              {loading ? 'Logging in...' : 'Log In'}
+              {loading ? 'Registering...' : 'Register'}
             </Button>
           </form>
         </div>
