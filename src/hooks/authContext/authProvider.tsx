@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import AuthContext from './authContext';
 import { supabase } from '../../supabase/client';
-import type { Profile } from '../../supabase/queryHelpers/getProfil';
+import type { Profile } from '../../supabase/queryHelpers/getProfile';
 import { canViewMembers } from '../../supabase/queryHelpers/canViewMembers';
 
 const readLocalStorageValue = (key: string) => {

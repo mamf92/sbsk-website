@@ -1,7 +1,14 @@
-import { type Profile } from '../../../supabase/queryHelpers/getProfil';
+import { type Profile } from '../../../supabase/queryHelpers/getProfile';
 import { Button } from '../../ui/Buttons';
+import { useState } from 'react';
+import ProfileForm from '../MemberPortalSection/ProfileForm';
+import { editProfile } from '../../../supabase/queryHelpers/editProfile';
+import { useRevalidator } from 'react-router-dom';
 
 export default function ProfileCard({ member }: { member: Profile }) {
+  const [showForm, setShowForm] = useState(false);
+  const revalidator = useRevalidator();
+
   return (
     <div className="bg-darkblue">
       <div className="flex items-center gap-2 p-2 sm:gap-4">
@@ -40,10 +47,28 @@ export default function ProfileCard({ member }: { member: Profile }) {
         </div>
       </div>
       <div className="flex items-center justify-start p-2">
-        <Button variant="primary" size="sm" icon="right" className="w-full">
+        <Button
+          variant="primary"
+          size="sm"
+          icon="right"
+          className="w-full"
+          onClick={() => setShowForm(true)}
+        >
           Rediger profil
         </Button>
       </div>
+      {showForm && (
+        <ProfileForm
+          profile={member}
+          onSubmitProfile={(profileData) =>
+            editProfile(profileData).then(() => {
+              setShowForm(false);
+              revalidator.revalidate();
+            })
+          }
+          onClose={() => setShowForm(false)}
+        />
+      )}
     </div>
   );
 }

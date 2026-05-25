@@ -1,6 +1,6 @@
 import { useLoaderData } from 'react-router-dom';
 import MemberPoartalSection from '../components/sections/MemberPortalSection/MemberPortalSection';
-import type { Profile } from '../supabase/queryHelpers/getProfil';
+import type { Profile } from '../supabase/queryHelpers/getProfile';
 
 export default function MemberPortal() {
   const { profile } = useLoaderData() as {

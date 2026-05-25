@@ -1,6 +1,6 @@
 import ProfileCard from './ProfileCard';
 import type { Member } from '../../../supabase/queryHelpers/getMember';
-import type { Profile } from '../../../supabase/queryHelpers/getProfil';
+import type { Profile } from '../../../supabase/queryHelpers/getProfile';
 import PortalHeader from './PortalHeader';
 import MemberSearchList from './MemberSearchList';
 

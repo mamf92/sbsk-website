@@ -1,5 +1,5 @@
 import { redirect } from 'react-router-dom';
-import { getProfile } from '../supabase/queryHelpers/getProfil';
+import { getProfile } from '../supabase/queryHelpers/getProfile';
 import { supabase } from '../supabase/client';
 
 export async function memberPortalLoader() {

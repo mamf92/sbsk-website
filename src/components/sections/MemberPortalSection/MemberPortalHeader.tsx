@@ -1,4 +1,4 @@
-import { type Profile } from '../../../supabase/queryHelpers/getProfil';
+import { type Profile } from '../../../supabase/queryHelpers/getProfile';
 
 export default function MemberPortalHeader({ profile }: { profile: Profile }) {
   return (
@@ -15,8 +15,8 @@ export default function MemberPortalHeader({ profile }: { profile: Profile }) {
           </h1>
         )}
         <p className="text-regular text-left text-lg text-white">
-          Her har du tilgang til din egen profil, rabattkoder, din egen kalender og annet
-          medlemsrelatert innhold.
+          Her har du tilgang til din egen profil, og på sikt også rabattkoder, din egen kalender og
+          annet medlemsrelatert innhold.
         </p>
       </div>
     </div>
