@@ -1,11 +1,12 @@
 import ProfileCard from './ProfileCard';
+import type { Member } from '../../../supabase/queryHelpers/getMember';
 import type { Profile } from '../../../supabase/queryHelpers/getProfil';
 import PortalHeader from './PortalHeader';
 import MemberSearchList from './MemberSearchList';
 
 interface BoardPortalSectionProps {
   member: Profile;
-  members: Profile[];
+  members: Member[];
 }
 
 export default function BoardPortalSection({ member, members }: BoardPortalSectionProps) {

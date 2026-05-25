@@ -2,13 +2,13 @@ import MemberForm from './MemberForm';
 import { createMember } from '../../../supabase/queryHelpers/createMember';
 import { editMember } from '../../../supabase/queryHelpers/editMember';
 import Search from '../../../assets/icons/symbols/search.svg?react';
-import { type Profile } from '../../../supabase/queryHelpers/getProfil';
+import { type Member } from '../../../supabase/queryHelpers/getMember';
 import { Button } from '../../ui/Buttons';
 import { useMemberSearch } from '../../../hooks/useMemberSearch';
 import { useRevalidator } from 'react-router-dom';
 
 interface MemberSearchSectionProps {
-  members: Profile[];
+  members: Member[];
 }
 
 function MemberSearchList({ members }: MemberSearchSectionProps) {

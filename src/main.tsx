@@ -16,7 +16,7 @@ import Events from './pages/Events';
 import OurPartners from './pages/OurPartners';
 import Register from './pages/Register';
 import Login from './pages/Login';
-import MyProfile from './pages/MyProfile';
+import MemberPortal from './pages/MemberPortal';
 import BoardPortal from './pages/BoardPortal';
 import NotFound from './pages/NotFound';
 import { initTheme } from './utils/theme';
@@ -24,6 +24,7 @@ import StudioRoute from './pages/Studio';
 import { homeLoader } from './loaders/home-loader';
 import { eventsListLoader, eventDetailLoader } from './sanity/queryHelpers/events';
 import { boardPortalLoader } from './loaders/board-portal-loader';
+import { memberPortalLoader } from './loaders/member-portal-loader';
 
 initTheme();
 
@@ -45,7 +46,7 @@ const router = createBrowserRouter(
         { path: 'våre-partnere', element: <OurPartners /> },
         { path: 'lag-medlemsprofil', element: <Register /> },
         { path: 'login', element: <Login /> },
-        { path: 'min-profil', element: <MyProfile /> },
+        { path: 'medlemsportal', element: <MemberPortal />, loader: memberPortalLoader },
         { path: 'styreportal', element: <BoardPortal />, loader: boardPortalLoader },
         { path: 'studio/*', element: <StudioRoute /> },
         { path: '*', element: <NotFound /> },

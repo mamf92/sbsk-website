@@ -1,5 +1,6 @@
 import { supabase } from '../supabase/client';
 import { getProfile } from '../supabase/queryHelpers/getProfil';
+import { canViewMembers } from '../supabase/queryHelpers/canViewMembers';
 import { useAuth } from './authContext/authContext';
 
 interface LoginCredentials {
@@ -20,7 +21,8 @@ export const useAuthActions = () => {
     const profile = await getProfile(data.user.id);
     login(profile);
     await refreshSession();
-    return profile;
+    const isAdmin = await canViewMembers();
+    return { profile, isAdmin };
   };
 
   const signInWithPassword = async ({ email, password }: LoginCredentials) => {
@@ -33,7 +35,8 @@ export const useAuthActions = () => {
     const profile = await getProfile(data.session.user.id);
     login(profile);
     await refreshSession();
-    return profile;
+    const isAdmin = await canViewMembers();
+    return { profile, isAdmin };
   };
 
   const signOut = async () => {

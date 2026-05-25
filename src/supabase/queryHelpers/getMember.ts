@@ -1,6 +1,6 @@
 import { supabase } from '../client';
 
-export interface Profile {
+export interface Member {
   id: string;
   supabase_id: string;
   email: string;
@@ -8,21 +8,21 @@ export interface Profile {
   surname: string | null;
   address: string | null;
   postcode: string | null;
+  phone: string | null;
   city: string | null;
+  is_admin: boolean;
   created_at: string;
-  photo_url: string | null;
-  bio: string | null;
 }
 
-export async function getProfile(supabaseId: string): Promise<Profile> {
+export async function getMember(supabaseId: string): Promise<Member> {
   const { data, error } = await supabase
-    .from('profiles')
+    .from('members')
     .select('*')
     .eq('supabase_id', supabaseId)
     .single();
 
   if (error) throw error;
-  if (!data) throw new Error('Profile not found');
+  if (!data) throw new Error('Member not found');
 
   return data;
 }

@@ -20,8 +20,8 @@ export default function LoginSection({ reason }: { reason?: string }) {
     setError(null);
 
     try {
-      const profile = await signInWithPassword({ email, password });
-      navigate(profile.is_admin ? '/styreportal' : '/');
+      const { isAdmin } = await signInWithPassword({ email, password });
+      navigate(isAdmin ? '/styreportal' : '/medlemsportal');
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);

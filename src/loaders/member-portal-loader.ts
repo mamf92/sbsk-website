@@ -1,9 +1,8 @@
 import { redirect } from 'react-router-dom';
 import { getProfile } from '../supabase/queryHelpers/getProfil';
-import { getMembers } from '../supabase/queryHelpers/getMembers';
 import { supabase } from '../supabase/client';
 
-export async function boardPortalLoader() {
+export async function memberPortalLoader() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -14,10 +13,5 @@ export async function boardPortalLoader() {
 
   const profile = await getProfile(user.id);
 
-  try {
-    const members = await getMembers();
-    return { profile, members };
-  } catch {
-    throw redirect('/medlemsportal');
-  }
+  return { profile };
 }

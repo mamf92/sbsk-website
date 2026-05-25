@@ -20,8 +20,8 @@ export default function RegisterSection() {
     setError(null);
 
     try {
-      const profile = await registerWithPassword({ email, password });
-      navigate(profile.is_admin ? '/styreportal' : '/medlemsportal');
+      const { isAdmin } = await registerWithPassword({ email, password });
+      navigate(isAdmin ? '/styreportal' : '/medlemsportal');
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(
@@ -46,7 +46,7 @@ export default function RegisterSection() {
           <h1 className="font-heading text-center text-3xl text-white">Lag medlemsprofil</h1>
           <p className="text-body w-full text-center text-white">
             Er du medlem i klubben kan du lage din egen medlemsprofil for å melde deg på
-            arrangementer, se medlemsfordeler og på mye mer!
+            arrangementer, se medlemsfordeler og på sikt mye mer!
           </p>
           <Link to="/login" className="text-white hover:underline">
             Har du allerede en profil kan du logge inn her!
