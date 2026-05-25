@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { type Profile } from '../supabase/queryHelpers/getProfil';
+import { type Member } from '../supabase/queryHelpers/getMember';
 
 type SortField = 'name' | 'surname' | 'address' | 'city';
 
@@ -10,9 +10,9 @@ const sortOptions: { key: SortField; label: string; size: string }[] = [
   { key: 'city', label: 'Poststed', size: 'w-[22%]' },
 ];
 
-export function useMemberSearch(members: Profile[]) {
+export function useMemberSearch(members: Member[]) {
   const [loading, setLoading] = useState(true);
-  const [selectedMember, setSelectedMember] = useState<Profile | null>(null);
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSortField, setSelectedSortField] = useState<SortField>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -27,7 +27,7 @@ export function useMemberSearch(members: Profile[]) {
   const filteredMembers = useMemo(() => {
     const term = searchTerm.toLowerCase();
 
-    const matches = (member: Profile) =>
+    const matches = (member: Member) =>
       (member.name?.toLowerCase().includes(term) ?? false) ||
       (member.surname?.toLowerCase().includes(term) ?? false) ||
       (member.address?.toLowerCase().includes(term) ?? false) ||
@@ -56,7 +56,7 @@ export function useMemberSearch(members: Profile[]) {
     setSelectedSortField(field);
   };
 
-  const handleMemberClick = (member: Profile) => {
+  const handleMemberClick = (member: Member) => {
     setSelectedMember(member);
     setShowForm(true);
   };

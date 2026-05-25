@@ -1,7 +1,7 @@
 import { supabase } from '../client';
-import type { Profile } from './getProfil';
+import type { Member } from './getMember';
 
-export async function getMembers(): Promise<Profile[]> {
+export async function getMembers(): Promise<Member[]> {
   const { data, error } = await supabase.from('members').select('*');
 
   if (error) throw error;

@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import AuthContext from './authContext';
 import { supabase } from '../../supabase/client';
 import type { Profile } from '../../supabase/queryHelpers/getProfil';
+import { canViewMembers } from '../../supabase/queryHelpers/canViewMembers';
 
 const readLocalStorageValue = (key: string) => {
   try {
@@ -29,10 +30,11 @@ const readLocalStorageJson = <T,>(key: string): T | null => {
 const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(() => readLocalStorageValue('authToken'));
   const [user, setUser] = useState<Profile | null>(() => readLocalStorageJson<Profile>('userData'));
+  const [isAdmin, setIsAdmin] = useState<boolean>(
+    () => readLocalStorageJson<boolean>('isAdmin') ?? false,
+  );
 
   const isAuthenticated = !!token;
-
-  const isAdmin = user?.is_admin ?? false;
 
   const persistToken = useCallback((accessToken: string | null) => {
     if (accessToken) {
@@ -52,11 +54,30 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem('userData');
   }, []);
 
+  const persistAdmin = useCallback((adminStatus: boolean) => {
+    localStorage.setItem('isAdmin', JSON.stringify(adminStatus));
+  }, []);
+
+  const probeAdminStatus = useCallback(async () => {
+    try {
+      const adminStatus = await canViewMembers();
+      setIsAdmin(adminStatus);
+      persistAdmin(adminStatus);
+      return adminStatus;
+    } catch {
+      setIsAdmin(false);
+      persistAdmin(false);
+      return false;
+    }
+  }, [persistAdmin]);
+
   const clearAuthState = useCallback(() => {
     setToken(null);
     setUser(null);
+    setIsAdmin(false);
     persistToken(null);
     persistUser(null);
+    localStorage.removeItem('isAdmin');
   }, [persistToken, persistUser]);
 
   const login = (userData: Profile) => {
@@ -75,8 +96,9 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
     const nextToken = data.session.access_token ?? null;
     setToken(nextToken);
     persistToken(nextToken);
+    await probeAdminStatus();
     return true;
-  }, [clearAuthState, persistToken]);
+  }, [clearAuthState, persistToken, probeAdminStatus]);
 
   const logout = async () => {
     await supabase.auth.signOut();
@@ -95,13 +117,18 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!session) {
         setUser(null);
         persistUser(null);
+        setIsAdmin(false);
+        localStorage.removeItem('isAdmin');
+        return;
       }
+
+      void probeAdminStatus();
     });
 
     return () => {
       data.subscription.unsubscribe();
     };
-  }, [persistToken, persistUser, refreshSession]);
+  }, [persistToken, persistUser, probeAdminStatus, refreshSession]);
 
   return (
     <AuthContext.Provider

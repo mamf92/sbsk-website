@@ -1,9 +1,5 @@
-import type { Profile } from '../../../supabase/queryHelpers/getProfil';
+import type { Member } from '../../../supabase/queryHelpers/getMember';
 import { Button } from '../../ui/Buttons';
-
-type Member = Profile & {
-  phone?: string | null;
-};
 
 type MemberFormValues = {
   id?: string;
