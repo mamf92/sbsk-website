@@ -10,6 +10,19 @@ interface LoginCredentials {
 export const useAuthActions = () => {
   const { login, logout, refreshSession } = useAuth();
 
+  const registerWithPassword = async ({ email, password }: LoginCredentials) => {
+    const { data, error } = await supabase.auth.signUp({ email, password });
+
+    if (error || !data.user) {
+      throw new Error(error?.message ?? 'Registration failed');
+    }
+
+    const profile = await getProfile(data.user.id);
+    login(profile);
+    await refreshSession();
+    return profile;
+  };
+
   const signInWithPassword = async ({ email, password }: LoginCredentials) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
@@ -30,5 +43,6 @@ export const useAuthActions = () => {
   return {
     signInWithPassword,
     signOut,
+    registerWithPassword,
   };
 };
