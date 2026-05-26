@@ -56,10 +56,10 @@ Open the provided local URL in a browser to view the application.
 
 ---
 
-### 🌐 Live Demo Coming Soon! 
+### 🌐 Live Demo (temporary)
 
 Check out the deployed application here:  
-👉 **Coming Soon** 
+👉 [Stavanger Brettspillklubb - GitHub Pages](https://mamf92.github.io/sbsk-website/)
 
 ---
 
