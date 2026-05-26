@@ -1,4 +1,6 @@
 import { defineField, defineType } from 'sanity';
+import ExternalLink from '../../assets/icons/symbols/external-link.svg?react';
+import AddLink from '../../assets/icons/symbols/add-link.svg?react';
 
 export const eventType = defineType({
   name: 'event',
@@ -18,10 +20,59 @@ export const eventType = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
-      title: 'Arrangmenentbeskrivelse',
-      name: 'bodyparagraph',
-      type: 'text',
+      title: 'Arrangementbeskrivelse',
+      name: 'content',
       description: 'Beskrivelse av arrangementet. Valgfritt.',
+      type: 'array',
+      of: [
+        {
+          type: 'block',
+          styles: [
+            { title: 'Normal', value: 'normal' },
+            { title: 'Heading 1', value: 'h2' },
+            { title: 'Heading 2', value: 'h3' },
+          ],
+          lists: [
+            { title: 'Bullet', value: 'bullet' },
+            { title: 'Numbered', value: 'number' },
+          ],
+          marks: {
+            decorators: [
+              { title: 'Strong', value: 'strong' },
+              { title: 'Underline', value: 'underline' },
+              { title: 'Emphasis', value: 'em' },
+            ],
+            annotations: [
+              {
+                name: 'link',
+                type: 'object',
+                title: 'Ekstern lenke',
+                icon: ExternalLink,
+                description: 'Brukes for lenker til eksterne nettsider',
+                fields: [
+                  {
+                    name: 'url',
+                    type: 'url',
+                  },
+                ],
+              },
+              {
+                name: 'internalLink',
+                type: 'object',
+                title: 'Intern lenke',
+                icon: AddLink,
+                description: 'Brukes for lenker til andre sider på nettstedet',
+                fields: [
+                  {
+                    name: 'url',
+                    type: 'url',
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      ],
     }),
     defineField({
       title: 'Publiseringsdato',

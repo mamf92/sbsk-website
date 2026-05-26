@@ -23,6 +23,7 @@ import { initTheme } from './utils/theme';
 import StudioRoute from './pages/Studio';
 import { homeLoader } from './loaders/home-loader';
 import { eventsListLoader, eventDetailLoader } from './sanity/queryHelpers/events';
+import { calendarLoader } from './loaders/calendar-loader';
 import { boardPortalLoader } from './loaders/board-portal-loader';
 import { memberPortalLoader } from './loaders/member-portal-loader';
 
@@ -35,7 +36,7 @@ const router = createBrowserRouter(
       element: <App />,
       children: [
         { index: true, element: <Home />, loader: homeLoader },
-        { path: 'kalender', element: <Calendar /> },
+        { path: 'kalender', element: <Calendar />, loader: calendarLoader },
         { path: 'board-game-masters', element: <BoardGameMasters /> },
         { path: 'våre-spill', element: <OurGames /> },
         { path: 'om-oss', element: <AboutUs /> },
