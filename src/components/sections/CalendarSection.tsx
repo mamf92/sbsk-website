@@ -9,8 +9,10 @@ import ArrowRight from '../../assets/icons/arrows/arrowright.svg?react';
 import type { CalendarEventTypes } from '../../sanity/queryHelpers/events';
 import type { CalendarHeroTypes } from '../../sanity/queryHelpers/calendar-hero';
 import { useNavigate } from 'react-router-dom';
+import { PortableText, toPlainText } from '@portabletext/react';
+import { components } from '../../sanity/editors/portableTextComponents';
 
-interface CalendarProps {
+interface CalendarSectionProps {
   calendarHero?: CalendarHeroTypes;
   events: CalendarEventTypes[];
 }
@@ -24,7 +26,7 @@ const FALLBACK_CALENDAR = {
   imageSourceUrl: 'www.freepik.com',
 };
 
-export default function Calendar({ calendarHero, events }: CalendarProps) {
+export default function CalendarSection({ calendarHero, events }: CalendarSectionProps) {
   return (
     <div className="flex flex-col items-center gap-2 py-6">
       {calendarHero ? <CalendarHero {...calendarHero} /> : <CalendarHero />}
@@ -109,9 +111,10 @@ function EventList({ events }: { events: CalendarEventTypes[] }) {
     }[selectedCategory] || 'bg-darkorange border-black text-white';
 
   const filteredEvents = events.filter((event) => {
+    const contentText = toPlainText(event.content || []);
     const matchesSearch =
       event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      event.bodyparagraph?.toLowerCase().includes(searchTerm.toLowerCase());
+      contentText.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesCategory =
       selectedCategory === 'all' || event.category.toLowerCase() === selectedCategory;
@@ -225,6 +228,7 @@ function EventList({ events }: { events: CalendarEventTypes[] }) {
 
 function EventCard({ calendarEvent }: { calendarEvent: CalendarEventTypes }) {
   const [expandedEvent, setExpandedEvent] = useState(false);
+  console.log(calendarEvent.eventSlug);
   const INTERNAL_ORIGIN = 'https://www.mamf92.github.io/sbsk-website';
   const navigate = useNavigate();
 
@@ -340,8 +344,8 @@ function EventCard({ calendarEvent }: { calendarEvent: CalendarEventTypes }) {
       {expandedEvent && (
         <div className={`bg-${expandColor} flex w-full flex-col p-2 sm:p-6`}>
           <div className={`bg-${backgroundColor} flex flex-col gap-4 p-2 sm:p-6`}>
-            {calendarEvent.bodyparagraph && (
-              <p className="text-sm text-inherit sm:text-base">{calendarEvent.bodyparagraph}</p>
+            {calendarEvent.content && (
+              <PortableText value={calendarEvent.content} components={components} />
             )}
             {calendarEvent.image && (
               <div className="relative h-84 w-full lg:h-100">

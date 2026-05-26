@@ -1,11 +1,12 @@
 import type { LoaderFunctionArgs } from 'react-router-dom';
 import { type SanityImageSource } from '@sanity/image-url';
 import { client } from '../client';
+import type { PortableTextBlock } from 'sanity';
 
 export interface CalendarEventTypes {
   _id: string;
   title: string;
-  bodyparagraph?: string;
+  content?: PortableTextBlock[];
   image?: SanityImageSource;
   eventStartTime: Date;
   eventEndTime: Date;
@@ -15,12 +16,35 @@ export interface CalendarEventTypes {
   links?: { label: string; url: string }[];
 }
 
-const EVENTS_LIST_QUERY = `*[_type == "event"] | order(eventStartTime asc){_id,title, bodyparagraph, image, eventStartTime, eventEndTime, category, eventSlug, location, links}`;
+const EVENTS_LIST_QUERY = `*[
+  _type == "event" && eventEndTime >= now()
+] | order(eventStartTime asc){
+  _id,
+  title,
+  content,
+  image,
+  eventStartTime,
+  eventEndTime,
+  category,
+  "eventSlug": slug.current,
+  location,
+  links
+}`;
 
 const EVENT_BY_SLUG_QUERY = `*[
   _type == "event"
   && slug.current == $slug
-][0]{_id,title, bodyparagraph, eventStartTime, eventEndTime, category, eventSlug, location, links}`;
+][0]{
+  _id,
+  title,
+  content,
+  eventStartTime,
+  eventEndTime,
+  category,
+  "eventSlug": slug.current,
+  location,
+  links
+}`;
 
 export async function eventsListLoader() {
   const events = await client.fetch<CalendarEventTypes[]>(EVENTS_LIST_QUERY);
