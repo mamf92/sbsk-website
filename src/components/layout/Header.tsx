@@ -4,6 +4,8 @@ import { useTheme } from '../../hooks/theme/ThemeContext';
 import Logo from '../../assets/logos/dicelogo.png';
 import { useEffect, useRef, useState } from 'react';
 import { Cross as Hamburger } from 'hamburger-react';
+import { useAuth } from '../../hooks/authContext/authContext';
+
 const linkBase = 'font-body text-lg lg:text-sm hover:underline decoration-[0.123rem] transition';
 const getLink = ({ isActive }: { isActive: boolean }) =>
   `${linkBase} ${isActive ? 'underline' : ''}`;
@@ -12,6 +14,8 @@ export default function Header() {
   const { isDarkMode, toggleDarkMode } = useTheme();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+  const { logout, isAuthenticated, isAdmin, user } = useAuth();
 
   useEffect(() => {
     const media = window.matchMedia('(min-width: 1024px)');
@@ -43,7 +47,7 @@ export default function Header() {
   }, [isMobileMenuOpen]);
 
   return (
-    <header className="bg-darkblue font-heading relative flex h-25.25 w-full justify-center px-6 text-white">
+    <header className="bg-darkblue font-heading relative z-1100 flex h-25.25 w-full justify-center px-6 text-white">
       <div className="grid w-full max-w-300 grid-cols-[1fr_auto_1fr] items-center gap-4 py-4">
         <div className="flex items-center justify-start">
           <NavLink to="/" end className="flex max-w-12.25 min-w-12.25">
@@ -94,6 +98,60 @@ export default function Header() {
           className={`bg-darkestblue absolute top-25.25 left-0 z-50 flex w-full flex-col items-center gap-6 px-4 py-8 ${isMobileMenuOpen ? '' : 'hidden'}`}
           ref={menuRef}
         >
+          <div>
+            {isAuthenticated ? (
+              <div className="flex gap-2">
+                {isAdmin && (
+                  <Button
+                    variant="primary"
+                    size="xs"
+                    icon="right"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      navigate('/styreportal');
+                    }}
+                  >
+                    Styreportal
+                  </Button>
+                )}
+                <Button
+                  variant="primary"
+                  size="xs"
+                  icon="right"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    navigate('/medlemsportal');
+                  }}
+                >
+                  Profil
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="xs"
+                  icon="right"
+                  onClick={() => {
+                    logout();
+                    setIsMobileMenuOpen(false);
+                    navigate('/');
+                  }}
+                >
+                  Logg ut
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="primary"
+                size="md"
+                icon="right"
+                onClick={() => {
+                  navigate('/login');
+                  setIsMobileMenuOpen(false);
+                }}
+              >
+                Logg inn
+              </Button>
+            )}
+          </div>
           <NavLink to="/" end className={getLink}>
             Hjem
           </NavLink>
@@ -124,9 +182,70 @@ export default function Header() {
           >
             {isDarkMode ? 'LM' : 'DM'}
           </Button>
-          <Button variant="primary" size="md" icon="right" onClick={() => navigate('/login')}>
-            Logg inn
-          </Button>
+          {isAuthenticated ? (
+            <div className="relative z-50">
+              <Button
+                variant="primary"
+                size="sm"
+                icon="expand"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              >
+                {(user?.name && 'Hi, ' + user.name) || 'Min profil'}
+              </Button>
+              <div
+                className={`bg-darkestblue absolute top-11 right-0 z-50 flex w-40 flex-col items-start gap-2 p-4 ${isDropdownOpen ? '' : 'hidden'}`}
+              >
+                {isAdmin && (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    icon="right"
+                    onClick={() => {
+                      navigate('/styreportal');
+                      setIsDropdownOpen(false);
+                    }}
+                  >
+                    Styreportal
+                  </Button>
+                )}
+                <Button
+                  variant="primary"
+                  size="sm"
+                  icon="right"
+                  onClick={() => {
+                    navigate('/medlemsportal');
+                    setIsDropdownOpen(false);
+                  }}
+                >
+                  Profil
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  icon="right"
+                  onClick={() => {
+                    logout();
+                    setIsDropdownOpen(false);
+                    navigate('/');
+                  }}
+                >
+                  Logg ut
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button
+              variant="primary"
+              size="md"
+              icon="right"
+              onClick={() => {
+                navigate('/login');
+                setIsDropdownOpen(false);
+              }}
+            >
+              Logg inn
+            </Button>
+          )}
         </div>
       </div>
     </header>
