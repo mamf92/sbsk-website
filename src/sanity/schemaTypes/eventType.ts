@@ -141,5 +141,39 @@ export const eventType = defineType({
         },
       ],
     }),
+    defineField({
+      title: 'Deltakere',
+      name: 'participants',
+      type: 'array',
+      readOnly: true,
+      of: [
+        {
+          type: 'object',
+          fields: [
+            defineField({
+              name: '_key',
+              type: 'string',
+              description: 'Settes til supabase_id og brukes for å identifisere deltakeren.',
+            }),
+            defineField({ name: 'name', type: 'string', description: 'Fornavn på deltakeren.' }),
+            defineField({
+              name: 'surname',
+              type: 'string',
+              description: 'Etternavn på deltakeren.',
+            }),
+            defineField({
+              name: 'photo_url',
+              type: 'string',
+              description: 'URL til foto av deltakeren.',
+            }),
+            defineField({
+              name: 'supabase_id',
+              type: 'string',
+              description: 'ID for deltakeren i Supabase.',
+            }),
+          ],
+        },
+      ],
+    }),
   ],
 });
