@@ -14,13 +14,8 @@ export default async function getImage(userId: string): Promise<string | null> {
     return null;
   }
 
-  const { data: signedData, error: signedError } = await supabase.storage
+  const { data: publicData } = await supabase.storage
     .from('profile-images')
-    .createSignedUrl(`${userId}/${data[0].name}`, 60 * 60);
-
-  if (signedError) {
-    console.error('Error creating signed URL:', signedError);
-    return null;
-  }
-  return signedData?.signedUrl ?? null;
+    .getPublicUrl(`${userId}/${data[0].name}`);
+  return publicData?.publicUrl || null;
 }

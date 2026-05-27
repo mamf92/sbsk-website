@@ -215,7 +215,11 @@ function EventList({ events }: { events: CalendarEventTypes[] }) {
         </div>
       )}
       {displayedEvents.map((calendarEvent) => (
-        <EventCard key={calendarEvent._id} calendarEvent={calendarEvent} />
+        <EventCard
+          key={calendarEvent._id}
+          eventId={calendarEvent._id}
+          calendarEvent={calendarEvent}
+        />
       ))}
       {visibleItemCount < sortedEvents.length && (
         <Button variant="primary" size="lg" onClick={handleLoadedMore}>
@@ -226,9 +230,14 @@ function EventList({ events }: { events: CalendarEventTypes[] }) {
   );
 }
 
-function EventCard({ calendarEvent }: { calendarEvent: CalendarEventTypes }) {
+function EventCard({
+  calendarEvent,
+  eventId,
+}: {
+  calendarEvent: CalendarEventTypes;
+  eventId: string;
+}) {
   const [expandedEvent, setExpandedEvent] = useState(false);
-  console.log(calendarEvent.eventSlug);
   const INTERNAL_ORIGIN = 'https://www.mamf92.github.io/sbsk-website';
   const navigate = useNavigate();
 
@@ -253,6 +262,7 @@ function EventCard({ calendarEvent }: { calendarEvent: CalendarEventTypes }) {
   const endTime = new Date(calendarEvent.eventEndTime);
   return (
     <div
+      data-event-id={eventId}
       className={`bg-${backgroundColor} text-${textColor} flex w-full flex-col items-center justify-between border border-black`}
     >
       <div className="flex w-full items-center justify-between gap-4 p-4 sm:h-27">
