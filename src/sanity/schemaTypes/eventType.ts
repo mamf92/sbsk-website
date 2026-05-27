@@ -151,9 +151,9 @@ export const eventType = defineType({
           type: 'object',
           fields: [
             defineField({
-              name: '_key',
+              name: 'supabase_id',
               type: 'string',
-              description: 'Settes til supabase_id og brukes for å identifisere deltakeren.',
+              description: 'ID for deltakeren i Supabase.',
             }),
             defineField({ name: 'name', type: 'string', description: 'Fornavn på deltakeren.' }),
             defineField({
@@ -165,11 +165,6 @@ export const eventType = defineType({
               name: 'photo_url',
               type: 'string',
               description: 'URL til foto av deltakeren.',
-            }),
-            defineField({
-              name: 'supabase_id',
-              type: 'string',
-              description: 'ID for deltakeren i Supabase.',
             }),
           ],
         },

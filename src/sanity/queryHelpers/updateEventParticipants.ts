@@ -1,5 +1,5 @@
-import { client } from '../client';
 import type { Profile } from '../../supabase/queryHelpers/getProfile';
+import { supabase } from '../../supabase/client';
 
 export interface CalendarEventParticipantTypes {
   _key: string;
@@ -19,10 +19,6 @@ interface RemoveParticipantProps {
   supabaseId: string;
 }
 
-interface EventParticipantsSnapshot {
-  participants?: { supabase_id?: string }[];
-}
-
 export const createParticipantFromProfile = (
   user: Profile,
 ): Omit<CalendarEventParticipantTypes, '_key'> => ({
@@ -36,37 +32,18 @@ export async function addParticipantToEvent({
   eventId,
   participant,
 }: AddParticipantProps): Promise<void> {
-  const currentEvent = await client.fetch<EventParticipantsSnapshot>(
-    '*[_id == $eventId][0]{participants}',
-    { eventId },
-  );
-
-  const alreadyJoined = currentEvent?.participants?.some(
-    (existing) => existing.supabase_id === participant.supabase_id,
-  );
-
-  if (alreadyJoined) {
-    return;
-  }
-
-  await client
-    .patch(eventId)
-    .setIfMissing({ participants: [] })
-    .append('participants', [
-      {
-        _key: participant.supabase_id,
-        ...participant,
-      },
-    ])
-    .commit();
+  const { error } = await supabase.functions.invoke('update-event-participants', {
+    body: { action: 'join', eventId, participant },
+  });
+  if (error) throw error;
 }
 
 export async function removeParticipantFromEvent({
   eventId,
   supabaseId,
 }: RemoveParticipantProps): Promise<void> {
-  await client
-    .patch(eventId)
-    .unset([`participants[_key=="${supabaseId}"]`])
-    .commit();
+  const { error } = await supabase.functions.invoke('update-event-participants', {
+    body: { action: 'leave', eventId, supabaseId },
+  });
+  if (error) throw error;
 }
