@@ -1,5 +1,5 @@
 import { Button } from '../ui/Buttons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { urlFor } from '../../sanity/sanityImageUrl';
 import calendarPlaceholderImage from '../../assets/images/calendar-placeholder.png';
 import ExpandIcon from '../../assets/icons/arrows/expand.svg?react';
@@ -11,6 +11,12 @@ import type { CalendarHeroTypes } from '../../sanity/queryHelpers/calendar-hero'
 import { useNavigate } from 'react-router-dom';
 import { PortableText, toPlainText } from '@portabletext/react';
 import { components } from '../../sanity/editors/portableTextComponents';
+import { useAuth } from '../../hooks/authContext/authContext';
+import {
+  createParticipantFromProfile,
+  addParticipantToEvent,
+  removeParticipantFromEvent,
+} from '../../sanity/queryHelpers/updateEventParticipants';
 
 interface CalendarSectionProps {
   calendarHero?: CalendarHeroTypes;
@@ -215,7 +221,11 @@ function EventList({ events }: { events: CalendarEventTypes[] }) {
         </div>
       )}
       {displayedEvents.map((calendarEvent) => (
-        <EventCard key={calendarEvent._id} calendarEvent={calendarEvent} />
+        <EventCard
+          key={calendarEvent._id}
+          eventId={calendarEvent._id}
+          calendarEvent={calendarEvent}
+        />
       ))}
       {visibleItemCount < sortedEvents.length && (
         <Button variant="primary" size="lg" onClick={handleLoadedMore}>
@@ -226,12 +236,69 @@ function EventList({ events }: { events: CalendarEventTypes[] }) {
   );
 }
 
-function EventCard({ calendarEvent }: { calendarEvent: CalendarEventTypes }) {
+function EventCard({
+  calendarEvent,
+  eventId,
+}: {
+  calendarEvent: CalendarEventTypes;
+  eventId: string;
+}) {
   const [expandedEvent, setExpandedEvent] = useState(false);
-  console.log(calendarEvent.eventSlug);
   const INTERNAL_ORIGIN = 'https://www.mamf92.github.io/sbsk-website';
   const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuth();
+  const [participants, setParticipants] = useState(calendarEvent.participants ?? []);
 
+  useEffect(() => {
+    setParticipants(calendarEvent.participants ?? []);
+  }, [calendarEvent.participants]);
+
+  const isUserParticipant = participants.some(
+    (participant) => participant.supabase_id === user?.supabase_id,
+  );
+
+  const [joining, setJoining] = useState(false);
+  const [participationError, setParticipationError] = useState<string | null>(null);
+
+  const handleJoin = async () => {
+    if (!user || isUserParticipant) return;
+    const participant = createParticipantFromProfile(user);
+    const optimisticParticipant = { _key: user.supabase_id, ...participant };
+    setParticipationError(null);
+    setParticipants((prev) => [...prev, optimisticParticipant]);
+    setJoining(true);
+    try {
+      await addParticipantToEvent({ eventId, participant });
+    } catch (err) {
+      console.error('Error joining event:', err);
+      setParticipants((prev) =>
+        prev.filter((existingParticipant) =>
+          user?.supabase_id ? existingParticipant.supabase_id !== user.supabase_id : true,
+        ),
+      );
+      setParticipationError('Kunne ikke melde deg på arrangementet. Prøv igjen senere.');
+    } finally {
+      setJoining(false);
+    }
+  };
+
+  const handleLeave = async () => {
+    const supabaseId = user?.supabase_id;
+    if (!supabaseId) return;
+    const previousParticipants = participants;
+    setParticipationError(null);
+    setParticipants((prev) => prev.filter((participant) => participant.supabase_id !== supabaseId));
+    setJoining(true);
+    try {
+      await removeParticipantFromEvent({ eventId, supabaseId });
+    } catch (err) {
+      console.error('Error leaving event:', err);
+      setParticipants(previousParticipants);
+      setParticipationError('Kunne ikke melde deg av arrangementet. Prøv igjen senere.');
+    } finally {
+      setJoining(false);
+    }
+  };
   const backgroundColor = {
     spillkveld: 'darkblue',
     turnering: 'orange',
@@ -253,8 +320,18 @@ function EventCard({ calendarEvent }: { calendarEvent: CalendarEventTypes }) {
   const endTime = new Date(calendarEvent.eventEndTime);
   return (
     <div
-      className={`bg-${backgroundColor} text-${textColor} flex w-full flex-col items-center justify-between border border-black`}
+      data-event-id={eventId}
+      className={`bg-${backgroundColor} text-${textColor} relative flex w-full flex-col items-center justify-between border border-black`}
     >
+      {participants.length > 0 ? (
+        <div className="bg-orange absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center border border-black p-4">
+          <p className="text-darkestblue text-lg font-bold">{participants.length}</p>
+        </div>
+      ) : (
+        <div className="bg-orange absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center border border-black p-4">
+          <p className="text-darkestblue text-lg font-bold">0</p>
+        </div>
+      )}
       <div className="flex w-full items-center justify-between gap-4 p-4 sm:h-27">
         <div className="flex flex-col items-center gap-0">
           <p className="text-center text-4xl font-bold text-inherit">
@@ -342,8 +419,75 @@ function EventCard({ calendarEvent }: { calendarEvent: CalendarEventTypes }) {
         </div>
       </div>
       {expandedEvent && (
-        <div className={`bg-${expandColor} flex w-full flex-col p-2 sm:p-6`}>
+        <div className={`bg-${expandColor} relative flex w-full flex-col p-2 sm:p-6`}>
           <div className={`bg-${backgroundColor} flex flex-col gap-4 p-2 sm:p-6`}>
+            {participationError && (
+              <p className="bg-darkestorange font-body p-2 text-center font-bold text-white">
+                {participationError}
+              </p>
+            )}
+            {participants.length > 0 && (
+              <div className="flex items-center justify-around gap-2 px-2 py-1 sm:justify-end">
+                <div className="bg-orange border border-black px-2">
+                  <p className="text-darkestblue p-2 text-center text-sm font-bold">
+                    Minst {participants.length} er med
+                  </p>
+                </div>
+                {isAuthenticated && !isUserParticipant && (
+                  <div>
+                    <Button
+                      className="text-darkestblue text-center text-sm font-bold"
+                      onClick={handleJoin}
+                      disabled={joining}
+                    >
+                      Meld deg på!
+                    </Button>
+                  </div>
+                )}
+                {isAuthenticated && isUserParticipant && (
+                  <div>
+                    <Button
+                      className="text-darkestblue text-center text-sm font-bold"
+                      onClick={handleLeave}
+                      disabled={joining}
+                    >
+                      Meld deg av!
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+            {participants.length === 0 && (
+              <div className="flex items-center justify-around gap-2 px-2 py-1 sm:justify-end">
+                <div className="bg-orange border border-black px-2">
+                  <p className="text-darkestblue p-2 text-center text-sm font-bold">
+                    Ingen har meldt seg på ennå
+                  </p>
+                </div>
+                {isAuthenticated && !isUserParticipant && (
+                  <div>
+                    <Button
+                      className="text-darkestblue text-center text-sm font-bold"
+                      onClick={handleJoin}
+                      disabled={joining}
+                    >
+                      Meld deg på!
+                    </Button>
+                  </div>
+                )}
+                {isAuthenticated && isUserParticipant && (
+                  <div>
+                    <Button
+                      className="text-darkestblue text-center text-sm font-bold"
+                      onClick={handleLeave}
+                      disabled={joining}
+                    >
+                      Meld deg av!
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
             {calendarEvent.content && (
               <PortableText value={calendarEvent.content} components={components} />
             )}

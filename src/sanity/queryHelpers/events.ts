@@ -2,6 +2,7 @@ import type { LoaderFunctionArgs } from 'react-router-dom';
 import { type SanityImageSource } from '@sanity/image-url';
 import { client } from '../client';
 import type { PortableTextBlock } from 'sanity';
+import type { CalendarEventParticipantTypes } from './updateEventParticipants';
 
 export interface CalendarEventTypes {
   _id: string;
@@ -14,6 +15,7 @@ export interface CalendarEventTypes {
   eventSlug?: string;
   location?: string;
   links?: { label: string; url: string }[];
+  participants?: CalendarEventParticipantTypes[];
 }
 
 const EVENTS_LIST_QUERY = `*[
@@ -28,7 +30,8 @@ const EVENTS_LIST_QUERY = `*[
   category,
   "eventSlug": slug.current,
   location,
-  links
+  links,
+  participants
 }`;
 
 const EVENT_BY_SLUG_QUERY = `*[
@@ -43,11 +46,14 @@ const EVENT_BY_SLUG_QUERY = `*[
   category,
   "eventSlug": slug.current,
   location,
-  links
+  links,
+  participants
 }`;
 
 export async function eventsListLoader() {
   const events = await client.fetch<CalendarEventTypes[]>(EVENTS_LIST_QUERY);
+  if (!events) throw new Response('Events not found', { status: 404 });
+
   return { events };
 }
 

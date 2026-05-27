@@ -17,6 +17,8 @@ export default function Header() {
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const { logout, isAuthenticated, isAdmin, user } = useAuth();
 
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
+
   useEffect(() => {
     const media = window.matchMedia('(min-width: 1024px)');
     const handleChange = (event: MediaQueryListEvent) => {
@@ -152,22 +154,22 @@ export default function Header() {
               </Button>
             )}
           </div>
-          <NavLink to="/" end className={getLink}>
+          <NavLink to="/" end className={getLink} onClick={closeMobileMenu}>
             Hjem
           </NavLink>
-          <NavLink to="/kalender" className={getLink}>
+          <NavLink to="/kalender" className={getLink} onClick={closeMobileMenu}>
             Kalender
           </NavLink>
-          <NavLink to="/board-game-masters" className={getLink}>
+          <NavLink to="/board-game-masters" className={getLink} onClick={closeMobileMenu}>
             Board Game Masters
           </NavLink>
-          <NavLink to="/våre-spill" className={getLink}>
+          <NavLink to="/våre-spill" className={getLink} onClick={closeMobileMenu}>
             Våre spill
           </NavLink>
-          <NavLink to="/om-oss" className={getLink}>
+          <NavLink to="/om-oss" className={getLink} onClick={closeMobileMenu}>
             Om oss
           </NavLink>
-          <NavLink to="/kontakt-oss" className={getLink}>
+          <NavLink to="/kontakt-oss" className={getLink} onClick={closeMobileMenu}>
             Kontakt oss
           </NavLink>
         </nav>
