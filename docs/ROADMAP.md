@@ -7,21 +7,34 @@ Living document. Update as phases complete; keep it short.
 Environment settings, not repo changes. Everything below is blocked until these land.
 
 - [x] **GitHub App write access** — granted. Push, issue and PR creation all work.
-- [ ] **Network allowlist** on the Claude environment:
-      `*.api.sanity.io`, `cdn.sanity.io`, `*.apicdn.sanity.io`,
-      `<project-ref>.supabase.co`, `api.supabase.com`, `mamf92.github.io`
-- [ ] **Environment variables**: `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`
-      (both already public in the deployed bundle — no new exposure)
-- [ ] **`SANITY_API_TOKEN`** — an _Editor_ token from manage.sanity.io → API → Tokens.
-      Not Administrator. Tokens are available on the free plan; fine-grained custom roles
-      are the paid feature, which is why the coarse Editor role is the right pick.
-- [ ] **`SUPABASE_ACCESS_TOKEN` + `SUPABASE_PROJECT_REF`** — the MCP server is pinned to
-      `--read-only` in `.mcp.json`; drop that flag only if we decide agents should migrate.
+- [x] **Network allowlist** — verified reachable: `85tc4tb0.api.sanity.io`, `cdn.sanity.io`,
+      `api.supabase.com`, `mamf92.github.io`. Note that bare `api.sanity.io` is _not_ matched
+      by a `*.api.sanity.io` wildcard; only Sanity management operations need it.
+- [x] **`SANITY_API_TOKEN`** — verified working. An invalid token returns 401 on the same
+      query, so the token is genuinely being validated, not ignored.
+- [x] **`SUPABASE_PROJECT_REF`** — correct format.
+- [ ] **`SUPABASE_ACCESS_TOKEN`** — currently holds an `sb_publishable_…` key, which the
+      management API rejects. It needs a personal access token (`sbp_…`) from
+      supabase.com/dashboard/account/tokens. The MCP server is pinned `--read-only` in
+      `.mcp.json`; drop that flag only if we decide agents should run migrations.
+- [ ] **`VITE_SUPABASE_URL`** and **`VITE_SUPABASE_PUBLISHABLE_KEY`** — not set. The
+      publishable key currently sitting in `SUPABASE_ACCESS_TOKEN` belongs here. Both are
+      already public in the deployed bundle, so this is no new exposure.
 - [ ] **Claude Design handoff** — "Send to Claude Code Web" on the SBSK library project.
       `DesignSync` cannot authenticate in web sessions, so this is the working path.
 
 Verify afterwards by asking an agent to read a Sanity document and describe the members
 table. Both failing means the allowlist did not apply.
+
+Note that environment variable changes take effect in a **new session**, not a running one.
+
+Useful diagnostic — this distinguishes a bad token from a blocked host, because an invalid
+token returns a 401 body rather than a connection failure:
+
+```bash
+curl -s -H "Authorization: Bearer $SANITY_API_TOKEN" \
+  "https://85tc4tb0.api.sanity.io/v2024-01-01/data/query/production?query=count(*)"
+```
 
 ## Phase 1 — Agent scaffolding ✅
 
