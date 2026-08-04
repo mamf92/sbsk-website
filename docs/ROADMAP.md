@@ -6,6 +6,7 @@ Living document. Update as phases complete; keep it short.
 
 Environment settings, not repo changes. Everything below is blocked until these land.
 
+- [x] **GitHub App write access** — granted. Push, issue and PR creation all work.
 - [ ] **Network allowlist** on the Claude environment:
       `*.api.sanity.io`, `cdn.sanity.io`, `*.apicdn.sanity.io`,
       `<project-ref>.supabase.co`, `api.supabase.com`, `mamf92.github.io`
@@ -39,15 +40,15 @@ table. Both failing means the allowlist did not apply.
 - [x] Fixes: undeclared `uuid`, eager Studio bundle, dead `tailwind.config.js`,
       `supbaseKey` typo, `w-5fill-current` broken class
 
-## Phase 3 — Skills (owner: agent, after Phase 0)
+## Phase 3 — Skills ✅
 
 Deliberately small. Skills load on demand; agents re-derive context on every spawn.
 
-- [ ] `sbsk-component` — add or change UI against the design system
-- [ ] `sbsk-sanity-schema` — schema type + query helper + loader, kept in sync
-- [ ] `sbsk-supabase-query` — the RLS-aware query-helper pattern
-- [ ] `sbsk-release` — verify, PR against the template, watch CI
-- [ ] One `design-port` agent for the mechanical Claude Design conversion — that work is
+- [x] `sbsk-component` — add or change UI against the design system
+- [x] `sbsk-sanity-schema` — schema type + query helper + loader, kept in sync
+- [x] `sbsk-supabase-query` — the RLS-aware query-helper pattern
+- [x] `sbsk-release` — verify, PR against the template, watch CI
+- [x] One `design-port` agent for the mechanical Claude Design conversion — that work is
       genuinely parallel and repetitive. Nothing else warrants a subagent.
 
 ## Phase 4 — Claude Design library (component-by-component)
@@ -72,10 +73,9 @@ The repo stays the source of truth. Claude Design is upstream.
 
 ## Known issues found during setup
 
-Logged rather than fixed, to keep this PR scoped:
+Logged rather than fixed, to keep the setup PR scoped. All four are open on GitHub:
 
-- 12 pages render a nested `<main>` inside the shell's `<main id="main">` — duplicate
-  landmarks, an a11y defect.
-- The 404 page is an unstyled placeholder with debug colours and no `<h1>` (issue #63).
-- `useMemberSearch` has a no-op `useEffect` that sets loading true then immediately false.
-- Sanity `postType` uses implicitly-typed `rule` parameters.
+- #74 — 12 pages render a nested `<main>` inside the shell's `<main id="main">`
+- #75 — `useMemberSearch` has a no-op `useEffect` setting loading true then immediately false
+- #76 — Sanity schema types use implicitly-typed `rule` parameters
+- #77 — the 404 page is an unstyled placeholder with debug colours and no `<h1>` (see also #63)
