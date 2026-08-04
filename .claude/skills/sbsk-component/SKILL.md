@@ -33,10 +33,14 @@ const sizes = { sm: '...', md: '...' } as const;
 
 export const Foo = React.forwardRef<HTMLButtonElement, FooProps>(
   ({ className = '', variant = 'primary', size = 'md', children, ...props }, ref) => (
-    <element ref={ref} className={[base, variants[variant], sizes[size], className].join(' ')} {...props}>
+    <button
+      ref={ref}
+      className={[base, variants[variant], sizes[size], className].join(' ')}
+      {...props}
+    >
       {children}
-    </element>
-  },
+    </button>
+  ),
 );
 
 Foo.displayName = 'Foo';
