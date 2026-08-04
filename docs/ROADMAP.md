@@ -13,13 +13,47 @@ Environment settings, not repo changes. Everything below is blocked until these 
 - [x] **`SANITY_API_TOKEN`** — verified working. An invalid token returns 401 on the same
       query, so the token is genuinely being validated, not ignored.
 - [x] **`SUPABASE_PROJECT_REF`** — correct format.
-- [ ] **`SUPABASE_ACCESS_TOKEN`** — currently holds an `sb_publishable_…` key, which the
-      management API rejects. It needs a personal access token (`sbp_…`) from
-      supabase.com/dashboard/account/tokens. The MCP server is pinned `--read-only` in
-      `.mcp.json`; drop that flag only if we decide agents should run migrations.
-- [ ] **`VITE_SUPABASE_URL`** and **`VITE_SUPABASE_PUBLISHABLE_KEY`** — not set. The
-      publishable key currently sitting in `SUPABASE_ACCESS_TOKEN` belongs here. Both are
-      already public in the deployed bundle, so this is no new exposure.
+- [ ] **Allowlist `mcp.supabase.com`** — currently blocked. Required by the hosted Supabase
+      MCP server (see below).
+- [ ] **`VITE_SUPABASE_URL`** and **`VITE_SUPABASE_PUBLISHABLE_KEY`** — both are already
+      public in the deployed bundle, so setting them is no new exposure.
+- [x] **`SUPABASE_ACCESS_TOKEN` / `SUPABASE_PROJECT_REF`** — no longer needed. `.mcp.json`
+      now uses Supabase's hosted MCP server, which authenticates via OAuth rather than a
+      stored token. Both variables can be deleted from the environment.
+
+### Supabase credential types
+
+Three different things, easy to confuse — one earlier setup attempt put the publishable key
+into `SUPABASE_ACCESS_TOKEN`:
+
+| Credential          | Prefix            | Belongs in                         |
+| ------------------- | ----------------- | ---------------------------------- |
+| Publishable key     | `sb_publishable_` | `VITE_SUPABASE_PUBLISHABLE_KEY`    |
+| Secret key          | `sb_secret_`      | Nowhere in this project            |
+| Personal access tok | `sbp_`            | Only if reverting to the stdio MCP |
+
+The secret key bypasses RLS. It must never be given a `VITE_` prefix, which would publish it
+in the client bundle.
+
+### Supabase MCP: hosted vs stdio
+
+`.mcp.json` uses the hosted server, pinned `read_only=true` and scoped to
+`database,docs,debugging,development,functions`. The `account` feature is deliberately
+excluded — it grants organisation-wide project access this repo does not need.
+
+If OAuth turns out not to work in remote sandboxed sessions, fall back to the stdio server,
+which needs `SUPABASE_ACCESS_TOKEN` (an `sbp_…` personal access token) and
+`SUPABASE_PROJECT_REF`:
+
+```json
+"supabase": {
+  "command": "npx",
+  "args": ["-y", "@supabase/mcp-server-supabase@latest", "--read-only",
+           "--project-ref=${SUPABASE_PROJECT_REF}"],
+  "env": { "SUPABASE_ACCESS_TOKEN": "${SUPABASE_ACCESS_TOKEN}" }
+}
+```
+
 - [ ] **Claude Design handoff** — "Send to Claude Code Web" on the SBSK library project.
       `DesignSync` cannot authenticate in web sessions, so this is the working path.
 
