@@ -13,13 +13,15 @@ Environment settings, not repo changes. Everything below is blocked until these 
 - [x] **`SANITY_API_TOKEN`** — verified working. An invalid token returns 401 on the same
       query, so the token is genuinely being validated, not ignored.
 - [x] **`SUPABASE_PROJECT_REF`** — correct format.
-- [ ] **Allowlist `mcp.supabase.com`** — currently blocked. Required by the hosted Supabase
-      MCP server (see below).
-- [ ] **`VITE_SUPABASE_URL`** and **`VITE_SUPABASE_PUBLISHABLE_KEY`** — both are already
-      public in the deployed bundle, so setting them is no new exposure.
-- [x] **`SUPABASE_ACCESS_TOKEN` / `SUPABASE_PROJECT_REF`** — no longer needed. `.mcp.json`
-      now uses Supabase's hosted MCP server, which authenticates via OAuth rather than a
-      stored token. Both variables can be deleted from the environment.
+- [x] **`SUPABASE_ACCESS_TOKEN`** — verified working. An `sbp_…` personal access token; the
+      management API returns the project as `ACTIVE_HEALTHY`.
+- [x] **`SUPABASE_PROJECT_REF`** — verified.
+- [x] **`VITE_SUPABASE_PUBLISHABLE_KEY`** — verified. A `members` query returns `[]`, which is
+      RLS correctly denying an anonymous caller rather than rejecting the key.
+- [ ] **`VITE_SUPABASE_URL`** — set, but **missing the scheme**. It must be
+      `https://<ref>.supabase.co`; without `https://`, `createClient` throws
+      `Invalid supabaseUrl: Must be a valid HTTP or HTTPS URL` and every Supabase page
+      breaks at import time.
 
 ### Supabase credential types
 
@@ -35,24 +37,33 @@ into `SUPABASE_ACCESS_TOKEN`:
 The secret key bypasses RLS. It must never be given a `VITE_` prefix, which would publish it
 in the client bundle.
 
-### Supabase MCP: hosted vs stdio
+### Supabase MCP: why stdio, not the hosted server
 
-`.mcp.json` uses the hosted server, pinned `read_only=true` and scoped to
-`database,docs,debugging,development,functions`. The `account` feature is deliberately
-excluded — it grants organisation-wide project access this repo does not need.
+Supabase's setup snippet points at the hosted MCP server at `mcp.supabase.com`, which
+authenticates via OAuth. That is the better option on a local machine — no stored secret, and
+credentials live in the OS keychain.
 
-If OAuth turns out not to work in remote sandboxed sessions, fall back to the stdio server,
-which needs `SUPABASE_ACCESS_TOKEN` (an `sbp_…` personal access token) and
-`SUPABASE_PROJECT_REF`:
+It does not suit this project. Remote sessions are non-interactive, so there is no browser to
+complete an OAuth redirect, and the container is ephemeral, so any credential obtained would
+have to be re-issued every session. Tried it; the server reported that authorization was
+required and could not proceed.
+
+The stdio server avoids both problems: `SUPABASE_ACCESS_TOKEN` comes from the environment
+settings, which persist across every session. It is pinned `--read-only`; remove that flag
+only if we decide agents should run migrations.
+
+If you later work locally in an interactive terminal, the hosted server is a reasonable
+choice there:
 
 ```json
 "supabase": {
-  "command": "npx",
-  "args": ["-y", "@supabase/mcp-server-supabase@latest", "--read-only",
-           "--project-ref=${SUPABASE_PROJECT_REF}"],
-  "env": { "SUPABASE_ACCESS_TOKEN": "${SUPABASE_ACCESS_TOKEN}" }
+  "type": "http",
+  "url": "https://mcp.supabase.com/mcp?project_ref=<ref>&read_only=true&features=database%2Cdocs%2Cdebugging%2Cdevelopment%2Cfunctions"
 }
 ```
+
+Note the `read_only=true`, and that `account` is excluded from the feature list — it grants
+organisation-wide project access this repo does not need.
 
 - [ ] **Claude Design handoff** — "Send to Claude Code Web" on the SBSK library project.
       `DesignSync` cannot authenticate in web sessions, so this is the working path.
