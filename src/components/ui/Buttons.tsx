@@ -73,7 +73,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={[base, variants[variant], sizes[size], className].join(' ')}
         {...props}
       >
-        {icon === 'left' && Icon ? <Icon className="w-5fill-current h-3 min-h-3 min-w-2" /> : null}
+        {icon === 'left' && Icon ? <Icon className="h-3 min-h-3 w-5 min-w-2 fill-current" /> : null}
         {children}
         {icon !== 'left' && Icon ? <Icon className="h-5 min-h-2 w-3 min-w-3 fill-current" /> : null}
       </button>

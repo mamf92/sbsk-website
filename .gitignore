@@ -34,3 +34,9 @@ yarn-error.log*
 .AppleDouble
 .LSOverride
 ._*
+# Test artifacts
+/test-results
+/playwright-report
+/blob-report
+/playwright/.cache
+/coverage

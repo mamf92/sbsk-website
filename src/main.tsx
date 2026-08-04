@@ -20,7 +20,7 @@ import MemberPortal from './pages/MemberPortal';
 import BoardPortal from './pages/BoardPortal';
 import NotFound from './pages/NotFound';
 import { initTheme } from './utils/theme';
-import StudioRoute from './pages/Studio';
+import StudioRoute from './pages/StudioRoute';
 import { homeLoader } from './loaders/home-loader';
 import { eventsListLoader, eventDetailLoader } from './sanity/queryHelpers/events';
 import { calendarLoader } from './loaders/calendar-loader';

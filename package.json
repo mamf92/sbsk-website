@@ -9,7 +9,11 @@
     "format": "prettier --write .",
     "lint": "eslint .",
     "preview": "vite preview",
-    "prepare": "husky && husky install"
+    "prepare": "husky && husky install",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "typecheck": "tsc -b"
   },
   "dependencies": {
     "@portabletext/react": "^6.2.0",
@@ -27,7 +31,11 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/vite": "^4.1.11",
+    "@testing-library/jest-dom": "^7.0.0",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.3",
     "@types/node": "^25.0.10",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
@@ -39,6 +47,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.5.0",
     "husky": "^9.1.7",
+    "jsdom": "^30.0.1",
     "lint-staged": "^16.4.0",
     "prettier": "^3.8.2",
     "prettier-plugin-tailwindcss": "^0.7.2",
@@ -46,7 +55,8 @@
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.39.1",
     "vite": "^8.0.8",
-    "vite-plugin-svgr": "^5.2.0"
+    "vite-plugin-svgr": "^5.2.0",
+    "vitest": "^4.1.10"
   },
   "lint-staged": {
     "*.{js,ts,css,md}": "prettier --write",
