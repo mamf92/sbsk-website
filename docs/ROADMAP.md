@@ -18,10 +18,10 @@ Environment settings, not repo changes. Everything below is blocked until these 
 - [x] **`SUPABASE_PROJECT_REF`** — verified.
 - [x] **`VITE_SUPABASE_PUBLISHABLE_KEY`** — verified. A `members` query returns `[]`, which is
       RLS correctly denying an anonymous caller rather than rejecting the key.
-- [ ] **`VITE_SUPABASE_URL`** — set, but **missing the scheme**. It must be
-      `https://<ref>.supabase.co`; without `https://`, `createClient` throws
-      `Invalid supabaseUrl: Must be a valid HTTP or HTTPS URL` and every Supabase page
-      breaks at import time.
+- [x] **`VITE_SUPABASE_URL`** — fixed. It needs the `https://` scheme; without it
+      `createClient` throws `Invalid supabaseUrl: Must be a valid HTTP or HTTPS URL` at
+      import time, breaking every Supabase page. Verified by a live 200 from
+      `$VITE_SUPABASE_URL/rest/v1/members?select=id&limit=1`.
 
 ### Supabase credential types
 
@@ -51,6 +51,21 @@ required and could not proceed.
 The stdio server avoids both problems: `SUPABASE_ACCESS_TOKEN` comes from the environment
 settings, which persist across every session. It is pinned `--read-only`; remove that flag
 only if we decide agents should run migrations.
+
+### Why `docs` is excluded from the feature list
+
+The server's `docs` feature fetches `https://supabase.com/docs/api/graphql` during
+`tools/list`. `supabase.com` is not on the network allowlist — distinct from
+`api.supabase.com` and `<ref>.supabase.co`, which are — so that fetch fails, and because it
+happens inside `tools/list` it aborts the whole handshake. The result is **all thirteen
+tools missing**, not just the docs one, with only a `-32603` error to show for it.
+
+`--features=database,debugging,development,functions` avoids it. Keeping `docs` out is worth
+it independently of the allowlist: one unreachable host should not be able to take down
+every database tool.
+
+If you want documentation search back, allowlist `supabase.com` and re-add `docs` — but
+weigh that fragility first.
 
 If you later work locally in an interactive terminal, the hosted server is a reasonable
 choice there:

@@ -16,7 +16,8 @@
         "-y",
         "@supabase/mcp-server-supabase@latest",
         "--read-only",
-        "--project-ref=${SUPABASE_PROJECT_REF}"
+        "--project-ref=${SUPABASE_PROJECT_REF}",
+        "--features=database,debugging,development,functions"
       ],
       "env": {
         "SUPABASE_ACCESS_TOKEN": "${SUPABASE_ACCESS_TOKEN}"
