@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { type Member } from '../supabase/queryHelpers/getMember';
+// `import type` (not an inline `type` specifier) so verbatimModuleSyntax erases
+// the import entirely and consumers do not pull in the Supabase client.
+import type { Member } from '../supabase/queryHelpers/getMember';
 
 type SortField = 'name' | 'surname' | 'address' | 'city';
 

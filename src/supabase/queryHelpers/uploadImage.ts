@@ -1,11 +1,10 @@
-import { v4 as uuidv4 } from 'uuid';
 import getImage from './getImage';
 import { supabase } from '../client';
 
 export default async function uploadImage(userId: string, file: File): Promise<string | null> {
   const { data, error } = await supabase.storage
     .from('profile-images')
-    .upload(userId + '/' + uuidv4(), file);
+    .upload(userId + '/' + crypto.randomUUID(), file);
 
   if (data) {
     return getImage(userId);
