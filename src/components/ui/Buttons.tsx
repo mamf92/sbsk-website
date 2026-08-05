@@ -29,7 +29,12 @@ type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
     | 'none';
 };
 
-const base = 'inline-flex whitespace-nowrap items-center justify-center font-heading text-sm ';
+// No size here: each entry in `sizes` owns its font size, so a base size would leak into `xs`.
+// The brand is flat — a 120ms colour swap only, never elevation or scale.
+const base =
+  'inline-flex whitespace-nowrap items-center justify-center font-heading rounded-none ' +
+  'transition-colors duration-[120ms] ease-standard ' +
+  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange ';
 
 const variants = {
   primary: 'bg-orange text-darkblue hover:bg-darkorange',
@@ -39,11 +44,12 @@ const variants = {
   toggle: 'bg-darkestblue text-white dark:bg-orange dark:text-darkblue',
 } as const;
 
+// height · padding-x · font-size/weight, per the design library scale.
 const sizes = {
   xs: 'h-8 px-2 text-xs gap-1',
-  sm: 'h-9 px-3 text-sm gap-2',
-  md: 'py-2 px-3 text-base gap-2',
-  lg: 'h-12 px-6 text-lg gap-2',
+  sm: 'h-9 px-3 text-xs font-bold gap-2',
+  md: 'h-11 px-4 text-base gap-2',
+  lg: 'h-12 px-6 text-base font-bold gap-2',
 } as const;
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(

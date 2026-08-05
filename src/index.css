@@ -27,6 +27,18 @@
   --color-darkestorange: #b75f04;
   --color-placeholder: #727a88;
 
+  /* Brand neutrals. These intentionally override Tailwind's defaults so that
+     utilities like `bg-gray-300` resolve to the brand grey rather than Tailwind's. */
+  /* Brand black (#0d0d0d) is deliberately NOT set yet: `border-black` is load-bearing
+     on the calendar and post cards, so it moves with those components, not here. */
+  --color-white: #ffffff;
+  --color-gray-100: #f5f5fe;
+  --color-gray-300: #d9d9d9;
+  --color-gray-500: #595959;
+
+  /* Easing for the flat 120ms colour swap. No elevation, no scale. */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
   --breakpoint-xs: 25rem;
 
   --font-heading: 'Noto Sans', sans-serif;
