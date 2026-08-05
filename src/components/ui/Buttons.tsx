@@ -30,10 +30,11 @@ type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 // No size here: each entry in `sizes` owns its font size, so a base size would leak into `xs`.
-// The brand is flat — a 120ms colour swap only, never elevation or scale.
+// The brand stays flat — sharp corners, no blur, no soft elevation, no scale — but it is not
+// static: the button lifts up-left onto a hard offset shadow on hover and settles on press.
+// Motion lives in `motion` below rather than here, because `disabled` opts out of it.
 const base =
   'inline-flex whitespace-nowrap items-center justify-center font-heading rounded-none ' +
-  'transition-colors duration-[120ms] ease-standard ' +
   'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange ';
 
 const variants = {
@@ -42,6 +43,17 @@ const variants = {
   tertiary: 'bg-darkblue text-white hover:bg-darkestblue',
   disabled: 'bg-gray-300 text-gray-500 cursor-not-allowed',
   toggle: 'bg-darkestblue text-white dark:bg-orange dark:text-darkblue',
+} as const;
+
+// `lift` (src/index.css) carries the hover/press micro-action *and* the 120ms colour swap on
+// one transition-property. `disabled` is the exception: nothing there is pressable, so it
+// keeps the bare colour transition and never moves.
+const motion = {
+  primary: 'lift',
+  secondary: 'lift',
+  tertiary: 'lift',
+  toggle: 'lift',
+  disabled: 'transition-colors duration-(--duration-base) ease-standard',
 } as const;
 
 // height · padding-x · font-size/weight, per the design library scale.
@@ -76,7 +88,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         ref={ref}
-        className={[base, variants[variant], sizes[size], className].join(' ')}
+        className={[base, variants[variant], motion[variant], sizes[size], className].join(' ')}
         {...props}
       >
         {icon === 'left' && Icon ? <Icon className="h-3 min-h-3 w-5 min-w-2 fill-current" /> : null}

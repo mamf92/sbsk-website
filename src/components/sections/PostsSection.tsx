@@ -153,7 +153,7 @@ function PostsList({ posts }: { posts: PostTypes[] }) {
           <button
             key={category}
             onClick={() => setSelectedCategory(category)}
-            className={`border px-4 py-2 text-sm font-medium capitalize transition ${
+            className={`border px-4 py-2 text-sm font-medium capitalize lift ${
               selectedCategory === category
                 ? `${categoryColors}`
                 : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
@@ -168,7 +168,7 @@ function PostsList({ posts }: { posts: PostTypes[] }) {
           <button
             key={option.value}
             onClick={() => setSelectedSort(option.value)}
-            className={`border px-4 py-2 text-sm font-medium capitalize transition ${
+            className={`border px-4 py-2 text-sm font-medium capitalize lift ${
               sortBy === option.value
                 ? `bg-darkorange border-black text-white`
                 : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'

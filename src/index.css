@@ -36,11 +36,78 @@
   --color-gray-300: #d9d9d9;
   --color-gray-500: #595959;
 
-  /* Easing for the flat 120ms colour swap. No elevation, no scale. */
+  /* Motion. The brand is still flat — sharp corners, no blur, no scale — but not static:
+     a pressable surface lifts up and left onto a hard offset shadow. See the `lift`
+     utility below, which is the only thing that should assemble these. */
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --duration-base: 120ms;
+  --transition-snappy: var(--duration-base) var(--ease-standard);
+
+  /* Deliberately not a `--color-*` token: it would mint `bg-shadow` / `text-shadow`
+     utilities that collide with Tailwind's own text-shadow scale. */
+  --hard-shadow-color: #0d0d0d;
+  --shadow-1: 2px 2px 0 var(--hard-shadow-color);
+  --shadow-2: 4px 4px 0 var(--hard-shadow-color);
+
+  --lift-hover: translate(-2px, -2px);
+  --lift-press: translate(1px, 1px);
 
   --breakpoint-xs: 25rem;
 
   --font-heading: 'Noto Sans', sans-serif;
   --font-body: 'Open Sans', sans-serif;
+}
+
+/* A near-black offset shadow is invisible on the dark surfaces (`dark:bg-darkestblue`,
+   `dark:bg-black`), so the lift borrows white there. Unlayered, so it beats the `:root`
+   value Tailwind emits for `@theme` into the theme layer. */
+.dark {
+  --hard-shadow-color: var(--color-white);
+}
+
+/* The "solid lift" micro-interaction, and the one place it is defined.
+   Rest is flat — no shadow, no offset. Hover lifts up-left onto the deeper hard shadow;
+   press settles back down onto the shallow one. Colour transitions ride along on the same
+   120ms so a variant's hover swap and its lift stay in step; that means an element takes
+   `lift` *instead of* `transition-colors`, never both, since the last
+   `transition-property` in the cascade would otherwise win outright. */
+@utility lift {
+  transition:
+    transform var(--transition-snappy),
+    box-shadow var(--transition-snappy),
+    background-color var(--transition-snappy),
+    border-color var(--transition-snappy),
+    color var(--transition-snappy);
+
+  &:hover {
+    transform: var(--lift-hover);
+    box-shadow: var(--shadow-2);
+  }
+
+  &:active {
+    transform: var(--lift-press);
+    box-shadow: var(--shadow-1);
+  }
+
+  /* `:hover` still matches a disabled element, so a `variant="primary"` button carrying the
+     `disabled` attribute would otherwise lift under the pointer. Last rule wins at equal
+     specificity, so this has to stay below `:hover` and `:active`. */
+  &:disabled {
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Keep the shadow — it is not motion — but drop the travel. */
+  @media (prefers-reduced-motion: reduce) {
+    transition:
+      box-shadow var(--transition-snappy),
+      background-color var(--transition-snappy),
+      border-color var(--transition-snappy),
+      color var(--transition-snappy);
+
+    &:hover,
+    &:active {
+      transform: none;
+    }
+  }
 }

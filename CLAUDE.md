@@ -42,6 +42,11 @@ live in the `@theme` block of `src/index.css`: colours (`bg-darkblue`, `text-ora
 
 Add a new token to `@theme` rather than hardcoding a hex value in a class.
 
+Motion tokens live there too (`--duration-base`, `--transition-snappy`, `--shadow-1`/`-2`,
+`--lift-hover`, `--lift-press`). Do not assemble them by hand — apply the `lift` utility,
+which owns the brand's hover/press micro-interaction. An element takes `lift` _instead of_
+`transition-colors`/`transition`, never both. See `docs/DESIGN_LANGUAGE.md`.
+
 Dark mode is class-based via a custom variant: `@custom-variant dark (&:where(.dark, .dark *))`.
 The `dark` class goes on `<html>`; `src/utils/theme.ts` owns reading, applying and persisting it.
 Style dark states with `dark:` and never toggle the class outside `theme.ts`.

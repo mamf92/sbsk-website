@@ -102,4 +102,42 @@ describe('Button', () => {
     render(<Button ref={ref}>Ref</Button>);
     expect(ref.current).toBeInstanceOf(HTMLButtonElement);
   });
+
+  // jsdom does not load the stylesheet, so the hover/press offsets themselves are not
+  // observable here. These pin the wiring instead: who opts into `lift`, who opts out, and
+  // the cascade rule that makes the two mistakes above silent rather than loud.
+  describe('the solid-lift micro-interaction', () => {
+    const pressable = ['primary', 'secondary', 'tertiary', 'toggle'] as const;
+
+    it.each(pressable)('gives the %s variant the lift', (variant) => {
+      render(<Button variant={variant}>x</Button>);
+      expect(screen.getByRole('button')).toHaveClass('lift');
+    });
+
+    it('withholds the lift from the disabled variant', () => {
+      render(<Button variant="disabled">x</Button>);
+      const button = screen.getByRole('button');
+
+      expect(button).not.toHaveClass('lift');
+      // It still swaps colour on the same 120ms clock, it just never moves.
+      expect(button).toHaveClass('transition-colors');
+    });
+
+    it('never puts lift and a competing transition utility on the same element', () => {
+      const variants = ['primary', 'secondary', 'tertiary', 'toggle', 'disabled'] as const;
+
+      for (const variant of variants) {
+        const { unmount } = render(<Button variant={variant}>x</Button>);
+        const classes = screen.getByRole('button').className.split(/\s+/);
+        unmount();
+
+        // `lift` sets `transition` in full. A second transition-property utility would win
+        // or lose by stylesheet order and silently drop half the interaction.
+        const competing = classes.filter(
+          (name) => name === 'transition' || name.startsWith('transition-'),
+        );
+        expect(classes.includes('lift') && competing.length > 0).toBe(false);
+      }
+    });
+  });
 });
