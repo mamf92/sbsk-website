@@ -45,15 +45,17 @@ const variants = {
   toggle: 'bg-darkestblue text-white dark:bg-orange dark:text-darkblue',
 } as const;
 
-// `lift` (src/index.css) carries the hover/press micro-action *and* the 120ms colour swap on
-// one transition-property. `disabled` is the exception: nothing there is pressable, so it
-// keeps the bare colour transition and never moves.
+// `lift` (src/index.css) carries the hover/press micro-action *and* the colour swap on one
+// transition-property. `disabled` is the exception: nothing there is pressable, so it keeps
+// the bare colour transition and never moves.
 const motion = {
   primary: 'lift',
   secondary: 'lift',
   tertiary: 'lift',
   toggle: 'lift',
-  disabled: 'transition-colors duration-(--duration-base) ease-standard',
+  // `--duration-*` is not a Tailwind utility namespace, so this reads the var directly
+  // rather than via a `duration-fast` class, which would not compile.
+  disabled: 'transition-colors duration-(--duration-fast) ease-standard',
 } as const;
 
 // height · padding-x · font-size/weight, per the design library scale.

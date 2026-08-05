@@ -1,4 +1,5 @@
 import { Button } from '../ui/Buttons';
+import { Chip, type ChipCategory } from '../ui/Chip';
 import { useState } from 'react';
 import ExpandIcon from '../../assets/icons/arrows/expand.svg?react';
 import Clock from '../../assets/icons/symbols/clock.svg?react';
@@ -75,16 +76,15 @@ function PostsList({ posts }: { posts: PostTypes[] }) {
   const [sortBy, setSelectedSort] = useState('date-desc');
   const [visibleItemCount, setVisibleItemCount] = useState(5);
   const postItems = posts as PostWithExtras[];
-  const categoryColorMap: Record<PostCategory, string> = {
-    nyheter: 'bg-darkblue text-white',
-    spillkveldrapporter: 'bg-orange text-darkestblue',
-    arrangementer: 'bg-darkorange text-white border-black',
-  };
 
-  const categoryColors =
-    selectedCategory === 'all'
-      ? 'bg-darkorange border-black text-white'
-      : categoryColorMap[selectedCategory];
+  // 'all' has no category colour of its own — it takes the neutral fill. A spillkveld*rapport*
+  // is a write-up of a spillkveld, so it inherits that category's colour.
+  const chipCategories: Record<'all' | PostCategory, ChipCategory> = {
+    all: 'neutral',
+    nyheter: 'nyheter',
+    spillkveldrapporter: 'spillkveld',
+    arrangementer: 'arrangementer',
+  };
 
   const filteredPosts = postItems.filter((post) => {
     const bodyText = toPlainText(post.content || []);
@@ -150,32 +150,25 @@ function PostsList({ posts }: { posts: PostTypes[] }) {
       />
       <div className="flex flex-wrap gap-2">
         {categories.map((category) => (
-          <button
+          <Chip
             key={category}
+            category={chipCategories[category]}
+            active={selectedCategory === category}
             onClick={() => setSelectedCategory(category)}
-            className={`border px-4 py-2 text-sm font-medium capitalize lift ${
-              selectedCategory === category
-                ? `${categoryColors}`
-                : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
-            }`}
           >
             {category === 'all' ? 'Alle innlegg' : category}
-          </button>
+          </Chip>
         ))}
       </div>
       <div className="flex flex-wrap gap-2">
         {sortOptions.map((option) => (
-          <button
+          <Chip
             key={option.value}
+            active={sortBy === option.value}
             onClick={() => setSelectedSort(option.value)}
-            className={`border px-4 py-2 text-sm font-medium capitalize lift ${
-              sortBy === option.value
-                ? `bg-darkorange border-black text-white`
-                : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
-            }`}
           >
             {option.label}
-          </button>
+          </Chip>
         ))}
       </div>
       {displayedPosts.length === 0 && (
