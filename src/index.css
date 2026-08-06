@@ -19,6 +19,10 @@
 }
 
 @theme {
+  /* ---------------------------------------------------------------------
+     Brand palette — the flat names the whole codebase already uses.
+     `tokens/colors.css` in the design library is the source of these values.
+     --------------------------------------------------------------------- */
   --color-darkestblue: #031f3b;
   --color-darkblue: #002f5f;
   --color-yellow: #e1b631;
@@ -26,9 +30,219 @@
   --color-darkorange: #cb7925;
   --color-darkestorange: #b75f04;
   --color-placeholder: #727a88;
+  /* The library's own name for the same grey. Both resolve to one value. */
+  --color-gray-neutral: #727a88;
 
-  --breakpoint-xs: 25rem;
+  /* Brand neutrals. These intentionally override Tailwind's defaults so that
+     utilities like `bg-gray-300` resolve to the brand grey rather than Tailwind's.
+     Brand black is #0d0d0d, not #000 — the library pins it, and the card borders
+     that use `border-black` are meant to be that value. */
+  --color-white: #ffffff;
+  --color-black: #0d0d0d;
+  --color-gray-100: #f5f5fe;
+  --color-gray-300: #d9d9d9;
+  --color-gray-500: #595959;
 
+  /* ---------------------------------------------------------------------
+     Semantic colours. Deliberately partial: the library defines a full
+     semantic tier (`--surface-brand`, `--accent-primary`, …) but most of it is
+     a 1:1 alias of a flat name above, and this repo's convention is to use the
+     flat name in the class. Only the tokens that carry information the flat
+     name cannot — a category mapping, a state, or a value that flips with the
+     theme — are aliased here.
+     --------------------------------------------------------------------- */
+
+  /* Content category coding. Cards, chips and calendar entries colour by these. */
+  --color-category-nyheter: var(--color-darkblue);
+  --color-category-spillkveld: var(--color-darkblue);
+  --color-category-arrangementer: var(--color-darkorange);
+  --color-category-turnering: var(--color-orange);
+  --color-category-annet: var(--color-darkorange);
+
+  /* States. */
+  --color-disabled-bg: var(--color-gray-300);
+  --color-disabled-text: var(--color-gray-500);
+  --color-focus-ring: var(--color-orange);
+  /* The library wires `--field-error-outline` to a variable it never defines;
+     this is the red-error-700 value from its Figma token dump, made concrete so
+     the forms work has something real to bind to. */
+  --color-error: #b5251f;
+
+  /* Flips with the theme — see the `.dark` block below. */
+  --color-hero-scrim: rgb(255 255 255 / 0.55);
+  --color-toggle-bg: var(--color-darkestblue);
+  --color-toggle-text: var(--color-white);
+
+  /* ---------------------------------------------------------------------
+     Typography. The library pins an exact scale that Tailwind's default sizes
+     only approximate (its H1 is 32/44, `text-3xl` is 30/36), so the headings
+     are named rather than mapped onto the default steps.
+     --------------------------------------------------------------------- */
   --font-heading: 'Noto Sans', sans-serif;
   --font-body: 'Open Sans', sans-serif;
+
+  --text-h1: 2rem;
+  --text-h1--line-height: 2.75rem;
+  --text-h2: 1.75rem;
+  --text-h2--line-height: 2.375rem;
+  --text-h3: 1.25rem;
+  --text-h3--line-height: 1.6875rem;
+  --text-h4: 1rem;
+  --text-h4--line-height: 1.375rem;
+
+  --tracking-heading: 0.05em;
+
+  /* ---------------------------------------------------------------------
+     Motion. The brand is still flat — sharp corners, no blur, no scale — but not
+     static: a pressable surface lifts up and left onto a hard offset shadow. See
+     the `lift` utility below, which is the only thing that should assemble these.
+     --------------------------------------------------------------------- */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --duration-instant: 80ms;
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --duration-slow: 280ms;
+  --duration-slower: 440ms;
+
+  /* Composed pairs. `fast` is the colour swap, `snappy` is the travel — they are
+     different durations *and* different curves, so a lift and its colour change
+     are deliberately not in lockstep. */
+  --transition-fast: var(--duration-fast) var(--ease-standard);
+  --transition-base: var(--duration-base) var(--ease-standard);
+  --transition-snappy: var(--duration-base) var(--ease-out);
+
+  /* Elevation is hard offset only — no blur, no spread — except `shadow-overlay`,
+     which is the single soft shadow in the system and belongs to modals/drawers.
+     The colour is deliberately NOT `--color-shadow`: that name is inside Tailwind's
+     `--shadow-*` namespace and would mint a broken `shadow-color` utility. */
+  /* Both shadow colours stay behind a var on purpose. Tailwind resolves a literal colour
+     inside a `--shadow-*` token at build time and inlines it, which would silently kill the
+     `.dark` override below; an unresolvable `var()` is kept as-is and flips at runtime. */
+  --hard-shadow-color: var(--color-darkestblue);
+  --overlay-shadow-color: rgb(3 31 59 / 0.35);
+  --shadow-1: 2px 2px 0 var(--hard-shadow-color);
+  --shadow-2: 4px 4px 0 var(--hard-shadow-color);
+  --shadow-3: 6px 6px 0 var(--hard-shadow-color);
+  --shadow-accent-1: 2px 2px 0 var(--color-orange);
+  --shadow-accent-2: 4px 4px 0 var(--color-orange);
+  --shadow-overlay: 0 12px 32px -8px var(--overlay-shadow-color);
+
+  --lift-hover: translate(-2px, -2px);
+  --lift-press: translate(1px, 1px);
+
+  --breakpoint-xs: 25rem;
+}
+
+/* Theme-dependent token values. Unlayered, so these beat the `:root` values
+   Tailwind emits for `@theme` into the theme layer. `src/utils/theme.ts` owns
+   putting `.dark` on <html>; nothing else should touch it. */
+.dark {
+  --hard-shadow-color: var(--color-black);
+  --color-hero-scrim: rgb(3 31 59 / 0.55);
+  --color-toggle-bg: var(--color-orange);
+  --color-toggle-text: var(--color-darkblue);
+  --overlay-shadow-color: rgb(0 0 0 / 0.6);
+}
+
+/* The "solid lift" micro-interaction, and the one place it is defined.
+   Rest is flat — no shadow, no offset. Hover lifts up-left onto the deeper hard shadow;
+   press settles back down onto the shallow one.
+
+   Colour and travel run on different clocks, matching the library's `Button.jsx`: the
+   colour swap is `--transition-fast` (120ms, ease-standard) so it reads as instant, while
+   the travel is `--transition-snappy` (180ms, ease-out) so it decelerates into place.
+
+   `lift` owns the colour transition as well, which means an element takes `lift` *instead
+   of* `transition-colors`, never both — the last `transition-property` in the cascade wins
+   outright and would silently drop the other half. A test pins this. */
+@utility lift {
+  transition:
+    transform var(--transition-snappy),
+    box-shadow var(--transition-snappy),
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+
+  &:hover {
+    transform: var(--lift-hover);
+    box-shadow: var(--shadow-2);
+  }
+
+  &:active {
+    transform: var(--lift-press);
+    box-shadow: var(--shadow-1);
+  }
+
+  /* `:hover` still matches a disabled element, so a `variant="primary"` button carrying the
+     `disabled` attribute would otherwise lift under the pointer. Last rule wins at equal
+     specificity, so this has to stay below `:hover` and `:active`. */
+  &:disabled {
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Keep the shadow — it is not motion — but drop the travel. */
+  @media (prefers-reduced-motion: reduce) {
+    transition:
+      box-shadow var(--transition-fast),
+      background-color var(--transition-fast),
+      border-color var(--transition-fast),
+      color var(--transition-fast);
+
+    &:hover,
+    &:active {
+      transform: none;
+    }
+  }
+}
+
+/* The chip's shallower cousin. A chip is a smaller, lighter target than a button, so it
+   lifts onto `--shadow-1` rather than `--shadow-2` and presses onto no shadow at all.
+   It also reads `aria-pressed`: a selected chip is already "down", so it still presses but
+   never lifts. Same mutual-exclusion rule as `lift` — never pair it with `transition-*`. */
+@utility lift-chip {
+  transition:
+    transform var(--transition-snappy),
+    box-shadow var(--transition-snappy),
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+
+  &:hover {
+    transform: var(--lift-hover);
+    box-shadow: var(--shadow-1);
+  }
+
+  &[aria-pressed='true']:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Below the two `:hover` rules on purpose — equal specificity, last one wins. */
+  &:active {
+    transform: var(--lift-press);
+    box-shadow: none;
+  }
+
+  &:disabled {
+    transform: none;
+    box-shadow: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition:
+      box-shadow var(--transition-fast),
+      background-color var(--transition-fast),
+      border-color var(--transition-fast),
+      color var(--transition-fast);
+
+    &:hover,
+    &:active {
+      transform: none;
+    }
+  }
 }

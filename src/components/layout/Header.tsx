@@ -1,14 +1,15 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Buttons';
+import { NavMenuButton } from '../ui/NavMenuButton';
+import { navLinkClasses } from '../ui/Link';
 import { useTheme } from '../../hooks/theme/ThemeContext';
 import Logo from '../../assets/logos/dicelogo.png';
 import { useEffect, useRef, useState } from 'react';
-import { Cross as Hamburger } from 'hamburger-react';
 import { useAuth } from '../../hooks/authContext/authContext';
 
-const linkBase = 'font-body text-lg lg:text-sm hover:underline decoration-[0.123rem] transition';
-const getLink = ({ isActive }: { isActive: boolean }) =>
-  `${linkBase} ${isActive ? 'underline' : ''}`;
+// The active state rides on `aria-current="page"`, which NavLink sets for us, so nothing here
+// needs to branch on `isActive` — see `navLinkClasses` in src/components/ui/Link.tsx.
+const getLink = `${navLinkClasses} text-lg lg:text-sm`;
 
 export default function Header() {
   const { isDarkMode, toggleDarkMode } = useTheme();
@@ -87,13 +88,10 @@ export default function Header() {
           >
             {isDarkMode ? 'LM' : 'DM'}
           </Button>
-          <button
-            className="w-16"
+          <NavMenuButton
+            open={isMobileMenuOpen}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="Meny"
-          >
-            <Hamburger toggled={isMobileMenuOpen} />
-          </button>
+          />
         </div>
 
         <nav

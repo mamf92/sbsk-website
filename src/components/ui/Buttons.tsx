@@ -29,7 +29,13 @@ type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
     | 'none';
 };
 
-const base = 'inline-flex whitespace-nowrap items-center justify-center font-heading text-sm ';
+// No size here: each entry in `sizes` owns its font size, so a base size would leak into `xs`.
+// The brand stays flat — sharp corners, no blur, no soft elevation, no scale — but it is not
+// static: the button lifts up-left onto a hard offset shadow on hover and settles on press.
+// Motion lives in `motion` below rather than here, because `disabled` opts out of it.
+const base =
+  'inline-flex whitespace-nowrap items-center justify-center font-heading rounded-none ' +
+  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange ';
 
 const variants = {
   primary: 'bg-orange text-darkblue hover:bg-darkorange',
@@ -39,11 +45,25 @@ const variants = {
   toggle: 'bg-darkestblue text-white dark:bg-orange dark:text-darkblue',
 } as const;
 
+// `lift` (src/index.css) carries the hover/press micro-action *and* the colour swap on one
+// transition-property. `disabled` is the exception: nothing there is pressable, so it keeps
+// the bare colour transition and never moves.
+const motion = {
+  primary: 'lift',
+  secondary: 'lift',
+  tertiary: 'lift',
+  toggle: 'lift',
+  // `--duration-*` is not a Tailwind utility namespace, so this reads the var directly
+  // rather than via a `duration-fast` class, which would not compile.
+  disabled: 'transition-colors duration-(--duration-fast) ease-standard',
+} as const;
+
+// height · padding-x · font-size/weight, per the design library scale.
 const sizes = {
   xs: 'h-8 px-2 text-xs gap-1',
-  sm: 'h-9 px-3 text-sm gap-2',
-  md: 'py-2 px-3 text-base gap-2',
-  lg: 'h-12 px-6 text-lg gap-2',
+  sm: 'h-9 px-3 text-xs font-bold gap-2',
+  md: 'h-11 px-4 text-base gap-2',
+  lg: 'h-12 px-6 text-base font-bold gap-2',
 } as const;
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -70,7 +90,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         ref={ref}
-        className={[base, variants[variant], sizes[size], className].join(' ')}
+        className={[base, variants[variant], motion[variant], sizes[size], className].join(' ')}
         {...props}
       >
         {icon === 'left' && Icon ? <Icon className="h-3 min-h-3 w-5 min-w-2 fill-current" /> : null}

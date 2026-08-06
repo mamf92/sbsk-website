@@ -1,4 +1,5 @@
 import { Button } from '../ui/Buttons';
+import { Chip, type ChipCategory } from '../ui/Chip';
 import { useEffect, useState } from 'react';
 import { urlFor } from '../../sanity/sanityImageUrl';
 import calendarPlaceholderImage from '../../assets/images/calendar-placeholder.png';
@@ -102,19 +103,20 @@ function EventList({ events }: { events: CalendarEventTypes[] }) {
 
   const categories = ['all', 'spillkveld', 'turnering', 'annet'];
 
+  // 'all' has no category colour of its own — it takes the neutral fill.
+  const chipCategories: Record<string, ChipCategory> = {
+    all: 'neutral',
+    spillkveld: 'spillkveld',
+    turnering: 'turnering',
+    annet: 'annet',
+  };
+
   const sortOptions = [
     { label: 'Dato (første til siste)', value: 'date-asc' },
     { label: 'Dato (siste til første)', value: 'date-desc' },
     { label: 'Tittel (A-Å)', value: 'title-asc' },
     { label: 'Tittel (Å-A)', value: 'title-desc' },
   ];
-
-  const categoryColors =
-    {
-      spillkveld: 'bg-darkblue text-white',
-      turnering: 'bg-orange text-darkestblue',
-      annet: 'bg-darkorange text-white border-black',
-    }[selectedCategory] || 'bg-darkorange border-black text-white';
 
   const filteredEvents = events.filter((event) => {
     const contentText = toPlainText(event.content || []);
@@ -182,32 +184,25 @@ function EventList({ events }: { events: CalendarEventTypes[] }) {
       />
       <div className="flex flex-wrap gap-2">
         {categories.map((category) => (
-          <button
+          <Chip
             key={category}
+            category={chipCategories[category]}
+            active={selectedCategory === category}
             onClick={() => setSelectedCategory(category)}
-            className={`border px-4 py-2 text-sm font-medium capitalize transition ${
-              selectedCategory === category
-                ? `${categoryColors}`
-                : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
-            }`}
           >
             {category === 'all' ? 'Alle arrangementer' : category}
-          </button>
+          </Chip>
         ))}
       </div>
       <div className="flex flex-wrap gap-2">
         {sortOptions.map((option) => (
-          <button
+          <Chip
             key={option.value}
+            active={sortBy === option.value}
             onClick={() => setSelectedSort(option.value)}
-            className={`border px-4 py-2 text-sm font-medium capitalize transition ${
-              sortBy === option.value
-                ? `bg-darkorange border-black text-white`
-                : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
-            }`}
           >
             {option.label}
-          </button>
+          </Chip>
         ))}
       </div>
       {displayedEvents.length === 0 && (

@@ -44,6 +44,20 @@ The application uses a CMS-driven approach, allowing content to be updated witho
 
 ---
 
+## 🎨 Design Language
+
+The interface is **flat with a hard edge** — zero corner radius, no blur, no soft elevation,
+and the SBSK orange-and-blue palette carrying the hierarchy.
+
+Flat does not mean motionless. Pressable surfaces lift **up and left** on hover onto a solid,
+un-blurred offset shadow, then settle back down on press. Colour swap and movement share one
+120ms curve, so a button reads as a single gesture rather than two effects. Reduced-motion
+users keep the shadow and lose the travel.
+
+Full token table and the rules for what does and does not lift: [`docs/DESIGN_LANGUAGE.md`](docs/DESIGN_LANGUAGE.md).
+
+---
+
 ## 🚀 Getting Started
 
 ### 🔧 Installing
