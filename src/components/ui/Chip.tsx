@@ -1,12 +1,7 @@
 import * as React from 'react';
 
 export type ChipCategory =
-  | 'neutral'
-  | 'nyheter'
-  | 'spillkveld'
-  | 'arrangementer'
-  | 'turnering'
-  | 'annet';
+  'neutral' | 'nyheter' | 'spillkveld' | 'arrangementer' | 'turnering' | 'annet';
 
 type ChipProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   category?: ChipCategory;
