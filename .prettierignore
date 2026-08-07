@@ -1,3 +1,12 @@
 node_modules
 dist
 build
+
+# Agent worktrees are separate checkouts with their own build and test output.
+.claude/worktrees
+
+# Test artifacts
+test-results
+playwright-report
+blob-report
+coverage
