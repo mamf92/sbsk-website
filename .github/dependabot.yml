@@ -38,6 +38,15 @@ updates:
         update-types: [version-update:semver-major]
       - dependency-name: '@sanity/vision'
         update-types: [version-update:semver-major]
+      # eslint and @eslint/js are released in lockstep upstream, and @eslint/js@10
+      # declares a peer on eslint@^10. Letting either major land alone produces a
+      # tree that fails `npm ci` on npm 10 (see #113). eslint 10 also requires
+      # eslint-plugin-react-hooks 7, so the three move together or not at all —
+      # unignore these when that upgrade is planned as a unit.
+      - dependency-name: eslint
+        update-types: [version-update:semver-major]
+      - dependency-name: '@eslint/js'
+        update-types: [version-update:semver-major]
 
   # Pinning every action to a commit SHA (see ci.yml) means a floating tag no
   # longer picks up upstream fixes. Dependabot is what re-pins them, so this
