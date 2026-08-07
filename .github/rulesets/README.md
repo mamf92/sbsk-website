@@ -16,6 +16,9 @@ gh api -X POST repos/mamf92/sbsk-website/rulesets --input .github/rulesets/main.
 
 ## Re-exporting after a settings change
 
+Run this as a repository admin, or the bypass list will be missing from the result —
+see below.
+
 ```bash
 gh api repos/mamf92/sbsk-website/rulesets/20550543 \
   | jq 'del(.id, .node_id, .created_at, .updated_at, ._links, .source, .source_type, .current_user_can_bypass)' \
@@ -24,10 +27,16 @@ gh api repos/mamf92/sbsk-website/rulesets/20550543 \
 
 ## Things that bite
 
-- **Import drops `bypass_actors`.** The field round-trips through the API but is
-  silently discarded by the UI importer, so a re-import produces a ruleset with no
-  bypass regardless of what this file says. Add bypass actors from the UI afterwards
-  and re-export.
+- **`bypass_actors` is only returned to repository admins.** For any other token the
+  API omits the key entirely — not an empty list, absent — and reports
+  `current_user_can_bypass: "never"`, which describes the _token's_ own access rather
+  than the ruleset's contents. An export taken without admin rights therefore loses the
+  bypass list silently and looks identical to a ruleset that has none.
+
+  `main.json` was exported that way, so it does **not** record the bypass list. The
+  live ruleset does have one — repository admin, always allow. Read the UI (Bypass
+  list) for the real state, and re-export with an admin token to capture it here.
+
 - **Required contexts are job `name:` values from `ci.yml`.** Renaming a job there
   drops the corresponding required check here without any error — the ruleset keeps
   requiring a context that no longer gets reported, and PRs hang waiting for it.
