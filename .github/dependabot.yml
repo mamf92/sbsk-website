@@ -1,0 +1,63 @@
+version: 2
+
+updates:
+  # Application dependencies. Minor and patch land as two grouped PRs a week
+  # (one for runtime, one for tooling) so routine bumps do not open a dozen
+  # separate PRs. Majors are deliberately left ungrouped — each one gets its own
+  # PR to be reviewed and smoke-tested on its own.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Oslo
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'chore(deps)'
+      prefix-development: 'chore(deps-dev)'
+    groups:
+      production-minor-patch:
+        dependency-type: production
+        update-types:
+          - minor
+          - patch
+      development-minor-patch:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+    ignore:
+      # react-router 8 deprecates react-router-dom; moving to it is a migration,
+      # not a version bump. Tracked separately rather than opened weekly.
+      - dependency-name: react-router-dom
+        update-types: [version-update:semver-major]
+      # sanity 6 is a Studio major. The 5.x maintenance line still receives the
+      # security fixes this project needs, so hold until the upgrade is planned.
+      - dependency-name: sanity
+        update-types: [version-update:semver-major]
+      - dependency-name: '@sanity/vision'
+        update-types: [version-update:semver-major]
+
+  # Pinning every action to a commit SHA (see ci.yml) means a floating tag no
+  # longer picks up upstream fixes. Dependabot is what re-pins them, so this
+  # entry is load-bearing rather than optional.
+  #
+  # `/` covers .github/workflows only, so the composite action's own pinned
+  # setup-node needs its directory listed explicitly.
+  - package-ecosystem: github-actions
+    directories:
+      - /
+      - /.github/actions/setup
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Oslo
+    commit-message:
+      prefix: 'ci(deps)'
+    groups:
+      actions-minor-patch:
+        update-types:
+          - minor
+          - patch
