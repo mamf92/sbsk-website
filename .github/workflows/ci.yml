@@ -68,15 +68,31 @@ jobs:
   audit:
     name: Dependency audit
     runs-on: ubuntu-latest
-    # Advisory until #93 clears the existing backlog: every threshold, including
-    # `--omit=dev`, currently fails because `sanity` is a runtime dependency and
-    # pulls the vulnerable CLI chain. Flip to a blocking gate (and add it to the
-    # ruleset's required contexts) once that issue lands.
-    continue-on-error: true
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup
-      - run: npm audit --audit-level=high
+
+      # Blocking floor, green as of #93. `high` is deliberately *not* the
+      # threshold: two high advisories survive that no dependency bump can
+      # clear, and a permanently red gate is one nobody reads.
+      #
+      #   - js-yaml 3.13.1, pinned exactly by @vercel/frameworks inside
+      #     @sanity/cli. CLI-only code; this project builds with Vite and
+      #     deploys to Pages, so it never parses YAML through that path.
+      #   - GHSA-qwww-vcr4-c8h2, react-router RSC-mode CSRF. Fixed in
+      #     react-router 8.3.0, which deprecates react-router-dom — a migration,
+      #     not a bump. The app is a client-only SPA and never runs RSC mode.
+      #
+      # Raise this to `high` once either is genuinely resolved.
+      - name: Fail on critical advisories
+        run: npm audit --audit-level=critical
+
+      # Everything under the blocking floor, for visibility only. Dependabot
+      # (.github/dependabot.yml) is what actually keeps this list short.
+      - name: Report remaining advisories
+        if: always()
+        continue-on-error: true
+        run: npm audit
 
   e2e:
     name: Playwright smoke
@@ -102,6 +118,12 @@ jobs:
   # Deploy lives here rather than in its own workflow so it can `needs:` the
   # checks directly. As a separate workflow on the same `push` trigger it raced
   # them, and a red CI still shipped to Pages.
+  #
+  # `audit` is intentionally absent from `needs:`. It is a blocking check on
+  # pull requests, which is where a bad dependency should be stopped. Wiring it
+  # here as well would let an advisory published upstream overnight block the
+  # deploy of an unrelated change, for a static bundle the advisory does not
+  # affect.
   deploy:
     name: Deploy to GitHub Pages
     needs: [lint, typecheck, test, format, build, e2e]
