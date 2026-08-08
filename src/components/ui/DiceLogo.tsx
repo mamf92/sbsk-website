@@ -83,19 +83,13 @@ export const DiceLogo = React.forwardRef<DiceLogoHandle, DiceLogoProps>(
     return (
       <button
         type="button"
-        className={['sbsk-dice', rolling ? 'rolling' : '', className]
-          .filter(Boolean)
-          .join(' ')}
+        className={['sbsk-dice', rolling ? 'rolling' : '', className].filter(Boolean).join(' ')}
         onClick={roll}
         aria-label={`Terning viser ${face}. Klikk for å kaste.`}
         title="Kast terningen!"
         {...props}
       >
-        <svg
-          viewBox="0 0 180 180"
-          style={{ height: size, width: size }}
-          aria-hidden="true"
-        >
+        <svg viewBox="0 0 180 180" style={{ height: size, width: size }} aria-hidden="true">
           <rect x="4" y="4" width="172" height="172" rx="30" fill="var(--color-orange)" />
           {PIPS[face].map(([cx, cy], i) => (
             <circle key={i} cx={cx} cy={cy} r="16" fill="#fff" />

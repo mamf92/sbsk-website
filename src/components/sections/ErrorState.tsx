@@ -43,7 +43,7 @@ export default function ErrorState({
   return (
     <section
       className={[
-        'flex flex-1 items-center justify-center overflow-hidden bg-darkestblue text-white',
+        'bg-darkestblue flex flex-1 items-center justify-center overflow-hidden text-white',
         className,
       ]
         .filter(Boolean)
@@ -121,7 +121,7 @@ export default function ErrorState({
 
         {/* Dice numeral column */}
         <div
-          className="flex select-none items-center justify-center"
+          className="flex items-center justify-center select-none"
           style={{ gap: 'clamp(6px, 2vw, 18px)' }}
         >
           <span
