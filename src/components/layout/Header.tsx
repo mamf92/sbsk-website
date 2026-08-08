@@ -56,7 +56,7 @@ export default function Header() {
           <NavLink
             to="/"
             end
-            className="text-[length:--text-h4] leading-[--text-h4--line-height] font-heading font-bold tracking-heading text-white no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-orange"
+            className="font-heading tracking-heading focus-visible:outline-orange text-[length:--text-h4] leading-[--text-h4--line-height] font-bold text-white no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3"
           >
             SBSK
           </NavLink>
@@ -149,12 +149,7 @@ export default function Header() {
               </div>
             </div>
           ) : (
-            <Button
-              variant="primary"
-              size="sm"
-              icon="right"
-              onClick={() => navigate('/login')}
-            >
+            <Button variant="primary" size="sm" icon="right" onClick={() => navigate('/login')}>
               Logg inn
             </Button>
           )}
