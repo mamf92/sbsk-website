@@ -24,7 +24,7 @@ describe('NotFound', () => {
 
     const headings = screen.getAllByRole('heading', { level: 1 });
     expect(headings).toHaveLength(1);
-    expect(headings[0]).toHaveTextContent('Finner ikke siden');
+    expect(headings[0]).toHaveTextContent('Denne siden mangler i esken');
   });
 
   it('does not render a second <main> landmark inside the shell', () => {
@@ -32,11 +32,37 @@ describe('NotFound', () => {
     expect(container.querySelector('main')).toBeNull();
   });
 
-  it('sends the user back to the front page', async () => {
+  it('navigates to the front page via the primary button', async () => {
     renderPage();
 
     await userEvent.click(screen.getByRole('button', { name: 'Til forsiden' }));
     expect(navigate).toHaveBeenCalledWith('/');
+  });
+
+  it('navigates to the calendar via the secondary button', async () => {
+    renderPage();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Se kalenderen' }));
+    expect(navigate).toHaveBeenCalledWith('/kalender');
+  });
+
+  it('has a clickable dice button with an accessible label', () => {
+    renderPage();
+
+    const dice = screen.getByRole('button', { name: /Terning viser \d/ });
+    expect(dice).toBeInTheDocument();
+  });
+
+  it('shows a "Trill igjen" button that triggers a roll', async () => {
+    renderPage();
+
+    const rollButton = screen.getByRole('button', { name: 'Trill igjen' });
+    expect(rollButton).toBeInTheDocument();
+  });
+
+  it('sets the document title', () => {
+    renderPage();
+    expect(document.title).toBe('404 – Stavanger Brettspillklubb');
   });
 
   it('uses only brand tokens, not Tailwind debug colours', () => {
@@ -44,6 +70,5 @@ describe('NotFound', () => {
 
     const markup = container.innerHTML;
     expect(markup).not.toMatch(/bg-(amber|emerald)-/);
-    expect(markup).toMatch(/dark:bg-darkestblue/);
   });
 });

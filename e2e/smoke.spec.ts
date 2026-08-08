@@ -45,7 +45,9 @@ test('unknown routes render the 404 page, not a blank screen', async ({ page }) 
   await page.goto('/denne-siden-finnes-ikke');
 
   await expect(page.locator('#main')).not.toBeEmpty();
-  await expect(page.getByRole('heading', { level: 1, name: 'Finner ikke siden' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Denne siden mangler i esken' }),
+  ).toBeVisible();
   // Exactly one <h1>, and only the shell's <main> — the page must not nest a second one.
   await expect(page.locator('h1')).toHaveCount(1);
   await expect(page.locator('main')).toHaveCount(1);
