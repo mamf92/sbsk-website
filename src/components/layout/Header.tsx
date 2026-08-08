@@ -1,21 +1,30 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Buttons';
 import { NavMenuButton } from '../ui/NavMenuButton';
+import { DiceLogo } from '../ui/DiceLogo';
 import { navLinkClasses } from '../ui/Link';
 import { useTheme } from '../../hooks/theme/ThemeContext';
-import Logo from '../../assets/logos/dicelogo.png';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../../hooks/authContext/authContext';
 
-// The active state rides on `aria-current="page"`, which NavLink sets for us, so nothing here
-// needs to branch on `isActive` — see `navLinkClasses` in src/components/ui/Link.tsx.
-const getLink = `${navLinkClasses} text-lg lg:text-sm`;
+const desktopNavLink = `${navLinkClasses} text-sm`;
+
+const mobileNavLink =
+  'relative block w-full py-[15px] px-6 border-t border-white/12 ' +
+  'font-heading no-underline text-lg ' +
+  'transition-colors duration-(--duration-fast) ease-standard ' +
+  'after:absolute after:left-6 after:right-6 after:bottom-[9px] after:h-0.5 after:origin-left ' +
+  'after:scale-x-0 after:bg-orange after:transition-transform ' +
+  'after:duration-(--duration-base) after:ease-out hover:after:scale-x-100 ' +
+  'aria-[current=page]:text-orange aria-[current=page]:after:scale-x-100 ' +
+  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 ' +
+  'focus-visible:outline-focus-ring';
 
 export default function Header() {
   const { isDarkMode, toggleDarkMode } = useTheme();
   const navigate = useNavigate();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { logout, isAuthenticated, isAdmin, user } = useAuth();
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
@@ -23,62 +32,60 @@ export default function Header() {
   useEffect(() => {
     const media = window.matchMedia('(min-width: 1024px)');
     const handleChange = (event: MediaQueryListEvent) => {
-      if (event.matches) {
-        setIsMobileMenuOpen(false);
-      }
+      if (event.matches) setIsMobileMenuOpen(false);
     };
     media.addEventListener('change', handleChange);
     return () => media.removeEventListener('change', handleChange);
   }, []);
 
-  const menuRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     if (!isMobileMenuOpen) return;
-
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsMobileMenuOpen(false);
-      }
+      if (event.key === 'Escape') setIsMobileMenuOpen(false);
     };
-
     document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isMobileMenuOpen]);
 
   return (
-    <header className="bg-darkblue font-heading relative z-1100 flex h-25.25 w-full justify-center px-6 text-white">
-      <div className="grid w-full max-w-300 grid-cols-[1fr_auto_1fr] items-center gap-4 py-4">
-        <div className="flex items-center justify-start">
-          <NavLink to="/" end className="flex max-w-12.25 min-w-12.25">
-            <img src={Logo} alt="SBSK Logo" className="w-full" />
+    <header className="bg-darkblue font-heading relative z-1100 w-full text-white">
+      <div className="mx-auto flex max-w-300 items-center justify-between gap-5 px-6 py-3.5">
+        {/* Logo group — dice + wordmark, both navigate home */}
+        <div className="flex items-center gap-2.5">
+          <DiceLogo size={40} onClick={() => navigate('/')} />
+          <NavLink
+            to="/"
+            end
+            className="font-heading tracking-heading focus-visible:outline-orange text-[length:--text-h4] leading-[--text-h4--line-height] font-bold text-white no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3"
+          >
+            SBSK
           </NavLink>
         </div>
 
-        <nav className="hidden items-center justify-center gap-10 px-4 lg:flex">
-          <NavLink to="/" end className={getLink}>
+        {/* Desktop nav */}
+        <nav className="hidden items-center gap-[26px] lg:flex" aria-label="Hovedmeny">
+          <NavLink to="/" end className={desktopNavLink}>
             Hjem
           </NavLink>
-          <NavLink to="/kalender" className={getLink}>
+          <NavLink to="/kalender" className={desktopNavLink}>
             Kalender
           </NavLink>
-          <NavLink to="/board-game-masters" className={getLink}>
+          <NavLink to="/board-game-masters" className={desktopNavLink}>
             Board Game Masters
           </NavLink>
-          <NavLink to="/våre-spill" className={getLink}>
+          <NavLink to="/våre-spill" className={desktopNavLink}>
             Våre spill
           </NavLink>
-          <NavLink to="/om-oss" className={getLink}>
+          <NavLink to="/om-oss" className={desktopNavLink}>
             Om oss
           </NavLink>
-          <NavLink to="/kontakt-oss" className={getLink}>
+          <NavLink to="/kontakt-oss" className={desktopNavLink}>
             Kontakt oss
           </NavLink>
         </nav>
-        <div className="col-3 flex items-center justify-end gap-2 lg:hidden lg:gap-8">
+
+        {/* Right controls */}
+        <div className="flex items-center gap-2.5">
           <Button
             onClick={toggleDarkMode}
             variant="toggle"
@@ -88,102 +95,10 @@ export default function Header() {
           >
             {isDarkMode ? 'LM' : 'DM'}
           </Button>
-          <NavMenuButton
-            open={isMobileMenuOpen}
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          />
-        </div>
 
-        <nav
-          className={`bg-darkestblue absolute top-25.25 left-0 z-50 flex w-full flex-col items-center gap-6 px-4 py-8 ${isMobileMenuOpen ? '' : 'hidden'}`}
-          ref={menuRef}
-        >
-          <div>
-            {isAuthenticated ? (
-              <div className="flex gap-2">
-                {isAdmin && (
-                  <Button
-                    variant="primary"
-                    size="xs"
-                    icon="right"
-                    onClick={() => {
-                      setIsMobileMenuOpen(false);
-                      navigate('/styreportal');
-                    }}
-                  >
-                    Styreportal
-                  </Button>
-                )}
-                <Button
-                  variant="primary"
-                  size="xs"
-                  icon="right"
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    navigate('/medlemsportal');
-                  }}
-                >
-                  Profil
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="xs"
-                  icon="right"
-                  onClick={() => {
-                    logout();
-                    setIsMobileMenuOpen(false);
-                    navigate('/');
-                  }}
-                >
-                  Logg ut
-                </Button>
-              </div>
-            ) : (
-              <Button
-                variant="primary"
-                size="md"
-                icon="right"
-                onClick={() => {
-                  navigate('/login');
-                  setIsMobileMenuOpen(false);
-                }}
-              >
-                Logg inn
-              </Button>
-            )}
-          </div>
-          <NavLink to="/" end className={getLink} onClick={closeMobileMenu}>
-            Hjem
-          </NavLink>
-          <NavLink to="/kalender" className={getLink} onClick={closeMobileMenu}>
-            Kalender
-          </NavLink>
-          <NavLink to="/board-game-masters" className={getLink} onClick={closeMobileMenu}>
-            Board Game Masters
-          </NavLink>
-          <NavLink to="/våre-spill" className={getLink} onClick={closeMobileMenu}>
-            Våre spill
-          </NavLink>
-          <NavLink to="/om-oss" className={getLink} onClick={closeMobileMenu}>
-            Om oss
-          </NavLink>
-          <NavLink to="/kontakt-oss" className={getLink} onClick={closeMobileMenu}>
-            Kontakt oss
-          </NavLink>
-        </nav>
-
-        <div className="hidden items-center justify-end gap-8 lg:flex">
-          <Button
-            onClick={toggleDarkMode}
-            variant="toggle"
-            size="xs"
-            icon={isDarkMode ? 'sun' : 'moon'}
-            aria-label={isDarkMode ? 'Bytt til lys modus' : 'Bytt til mørk modus'}
-          >
-            {isDarkMode ? 'LM' : 'DM'}
-          </Button>
+          {/* Login / profile — desktop only */}
           {isAuthenticated ? (
-            <div className="relative z-50">
+            <div className="relative z-50 hidden lg:block">
               <Button
                 variant="primary"
                 size="sm"
@@ -234,20 +149,85 @@ export default function Header() {
               </div>
             </div>
           ) : (
-            <Button
-              variant="primary"
-              size="md"
-              icon="right"
-              onClick={() => {
-                navigate('/login');
-                setIsDropdownOpen(false);
-              }}
-            >
+            <Button variant="primary" size="sm" icon="right" onClick={() => navigate('/login')}>
               Logg inn
             </Button>
           )}
+
+          <NavMenuButton
+            open={isMobileMenuOpen}
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="lg:hidden"
+          />
         </div>
       </div>
+
+      {/* Mobile nav — collapses via max-height */}
+      <nav
+        className={`bg-darkestblue flex flex-col overflow-hidden transition-[max-height] duration-(--duration-slow) ease-out lg:hidden ${
+          isMobileMenuOpen ? 'max-h-[460px]' : 'max-h-0'
+        }`}
+        aria-label="Mobilmeny"
+      >
+        {isAuthenticated && (
+          <div className="flex gap-2 border-t border-white/12 px-6 py-[15px]">
+            {isAdmin && (
+              <Button
+                variant="primary"
+                size="xs"
+                icon="right"
+                onClick={() => {
+                  closeMobileMenu();
+                  navigate('/styreportal');
+                }}
+              >
+                Styreportal
+              </Button>
+            )}
+            <Button
+              variant="primary"
+              size="xs"
+              icon="right"
+              onClick={() => {
+                closeMobileMenu();
+                navigate('/medlemsportal');
+              }}
+            >
+              Profil
+            </Button>
+            <Button
+              variant="secondary"
+              size="xs"
+              icon="right"
+              onClick={() => {
+                logout();
+                closeMobileMenu();
+                navigate('/');
+              }}
+            >
+              Logg ut
+            </Button>
+          </div>
+        )}
+        <NavLink to="/" end className={mobileNavLink} onClick={closeMobileMenu}>
+          Hjem
+        </NavLink>
+        <NavLink to="/kalender" className={mobileNavLink} onClick={closeMobileMenu}>
+          Kalender
+        </NavLink>
+        <NavLink to="/board-game-masters" className={mobileNavLink} onClick={closeMobileMenu}>
+          Board Game Masters
+        </NavLink>
+        <NavLink to="/våre-spill" className={mobileNavLink} onClick={closeMobileMenu}>
+          Våre spill
+        </NavLink>
+        <NavLink to="/om-oss" className={mobileNavLink} onClick={closeMobileMenu}>
+          Om oss
+        </NavLink>
+        <NavLink to="/kontakt-oss" className={mobileNavLink} onClick={closeMobileMenu}>
+          Kontakt oss
+        </NavLink>
+      </nav>
     </header>
   );
 }
