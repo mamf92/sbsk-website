@@ -45,13 +45,17 @@ test('unknown routes render the 404 page, not a blank screen', async ({ page }) 
   await page.goto('/denne-siden-finnes-ikke');
 
   await expect(page.locator('#main')).not.toBeEmpty();
-  await expect(page.getByText('Finner ikke siden')).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Finner ikke siden' })).toBeVisible();
+  // Exactly one <h1>, and only the shell's <main> — the page must not nest a second one.
+  await expect(page.locator('h1')).toHaveCount(1);
+  await expect(page.locator('main')).toHaveCount(1);
   // The header and footer must survive a 404 so the user can navigate away.
   await expect(page.locator('header')).toBeVisible();
   await expect(page.locator('footer')).toBeVisible();
 
-  // NOTE: the 404 page is still an unstyled placeholder with no <h1> — see
-  // issue #63. Tighten this assertion when that lands.
+  // The way back to the front page is part of the contract, not decoration.
+  await page.getByRole('button', { name: 'Til forsiden' }).click();
+  await expect(page).toHaveURL(/\/(sbsk-website\/)?$/);
 });
 
 test('theme toggle flips the dark class and survives a reload', async ({ page }) => {
