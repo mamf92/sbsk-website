@@ -39,7 +39,7 @@ function getStoredFace(): number {
 }
 
 export const DiceLogo = React.forwardRef<DiceLogoHandle, DiceLogoProps>(
-  ({ className = '', size = 40, initialFace, onRoll, ...props }, ref) => {
+  ({ className = '', size = 40, initialFace, onRoll, onClick, ...props }, ref) => {
     const [face, setFace] = React.useState<number>(() => {
       if (initialFace && initialFace >= 1 && initialFace <= 6) return initialFace;
       return getStoredFace();
@@ -69,6 +69,14 @@ export const DiceLogo = React.forwardRef<DiceLogoHandle, DiceLogoProps>(
       timers.current = [iv, t];
     }, [rolling, initialFace, onRoll]);
 
+    const handleClick = React.useCallback(
+      (e: React.MouseEvent<HTMLButtonElement>) => {
+        roll();
+        onClick?.(e);
+      },
+      [roll, onClick],
+    );
+
     React.useEffect(
       () => () =>
         timers.current.forEach((t) => {
@@ -84,7 +92,7 @@ export const DiceLogo = React.forwardRef<DiceLogoHandle, DiceLogoProps>(
       <button
         type="button"
         className={['sbsk-dice', rolling ? 'rolling' : '', className].filter(Boolean).join(' ')}
-        onClick={roll}
+        onClick={handleClick}
         aria-label={`Terning viser ${face}. Klikk for å kaste.`}
         title="Kast terningen!"
         {...props}
