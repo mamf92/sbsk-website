@@ -1,9 +1,7 @@
 export default function OurPartners() {
   return (
-    <>
-      <main className="min-h-[60vh] bg-white">
-        <div className="text-darkestblue font-heading text-6xl font-bold">Våre partnere</div>
-      </main>
-    </>
+    <div className="min-h-[60vh] bg-white">
+      <div className="text-darkestblue font-heading text-6xl font-bold">Våre partnere</div>
+    </div>
   );
 }
