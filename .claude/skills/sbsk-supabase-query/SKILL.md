@@ -41,19 +41,22 @@ Row level security decides what a user can read. The client key is public — it
 browser bundle — so **never treat a client-side check as a security boundary.** A user who
 should not see a row simply gets no row back.
 
-This shapes how permission checks are written. `canViewMembers` asks the database rather than
-inspecting a local flag:
+This shapes how permission checks are written. Admin status comes from an explicit database
+claim, not from inspecting a local flag or inferring it from whether a table happens to return
+rows. `isBoardAdmin` calls the `member_is_admin()` SECURITY DEFINER RPC, which reports whether
+the current user is an admin in the `members` registry:
 
 ```ts
-const { count, error } = await supabase
-  .from('members')
-  .select('id', { count: 'exact', head: true });
+const { data, error } = await supabase.rpc('member_is_admin');
 
 if (error) return false;
-return (count ?? 0) > 0;
+return data === true;
 ```
 
-An empty result is the expected outcome for an unauthorised user, not an error to report.
+Do not resurrect the older pattern of probing a row `count` to decide admin status — it couples
+the flag to row visibility and reads as a side effect rather than an authorisation decision.
+`member_is_admin()` is the single source of truth; the `members` RLS policies use the same
+function, so the client flag and the server boundary stay in lock-step.
 
 If a query returns nothing unexpectedly, suspect an RLS policy before suspecting the query.
 Policy changes are a Supabase-side migration and are **not** something to work around by

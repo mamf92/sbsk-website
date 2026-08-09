@@ -1,6 +1,6 @@
 import { supabase } from '../supabase/client';
 import { getProfile } from '../supabase/queryHelpers/getProfile';
-import { canViewMembers } from '../supabase/queryHelpers/canViewMembers';
+import { isBoardAdmin } from '../supabase/queryHelpers/isBoardAdmin';
 import { useAuth } from './authContext/authContext';
 
 interface LoginCredentials {
@@ -21,7 +21,7 @@ export const useAuthActions = () => {
     const profile = await getProfile(data.user.id);
     login(profile);
     await refreshSession();
-    const isAdmin = await canViewMembers();
+    const isAdmin = await isBoardAdmin();
     return { profile, isAdmin };
   };
 
@@ -35,7 +35,7 @@ export const useAuthActions = () => {
     const profile = await getProfile(data.session.user.id);
     login(profile);
     await refreshSession();
-    const isAdmin = await canViewMembers();
+    const isAdmin = await isBoardAdmin();
     return { profile, isAdmin };
   };
 
