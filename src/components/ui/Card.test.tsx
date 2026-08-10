@@ -1,0 +1,182 @@
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
+import { Card, type CardCategory } from './Card';
+
+const categories: CardCategory[] = ['nyheter', 'spillkveld', 'arrangementer', 'turnering', 'annet'];
+
+// Pins the contract, not the class values: the category fills get re-themed, but the
+// accordion wiring, the static-card fallback and the collapsed panel staying out of the tab
+// order are what consumers actually depend on.
+describe('Card', () => {
+  it('renders the title as a heading', () => {
+    render(<Card title="Spillkveld i juni" />);
+    expect(screen.getByRole('heading', { name: 'Spillkveld i juni' })).toBeInTheDocument();
+  });
+
+  it('renders the date and subtitle when given', () => {
+    render(<Card date="5. juni" title="Spillkveld" subtitle="Bli med" />);
+
+    expect(screen.getByText('5. juni')).toBeInTheDocument();
+    expect(screen.getByText('Bli med')).toBeInTheDocument();
+  });
+
+  it('exposes the header as a toggle button and forwards the toggle', async () => {
+    const onToggle = vi.fn();
+    render(
+      <Card title="Turneringen" onToggle={onToggle}>
+        <p>Innhold</p>
+      </Card>,
+    );
+
+    await userEvent.click(screen.getByRole('button', { expanded: false }));
+    expect(onToggle).toHaveBeenCalledOnce();
+  });
+
+  it('announces open state through aria-expanded and points at the panel it controls', () => {
+    const { rerender } = render(
+      <Card title="Turneringen" onToggle={vi.fn()}>
+        <p>Innhold</p>
+      </Card>,
+    );
+
+    const collapsed = screen.getByRole('button');
+    expect(collapsed).toHaveAttribute('aria-expanded', 'false');
+    const panelId = collapsed.getAttribute('aria-controls');
+    expect(panelId).toBeTruthy();
+    expect(document.getElementById(panelId as string)).toContainElement(
+      screen.getByText('Innhold'),
+    );
+
+    rerender(
+      <Card title="Turneringen" expanded onToggle={vi.fn()}>
+        <p>Innhold</p>
+      </Card>,
+    );
+    expect(screen.getByRole('button')).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('keeps a collapsed panel out of the tab order', () => {
+    // `grid-rows-[0fr]` hides the panel visually but leaves its links focusable; `inert` is
+    // the part that actually removes them, so it has to be pinned.
+    const { rerender } = render(
+      <Card title="Turneringen" onToggle={vi.fn()}>
+        <a href="/paamelding">Meld deg på</a>
+      </Card>,
+    );
+
+    const panelId = screen.getByRole('button').getAttribute('aria-controls') as string;
+    expect(document.getElementById(panelId)).toHaveAttribute('inert');
+
+    rerender(
+      <Card title="Turneringen" expanded onToggle={vi.fn()}>
+        <a href="/paamelding">Meld deg på</a>
+      </Card>,
+    );
+    expect(document.getElementById(panelId)).not.toHaveAttribute('inert');
+  });
+
+  it('renders as a static block with no control when no toggle is passed', () => {
+    render(
+      <Card title="Om klubben">
+        <p>Innhold</p>
+      </Card>,
+    );
+
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    // A block with nothing to collapse to shows its body rather than hiding it.
+    expect(screen.getByText('Innhold')).toBeVisible();
+  });
+
+  it('reflects open state on the root so lift-card can style it', () => {
+    const { container, rerender } = render(
+      <Card title="Turneringen" onToggle={vi.fn()}>
+        <p>Innhold</p>
+      </Card>,
+    );
+    const root = container.querySelector('article') as HTMLElement;
+    expect(root).toHaveAttribute('data-expanded', 'false');
+
+    rerender(
+      <Card title="Turneringen" expanded onToggle={vi.fn()}>
+        <p>Innhold</p>
+      </Card>,
+    );
+    expect(root).toHaveAttribute('data-expanded', 'true');
+  });
+
+  it('renders an image with its alt text', () => {
+    render(<Card title="Spillkveld" image="/bilde.jpg" imageAlt="Spillbord" />);
+    expect(screen.getByRole('img', { name: 'Spillbord' })).toBeInTheDocument();
+  });
+
+  it('omits the panel entirely when there is no body', () => {
+    render(<Card title="Bare tittel" onToggle={vi.fn()} />);
+    expect(screen.getByRole('button')).not.toHaveAttribute('aria-controls');
+  });
+
+  it('gives nyheter, spillkveld and arrangementer distinct fills', () => {
+    const classes = (['nyheter', 'spillkveld', 'arrangementer'] as CardCategory[]).map(
+      (category) => {
+        const { container, unmount } = render(<Card category={category} title="x" />);
+        const { className } = container.querySelector('article') as HTMLElement;
+        unmount();
+        return className;
+      },
+    );
+
+    expect(new Set(classes).size).toBe(3);
+  });
+
+  it('aliases turnering onto spillkveld and annet onto arrangementer', () => {
+    // Documented in the handoff: the two extra categories borrow a parent's colour pair
+    // rather than introducing a fill of their own.
+    const fillOf = (category: CardCategory) => {
+      const { container, unmount } = render(<Card category={category} title="x" />);
+      const { className } = container.querySelector('article') as HTMLElement;
+      unmount();
+      return className;
+    };
+
+    expect(fillOf('turnering')).toBe(fillOf('spillkveld'));
+    expect(fillOf('annet')).toBe(fillOf('arrangementer'));
+  });
+
+  it('carries lift-card only when interactive, and never a competing transition utility', () => {
+    // `lift-card` sets `transition` in full. A second transition-property utility on the same
+    // element would win or lose by stylesheet order and silently drop half the interaction.
+    for (const category of categories) {
+      const { container, unmount } = render(
+        <Card category={category} title="x" onToggle={vi.fn()} />,
+      );
+      const classes = (container.querySelector('article') as HTMLElement).className.split(/\s+/);
+      unmount();
+
+      expect(classes).toContain('lift-card');
+      expect(classes.filter((name) => /^transition(-|$)/.test(name))).toHaveLength(0);
+    }
+
+    const { container } = render(<Card title="x" />);
+    expect((container.querySelector('article') as HTMLElement).className).not.toContain(
+      'lift-card',
+    );
+  });
+
+  it('merges a caller-supplied className instead of dropping it', () => {
+    const { container } = render(<Card title="x" className="max-w-md" />);
+    expect(container.querySelector('article')).toHaveClass('max-w-md');
+  });
+
+  it('forwards arbitrary element attributes', () => {
+    const { container } = render(<Card title="x" id="siste-nytt" data-testid="kort" />);
+    expect(container.querySelector('article')).toHaveAttribute('id', 'siste-nytt');
+    expect(screen.getByTestId('kort')).toBeInTheDocument();
+  });
+
+  it('exposes the underlying element through a ref', () => {
+    const ref = { current: null as HTMLElement | null };
+    render(<Card title="x" ref={ref} />);
+    expect(ref.current).toBeInstanceOf(HTMLElement);
+    expect(ref.current?.tagName).toBe('ARTICLE');
+  });
+});

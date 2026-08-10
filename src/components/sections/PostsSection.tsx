@@ -1,7 +1,7 @@
 import { Button } from '../ui/Buttons';
+import { Card, type CardCategory } from '../ui/Card';
 import { Chip, type ChipCategory } from '../ui/Chip';
 import { useState } from 'react';
-import ExpandIcon from '../../assets/icons/arrows/expand.svg?react';
 import Clock from '../../assets/icons/symbols/clock.svg?react';
 import type { PostTypes } from '../../sanity/queryHelpers/posts';
 import type { PostsHeroTypes } from '../../sanity/queryHelpers/posts-hero';
@@ -43,6 +43,30 @@ const categories: Array<'all' | PostCategory> = [
   'arrangementer',
 ];
 
+// 'all' has no category colour of its own — it takes the neutral fill. A spillkveld*rapport*
+// is a write-up of a spillkveld, so it inherits that category's colour.
+const chipCategories: Record<'all' | PostCategory, ChipCategory> = {
+  all: 'neutral',
+  nyheter: 'nyheter',
+  spillkveldrapporter: 'spillkveld',
+  arrangementer: 'arrangementer',
+};
+
+// Same reasoning, against the Card's own palette rather than the Chip's.
+const cardCategories: Record<PostCategory, CardCategory> = {
+  nyheter: 'nyheter',
+  spillkveldrapporter: 'spillkveld',
+  arrangementer: 'arrangementer',
+};
+
+// Which Button variant survives on the open panel's fill. `primary` is orange, which all but
+// vanishes on the orange-family panels the other two categories expand to.
+const linkVariants: Record<PostCategory, 'primary' | 'tertiary'> = {
+  nyheter: 'primary',
+  spillkveldrapporter: 'tertiary',
+  arrangementer: 'tertiary',
+};
+
 const sortOptions = [
   { label: 'Dato (siste til første)', value: 'date-desc' },
   { label: 'Dato (første til siste)', value: 'date-asc' },
@@ -75,16 +99,11 @@ function PostsList({ posts }: { posts: PostTypes[] }) {
   const [selectedCategory, setSelectedCategory] = useState<'all' | PostCategory>('all');
   const [sortBy, setSelectedSort] = useState('date-desc');
   const [visibleItemCount, setVisibleItemCount] = useState(5);
+  // Accordion: one post open at a time, seeded with the newest. Previously every card
+  // mounted expanded, which buried the list under full article bodies before the reader had
+  // picked anything. `posts` arrives publishedAt-desc from the GROQ query, so [0] is newest.
+  const [expandedId, setExpandedId] = useState<string | null>(() => posts[0]?._id ?? null);
   const postItems = posts as PostWithExtras[];
-
-  // 'all' has no category colour of its own — it takes the neutral fill. A spillkveld*rapport*
-  // is a write-up of a spillkveld, so it inherits that category's colour.
-  const chipCategories: Record<'all' | PostCategory, ChipCategory> = {
-    all: 'neutral',
-    nyheter: 'nyheter',
-    spillkveldrapporter: 'spillkveld',
-    arrangementer: 'arrangementer',
-  };
 
   const filteredPosts = postItems.filter((post) => {
     const bodyText = toPlainText(post.content || []);
@@ -140,7 +159,7 @@ function PostsList({ posts }: { posts: PostTypes[] }) {
     );
   }
   return (
-    <div className="flex w-full max-w-5xl flex-col items-center gap-2 px-2 pb-2 sm:px-0 sm:pb-4">
+    <div className="flex w-full max-w-5xl flex-col items-center gap-4 px-2 pb-2 sm:px-0 sm:pb-4">
       <input
         type="text"
         placeholder="Søk etter innlegg..."
@@ -148,28 +167,30 @@ function PostsList({ posts }: { posts: PostTypes[] }) {
         onChange={(e) => setSearchTerm(e.target.value)}
         className="focus:ring-orange border-darkblue dark:border-orange placeholder:text-placeholder text-darkblue w-full border px-4 py-3 focus:ring-2 focus:outline-none"
       />
-      <div className="flex flex-wrap gap-2">
-        {categories.map((category) => (
-          <Chip
-            key={category}
-            category={chipCategories[category]}
-            active={selectedCategory === category}
-            onClick={() => setSelectedCategory(category)}
-          >
-            {category === 'all' ? 'Alle innlegg' : category}
-          </Chip>
-        ))}
-      </div>
-      <div className="flex flex-wrap gap-2">
-        {sortOptions.map((option) => (
-          <Chip
-            key={option.value}
-            active={sortBy === option.value}
-            onClick={() => setSelectedSort(option.value)}
-          >
-            {option.label}
-          </Chip>
-        ))}
+      <div className="flex w-full flex-col items-center gap-2">
+        <div className="flex flex-wrap justify-center gap-2">
+          {categories.map((category) => (
+            <Chip
+              key={category}
+              category={chipCategories[category]}
+              active={selectedCategory === category}
+              onClick={() => setSelectedCategory(category)}
+            >
+              {category === 'all' ? 'Alle innlegg' : category}
+            </Chip>
+          ))}
+        </div>
+        <div className="flex flex-wrap justify-center gap-2">
+          {sortOptions.map((option) => (
+            <Chip
+              key={option.value}
+              active={sortBy === option.value}
+              onClick={() => setSelectedSort(option.value)}
+            >
+              {option.label}
+            </Chip>
+          ))}
+        </div>
       </div>
       {displayedPosts.length === 0 && (
         <div className="flex w-full flex-col items-center justify-center gap-4 p-6">
@@ -181,9 +202,20 @@ function PostsList({ posts }: { posts: PostTypes[] }) {
           </Button>
         </div>
       )}
-      {displayedPosts.map((post) => (
-        <PostCard key={post._id} post={post} />
-      ))}
+      {displayedPosts.length > 0 && (
+        // 14px between cards, per the design library — enough that the 6px hover shadow of
+        // one card never touches the next.
+        <div className="flex w-full flex-col gap-3.5">
+          {displayedPosts.map((post) => (
+            <PostCard
+              key={post._id}
+              post={post}
+              expanded={expandedId === post._id}
+              onToggle={() => setExpandedId((prev) => (prev === post._id ? null : post._id))}
+            />
+          ))}
+        </div>
+      )}
       {visibleItemCount < sortedPosts.length && (
         <Button variant="primary" size="lg" onClick={handleLoadedMore}>
           Last inn flere
@@ -193,123 +225,73 @@ function PostsList({ posts }: { posts: PostTypes[] }) {
   );
 }
 
-function PostCard({ post }: { post: PostWithExtras }) {
-  const [expandedPost, setExpandedPost] = useState(true);
-  const postCategory: PostCategory = post.category;
+function PostDate({ publishedAt }: { publishedAt: Date }) {
+  return (
+    <span className="inline-flex flex-wrap items-center gap-1">
+      <Clock className="h-4 w-4 fill-current" aria-hidden="true" />
+      <span className="capitalize">{publishedAt.toLocaleString('no-NO', { weekday: 'long' })}</span>
+      <span>
+        {publishedAt.toLocaleString('no-NO', {
+          day: 'numeric',
+          month: 'short',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        })}
+      </span>
+    </span>
+  );
+}
+
+function PostCard({
+  post,
+  expanded,
+  onToggle,
+}: {
+  post: PostWithExtras;
+  expanded: boolean;
+  onToggle: () => void;
+}) {
   const navigate = useNavigate();
   const INTERNAL_ORIGIN = 'https://www.mamf92.github.io/sbsk-website';
-
-  const categoryStyles = {
-    nyheter: {
-      container: 'bg-darkblue text-white',
-      expandWrapper: 'bg-darkestblue',
-      detailsPanel: 'bg-darkblue',
-    },
-    spillkveldrapporter: {
-      container: 'bg-orange text-darkestblue',
-      expandWrapper: 'bg-darkestorange',
-      detailsPanel: 'bg-orange',
-    },
-    arrangementer: {
-      container: 'bg-darkorange text-white',
-      expandWrapper: 'bg-orange',
-      detailsPanel: 'bg-darkorange',
-    },
-  }[postCategory];
-
   const publishedAt = new Date(post.publishedAt);
+  const hasLinks = !!post.links && post.links.length > 0;
 
   return (
-    <div
-      className={`${categoryStyles.container} flex w-full flex-col items-center justify-between border border-black`}
+    <Card
+      category={cardCategories[post.category]}
+      date={<PostDate publishedAt={publishedAt} />}
+      title={post.title}
+      subtitle={post.subtitle}
+      expanded={expanded}
+      onToggle={onToggle}
     >
-      <div className="flex w-full items-center justify-between gap-2 p-4 sm:max-h-38">
-        <div className="flex h-full flex-1 flex-col gap-1 sm:flex-initial sm:gap-2">
-          <div className="flex sm:flex-row sm:items-center sm:gap-1">
-            <div className="flex items-center gap-1">
-              <span>
-                <Clock className="h-4 w-4 fill-current text-inherit" />
-              </span>
-              <p className="text-sm text-inherit capitalize">
-                {publishedAt.toLocaleString('no-NO', {
-                  weekday: 'long',
-                })}
-              </p>
-              <p className="text-sm text-inherit normal-case">
-                {publishedAt.toLocaleString('no-NO', {
-                  day: 'numeric',
-                  month: 'short',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: false,
-                })}
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-1 flex-col justify-center gap-2">
-            <h3 className="text-xl leading-5 font-bold text-inherit sm:text-2xl sm:leading-normal">
-              {post.title}
-            </h3>
-            {post.subtitle && <p className="text-heading text-md sm:text-base">{post.subtitle}</p>}
-          </div>
-        </div>
-        <div className="flex items-center justify-end sm:flex-1 sm:pr-4">
-          <button onClick={() => setExpandedPost((prev) => !prev)}>
-            <ExpandIcon
-              className={`${expandedPost ? 'rotate-180' : 'rotate-0'} h-6 w-6 fill-current text-inherit`}
-            />
-          </button>
-        </div>
-      </div>
-      {expandedPost && (
-        <div className={`${categoryStyles.expandWrapper} flex w-full flex-col p-2 sm:p-4`}>
-          <div
-            className={`${categoryStyles.detailsPanel} flex flex-col items-start gap-1 p-2 sm:p-4`}
-          >
-            {post.content && <PortableText value={post.content} components={components} />}
-          </div>
-          {post.links && post.links.length > 0 && (
-            <div
-              className={`${categoryStyles.expandWrapper} flex w-full flex-col px-2 pt-2 pb-0 sm:px-4 sm:pt-4 sm:pb-0`}
-            >
-              <div className="flex flex-row flex-wrap gap-2">
-                {post.links.map((link, index) => {
-                  const isInternal = link.url.startsWith(INTERNAL_ORIGIN);
+      {post.content && <PortableText value={post.content} components={components} />}
+      {hasLinks && (
+        <div className="flex flex-row flex-wrap gap-2">
+          {post.links?.map((link, index) => {
+            const isInternal = link.url.startsWith(INTERNAL_ORIGIN);
 
+            return (
+              <Button
+                key={index}
+                variant={linkVariants[post.category]}
+                size="sm"
+                icon="right"
+                onClick={() => {
                   if (isInternal) {
-                    const path = new URL(link.url, window.location.href).pathname;
-                    return (
-                      <Button
-                        variant={postCategory === 'arrangementer' ? 'tertiary' : 'primary'}
-                        size="sm"
-                        icon="right"
-                        key={index}
-                        onClick={() => navigate(path)}
-                      >
-                        {link.label}
-                      </Button>
-                    );
+                    navigate(new URL(link.url, window.location.href).pathname);
+                  } else {
+                    window.location.href = link.url;
                   }
-
-                  return (
-                    <Button
-                      key={index}
-                      variant={postCategory === 'arrangementer' ? 'tertiary' : 'primary'}
-                      size="sm"
-                      icon="right"
-                      onClick={() => {
-                        window.location.href = link.url;
-                      }}
-                    >
-                      {link.label}
-                    </Button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+                }}
+              >
+                {link.label}
+              </Button>
+            );
+          })}
         </div>
       )}
-    </div>
+    </Card>
   );
 }
