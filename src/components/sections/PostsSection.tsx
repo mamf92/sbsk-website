@@ -99,10 +99,17 @@ function PostsList({ posts }: { posts: PostTypes[] }) {
   const [selectedCategory, setSelectedCategory] = useState<'all' | PostCategory>('all');
   const [sortBy, setSelectedSort] = useState('date-desc');
   const [visibleItemCount, setVisibleItemCount] = useState(5);
-  // Accordion: one post open at a time, seeded with the newest. Previously every card
-  // mounted expanded, which buried the list under full article bodies before the reader had
-  // picked anything. `posts` arrives publishedAt-desc from the GROQ query, so [0] is newest.
-  const [expandedId, setExpandedId] = useState<string | null>(() => posts[0]?._id ?? null);
+  // Each card opens and closes on its own, seeded with the newest post open. `posts` arrives
+  // publishedAt-desc from the GROQ query, so [0] is newest.
+  //
+  // Deliberately not an accordion, even though the design library specifies one. Auto-closing
+  // the previously open card moves everything below it up by that card's full height, so the
+  // header you just clicked jumps out from under the pointer — worst exactly when the open
+  // card was long, which is when the reader is most likely to be mid-article. Nothing here
+  // closes without the reader asking for it, so the only content shift is one they caused.
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(() =>
+    posts[0] ? new Set([posts[0]._id]) : new Set(),
+  );
   const postItems = posts as PostWithExtras[];
 
   const filteredPosts = postItems.filter((post) => {
@@ -210,8 +217,15 @@ function PostsList({ posts }: { posts: PostTypes[] }) {
             <PostCard
               key={post._id}
               post={post}
-              expanded={expandedId === post._id}
-              onToggle={() => setExpandedId((prev) => (prev === post._id ? null : post._id))}
+              expanded={expandedIds.has(post._id)}
+              onToggle={() =>
+                setExpandedIds((prev) => {
+                  const next = new Set(prev);
+                  // `delete` reports whether it removed anything, so this is toggle in one step.
+                  if (!next.delete(post._id)) next.add(post._id);
+                  return next;
+                })
+              }
             />
           ))}
         </div>
