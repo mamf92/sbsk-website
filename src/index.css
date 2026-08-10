@@ -52,9 +52,16 @@
      theme — are aliased here.
      --------------------------------------------------------------------- */
 
-  /* Content category coding. Cards, chips and calendar entries colour by these. */
+  /* Content category coding. Cards, chips and calendar entries colour by these.
+     A chip is a filter for a stack of cards, so its selected fill has to be the fill of the
+     cards it filters to — these must stay in step with the `headers` map in
+     `src/components/ui/Card.tsx`, which needs a second, darker tone per category for the
+     expanded panel and so cannot be driven from these single-value tokens. */
   --color-category-nyheter: var(--color-darkblue);
-  --color-category-spillkveld: var(--color-darkblue);
+  /* Orange, not darkblue. A spillkveld card is orange; while this was darkblue the
+     spillkveld chip was pixel-identical to the nyheter one, so the two filters were
+     indistinguishable once selected. */
+  --color-category-spillkveld: var(--color-orange);
   --color-category-arrangementer: var(--color-darkorange);
   --color-category-turnering: var(--color-orange);
   --color-category-annet: var(--color-darkorange);
