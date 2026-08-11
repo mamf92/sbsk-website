@@ -49,8 +49,13 @@ type Category = CalendarEventTypes['category'];
 // assembled `bg-${category}` never reaches the stylesheet — which is exactly why the previous
 // version of this file rendered its cards unstyled.
 const CATEGORY_STYLES = {
+  // `bg-darkblue`, not `bg-category-spillkveld`. #88 repointed that token at orange so the
+  // news feed's spillkveld chip would match its cards, which are orange there. The calendar
+  // codes spillkveld navy (Calendar.jsx, and #87 spells it out) precisely so it reads apart
+  // from turnering at a glance — on the news feed the two are aliases of one orange, which
+  // is fine for a topic label and not fine for a list you scan for what kind of night it is.
   spillkveld: {
-    surface: 'bg-category-spillkveld text-white',
+    surface: 'bg-darkblue text-white',
     accent: 'bg-darkestblue text-white',
   },
   turnering: {
@@ -735,7 +740,13 @@ function EventRow({
               styles.accent,
             ].join(' ')}
           >
-            {event.content && <PortableText value={event.content} components={components} />}
+            {/* Same rich-text rhythm the news cards use — `.sbsk-rt` (src/index.css) owns the
+                spacing *between* blocks; the Portable Text components own the type scale. */}
+            {event.content && (
+              <div className="sbsk-rt">
+                <PortableText value={event.content} components={components} />
+              </div>
+            )}
 
             {event.image && (
               <img

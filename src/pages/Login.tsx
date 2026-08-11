@@ -6,10 +6,8 @@ export default function Login() {
   const reason = searchParams.get('reason') || undefined;
 
   return (
-    <>
-      <main className="dark:bg-darkestblue flex h-full min-h-[85vh] w-full flex-col items-center bg-white">
-        <LoginSection reason={reason} />
-      </main>
-    </>
+    <div className="dark:bg-darkestblue flex h-full min-h-[85vh] w-full flex-col items-center bg-white">
+      <LoginSection reason={reason} />
+    </div>
   );
 }

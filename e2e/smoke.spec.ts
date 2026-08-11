@@ -41,6 +41,29 @@ test('deep-linking straight into a route works', async ({ page }) => {
   await expect(page.locator('header')).toBeVisible();
 });
 
+// Every page renders inside the shell's single <main> in App.tsx. A page that
+// wraps its own content in a second <main> produces nested landmarks and breaks
+// the "skip to content" link. Walk the static routes and assert one main each.
+const singleMainRoutes = [
+  '/',
+  '/board-game-masters',
+  '/våre-spill',
+  '/om-oss',
+  '/kontakt-oss',
+  '/bli-medlem',
+  '/arrangementer',
+  '/våre-partnere',
+  '/lag-medlemsprofil',
+  '/login',
+];
+
+for (const route of singleMainRoutes) {
+  test(`${route} renders exactly one main landmark`, async ({ page }) => {
+    await page.goto(route);
+    await expect(page.locator('main')).toHaveCount(1);
+  });
+}
+
 test('unknown routes render the 404 page, not a blank screen', async ({ page }) => {
   await page.goto('/denne-siden-finnes-ikke');
 

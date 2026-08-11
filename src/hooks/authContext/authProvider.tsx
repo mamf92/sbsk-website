@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import AuthContext from './authContext';
 import { supabase } from '../../supabase/client';
 import type { Profile } from '../../supabase/queryHelpers/getProfile';
-import { canViewMembers } from '../../supabase/queryHelpers/canViewMembers';
+import { isBoardAdmin } from '../../supabase/queryHelpers/isBoardAdmin';
 
 const readLocalStorageValue = (key: string) => {
   try {
@@ -60,7 +60,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const probeAdminStatus = useCallback(async () => {
     try {
-      const adminStatus = await canViewMembers();
+      const adminStatus = await isBoardAdmin();
       setIsAdmin(adminStatus);
       persistAdmin(adminStatus);
       return adminStatus;

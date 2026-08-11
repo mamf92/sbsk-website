@@ -96,12 +96,14 @@ Lift is for things you press. It is not decoration.
 - **No:** text links. `Link` underlines on hover and that is the whole interaction. Header
   nav is the one elaboration: `navLinkClasses` wipes an orange rule in from the left, and
   keeps it drawn on the current route via `aria-current="page"`.
-- **Yes:** a pressable card, via `lift-card`. Settled during the calendar rebuild: a card
-  **rests flat**, exactly like a button — a 1px border and no shadow. What scales with the
-  larger surface is the response, not the resting state: hover travels 3px onto `--shadow-3`
-  rather than 2px onto `--shadow-2`. The one exception is an expanded card, which is holding
-  an open panel and so stays raised on `--shadow-2` until it closes; `lift-card` reads that
-  off `data-expanded`, the way `lift-chip` reads `aria-pressed`. A card you cannot press
+- **Yes:** a pressable card, via `lift-card`. Settled by the news-cards rebuild (#88) and
+  adopted unchanged by the calendar (#87), which needed the same answer. A card **rests
+  flat**, exactly like a button — a 1px border and no shadow. What scales with the larger
+  surface is the response, not the resting state: hover travels 3px onto `--shadow-3`
+  rather than 2px onto `--shadow-2`. An expanded card is the exception: it is holding an
+  open panel, so it rests on `--shadow-2` until it closes, read off `data-expanded` the way
+  `lift-chip` reads `aria-pressed`. There is no press state — a card settles by expanding,
+  and a downward nudge would fight the panel opening beneath it. A card you cannot press
   keeps the border and nothing else.
 - **Not yet:** form controls were deliberately left out of this pass — they need their own
   decision and touch far more markup than buttons do. See the follow-up issue for forms.
