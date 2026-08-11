@@ -44,6 +44,7 @@ value in a class.
 | `--hard-shadow-color`      | `darkestblue`, brand black in dark mode     | The offset shadow's colour |
 | `--shadow-1` / `-2` / `-3` | `2px` / `4px` / `6px` hard offset           | Press / hover / raised     |
 | `--lift-hover`             | `translate(-2px, -2px)`                     | Hover offset               |
+| `--lift-hover-card`        | `translate(-3px, -3px)`                     | Hover offset, cards        |
 | `--lift-press`             | `translate(1px, 1px)`                       | Press offset               |
 
 The full set — the whole duration and easing scale, the accent and overlay shadows, the
@@ -68,6 +69,7 @@ Do not assemble the tokens by hand. `src/index.css` defines two custom utilities
 ```
 lift        buttons and the burger — hover onto shadow-2, press onto shadow-1
 lift-chip   chips — hover onto shadow-1, press onto no shadow, and no lift when selected
+lift-card   cards — hover 3px onto shadow-3, and stay raised on shadow-2 while expanded
 ```
 
 Each owns the hover offset, the press offset, the shadows, and the colour transition — on a
@@ -94,9 +96,15 @@ Lift is for things you press. It is not decoration.
 - **No:** text links. `Link` underlines on hover and that is the whole interaction. Header
   nav is the one elaboration: `navLinkClasses` wipes an orange rule in from the left, and
   keeps it drawn on the current route via `aria-current="page"`.
-- **Not yet:** cards and form controls were deliberately left out of this pass. They need
-  their own decision about resting shadow and border weight, and both touch far more markup
-  than buttons do. See the follow-up issues for forms, calendar and news cards.
+- **Yes:** a pressable card, via `lift-card`. Settled during the calendar rebuild: a card
+  **rests flat**, exactly like a button — a 1px border and no shadow. What scales with the
+  larger surface is the response, not the resting state: hover travels 3px onto `--shadow-3`
+  rather than 2px onto `--shadow-2`. The one exception is an expanded card, which is holding
+  an open panel and so stays raised on `--shadow-2` until it closes; `lift-card` reads that
+  off `data-expanded`, the way `lift-chip` reads `aria-pressed`. A card you cannot press
+  keeps the border and nothing else.
+- **Not yet:** form controls were deliberately left out of this pass — they need their own
+  decision and touch far more markup than buttons do. See the follow-up issue for forms.
 
 ## Upstream
 
