@@ -24,10 +24,14 @@ const inactive =
   'border-gray-neutral bg-white text-gray-500 hover:border-darkestblue ' +
   'dark:bg-transparent dark:text-white dark:hover:border-orange';
 
+// Each selected fill matches the header fill its category's cards use, so a filter looks
+// like what it filters to. `spillkveld` and `turnering` land on the same orange, as do
+// `arrangementer` and `annet` — the same aliasing `Card` applies, kept as separate keys so
+// the two pairs can diverge without a rename.
 const active = {
   neutral: 'border-darkblue bg-darkorange text-white',
   nyheter: 'border-darkblue bg-category-nyheter text-white',
-  spillkveld: 'border-darkblue bg-category-spillkveld text-white',
+  spillkveld: 'border-orange bg-category-spillkveld text-darkestblue',
   arrangementer: 'border-darkorange bg-category-arrangementer text-white',
   turnering: 'border-orange bg-category-turnering text-darkestblue',
   annet: 'border-darkorange bg-category-annet text-white',
