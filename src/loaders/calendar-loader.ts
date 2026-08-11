@@ -1,8 +1,8 @@
 import { calendarHeroLoader } from '../sanity/queryHelpers/calendar-hero';
-import { eventsListLoader } from '../sanity/queryHelpers/events';
+import { calendarEventsLoader } from '../sanity/queryHelpers/events';
 
 export async function calendarLoader() {
   const { calendarHero } = await calendarHeroLoader();
-  const { events } = await eventsListLoader();
+  const { events } = await calendarEventsLoader();
   return { calendarHero, events };
 }

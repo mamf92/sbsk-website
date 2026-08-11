@@ -97,6 +97,12 @@
   --text-h4: 1rem;
   --text-h4--line-height: 1.375rem;
 
+  /* The calendar date block's day number. A display size deliberately above the heading
+     scale — the library pins it at 66px on a 0.78 line-height so the digits sit tight
+     against the month abbreviation under them. */
+  --text-daymark: 4.125rem;
+  --text-daymark--line-height: 0.78;
+
   --tracking-heading: 0.05em;
 
   /* ---------------------------------------------------------------------

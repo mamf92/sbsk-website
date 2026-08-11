@@ -136,8 +136,9 @@ reviewable and avoids a large speculative migration.
       `Button`) vs. what is inlined in sections. Decide port / adapt / skip per component.
 - [ ] **`Button` first** — it has real usage and its test suite already pins the contract,
       so it validates the token mapping.
-- [ ] **Migrate consumers smallest-first** — `LoginSection` and `RegisterSection` (~95 lines)
-      before `CalendarSection` (~550).
+- [x] **Migrate consumers smallest-first** — `LoginSection` and `RegisterSection` (~95 lines)
+      before `CalendarSection` (~550). All three are on the `ui/` primitives; the calendar
+      rebuild (#87) was the last and brought `Avatar`/`AvatarStack` and `lift-card` with it.
 - [ ] **Retire aliases**, delete dead styles.
 - [ ] Optional: Figma Code Connect. Figma MCP is already connected with a full seat and is
       the one design channel here with no restrictions.

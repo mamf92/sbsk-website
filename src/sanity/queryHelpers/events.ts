@@ -34,6 +34,28 @@ const EVENTS_LIST_QUERY = `*[
   participants
 }`;
 
+// The Kalender page needs past events too — its scope filter offers "Tidligere" and "Alle"
+// alongside "Kommende", which `EVENTS_LIST_QUERY` cannot serve because it drops anything
+// already finished. Ordered newest-first and capped so the archive cannot grow unbounded:
+// the slice keeps the 200 most recent events, which is every upcoming one plus a deep
+// backlog. The section re-sorts client-side, so the descending order here is not the
+// display order.
+const CALENDAR_EVENTS_QUERY = `*[
+  _type == "event"
+] | order(eventStartTime desc)[0...200]{
+  _id,
+  title,
+  content,
+  image,
+  eventStartTime,
+  eventEndTime,
+  category,
+  "eventSlug": slug.current,
+  location,
+  links,
+  participants
+}`;
+
 const EVENT_BY_SLUG_QUERY = `*[
   _type == "event"
   && slug.current == $slug
@@ -55,6 +77,13 @@ export async function eventsListLoader() {
   if (!events) throw new Response('Events not found', { status: 404 });
 
   return { events };
+}
+
+export async function calendarEventsLoader() {
+  const events = await client.fetch<CalendarEventTypes[]>(CALENDAR_EVENTS_QUERY);
+  // An empty archive is a legitimate state — the calendar renders its own empty copy — so
+  // this resolves to `[]` rather than throwing the way the upcoming-only list does.
+  return { events: events ?? [] };
 }
 
 export async function eventDetailLoader({ params }: LoaderFunctionArgs) {
