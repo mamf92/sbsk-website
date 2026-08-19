@@ -97,12 +97,31 @@ jobs:
   e2e:
     name: Playwright smoke
     runs-on: ubuntu-latest
+
+    # The smoke suite itself runs in about 30 seconds. This ceiling is here for
+    # the step below it: when an Ubuntu mirror or the browser CDN stalls, the
+    # job otherwise sits on the default six-hour timeout with a green-ish
+    # "in progress" and blocks the PR silently. Fifteen minutes is roughly
+    # twenty times the healthy run and turns that into a legible failure.
+    timeout-minutes: 15
+
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup
 
+      # Deliberately not `--with-deps`. That flag shells out to `apt-get`, and
+      # on 2026-08-19 the runners' Ubuntu mirror went unreachable: apt spent
+      # 29 minutes retrying and falling back before the 23-second test run,
+      # on this branch and on `main` alike. The GitHub-hosted `ubuntu-latest`
+      # image ships Google Chrome, so Chromium's shared libraries are already
+      # present and the apt round trip bought nothing.
+      #
+      # If a future image does drop them, this fails loudly rather than
+      # silently: Playwright refuses to launch and prints the exact packages
+      # it wants, at which point `npx playwright install-deps chromium` is the
+      # narrow fix — not the blanket flag.
       - name: Install Playwright browser
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
 
       - name: Run smoke tests
         run: npm run test:e2e
