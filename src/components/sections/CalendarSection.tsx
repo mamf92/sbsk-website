@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { PortableText, toPlainText } from '@portabletext/react';
 import { Button } from '../ui/Buttons';
 import { Chip, type ChipCategory } from '../ui/Chip';
+import { Input } from '../ui/Input';
 import { AvatarStack, type AvatarStackPerson } from '../ui/AvatarStack';
 import { urlFor } from '../../sanity/sanityImageUrl';
 import calendarPlaceholderImage from '../../assets/images/calendar-placeholder.png';
@@ -478,16 +479,16 @@ function EventList({ events }: { events: CalendarEventTypes[] }) {
         />
       </div>
 
-      <input
+      <Input
         type="search"
+        icon="search"
         aria-label="Søk etter arrangementer"
-        placeholder="Søk etter arrangementer..."
+        placeholder="Søk etter arrangementer…"
         value={query}
         onChange={(event) => {
           setQuery(event.target.value);
           setVisibleCount(PAGE_SIZE);
         }}
-        className="focus:ring-focus-ring border-darkblue dark:border-orange placeholder:text-placeholder text-darkestblue font-body w-full rounded-none border px-4 py-3 focus:ring-2 focus:outline-none dark:bg-transparent dark:text-white"
       />
 
       <div className="flex flex-wrap items-center justify-between gap-3">

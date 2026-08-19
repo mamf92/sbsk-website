@@ -1,6 +1,8 @@
 import type { Member } from '../../../supabase/queryHelpers/getMember';
 import { Button } from '../../ui/Buttons';
+import { Checkbox } from '../../ui/Checkbox';
 import { Dialog } from '../../ui/Dialog';
+import { Input } from '../../ui/Input';
 
 type MemberFormValues = {
   id?: string;
@@ -26,9 +28,6 @@ const ADDRESS_PATTERN = "^[a-zA-ZÀ-ÿ\\-\\s'’]{2,}\\s?[0-9]{1,4}\\s?[a-zA-ZÀ
 const POSTAL_CODE_PATTERN = '^[0-9]{4,4}$';
 const CITY_PATTERN = "^[a-zA-ZÀ-ÿ\\-\\s'’]{1,}$";
 const EMAIL_PATTERN = '^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$';
-
-const INPUT_CLASS_NAME =
-  'focus:ring-orange border-darkblue dark:border-orange placeholder:text-placeholder text-darkblue placeholder:font-body w-full border bg-white px-3 py-2 focus:ring-2 focus:outline-none md:px-4 md:py-3';
 
 export default function MemberForm({ member, onSubmitMember, onClose }: MemberFormProps) {
   const isEditMode = Boolean(member?.id);
@@ -136,11 +135,10 @@ export default function MemberForm({ member, onSubmitMember, onClose }: MemberFo
               >
                 {field.label}
               </label>
-              <input
+              <Input
                 type="text"
                 id={field.id}
                 name={field.name}
-                className={INPUT_CLASS_NAME}
                 placeholder={field.placeholder}
                 defaultValue={field.defaultValue}
                 pattern={field.pattern}
@@ -150,13 +148,7 @@ export default function MemberForm({ member, onSubmitMember, onClose }: MemberFo
             </div>
           ))}
           <label htmlFor="is_admin" className="flex w-full items-center gap-2 pt-2">
-            <input
-              type="checkbox"
-              id="is_admin"
-              name="is_admin"
-              defaultChecked={member?.is_admin ?? false}
-              className="focus:ring-orange border-darkblue dark:border-orange text-darkblue size-4 border bg-white focus:ring-2 focus:outline-none"
-            />
+            <Checkbox id="is_admin" name="is_admin" defaultChecked={member?.is_admin ?? false} />
             <span className="font-body text-white">Administrator</span>
           </label>
         </div>

@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { SocialIcon } from 'react-social-icons';
 import Logo from '../../assets/logos/dicelogo.png';
+import { Input } from '../ui/Input';
 import { Button } from '../ui/Buttons';
 
 export default function Footer() {
@@ -69,10 +70,13 @@ export default function Footer() {
                 style={{ height: '1.5rem', width: '1.5rem' }}
               />
               <p className="font-bold">Meld deg på vårt månedlige nyhetsbrev: </p>
-              <input
+              {/* The newsletter field is not wired up yet, so `disabled` is the whole design:
+                  the fill, the missing hairline and the muted placeholder are the primitive's
+                  `:disabled` state rather than a class string of this file's own. */}
+              <Input
                 type="email"
+                aria-label="E-postadresse for nyhetsbrev"
                 placeholder="E-postadresse"
-                className="text-darkestblue w-full border-0 bg-gray-300 px-4 py-4 text-sm placeholder:text-gray-500"
                 disabled
               />
               <Button

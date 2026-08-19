@@ -1,9 +1,9 @@
 import MemberForm from './MemberForm';
 import { createMember } from '../../../supabase/queryHelpers/createMember';
 import { editMember } from '../../../supabase/queryHelpers/editMember';
-import Search from '../../../assets/icons/symbols/search.svg?react';
 import { type Member } from '../../../supabase/queryHelpers/getMember';
 import { Button } from '../../ui/Buttons';
+import { Input } from '../../ui/Input';
 import { useMemberSearch } from '../../../hooks/useMemberSearch';
 import { useRevalidator } from 'react-router-dom';
 
@@ -52,15 +52,15 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
             Legg til medlem
           </Button>
         </div>
-        <div className="max-w-form relative flex w-full items-center">
-          <input
-            type="text"
-            placeholder="Søk etter medlem..."
+        <div className="max-w-form flex w-full items-center">
+          <Input
+            type="search"
+            icon="search"
+            aria-label="Søk etter medlem"
+            placeholder="Søk etter medlem…"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="focus:ring-orange border-darkblue dark:border-orange placeholder:text-placeholder text-darkblue placeholder:font-body w-full border bg-white px-3 py-2 focus:ring-2 focus:outline-none md:px-4 md:py-3"
           />
-          <Search className="absolute right-6 h-5 w-5 text-gray-500" />
         </div>
       </div>
       <div className="flex flex-col gap-2 sm:px-2">

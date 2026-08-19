@@ -1,6 +1,7 @@
 import { Button } from '../ui/Buttons';
 import { Card, type CardCategory } from '../ui/Card';
 import { Chip, type ChipCategory } from '../ui/Chip';
+import { Input } from '../ui/Input';
 import { useState } from 'react';
 import Clock from '../../assets/icons/symbols/clock.svg?react';
 import type { PostTypes } from '../../sanity/queryHelpers/posts';
@@ -170,12 +171,13 @@ function PostsList({ posts }: { posts: PostTypes[] }) {
   }
   return (
     <div className="max-w-content flex w-full flex-col items-center gap-4 px-2 pb-2 sm:px-0 sm:pb-4">
-      <input
-        type="text"
-        placeholder="Søk etter innlegg..."
+      <Input
+        type="search"
+        icon="search"
+        aria-label="Søk etter innlegg"
+        placeholder="Søk etter innlegg…"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        className="focus:ring-orange border-darkblue dark:border-orange placeholder:text-placeholder text-darkblue w-full border px-4 py-3 focus:ring-2 focus:outline-none"
       />
       <div className="flex w-full flex-col items-center gap-2">
         <div className="flex flex-wrap justify-center gap-2">

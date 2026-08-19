@@ -1,6 +1,8 @@
 import type { Profile } from '../../../supabase/queryHelpers/getProfile';
 import { Button } from '../../ui/Buttons';
 import { Dialog } from '../../ui/Dialog';
+import { Input } from '../../ui/Input';
+import { Textarea } from '../../ui/Textarea';
 import uploadImage from '../../../supabase/queryHelpers/uploadImage';
 import { useState } from 'react';
 import { type ProfileFormValues } from '../../../supabase/queryHelpers/editProfile';
@@ -12,9 +14,6 @@ type ProfileFormProps = {
 };
 
 const NAME_PATTERN = "^[a-zA-ZÀ-ÿ\\-\\s'’]{2,}$";
-
-const INPUT_CLASS_NAME =
-  'focus:ring-orange border-darkblue dark:border-orange placeholder:text-placeholder text-darkblue placeholder:font-body w-full border bg-white px-3 py-2 focus:ring-2 focus:outline-none md:px-4 md:py-3';
 
 export default function ProfileForm({ profile, onSubmitProfile, onClose }: ProfileFormProps) {
   const [imageURL, setImageURL] = useState<string | null>(profile.photo_url);
@@ -62,7 +61,7 @@ export default function ProfileForm({ profile, onSubmitProfile, onClose }: Profi
       placeholder: 'Velg et bilde',
       defaultValue: '',
       accept: 'image/*',
-      title: 'File must be an image (jpg, png, etc.)',
+      title: 'Filen må være et bilde (jpg, png, e.l.)',
       required: false,
       onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -109,11 +108,10 @@ export default function ProfileForm({ profile, onSubmitProfile, onClose }: Profi
               >
                 {field.label}
               </label>
-              <input
+              <Input
                 type={field.type ?? 'text'}
                 id={field.id}
                 name={field.name}
-                className={INPUT_CLASS_NAME}
                 placeholder={field.placeholder}
                 defaultValue={field.defaultValue}
                 accept={field.accept}
@@ -130,11 +128,10 @@ export default function ProfileForm({ profile, onSubmitProfile, onClose }: Profi
           >
             Bio
           </label>
-          <textarea
+          <Textarea
             id="bio"
             name="bio"
-            className={`${INPUT_CLASS_NAME} h-32 resize-none`}
-            placeholder="Skriv litt om deg selv..."
+            placeholder="Skriv litt om deg selv…"
             defaultValue={profile?.bio ?? ''}
           />
         </div>

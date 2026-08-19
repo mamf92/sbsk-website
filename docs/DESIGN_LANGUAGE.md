@@ -254,8 +254,31 @@ Lift is for things you press. It is not decoration.
   `lift-chip` reads `aria-pressed`. There is no press state — a card settles by expanding,
   and a downward nudge would fight the panel opening beneath it. A card you cannot press
   keeps the border and nothing else.
-- **Not yet:** form controls were deliberately left out of this pass — they need their own
-  decision and touch far more markup than buttons do. See the follow-up issue for forms.
+- **No:** form controls. A text field is not a pressable surface — you put a caret in it, you
+  do not press it — so `Input`, `Textarea` and `Checkbox` stay flat in every state. What they
+  did take from this pass is the focus treatment, which they were the last holdout on: see
+  "Focus" below.
+
+## Focus
+
+Every interactive surface in `src/components/ui/` draws the same focus affordance:
+
+```
+focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2
+```
+
+on `--color-focus-ring`. Three things about it are deliberate, and form controls used to get
+all three wrong — they were the only place in the system still doing so, which is what the
+form-controls port (#86) corrected:
+
+- **`focus-visible:`, not `focus:`.** The ring is for keyboard navigation. Drawing it on a
+  mouse click as well is noise.
+- **`outline`, not `ring`.** A Tailwind `ring` is a `box-shadow`, and on this brand
+  `box-shadow` means the hard offset lift. Two different meanings on one property is how a
+  focused button ends up looking pressed.
+- **The token, not the colour.** `--color-focus-ring` exists for this. It resolves to orange
+  today, so reading it changes nothing on screen — it changes what happens when the brand
+  moves.
 
 ## Upstream
 
