@@ -78,12 +78,19 @@ it is why the levels themselves have to be right: on `/` the posts header was an
 the hero's, which is both an invalid outline and the reason it sat at 20px next to a 30px `<h2>`
 one component away. Fixing the level fixed the size.
 
-Two things sit deliberately outside the scale:
+Four things sit deliberately outside the scale:
 
+- **`--text-display`** — `clamp(34px, 5vw, 56px)`, the system's only fluid step, for a page that
+  is nothing but its statement. The 404 is the one today. #144 chose not to add a display step to
+  the heading scale, and that still holds: this is not a step above `h1`, it is a size for a
+  treatment. If the home hero ever wants it, that is a decision to make by looking at the hero,
+  not by reaching for the nearest big token.
+- **`--text-errorcode`** — `clamp(96px, 15vw, 180px)` on a 0.8 line-height, the 404's flanking
+  numerals.
+- **The calendar's day numerals**, on `--text-daymark` (66px). Decorative digits, not a heading.
 - **Rich text inside a `Card`.** `src/sanity/editors/portableTextComponents.tsx` owns its own
   sizes, because a heading inside an expanded panel is nested two levels deeper than the card
   title above it and would out-shout it on the shared scale.
-- **The calendar's day numerals**, on `--text-daymark` (66px). Decorative digits, not a heading.
 
 `tracking-heading` (0.05em) is **opt-in**, not part of the scale. It belongs to display contexts
 that read as brand — the header wordmark, the calendar's column heads and hero, the placeholder

@@ -71,4 +71,17 @@ describe('NotFound', () => {
     const markup = container.innerHTML;
     expect(markup).not.toMatch(/bg-(amber|emerald)-/);
   });
+
+  // #145: this section was built from `style={{}}` objects, which no theme token and no `dark:`
+  // variant can reach. Nothing on the page should carry an inline style again.
+  it('styles itself with utilities rather than inline styles', () => {
+    const { container } = renderPage();
+
+    // `DiceLogo` sizes its own <svg> from a numeric prop, which is a runtime dimension rather
+    // than styling and has nowhere else to live.
+    const inline = Array.from(container.querySelectorAll('[style]'))
+      .filter((node) => node.tagName.toLowerCase() !== 'svg')
+      .map((node) => node.outerHTML.slice(0, 60));
+    expect(inline).toEqual([]);
+  });
 });

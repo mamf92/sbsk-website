@@ -200,8 +200,10 @@ const PAGE_WIDTH_FLOOR = 96;
 function isRawPageWidth(token: string): boolean {
   const value = token.slice('max-w-'.length);
   if (NAMED_CONTAINER_STEP.test(value)) return true;
-  // A one-off `max-w-[1100px]`: the exact shape a converted inline style comes back as.
-  if (value.startsWith('[')) return true;
+  // A one-off `max-w-[1100px]`: the exact shape a converted inline style comes back as. A `ch`
+  // value is the exception — it is measured in the text itself, so it is a reading measure
+  // rather than a page width, and no container token could express it.
+  if (value.startsWith('[')) return !/^\[\d+(\.\d+)?ch\]$/.test(value);
   const steps = Number(value);
   return Number.isFinite(steps) && steps >= PAGE_WIDTH_FLOOR;
 }
@@ -228,6 +230,8 @@ describe('page containers come from the container tokens', () => {
     expect(
       ['max-w-5xl', 'max-w-md', 'max-w-200', 'max-w-[1100px]'].filter(isRawPageWidth),
     ).toHaveLength(4);
+    // A reading measure, not a container: the 404 body copy's `max-w-[44ch]`.
+    expect(isRawPageWidth('max-w-[44ch]')).toBe(false);
     // Component-sized, not a container: the footer wordmark's 49px box.
     expect(isRawPageWidth('max-w-12.25')).toBe(false);
   });

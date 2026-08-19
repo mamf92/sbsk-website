@@ -97,6 +97,21 @@
   --text-h4: 1rem;
   --text-h4--line-height: 1.375rem;
 
+  /* A statement heading on a page that is nothing but the statement — the 404 today, and the
+     only fluid step in the system. #144 deliberately did not add a display step to the heading
+     scale: with the placeholder pages excluded, no ordinary page heading needed one. This is
+     not an ordinary page heading. It keeps the exact clamp the error page already rendered
+     (34px on a phone, 56px from 1120px up), now named so a second full-page statement gets the
+     same type instead of a fresh `clamp()`. */
+  --text-display: clamp(2.125rem, 5vw, 3.5rem);
+  --text-display--line-height: 1.1;
+
+  /* The 404's flanking numerals. Decorative digits rather than a heading, so like
+     `--text-daymark` below they are a one-off size and not a step on the scale — 0.8 line-height
+     so the two digits sit tight against the die between them. */
+  --text-errorcode: clamp(6rem, 15vw, 11.25rem);
+  --text-errorcode--line-height: 0.8;
+
   /* The calendar date block's day number. A display size deliberately above the heading
      scale — the library pins it at 66px on a 0.78 line-height so the digits sit tight
      against the month abbreviation under them. */
