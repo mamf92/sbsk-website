@@ -17,7 +17,7 @@ export default function Footer() {
                   </NavLink>
                 </div>
                 <div>
-                  <p className="font-heading text-2xl font-bold">Stavanger Brettspillklubb</p>
+                  <p className="font-heading text-h2 font-bold">Stavanger Brettspillklubb</p>
                 </div>
               </div>
               <div>

@@ -35,7 +35,7 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
     <div className="bg-darkblue surface-dark max-w-form md:max-w-content mx-auto mb-4 flex w-full flex-col gap-2 px-2 py-24">
       <div className="flex flex-col items-center gap-2 sm:gap-4 sm:px-2">
         <div className="flex flex-col items-start gap-2">
-          <h2 className="font-heading text-2xl font-bold text-white">Medlemsliste</h2>
+          <h2 className="font-heading text-h2 font-bold text-white">Medlemsliste</h2>
           <p className="font-body text-white">
             Her ser du oversikt over alle medlemmene i klubben. Klikk på et medlem for å se mer info
             eller redigere innholdet.

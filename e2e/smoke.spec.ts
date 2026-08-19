@@ -63,13 +63,13 @@ for (const route of singleMainRoutes) {
     await expect(page.locator('main')).toHaveCount(1);
   });
 
-  // A route with no <h1> gives a screen reader a `main` landmark with nothing naming it. Six
-  // routes were in that state until #147 — they titled themselves with a <div>. This is a floor
-  // rather than an exact count: `/` legitimately has two h1s today (the hero and the posts
-  // header), which is its own finding and not this assertion's business.
-  test(`${route} renders a document heading`, async ({ page }) => {
+  // A route with no <h1> gives a screen reader a `main` landmark with nothing naming it; a route
+  // with two leaves it without a single answer to "what is this page". Six routes were in the
+  // first state until #147 (they titled themselves with a <div>) and `/` was in the second until
+  // #144 demoted the posts header to an <h2>, so this can now pin the exact count.
+  test(`${route} renders exactly one document heading`, async ({ page }) => {
     await page.goto(route);
-    await expect(page.locator('h1')).not.toHaveCount(0);
+    await expect(page.locator('h1')).toHaveCount(1);
   });
 }
 

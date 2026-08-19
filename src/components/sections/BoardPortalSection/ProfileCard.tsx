@@ -14,12 +14,12 @@ export default function ProfileCard({ member }: { member: Profile }) {
       <div className="flex items-center gap-2 p-2 sm:gap-4">
         <div className="flex flex-col items-start">
           {member.name && member.surname && (
-            <h3 className="font-heading xs:text-2xl text-lg font-bold text-white">
+            <h3 className="font-heading text-h3 font-bold text-white">
               {member.name} {member.surname}
             </h3>
           )}
           {!member.name && !member.surname && (
-            <h3 className="font-heading xs:text-2xl text-lg font-bold text-white">Legg til navn</h3>
+            <h3 className="font-heading text-h3 font-bold text-white">Legg til navn</h3>
           )}
           {member.bio && <p className="font-body xs:text-base text-xs text-white">{member.bio}</p>}
           {!member.bio && (

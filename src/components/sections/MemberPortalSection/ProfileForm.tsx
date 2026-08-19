@@ -79,7 +79,7 @@ export default function ProfileForm({ profile, onSubmitProfile, onClose }: Profi
     <div className="dark:bg-darkblue/70 fixed top-0 left-0 z-40 h-lvh w-screen bg-white/70 backdrop-blur-xs">
       <div className="bg-darkblue surface-dark max-w-form absolute top-1/2 left-1/2 z-50 flex w-[calc(100vw-1rem)] -translate-x-1/2 -translate-y-1/2 flex-col justify-center gap-3 py-10 sm:px-6">
         <div className="flex items-center justify-between p-2 sm:gap-4">
-          <h1 className="font-heading text-3xl text-white">Rediger profil</h1>
+          <h1 className="font-heading text-h1 text-white">Rediger profil</h1>
           <div className="xs:h-37.5 xs:w-37.5 h-20 w-20">
             {imageURL ? (
               <img

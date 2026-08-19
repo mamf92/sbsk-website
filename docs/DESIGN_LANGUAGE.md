@@ -59,6 +59,40 @@ Two naming rules worth knowing, because getting either wrong fails silently:
   inside a `--shadow-*` token at build time and inlines it, which kills any `.dark` override.
   Both `--hard-shadow-color` and `--overlay-shadow-color` exist for exactly this reason.
 
+## The heading scale
+
+`--text-h1` … `--text-h4` are an exact four-step scale, named rather than mapped onto Tailwind's
+default sizes because the defaults only approximate them (`--text-h1` is 32/44, `text-3xl` is
+30/36). They set size and line-height only, so a heading still carries its own `font-heading`
+and `font-bold`.
+
+| Step      | Size / line-height | Takes it                                        |
+| --------- | ------------------ | ----------------------------------------------- |
+| `text-h1` | 32 / 44            | The one document heading a route has            |
+| `text-h2` | 28 / 38            | A section heading inside a page                 |
+| `text-h3` | 20 / 27            | A card, list-entry or profile title             |
+| `text-h4` | 16 / 22            | The wordmark, and headings inside a dense block |
+
+**The heading's level picks the step.** An `<h2>` takes `text-h2`. That is the whole rule, and
+it is why the levels themselves have to be right: on `/` the posts header was an `<h1>` beside
+the hero's, which is both an invalid outline and the reason it sat at 20px next to a 30px `<h2>`
+one component away. Fixing the level fixed the size.
+
+Two things sit deliberately outside the scale:
+
+- **Rich text inside a `Card`.** `src/sanity/editors/portableTextComponents.tsx` owns its own
+  sizes, because a heading inside an expanded panel is nested two levels deeper than the card
+  title above it and would out-shout it on the shared scale.
+- **The calendar's day numerals**, on `--text-daymark` (66px). Decorative digits, not a heading.
+
+`tracking-heading` (0.05em) is **opt-in**, not part of the scale. It belongs to display contexts
+that read as brand — the header wordmark, the calendar's column heads and hero, the placeholder
+titles — and a heading that does not take it is not missing anything.
+
+Before #144 the scale was used five times in the whole codebase and every other heading picked a
+raw Tailwind size, so `<h1>` rendered at four different sizes across the site and one of them was
+smaller than an `<h2>` two components away.
+
 ## Page widths
 
 Three container tokens, and a page section picks one of them:

@@ -453,7 +453,7 @@ function EventList({ events }: { events: CalendarEventTypes[] }) {
   if (events.length === 0) {
     return (
       <div className="max-w-content mx-auto w-full px-5 py-8">
-        <h2 className="text-darkestblue font-heading mb-2 text-3xl font-bold md:text-4xl dark:text-white">
+        <h2 className="text-darkestblue font-heading text-h2 mb-2 font-bold dark:text-white">
           Ingen arrangementer
         </h2>
         <p className="text-darkestblue font-body mb-6 text-base dark:text-white">
