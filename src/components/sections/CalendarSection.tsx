@@ -48,6 +48,12 @@ type Category = CalendarEventTypes['category'];
 // These are spelled out as whole class strings on purpose. Tailwind scans source text, so an
 // assembled `bg-${category}` never reaches the stylesheet — which is exactly why the previous
 // version of this file rendered its cards unstyled.
+//
+// `surfaceTone` is the `surface-*` utility matching the `surface` fill, kept separate because
+// `surface` lands on the card root — the element that carries `lift-card` — and a `surface-*`
+// there would repoint the card's own shadow onto the page instead of its children's onto the
+// card. It goes on the header row inside, which is what the RSVP button actually casts onto.
+// `accent` only ever fills non-lifting elements, so it carries its tone inline.
 const CATEGORY_STYLES = {
   // `bg-darkblue`, not `bg-category-spillkveld`. #88 repointed that token at orange so the
   // news feed's spillkveld chip would match its cards, which are orange there. The calendar
@@ -56,15 +62,18 @@ const CATEGORY_STYLES = {
   // is fine for a topic label and not fine for a list you scan for what kind of night it is.
   spillkveld: {
     surface: 'bg-darkblue text-white',
-    accent: 'bg-darkestblue text-white',
+    surfaceTone: 'surface-dark',
+    accent: 'bg-darkestblue surface-dark text-white',
   },
   turnering: {
     surface: 'bg-category-turnering text-darkestblue',
-    accent: 'bg-darkorange text-white',
+    surfaceTone: 'surface-light',
+    accent: 'bg-darkorange surface-light text-white',
   },
   annet: {
     surface: 'bg-category-annet text-white',
-    accent: 'bg-orange text-darkestblue',
+    surfaceTone: 'surface-light',
+    accent: 'bg-orange surface-light text-darkestblue',
   },
 } as const;
 
@@ -641,6 +650,7 @@ function EventRow({
         }
         className={[
           'flex min-h-27 items-stretch',
+          styles.surfaceTone,
           expandable || linksOut ? 'cursor-pointer select-none' : '',
         ].join(' ')}
       >

@@ -10,7 +10,7 @@ export default function ProfileCard({ member }: { member: Profile }) {
   const revalidator = useRevalidator();
 
   return (
-    <div className="bg-darkblue">
+    <div className="bg-darkblue surface-dark">
       <div className="flex items-center gap-2 p-2 sm:gap-4">
         <div className="flex flex-col items-start">
           {member.name && member.surname && (

@@ -41,7 +41,7 @@ value in a class.
 | `--ease-out`               | `cubic-bezier(0.16, 1, 0.3, 1)`             | Travel curve               |
 | `--transition-fast`        | `var(--duration-fast) var(--ease-standard)` | Colour, as a fragment      |
 | `--transition-snappy`      | `var(--duration-base) var(--ease-out)`      | Travel, as a fragment      |
-| `--hard-shadow-color`      | `darkestblue`, brand black in dark mode     | The offset shadow's colour |
+| `--hard-shadow-color`      | `darkestblue`; `white` in dark mode         | The offset shadow's colour |
 | `--shadow-1` / `-2` / `-3` | `2px` / `4px` / `6px` hard offset           | Press / hover / raised     |
 | `--lift-hover`             | `translate(-2px, -2px)`                     | Hover offset               |
 | `--lift-hover-card`        | `translate(-3px, -3px)`                     | Hover offset, cards        |
@@ -58,6 +58,53 @@ Two naming rules worth knowing, because getting either wrong fails silently:
 - **A shadow token's colour must stay behind a `var()`.** Tailwind resolves a literal colour
   inside a `--shadow-*` token at build time and inlines it, which kills any `.dark` override.
   Both `--hard-shadow-color` and `--overlay-shadow-color` exist for exactly this reason.
+
+## The shadow colour belongs to the surface
+
+A hard offset shadow is only a lift if it contrasts with the fill it is painted onto, and that
+fill is not the theme. A `darkblue` panel exists in light mode; an `orange` one exists in dark
+mode. Two global values keyed off `.dark` cannot cover either, which is what #139 measured: with
+the shadow set to brand black in dark mode, 17 of 19 lifting elements on the front page fell
+below 3:1, and a `nyheter` card panel matched its own shadow exactly in both themes.
+
+There are exactly two usable shadow colours across the palette, and the fill decides which:
+
+| fill                          | `darkestblue` shadow | `white` shadow   |
+| ----------------------------- | -------------------- | ---------------- |
+| `darkestblue` / `darkblue`    | 1.00 / 1.24          | 16.63 / 13.36    |
+| `orange`                      | 7.64                 | 2.18             |
+| `darkorange`                  | 4.99                 | 3.33             |
+| `white` / `gray-100` / `-300` | 16.63 / 15.34 /11.78 | 1.00 /1.08 /1.41 |
+
+So `src/index.css` defines two more utilities:
+
+```
+surface-dark    the fill is darkestblue, darkblue or black — descendants cast white
+surface-light   the fill is white, a grey, orange or darkorange — descendants cast darkestblue
+```
+
+Put one on the element that paints the fill; every lifting descendant picks it up through
+inheritance. `orange` counts as _light_ here — the name is about which shadow the fill can carry,
+and orange can only carry the dark one. The `.dark` block still sets a value, but it is now only
+the dark **page** background's shadow, the same way the `:root` value is the light page's.
+
+Two rules keep this working:
+
+- **Never put `surface-*` on the element that lifts.** It would repoint that element's own
+  shadow. A `Card` casts onto the page behind it; the header and panel _inside_ it are the
+  surfaces its buttons cast onto. `CalendarSection` keeps `surfaceTone` as a separate key for
+  this reason — its fill lands on the card root, which is the element carrying `lift-card`.
+- **A slot that takes caller content declares its tone unconditionally.** `Card`'s `panels` map
+  and `CalendarSection`'s `CATEGORY_STYLES` do, because what a caller puts in them is not
+  knowable from the component.
+
+`e2e/shadow-contrast.spec.ts` walks every lifting element on the public routes in both themes and
+fails below 3:1. It is a Playwright spec rather than a unit test because the ancestor chain and
+the resolved custom property only exist in a real browser.
+
+Not the accent shadow: `--shadow-accent-1` / `-2` are orange, and an orange shadow under a
+`variant="primary"` button is orange-on-orange, so the button reads as a smeared parallelogram.
+They stay in the theme for a deliberate accent on a non-orange element.
 
 Note also that `--duration-*` is **not** a Tailwind utility namespace — there is no
 `duration-fast` class. Read the variable directly: `duration-(--duration-fast)`.

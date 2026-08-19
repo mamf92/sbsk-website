@@ -32,12 +32,18 @@ const headers = {
   annet: 'bg-darkorange text-white',
 } as const;
 
+// The panel carries a `surface-*` tone and the header deliberately does not. `children` is
+// caller-supplied and routinely holds `Button`s — PostsSection puts the post's links there — so
+// the panel has to declare which hard shadow its fill can carry; a `nyheter` panel is
+// `darkestblue` and the default shadow is the same colour, which is where #139's exact 1:1 row
+// came from. The header fill sits on the `<article>` itself, which is the element that lifts,
+// and a `surface-*` there would repoint the card's *own* shadow onto the page behind it.
 const panels = {
-  nyheter: 'bg-darkestblue text-white',
-  spillkveld: 'bg-darkorange text-white',
-  arrangementer: 'bg-orange text-darkestblue',
-  turnering: 'bg-darkorange text-white',
-  annet: 'bg-orange text-darkestblue',
+  nyheter: 'bg-darkestblue surface-dark text-white',
+  spillkveld: 'bg-darkorange surface-light text-white',
+  arrangementer: 'bg-orange surface-light text-darkestblue',
+  turnering: 'bg-darkorange surface-light text-white',
+  annet: 'bg-orange surface-light text-darkestblue',
 } as const;
 
 export const Card = React.forwardRef<HTMLElement, CardProps>(

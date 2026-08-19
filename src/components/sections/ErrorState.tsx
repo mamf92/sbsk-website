@@ -43,7 +43,7 @@ export default function ErrorState({
   return (
     <section
       className={[
-        'bg-darkestblue flex flex-1 items-center justify-center overflow-hidden text-white',
+        'bg-darkestblue surface-dark flex flex-1 items-center justify-center overflow-hidden text-white',
         className,
       ]
         .filter(Boolean)

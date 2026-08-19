@@ -32,7 +32,7 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
   const revalidator = useRevalidator();
 
   return (
-    <div className="bg-darkblue mx-auto mb-4 flex w-full max-w-150 flex-col gap-2 px-2 py-24 md:max-w-200">
+    <div className="bg-darkblue surface-dark mx-auto mb-4 flex w-full max-w-150 flex-col gap-2 px-2 py-24 md:max-w-200">
       <div className="flex flex-col items-center gap-2 sm:gap-4 sm:px-2">
         <div className="flex flex-col items-start gap-2">
           <h2 className="font-heading text-2xl font-bold text-white">Medlemsliste</h2>
