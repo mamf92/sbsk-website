@@ -83,7 +83,7 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
           </div>
         </div>
         {loading && (
-          <div className="bg-mutedbackground/50 fixed top-0 left-0 z-40 h-full w-full backdrop-blur-sm dark:bg-black/50">
+          <div className="bg-white/50 fixed top-0 left-0 z-40 h-full w-full backdrop-blur-sm dark:bg-black/50">
             <p className="fixed top-1/3 left-1/2 z-50 -translate-x-1/2 -translate-y-1/3 dark:text-white">
               Laster medlemmer...
             </p>
@@ -99,7 +99,7 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
           <div className="flex flex-col bg-white px-2 py-4">
             {sortedMembers.map((member) => (
               <div
-                className="hover:bg-background hover:cursor-pointer"
+                className="hover:bg-gray-100 hover:cursor-pointer"
                 key={member.id}
                 onClick={() => handleMemberClick(member)}
               >

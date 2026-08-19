@@ -44,7 +44,7 @@ export default function RegisterSection() {
       <div className="flex w-full flex-col gap-8 py-24">
         <div className="flex flex-col items-center gap-4">
           <h1 className="font-heading text-center text-3xl text-white">Lag medlemsprofil</h1>
-          <p className="text-body w-full text-center text-white">
+          <p className="font-body w-full text-center text-white">
             Er du medlem i klubben kan du lage din egen medlemsprofil for å melde deg på
             arrangementer, se medlemsfordeler og på sikt mye mer!
           </p>

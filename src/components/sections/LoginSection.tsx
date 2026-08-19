@@ -39,15 +39,15 @@ export default function LoginSection({ reason }: { reason?: string }) {
         <div className="flex flex-col items-center gap-4">
           <h1 className="font-heading text-center text-3xl text-white">Velkommen tilbake!</h1>
           {reason === 'not_authenticated' && (
-            <p className="text-body text-orange text-center">
+            <p className="font-body text-orange text-center">
               Det ser ut som at du ikke er logget inn. Logg inn igjen for å fortsette.
             </p>
           )}
-          <p className="text-body w-full text-center text-white">
+          <p className="font-body w-full text-center text-white">
             Her kan du logge inn på din medlemsprofil og få tilgang til arrangementer,
             medlemsfordeler og mer!
           </p>
-          <p className="text-body w-full text-center text-white">
+          <p className="font-body w-full text-center text-white">
             Ingen konto enda? Er du medlem i klubben kan du lage din egen medlemsprofil ved å klikke
             på lenken under.
           </p>
