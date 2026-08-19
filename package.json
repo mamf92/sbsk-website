@@ -65,7 +65,7 @@
     "ws": "^8.21.2"
   },
   "lint-staged": {
-    "*.{js,ts,css,md}": "prettier --write",
-    "*.js,.ts,.tsx": "eslint --cache --fix"
+    "*.{js,jsx,ts,tsx,css,md}": "prettier --write",
+    "*.{js,jsx,ts,tsx}": "eslint --cache --fix"
   }
 }

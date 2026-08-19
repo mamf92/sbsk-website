@@ -60,7 +60,7 @@ export default function HomeHero({
             <h1 className="text-darkestblue text-left text-4xl font-bold dark:text-white">
               {resolvedTitle}
             </h1>
-            <p className="text-darkestblue font-normal text-left text-lg dark:text-white">
+            <p className="text-darkestblue text-left text-lg font-normal dark:text-white">
               {resolvedSubtitle}
             </p>
           </div>
