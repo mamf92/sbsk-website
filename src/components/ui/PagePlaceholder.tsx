@@ -61,12 +61,12 @@ export function PagePlaceholder({
         Kommer snart
       </span>
 
-      <h1 className="font-heading text-h1 tracking-heading max-w-200 text-center font-bold">
+      <h1 className="font-heading text-h1 tracking-heading max-w-content text-center font-bold">
         {title}
       </h1>
 
       {description ? (
-        <p className="font-body max-w-150 text-center text-base">{description}</p>
+        <p className="font-body max-w-form text-center text-base">{description}</p>
       ) : null}
 
       {actions.length > 0 ? (

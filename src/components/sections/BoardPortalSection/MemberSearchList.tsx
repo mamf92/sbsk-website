@@ -32,7 +32,7 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
   const revalidator = useRevalidator();
 
   return (
-    <div className="bg-darkblue surface-dark mx-auto mb-4 flex w-full max-w-150 flex-col gap-2 px-2 py-24 md:max-w-200">
+    <div className="bg-darkblue surface-dark max-w-form md:max-w-content mx-auto mb-4 flex w-full flex-col gap-2 px-2 py-24">
       <div className="flex flex-col items-center gap-2 sm:gap-4 sm:px-2">
         <div className="flex flex-col items-start gap-2">
           <h2 className="font-heading text-2xl font-bold text-white">Medlemsliste</h2>
@@ -52,7 +52,7 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
             Legg til medlem
           </Button>
         </div>
-        <div className="relative flex w-full max-w-150 items-center">
+        <div className="max-w-form relative flex w-full items-center">
           <input
             type="text"
             placeholder="Søk etter medlem..."

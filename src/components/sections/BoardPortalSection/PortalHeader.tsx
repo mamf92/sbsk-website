@@ -5,7 +5,7 @@ import { Button } from '../../ui/Buttons';
 export default function PortalHeader({ boardmember }: { boardmember: Profile }) {
   const navigate = useNavigate();
   return (
-    <div className="bg-darkestblue surface-dark mx-auto flex w-full max-w-150 flex-col items-start gap-6 px-2 py-12 md:max-w-200">
+    <div className="bg-darkestblue surface-dark max-w-form md:max-w-content mx-auto flex w-full flex-col items-start gap-6 px-2 py-12">
       <div className="flex flex-col gap-6">
         {!boardmember.name && (
           <h1 className="font-heading text-3xl font-bold text-white lg:text-4xl">

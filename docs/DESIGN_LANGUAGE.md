@@ -59,6 +59,32 @@ Two naming rules worth knowing, because getting either wrong fails silently:
   inside a `--shadow-*` token at build time and inlines it, which kills any `.dark` override.
   Both `--hard-shadow-color` and `--overlay-shadow-color` exist for exactly this reason.
 
+## Page widths
+
+Three container tokens, and a page section picks one of them:
+
+| Token                 | Value           | Takes it                                             |
+| --------------------- | --------------- | ---------------------------------------------------- |
+| `--container-shell`   | `75rem` (1200)  | `Header`, `Footer`, full-page sections               |
+| `--container-content` | `64rem` (1024)  | Card lists, calendar, posts, the two portals         |
+| `--container-form`    | `37.5rem` (600) | Forms, login, dialogs, single-column reading measure |
+
+Tailwind v4 mints the utilities from the `--container-*` namespace, so these are written
+`max-w-shell` / `max-w-content` / `max-w-form`. Pick by what the section holds, not by how wide
+it wants to be — the names are the decision, the pixels are a consequence.
+
+Before #146 there were six widths in two notations (`max-w-300` beside `max-w-5xl` beside
+`max-w-md`), so navigating from the calendar to a portal to a login form stepped the content
+column inward twice while the 1200px header and footer above and below it stayed put. A test in
+`src/test/tailwindClasses.test.ts` fails on a `max-w-*` above 24rem that is not one of the three,
+including an arbitrary `max-w-[1100px]`; a `max-w-*` below that is sizing a component, not a
+column, and is left alone.
+
+The narrow-to-wide pair the portals use (`max-w-form md:max-w-content`) is the one place a
+section takes two steps — the member list is four columns that cannot be four columns on a
+phone. Horizontal padding is still scattered and is deliberately not part of this; it interacts
+with each section's own layout in a way the width does not.
+
 ## The shadow colour belongs to the surface
 
 A hard offset shadow is only a lift if it contrasts with the fill it is painted onto, and that
