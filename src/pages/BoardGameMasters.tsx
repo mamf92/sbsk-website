@@ -1,7 +1,10 @@
+import { PagePlaceholder } from '../components/ui/PagePlaceholder';
+
 export default function BoardGameMasters() {
   return (
-    <div className="min-h-[60vh] bg-white">
-      <div className="text-darkestblue font-heading text-6xl font-bold">Board Game Masters</div>
-    </div>
+    <PagePlaceholder
+      title="Board Game Masters"
+      description="Board Game Masters er turneringsserien vår, og siden om den er under arbeid. Kommende runder ligger allerede i kalenderen."
+    />
   );
 }
