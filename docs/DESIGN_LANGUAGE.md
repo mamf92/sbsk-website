@@ -259,6 +259,38 @@ Lift is for things you press. It is not decoration.
   did take from this pass is the focus treatment, which they were the last holdout on: see
   "Focus" below.
 
+## Loading, empty, error
+
+Three states every async screen passes through, and before #153 each screen invented its own —
+three loading treatments at three levels of intrusiveness, three unrelated empty states, and an
+error that no screen reader ever mentioned.
+
+**Loading is four square pips, one dim at a time.** A rotating spinner is out of language:
+nothing here rotates and nothing eases. A shimmering skeleton is worse — a soft gradient
+sliding under a surface is exactly the depth cue the system rejects. What is left is what the
+brand already does, which is hard discrete states, so `sbsk-load-step` runs on
+`steps(1, end)`: no interpolation between frames at all, the same 4-frame quality as the
+dice roll's face swaps. `LoadingIndicator` wraps the pips in a `role="status"` live region;
+`Button`'s `loading` prop uses the bare pips, because a button in flight already carries
+`aria-busy`.
+
+`loading` on a `Button` swaps the **icon**, never the label. Keeping the label keeps the width,
+and the button disables itself — the version this replaced swapped the label to
+"Logging in..." and stayed live, which made double-submitting a registration reachable.
+
+**Empty is heading, body, optional action.** `EmptyState` at `page` scale for "there is nothing
+here at all" and `inline` for "this list has content but no matches". It is colour-neutral and
+inherits from whatever surface it lands on, because it lands on the white page and on a
+`darkblue` panel. `ErrorState` is the same shape at full-page scale with the 404's furniture.
+
+**Error brings its own surface.** `--color-error` is `#b5251f`, and both auth forms sit on a
+`darkblue` panel where red text measures **2.07:1** — so the obvious treatment fails outright.
+`Alert` is a white block with a red hairline, a red glyph and red text: 6.4:1, flat, square,
+and legible on any fill. `role="alert"` is the part that matters most; these failures used to
+be painted and never announced. `FieldError` is `Alert` at `sm`, and pairs with `invalid` on
+`Input` / `Textarea` — the control owns the box, `FieldError` owns the words, and
+`aria-describedby` joins them.
+
 ## Focus
 
 Every interactive surface in `src/components/ui/` draws the same focus affordance:

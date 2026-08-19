@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '../ui/Buttons';
 import { Input } from '../ui/Input';
+import { Alert } from '../ui/Alert';
 import { useAuthActions } from '../../hooks/useAuthActions';
 
 export default function RegisterSection() {
@@ -81,17 +82,10 @@ export default function RegisterSection() {
               />
             </label>
 
-            {error && <div className="text-orange text-sm">{error}</div>}
+            {error && <Alert>{error}</Alert>}
 
-            {/* See LoginSection — registering twice was reachable. */}
-            <Button
-              type="submit"
-              variant={loading ? 'disabled' : 'primary'}
-              size="md"
-              icon="right"
-              disabled={loading}
-            >
-              {loading ? 'Registrerer…' : 'Registrer deg'}
+            <Button type="submit" variant="primary" size="md" icon="right" loading={loading}>
+              Registrer deg
             </Button>
           </form>
         </div>

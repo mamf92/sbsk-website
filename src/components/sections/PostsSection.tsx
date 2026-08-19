@@ -2,6 +2,7 @@ import { Button } from '../ui/Buttons';
 import { Card, type CardCategory } from '../ui/Card';
 import { Chip, type ChipCategory } from '../ui/Chip';
 import { Input } from '../ui/Input';
+import EmptyState from '../ui/EmptyState';
 import { useState } from 'react';
 import Clock from '../../assets/icons/symbols/clock.svg?react';
 import type { PostTypes } from '../../sanity/queryHelpers/posts';
@@ -159,13 +160,11 @@ function PostsList({ posts }: { posts: PostTypes[] }) {
 
   if (posts.length === 0 || !posts) {
     return (
-      <div className="max-w-content mx-auto px-2 sm:px-0">
-        <div className="max-w-content mx-auto px-5 py-8">
-          <h2 className="text-darkestblue text-h2 mb-2 font-bold dark:text-white">Ingen innlegg</h2>
-          <p className="text-darkestblue mb-6 text-base dark:text-white">
-            Det ser ikke ut til å være noen innlegg for øyeblikket. Vennligst sjekk igjen senere.
-          </p>
-        </div>
+      <div className="max-w-content text-darkestblue mx-auto px-2 sm:px-0 dark:text-white">
+        <EmptyState
+          title="Ingen innlegg"
+          body="Det ser ikke ut til å være noen innlegg for øyeblikket. Vennligst sjekk igjen senere."
+        />
       </div>
     );
   }

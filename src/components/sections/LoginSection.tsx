@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '../ui/Buttons';
 import { Input } from '../ui/Input';
+import { Alert } from '../ui/Alert';
 import { useAuthActions } from '../../hooks/useAuthActions';
 
 export default function LoginSection({ reason }: { reason?: string }) {
@@ -84,18 +85,10 @@ export default function LoginSection({ reason }: { reason?: string }) {
               />
             </label>
 
-            {error && <div className="text-orange text-sm">{error}</div>}
+            {error && <Alert>{error}</Alert>}
 
-            {/* Disabled while the request is in flight. Without it the form was
-                double-submittable: the label swapped but the button stayed live. */}
-            <Button
-              type="submit"
-              variant={loading ? 'disabled' : 'primary'}
-              size="md"
-              icon="right"
-              disabled={loading}
-            >
-              {loading ? 'Logger inn…' : 'Logg inn'}
+            <Button type="submit" variant="primary" size="md" icon="right" loading={loading}>
+              Logg inn
             </Button>
           </form>
         </div>

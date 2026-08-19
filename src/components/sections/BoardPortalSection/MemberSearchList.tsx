@@ -4,6 +4,8 @@ import { editMember } from '../../../supabase/queryHelpers/editMember';
 import { type Member } from '../../../supabase/queryHelpers/getMember';
 import { Button } from '../../ui/Buttons';
 import { Input } from '../../ui/Input';
+import EmptyState from '../../ui/EmptyState';
+import { LoadingIndicator } from '../../ui/LoadingIndicator';
 import { useMemberSearch } from '../../../hooks/useMemberSearch';
 import { useRevalidator } from 'react-router-dom';
 
@@ -82,18 +84,27 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
             ))}
           </div>
         </div>
-        {loading && (
-          <div className="fixed top-0 left-0 z-40 h-full w-full bg-white/50 backdrop-blur-sm dark:bg-black/50">
-            <p className="fixed top-1/3 left-1/2 z-50 -translate-x-1/2 -translate-y-1/3 dark:text-white">
-              Laster medlemmer...
-            </p>
-          </div>
-        )}
+        {/* Was a full-screen fixed overlay with a blur — the most intrusive of the three
+            loading treatments in the app, for the least consequential wait. The list it is
+            about is right here, so the indicator belongs here too. */}
+        {loading && <LoadingIndicator label="Laster medlemmer…" className="px-4 py-6 text-white" />}
         {members.length === 0 && (
-          <p className="font-body text-white">Det finnes ingen medlemmer i databasen.</p>
+          <EmptyState
+            variant="inline"
+            headingLevel={3}
+            className="text-white"
+            title="Ingen medlemmer"
+            body="Det finnes ingen medlemmer i databasen."
+          />
         )}
         {filteredMembers.length === 0 && searchTerm !== '' && (
-          <p className="font-body text-white">Ingen medlemmer matcher ditt søk.</p>
+          <EmptyState
+            variant="inline"
+            headingLevel={3}
+            className="text-white"
+            title="Ingen treff"
+            body="Ingen medlemmer matcher ditt søk."
+          />
         )}
         {sortedMembers.length > 0 && selectedSortField && (
           <div className="flex flex-col bg-white px-2 py-4">

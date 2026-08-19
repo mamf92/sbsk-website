@@ -140,4 +140,65 @@ describe('Button', () => {
       }
     });
   });
+
+  it('disables itself while loading, so a form cannot be submitted twice', async () => {
+    const onClick = vi.fn();
+    render(
+      <Button loading onClick={onClick}>
+        Logg inn
+      </Button>,
+    );
+
+    const button = screen.getByRole('button', { name: /Logg inn/ });
+    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute('aria-busy', 'true');
+
+    await userEvent.click(button);
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
+  it('keeps its label while loading, so the button does not change width', () => {
+    render(<Button loading>Logg inn</Button>);
+    expect(screen.getByRole('button', { name: /Logg inn/ })).toHaveTextContent('Logg inn');
+  });
+
+  it('swaps the icon for the stepping pips while loading', () => {
+    const { container, unmount } = render(<Button icon="right">Logg inn</Button>);
+    expect(container.querySelectorAll('.sbsk-load-pip')).toHaveLength(0);
+    unmount();
+
+    const loadingRender = render(
+      <Button icon="right" loading>
+        Logg inn
+      </Button>,
+    );
+    expect(loadingRender.container.querySelectorAll('.sbsk-load-pip')).toHaveLength(4);
+  });
+
+  it('shows the pips even when no icon was asked for', () => {
+    const { container } = render(<Button loading>Lagre</Button>);
+    expect(container.querySelectorAll('.sbsk-load-pip')).toHaveLength(4);
+  });
+
+  it('is not busy and not disabled by default', () => {
+    render(<Button>Logg inn</Button>);
+
+    const button = screen.getByRole('button');
+    expect(button).toBeEnabled();
+    expect(button).not.toHaveAttribute('aria-busy');
+  });
+
+  it('still honours an explicit disabled alongside loading', () => {
+    render(<Button disabled>Lagre</Button>);
+    expect(screen.getByRole('button')).toBeDisabled();
+  });
+
+  it('does not take its hover colour while disabled', () => {
+    render(<Button disabled>Lagre</Button>);
+    const { className } = screen.getByRole('button');
+
+    // `:hover` still matches a disabled element, so the hover colour has to be gated.
+    expect(className).toContain('not-disabled:hover:');
+    expect(className).not.toMatch(/(?<!not-disabled:)hover:bg-/);
+  });
 });

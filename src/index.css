@@ -237,6 +237,53 @@
   background-color: var(--color-overlay-scrim, rgb(0 47 95 / 0.7));
 }
 
+/* Loading. The brand had no answer for this and each screen invented one: a swapped button
+   label, a full-screen blurred overlay, a Suspense string.
+
+   A rotating spinner is out of language — nothing here rotates, and nothing eases. A
+   shimmering skeleton is worse: it is a soft gradient sliding under a surface, which is the
+   depth cue the whole system rejects. What is left, and what the brand already does, is hard
+   discrete states: four square pips, one lit at a time, snapping between frames.
+
+   `steps(1, end)` is the point. There is no interpolation between keyframes at all, so a pip
+   is either lit or not — the same 4-frame quality as `sbsk-dice-roll`'s face swaps, and the
+   reason the opacity change reads as a state rather than as a fade. */
+@keyframes sbsk-load-step {
+  0% {
+    opacity: 1;
+  }
+  25% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0.3;
+  }
+}
+
+.sbsk-load-pip {
+  animation: sbsk-load-step 960ms steps(1, end) infinite;
+}
+
+.sbsk-load-pip:nth-child(2) {
+  animation-delay: 240ms;
+}
+
+.sbsk-load-pip:nth-child(3) {
+  animation-delay: 480ms;
+}
+
+.sbsk-load-pip:nth-child(4) {
+  animation-delay: 720ms;
+}
+
+/* The label still says what is happening, so dropping the loop costs nothing. */
+@media (prefers-reduced-motion: reduce) {
+  .sbsk-load-pip {
+    animation: none;
+    opacity: 0.55;
+  }
+}
+
 /* Dice — shared interactive die used in the header logo and the error page.
    Roll is 900ms with a bounce curve; face swaps every 70ms during the roll.
    Reduced-motion drops the roll to 250ms and kills the idle tumble entirely. */

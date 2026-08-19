@@ -4,6 +4,7 @@ import { PortableText, toPlainText } from '@portabletext/react';
 import { Button } from '../ui/Buttons';
 import { Chip, type ChipCategory } from '../ui/Chip';
 import { Input } from '../ui/Input';
+import EmptyState from '../ui/EmptyState';
 import { AvatarStack, type AvatarStackPerson } from '../ui/AvatarStack';
 import { urlFor } from '../../sanity/sanityImageUrl';
 import calendarPlaceholderImage from '../../assets/images/calendar-placeholder.png';
@@ -453,14 +454,11 @@ function EventList({ events }: { events: CalendarEventTypes[] }) {
 
   if (events.length === 0) {
     return (
-      <div className="max-w-content mx-auto w-full px-5 py-8">
-        <h2 className="text-darkestblue font-heading text-h2 mb-2 font-bold dark:text-white">
-          Ingen arrangementer
-        </h2>
-        <p className="text-darkestblue font-body mb-6 text-base dark:text-white">
-          Det ser ikke ut til å være noen kommende arrangementer for øyeblikket. Vennligst sjekk
-          igjen senere.
-        </p>
+      <div className="max-w-content text-darkestblue mx-auto w-full dark:text-white">
+        <EmptyState
+          title="Ingen arrangementer"
+          body="Det ser ikke ut til å være noen kommende arrangementer for øyeblikket. Vennligst sjekk igjen senere."
+        />
       </div>
     );
   }
@@ -567,16 +565,23 @@ function EventList({ events }: { events: CalendarEventTypes[] }) {
       ))}
 
       {sorted.length === 0 && (
-        <div className="flex w-full flex-col items-center justify-center gap-4 p-6">
-          <p className="text-darkestblue font-body text-center text-lg dark:text-white">
-            {onlyMine && rsvp.loggedIn
+        <EmptyState
+          variant="inline"
+          className="text-darkestblue dark:text-white"
+          title={
+            onlyMine && rsvp.loggedIn ? 'Ingen påmeldinger' : 'Ingen arrangementer matcher søket'
+          }
+          body={
+            onlyMine && rsvp.loggedIn
               ? 'Du er ikke påmeldt noen kommende arrangementer ennå.'
-              : 'Ingen arrangementer matcher søket.'}
-          </p>
-          <Button variant="primary" size="lg" icon="backspace" onClick={clearFilters}>
-            Fjern filtre
-          </Button>
-        </div>
+              : 'Prøv et annet søk, eller fjern filtrene for å se alt.'
+          }
+          action={
+            <Button variant="primary" size="lg" icon="backspace" onClick={clearFilters}>
+              Fjern filtre
+            </Button>
+          }
+        />
       )}
 
       {visibleCount < rest.length && (

@@ -188,7 +188,9 @@ describe('CalendarSection', () => {
     renderSection();
 
     await userEvent.type(screen.getByRole('searchbox'), 'finnes ikke');
-    expect(screen.getByText('Ingen arrangementer matcher søket.')).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Ingen arrangementer matcher søket' }),
+    ).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /Fjern filtre/ }));
     expect(screen.getByRole('heading', { name: 'Ukentlig spillkveld' })).toBeInTheDocument();
