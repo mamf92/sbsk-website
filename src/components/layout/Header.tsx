@@ -49,14 +49,14 @@ export default function Header() {
 
   return (
     <header className="bg-darkblue surface-dark font-heading relative z-1100 w-full text-white">
-      <div className="mx-auto flex max-w-300 items-center justify-between gap-5 px-6 py-3.5">
+      <div className="max-w-shell mx-auto flex items-center justify-between gap-5 px-6 py-3.5">
         {/* Logo group — dice + wordmark, both navigate home */}
         <div className="flex items-center gap-2.5">
           <DiceLogo size={40} onClick={() => navigate('/')} />
           <NavLink
             to="/"
             end
-            className="font-heading tracking-heading focus-visible:outline-orange text-[length:--text-h4] leading-[--text-h4--line-height] font-bold text-white no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3"
+            className="font-heading tracking-heading focus-visible:outline-orange text-h4 font-bold text-white no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3"
           >
             SBSK
           </NavLink>

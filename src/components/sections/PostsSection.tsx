@@ -83,12 +83,17 @@ export default function Posts({ postsHero, posts }: PostsProps) {
   );
 }
 
+// An <h2>, not an <h1>. This renders on `/` under `HomeHeroSection`, whose title is the page's
+// document heading — two h1s on one page leaves a screen reader without a single answer to
+// "what is this page", and the h1 → h3 jump to the cards below came from the same place. The
+// posts stack is a section of the front page, so h2 is both the honest level and the step that
+// puts this heading above the card titles it introduces rather than below them.
 function PostsHero({ title, subtitle }: PostsHeroTypes = {}) {
   const resolvedTitle = title || FALLBACK_POSTS.title;
   const resolvedSubtitle = subtitle || FALLBACK_POSTS.subtitle;
   return (
-    <div className="bg-darkblue flex w-full max-w-5xl flex-col items-start gap-2 p-4 py-8 text-white">
-      <h1 className="text-xl font-bold sm:text-2xl">{resolvedTitle}</h1>
+    <div className="bg-darkblue max-w-content flex w-full flex-col items-start gap-2 p-4 py-8 text-white">
+      <h2 className="text-h2 font-bold">{resolvedTitle}</h2>
       <p> {resolvedSubtitle}</p>
     </div>
   );
@@ -153,11 +158,9 @@ function PostsList({ posts }: { posts: PostTypes[] }) {
 
   if (posts.length === 0 || !posts) {
     return (
-      <div className="mx-auto max-w-5xl px-2 sm:px-0">
-        <div className="mx-auto max-w-5xl px-5 py-8">
-          <h2 className="text-darkestblue mb-2 text-3xl font-bold md:text-4xl dark:text-white">
-            Ingen innlegg
-          </h2>
+      <div className="max-w-content mx-auto px-2 sm:px-0">
+        <div className="max-w-content mx-auto px-5 py-8">
+          <h2 className="text-darkestblue text-h2 mb-2 font-bold dark:text-white">Ingen innlegg</h2>
           <p className="text-darkestblue mb-6 text-base dark:text-white">
             Det ser ikke ut til å være noen innlegg for øyeblikket. Vennligst sjekk igjen senere.
           </p>
@@ -166,7 +169,7 @@ function PostsList({ posts }: { posts: PostTypes[] }) {
     );
   }
   return (
-    <div className="flex w-full max-w-5xl flex-col items-center gap-4 px-2 pb-2 sm:px-0 sm:pb-4">
+    <div className="max-w-content flex w-full flex-col items-center gap-4 px-2 pb-2 sm:px-0 sm:pb-4">
       <input
         type="text"
         placeholder="Søk etter innlegg..."
@@ -201,7 +204,7 @@ function PostsList({ posts }: { posts: PostTypes[] }) {
       </div>
       {displayedPosts.length === 0 && (
         <div className="flex w-full flex-col items-center justify-center gap-4 p-6">
-          <p className="text-darkestblue text-3xl font-bold md:text-4xl dark:text-white">
+          <p className="text-darkestblue text-h2 font-bold dark:text-white">
             Ingen innlegg matcher søket.
           </p>
           <Button variant="primary" size="lg" icon="backspace" onClick={clearFilters}>

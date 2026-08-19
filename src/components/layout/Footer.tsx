@@ -7,7 +7,7 @@ export default function Footer() {
   return (
     <footer className="bg-darkblue surface-dark font-body max-xs:p-4 flex w-full flex-col p-8 text-white">
       <div className="bg-darkestblue flex justify-center py-16">
-        <div className="flex w-full max-w-300 flex-col gap-6">
+        <div className="max-w-shell flex w-full flex-col gap-6">
           <div className="flex flex-col gap-8 md:flex-row md:flex-wrap lg:flex-nowrap lg:gap-10">
             <div className="flex flex-1 flex-col justify-between gap-6 px-2 md:min-w-full md:items-center md:gap-2 lg:min-w-auto lg:items-start lg:justify-around">
               <div className="flex items-center justify-start gap-4">
@@ -17,7 +17,7 @@ export default function Footer() {
                   </NavLink>
                 </div>
                 <div>
-                  <p className="font-heading text-2xl font-bold">Stavanger Brettspillklubb</p>
+                  <p className="font-heading text-h2 font-bold">Stavanger Brettspillklubb</p>
                 </div>
               </div>
               <div>

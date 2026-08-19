@@ -269,7 +269,7 @@ export default function CalendarSection({ calendarHero, events, compact }: Calen
 /** Portal mode — no image, and an h2 because the portal page owns the h1. */
 function CompactHeading({ title, subtitle }: CalendarHeroTypes = {}) {
   return (
-    <div className="flex w-full max-w-5xl flex-col gap-2 px-3 sm:px-0">
+    <div className="max-w-content flex w-full flex-col gap-2 px-3 sm:px-0">
       <h2 className="font-heading text-h2 text-darkestblue tracking-heading font-bold dark:text-white">
         {title || FALLBACK_CALENDAR.title}
       </h2>
@@ -292,7 +292,7 @@ function CalendarHero({
   const resolvedImageSource = imageSourceName || FALLBACK_CALENDAR.imageSourceName;
   const resolvedImageSourceUrl = imageSourceUrl || FALLBACK_CALENDAR.imageSourceUrl;
   return (
-    <div className="flex w-full max-w-5xl flex-col px-3 sm:px-0">
+    <div className="max-w-content flex w-full flex-col px-3 sm:px-0">
       <div className="relative">
         {image ? (
           <img
@@ -452,8 +452,8 @@ function EventList({ events }: { events: CalendarEventTypes[] }) {
 
   if (events.length === 0) {
     return (
-      <div className="mx-auto w-full max-w-5xl px-5 py-8">
-        <h2 className="text-darkestblue font-heading mb-2 text-3xl font-bold md:text-4xl dark:text-white">
+      <div className="max-w-content mx-auto w-full px-5 py-8">
+        <h2 className="text-darkestblue font-heading text-h2 mb-2 font-bold dark:text-white">
           Ingen arrangementer
         </h2>
         <p className="text-darkestblue font-body mb-6 text-base dark:text-white">
@@ -465,7 +465,7 @@ function EventList({ events }: { events: CalendarEventTypes[] }) {
   }
 
   return (
-    <div className="flex w-full max-w-5xl flex-col gap-4 px-2 sm:px-0">
+    <div className="max-w-content flex w-full flex-col gap-4 px-2 sm:px-0">
       <div className="flex justify-end">
         <Segmented
           label="Vis arrangementer"

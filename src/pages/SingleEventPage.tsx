@@ -6,8 +6,8 @@ export default function SmallEvent() {
 
   return (
     <div className="dark:bg-darkestblue min-h-[60vh] bg-white dark:text-white">
-      <div className="text-orange font-heading text-6xl font-bold">Arrangement</div>
-      <h1 className="mb-8 text-4xl font-bold">{event.title}</h1>
+      <div className="text-orange font-heading text-h2 font-bold">Arrangement</div>
+      <h1 className="text-h1 mb-8 font-bold">{event.title}</h1>
     </div>
   );
 }

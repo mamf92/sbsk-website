@@ -59,6 +59,73 @@ Two naming rules worth knowing, because getting either wrong fails silently:
   inside a `--shadow-*` token at build time and inlines it, which kills any `.dark` override.
   Both `--hard-shadow-color` and `--overlay-shadow-color` exist for exactly this reason.
 
+## The heading scale
+
+`--text-h1` … `--text-h4` are an exact four-step scale, named rather than mapped onto Tailwind's
+default sizes because the defaults only approximate them (`--text-h1` is 32/44, `text-3xl` is
+30/36). They set size and line-height only, so a heading still carries its own `font-heading`
+and `font-bold`.
+
+| Step      | Size / line-height | Takes it                                        |
+| --------- | ------------------ | ----------------------------------------------- |
+| `text-h1` | 32 / 44            | The one document heading a route has            |
+| `text-h2` | 28 / 38            | A section heading inside a page                 |
+| `text-h3` | 20 / 27            | A card, list-entry or profile title             |
+| `text-h4` | 16 / 22            | The wordmark, and headings inside a dense block |
+
+**The heading's level picks the step.** An `<h2>` takes `text-h2`. That is the whole rule, and
+it is why the levels themselves have to be right: on `/` the posts header was an `<h1>` beside
+the hero's, which is both an invalid outline and the reason it sat at 20px next to a 30px `<h2>`
+one component away. Fixing the level fixed the size.
+
+Four things sit deliberately outside the scale:
+
+- **`--text-display`** — `clamp(34px, 5vw, 56px)`, the system's only fluid step, for a page that
+  is nothing but its statement. The 404 is the one today. #144 chose not to add a display step to
+  the heading scale, and that still holds: this is not a step above `h1`, it is a size for a
+  treatment. If the home hero ever wants it, that is a decision to make by looking at the hero,
+  not by reaching for the nearest big token.
+- **`--text-errorcode`** — `clamp(96px, 15vw, 180px)` on a 0.8 line-height, the 404's flanking
+  numerals.
+- **The calendar's day numerals**, on `--text-daymark` (66px). Decorative digits, not a heading.
+- **Rich text inside a `Card`.** `src/sanity/editors/portableTextComponents.tsx` owns its own
+  sizes, because a heading inside an expanded panel is nested two levels deeper than the card
+  title above it and would out-shout it on the shared scale.
+
+`tracking-heading` (0.05em) is **opt-in**, not part of the scale. It belongs to display contexts
+that read as brand — the header wordmark, the calendar's column heads and hero, the placeholder
+titles — and a heading that does not take it is not missing anything.
+
+Before #144 the scale was used five times in the whole codebase and every other heading picked a
+raw Tailwind size, so `<h1>` rendered at four different sizes across the site and one of them was
+smaller than an `<h2>` two components away.
+
+## Page widths
+
+Three container tokens, and a page section picks one of them:
+
+| Token                 | Value           | Takes it                                             |
+| --------------------- | --------------- | ---------------------------------------------------- |
+| `--container-shell`   | `75rem` (1200)  | `Header`, `Footer`, full-page sections               |
+| `--container-content` | `64rem` (1024)  | Card lists, calendar, posts, the two portals         |
+| `--container-form`    | `37.5rem` (600) | Forms, login, dialogs, single-column reading measure |
+
+Tailwind v4 mints the utilities from the `--container-*` namespace, so these are written
+`max-w-shell` / `max-w-content` / `max-w-form`. Pick by what the section holds, not by how wide
+it wants to be — the names are the decision, the pixels are a consequence.
+
+Before #146 there were six widths in two notations (`max-w-300` beside `max-w-5xl` beside
+`max-w-md`), so navigating from the calendar to a portal to a login form stepped the content
+column inward twice while the 1200px header and footer above and below it stayed put. A test in
+`src/test/tailwindClasses.test.ts` fails on a `max-w-*` above 24rem that is not one of the three,
+including an arbitrary `max-w-[1100px]`; a `max-w-*` below that is sizing a component, not a
+column, and is left alone.
+
+The narrow-to-wide pair the portals use (`max-w-form md:max-w-content`) is the one place a
+section takes two steps — the member list is four columns that cannot be four columns on a
+phone. Horizontal padding is still scattered and is deliberately not part of this; it interacts
+with each section's own layout in a way the width does not.
+
 ## The shadow colour belongs to the surface
 
 A hard offset shadow is only a lift if it contrasts with the fill it is painted onto, and that

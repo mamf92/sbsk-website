@@ -97,6 +97,21 @@
   --text-h4: 1rem;
   --text-h4--line-height: 1.375rem;
 
+  /* A statement heading on a page that is nothing but the statement — the 404 today, and the
+     only fluid step in the system. #144 deliberately did not add a display step to the heading
+     scale: with the placeholder pages excluded, no ordinary page heading needed one. This is
+     not an ordinary page heading. It keeps the exact clamp the error page already rendered
+     (34px on a phone, 56px from 1120px up), now named so a second full-page statement gets the
+     same type instead of a fresh `clamp()`. */
+  --text-display: clamp(2.125rem, 5vw, 3.5rem);
+  --text-display--line-height: 1.1;
+
+  /* The 404's flanking numerals. Decorative digits rather than a heading, so like
+     `--text-daymark` below they are a one-off size and not a step on the scale — 0.8 line-height
+     so the two digits sit tight against the die between them. */
+  --text-errorcode: clamp(6rem, 15vw, 11.25rem);
+  --text-errorcode--line-height: 0.8;
+
   /* The calendar date block's day number. A display size deliberately above the heading
      scale — the library pins it at 66px on a 0.78 line-height so the digits sit tight
      against the month abbreviation under them. */
@@ -104,6 +119,26 @@
   --text-daymark--line-height: 0.78;
 
   --tracking-heading: 0.05em;
+
+  /* ---------------------------------------------------------------------
+     Layout. Three container widths, and the only three a page section should
+     pick from. Before these there were six, in two different notations, so the
+     content column jumped inward between routes while the 1200px header and
+     footer above and below it stayed put.
+
+     Tailwind v4 mints `max-w-*` (and `w-*`, `min-w-*`) utilities from the
+     `--container-*` namespace, so these read as `max-w-shell` / `-content` /
+     `-form`. The names are deliberately not sizes: a section picks the step by
+     what it holds, not by how wide it wants to be. `--container-prose` is not
+     among them on purpose — `max-w-prose` is a Tailwind default (65ch) and a
+     token of that name would shadow it.
+     --------------------------------------------------------------------- */
+  /* Header, footer, and any full-page section that lines up with them. */
+  --container-shell: 75rem; /* 1200 */
+  /* Card lists, the calendar, posts — anything multi-column. */
+  --container-content: 64rem; /* 1024 */
+  /* Forms, login, and single-column reading measures. */
+  --container-form: 37.5rem; /* 600 */
 
   /* ---------------------------------------------------------------------
      Motion. The brand is still flat — sharp corners, no blur, no scale — but not

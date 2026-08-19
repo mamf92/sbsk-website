@@ -177,3 +177,62 @@ describe('every class name in src/ compiles to CSS', () => {
     ]);
   });
 });
+
+/**
+ * `--container-shell` / `-content` / `-form` are the site's three page widths (#146). Before
+ * them every section picked its own — six widths in two notations, so the content column
+ * jumped inward between routes while the header and footer stayed put. Nothing stops a
+ * seventh from appearing: `max-w-5xl` and `max-w-[1100px]` both compile, so the suite above
+ * has nothing to say about them.
+ *
+ * The rule this pins is only about *page* widths. A `max-w-*` small enough to be a component
+ * (`max-w-12.25` on the footer wordmark) is not a container and is left alone; the cut is at
+ * 24rem, above which a max-width is constraining a column of content rather than sizing a box.
+ */
+const CONTAINER_TOKENS = new Set(['max-w-shell', 'max-w-content', 'max-w-form']);
+
+/** Tailwind's named container scale — `max-w-md`, `max-w-5xl`, `max-w-prose`, … */
+const NAMED_CONTAINER_STEP = /^(?:[3-7]?xs|sm|md|lg|[2-7]?xl|prose)$/;
+
+/** 24rem in Tailwind spacing steps: `max-w-96` is 384px, the narrowest width we call a column. */
+const PAGE_WIDTH_FLOOR = 96;
+
+function isRawPageWidth(token: string): boolean {
+  const value = token.slice('max-w-'.length);
+  if (NAMED_CONTAINER_STEP.test(value)) return true;
+  // A one-off `max-w-[1100px]`: the exact shape a converted inline style comes back as. A `ch`
+  // value is the exception — it is measured in the text itself, so it is a reading measure
+  // rather than a page width, and no container token could express it.
+  if (value.startsWith('[')) return !/^\[\d+(\.\d+)?ch\]$/.test(value);
+  const steps = Number(value);
+  return Number.isFinite(steps) && steps >= PAGE_WIDTH_FLOOR;
+}
+
+describe('page containers come from the container tokens', () => {
+  it('has no section that picks its own page width', () => {
+    const raw: string[] = [];
+
+    for (const file of sourceFiles(SRC)) {
+      for (const literal of stringLiterals(file)) {
+        for (const token of literal.split(/\s+/).filter(Boolean)) {
+          // `md:max-w-content` is the same decision as the unprefixed one.
+          const utility = token.slice(token.lastIndexOf(':') + 1);
+          if (!utility.startsWith('max-w-') || CONTAINER_TOKENS.has(utility)) continue;
+          if (isRawPageWidth(utility)) raw.push(`${relative(REPO_ROOT, file)}: ${token}`);
+        }
+      }
+    }
+
+    expect(raw).toEqual([]);
+  });
+
+  it('knows which widths it is looking for, so the check is not vacuous', () => {
+    expect(
+      ['max-w-5xl', 'max-w-md', 'max-w-200', 'max-w-[1100px]'].filter(isRawPageWidth),
+    ).toHaveLength(4);
+    // A reading measure, not a container: the 404 body copy's `max-w-[44ch]`.
+    expect(isRawPageWidth('max-w-[44ch]')).toBe(false);
+    // Component-sized, not a container: the footer wordmark's 49px box.
+    expect(isRawPageWidth('max-w-12.25')).toBe(false);
+  });
+});
