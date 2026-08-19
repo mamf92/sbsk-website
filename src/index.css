@@ -77,6 +77,9 @@
 
   /* Flips with the theme — see the `.dark` block below. */
   --color-hero-scrim: rgb(255 255 255 / 0.55);
+  /* The modal scrim. Paints on `::backdrop`, which no utility can reach, so it is consumed
+     by the `.sbsk-dialog::backdrop` rule below rather than as a `bg-*` class. */
+  --color-overlay-scrim: rgb(255 255 255 / 0.7);
   --color-toggle-bg: var(--color-darkestblue);
   --color-toggle-text: var(--color-white);
 
@@ -206,9 +209,79 @@
      surface inside the page that paints a light fill takes `surface-light`. */
   --hard-shadow-color: var(--color-white);
   --color-hero-scrim: rgb(3 31 59 / 0.55);
+  --color-overlay-scrim: rgb(0 47 95 / 0.7);
   --color-toggle-bg: var(--color-orange);
   --color-toggle-text: var(--color-darkblue);
   --overlay-shadow-color: rgb(0 0 0 / 0.6);
+}
+
+/* The modal scrim, painted by `Dialog` (src/components/ui/Dialog.tsx) on the native
+   `<dialog>`'s `::backdrop`. Hand-written because `::backdrop` is a pseudo-element and no
+   Tailwind utility on the dialog can reach it.
+
+   The blur is the one deliberate exception to "no blur" in docs/DESIGN_LANGUAGE.md, and it
+   is an exception about *separation*, not elevation: nothing here pretends to float, the
+   page behind is being pushed out of focus because it is inert. It is the same call the
+   design language already made for `--shadow-overlay`, which it names as the single soft
+   shadow in the system and reserves for modals. Two ad-hoc `backdrop-blur-xs` copies used
+   to make this decision by accident; it is made once, here.
+
+   The fallback covers browsers where `::backdrop` inherits from nothing rather than from
+   its originating element — without it the scrim would resolve to transparent there. */
+.sbsk-dialog::backdrop {
+  background-color: var(--color-overlay-scrim, rgb(255 255 255 / 0.7));
+  backdrop-filter: blur(2px);
+}
+
+.dark .sbsk-dialog::backdrop {
+  background-color: var(--color-overlay-scrim, rgb(0 47 95 / 0.7));
+}
+
+/* Loading. The brand had no answer for this and each screen invented one: a swapped button
+   label, a full-screen blurred overlay, a Suspense string.
+
+   A rotating spinner is out of language — nothing here rotates, and nothing eases. A
+   shimmering skeleton is worse: it is a soft gradient sliding under a surface, which is the
+   depth cue the whole system rejects. What is left, and what the brand already does, is hard
+   discrete states: four square pips, one lit at a time, snapping between frames.
+
+   `steps(1, end)` is the point. There is no interpolation between keyframes at all, so a pip
+   is either lit or not — the same 4-frame quality as `sbsk-dice-roll`'s face swaps, and the
+   reason the opacity change reads as a state rather than as a fade. */
+@keyframes sbsk-load-step {
+  0% {
+    opacity: 1;
+  }
+  25% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0.3;
+  }
+}
+
+.sbsk-load-pip {
+  animation: sbsk-load-step 960ms steps(1, end) infinite;
+}
+
+.sbsk-load-pip:nth-child(2) {
+  animation-delay: 240ms;
+}
+
+.sbsk-load-pip:nth-child(3) {
+  animation-delay: 480ms;
+}
+
+.sbsk-load-pip:nth-child(4) {
+  animation-delay: 720ms;
+}
+
+/* The label still says what is happening, so dropping the loop costs nothing. */
+@media (prefers-reduced-motion: reduce) {
+  .sbsk-load-pip {
+    animation: none;
+    opacity: 0.55;
+  }
 }
 
 /* Dice — shared interactive die used in the header logo and the error page.

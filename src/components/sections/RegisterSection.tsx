@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '../ui/Buttons';
+import { Input } from '../ui/Input';
+import { Alert } from '../ui/Alert';
 import { useAuthActions } from '../../hooks/useAuthActions';
 
 export default function RegisterSection() {
@@ -56,36 +58,34 @@ export default function RegisterSection() {
         <div className="w-full px-8 pt-8">
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <label className="flex w-full flex-col gap-1">
-              <span className="font-body text-white">Email</span>
-              <input
+              <span className="font-body text-white">E-post</span>
+              <Input
                 type="email"
                 id="email"
                 autoComplete="email"
-                placeholder="your@email.com"
-                className="focus:ring-orange border-darkblue dark:border-orange placeholder:text-placeholder text-darkblue placeholder:font-body w-full border bg-white px-3 py-2 focus:ring-2 focus:outline-none md:px-4 md:py-3"
+                placeholder="din@epost.no"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </label>
             <label className="flex w-full flex-col gap-1">
-              <span className="font-body text-white">Password</span>
-              <input
+              <span className="font-body text-white">Passord</span>
+              <Input
                 type="password"
                 id="password"
                 autoComplete="new-password"
                 placeholder="••••••••"
-                className="focus:ring-orange border-darkblue dark:border-orange placeholder:text-placeholder text-darkblue placeholder:font-body w-full border bg-white px-3 py-2 focus:ring-2 focus:outline-none md:px-4 md:py-3"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </label>
 
-            {error && <div className="text-orange text-sm">{error}</div>}
+            {error && <Alert>{error}</Alert>}
 
-            <Button type="submit" variant="primary" size="md" icon="right">
-              {loading ? 'Registering...' : 'Register'}
+            <Button type="submit" variant="primary" size="md" icon="right" loading={loading}>
+              Registrer deg
             </Button>
           </form>
         </div>

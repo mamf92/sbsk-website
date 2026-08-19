@@ -11,7 +11,8 @@ no longer means motionless: surfaces you can press now respond.
 
 - **Zero radius.** `rounded-none` everywhere. No component rounds its corners, at any size.
 - **No soft elevation.** No blur, no spread, no alpha-faded drop shadow, no `scale()`.
-  Nothing pretends to float above the page.
+  Nothing pretends to float above the page. The modal layer is the one exception, and it is
+  an exception the system already granted — see "The modal layer" below.
 - **The SBSK palette.** Orange and the blues carry the hierarchy; greys are brand greys,
   not Tailwind's.
 
@@ -33,19 +34,21 @@ no longer means motionless: surfaces you can press now respond.
 All of it lives in the `@theme` block of `src/index.css`. Add to it rather than hardcoding a
 value in a class.
 
-| Token                      | Value                                       | Purpose                    |
-| -------------------------- | ------------------------------------------- | -------------------------- |
-| `--duration-fast`          | `120ms`                                     | Colour swaps               |
-| `--duration-base`          | `180ms`                                     | Travel                     |
-| `--ease-standard`          | `cubic-bezier(0.2, 0, 0, 1)`                | Colour curve               |
-| `--ease-out`               | `cubic-bezier(0.16, 1, 0.3, 1)`             | Travel curve               |
-| `--transition-fast`        | `var(--duration-fast) var(--ease-standard)` | Colour, as a fragment      |
-| `--transition-snappy`      | `var(--duration-base) var(--ease-out)`      | Travel, as a fragment      |
-| `--hard-shadow-color`      | `darkestblue`; `white` in dark mode         | The offset shadow's colour |
-| `--shadow-1` / `-2` / `-3` | `2px` / `4px` / `6px` hard offset           | Press / hover / raised     |
-| `--lift-hover`             | `translate(-2px, -2px)`                     | Hover offset               |
-| `--lift-hover-card`        | `translate(-3px, -3px)`                     | Hover offset, cards        |
-| `--lift-press`             | `translate(1px, 1px)`                       | Press offset               |
+| Token                      | Value                                          | Purpose                    |
+| -------------------------- | ---------------------------------------------- | -------------------------- |
+| `--duration-fast`          | `120ms`                                        | Colour swaps               |
+| `--duration-base`          | `180ms`                                        | Travel                     |
+| `--ease-standard`          | `cubic-bezier(0.2, 0, 0, 1)`                   | Colour curve               |
+| `--ease-out`               | `cubic-bezier(0.16, 1, 0.3, 1)`                | Travel curve               |
+| `--transition-fast`        | `var(--duration-fast) var(--ease-standard)`    | Colour, as a fragment      |
+| `--transition-snappy`      | `var(--duration-base) var(--ease-out)`         | Travel, as a fragment      |
+| `--hard-shadow-color`      | `darkestblue`; `white` in dark mode            | The offset shadow's colour |
+| `--shadow-1` / `-2` / `-3` | `2px` / `4px` / `6px` hard offset              | Press / hover / raised     |
+| `--lift-hover`             | `translate(-2px, -2px)`                        | Hover offset               |
+| `--lift-hover-card`        | `translate(-3px, -3px)`                        | Hover offset, cards        |
+| `--lift-press`             | `translate(1px, 1px)`                          | Press offset               |
+| `--shadow-overlay`         | `0 12px 32px -8px` on `--overlay-shadow-color` | The modal panel's shadow   |
+| `--color-overlay-scrim`    | `white/0.7`; `darkblue/0.7` in dark mode       | The modal scrim            |
 
 The full set — the whole duration and easing scale, the accent and overlay shadows, the
 category colours, the disabled and focus states, and the exact heading type scale — is in
@@ -176,6 +179,38 @@ They stay in the theme for a deliberate accent on a non-orange element.
 Note also that `--duration-*` is **not** a Tailwind utility namespace — there is no
 `duration-fast` class. Read the variable directly: `duration-(--duration-fast)`.
 
+## The modal layer
+
+A modal is the one place the flat rule bends, and the theme has said so from the start:
+`--shadow-overlay` is described in `src/index.css` as "the single soft shadow in the system"
+and reserved for modals and drawers. What was missing was anything that used it — both
+hand-rolled overlays cast no shadow at all, and both blurred their scrim with a copy-pasted
+`backdrop-blur-xs` that no document mentioned.
+
+The decision, made once rather than twice by accident:
+
+- **The panel casts `--shadow-overlay`.** Soft, because it is the only element on the page
+  that genuinely is above everything else rather than printed onto it. A hard offset shadow
+  would read as a second, smaller rectangle behind the panel.
+- **The scrim is a flat alpha wash plus a 2px blur.** `--color-overlay-scrim` is the wash and
+  flips with the theme like `--color-hero-scrim`. The blur is about _separation_, not depth:
+  the page behind a modal is inert, and pushing it fractionally out of focus says so. It is
+  2px — enough to read as unavailable, not enough to look like frosted glass.
+
+Both live on `Dialog` (`src/components/ui/Dialog.tsx`), which is the only thing that should
+paint them. The scrim is a hand-written `.sbsk-dialog::backdrop` rule in `src/index.css`,
+because `::backdrop` is a pseudo-element and no utility on the dialog can reach it.
+
+`Dialog` is built on the native `<dialog>` and `showModal()`. That is where the focus trap,
+Escape, the top layer and the inertness of the page behind come from — none of it
+hand-written, and none of it optional. What the component adds on top is the two things
+`<dialog>` does not do: it locks page scroll, and it restores focus to the opener explicitly,
+because the native restore only fires while the opener is still in the document and both
+portals unmount it on revalidate. `e2e/dialog.spec.ts` pins all of it in a real browser.
+
+A dialog's heading is an `h2`. Every route already has an `h1`; a modal opening on top of one
+must not mint a second.
+
 ## Using it
 
 Do not assemble the tokens by hand. `src/index.css` defines two custom utilities:
@@ -219,8 +254,63 @@ Lift is for things you press. It is not decoration.
   `lift-chip` reads `aria-pressed`. There is no press state — a card settles by expanding,
   and a downward nudge would fight the panel opening beneath it. A card you cannot press
   keeps the border and nothing else.
-- **Not yet:** form controls were deliberately left out of this pass — they need their own
-  decision and touch far more markup than buttons do. See the follow-up issue for forms.
+- **No:** form controls. A text field is not a pressable surface — you put a caret in it, you
+  do not press it — so `Input`, `Textarea` and `Checkbox` stay flat in every state. What they
+  did take from this pass is the focus treatment, which they were the last holdout on: see
+  "Focus" below.
+
+## Loading, empty, error
+
+Three states every async screen passes through, and before #153 each screen invented its own —
+three loading treatments at three levels of intrusiveness, three unrelated empty states, and an
+error that no screen reader ever mentioned.
+
+**Loading is four square pips, one dim at a time.** A rotating spinner is out of language:
+nothing here rotates and nothing eases. A shimmering skeleton is worse — a soft gradient
+sliding under a surface is exactly the depth cue the system rejects. What is left is what the
+brand already does, which is hard discrete states, so `sbsk-load-step` runs on
+`steps(1, end)`: no interpolation between frames at all, the same 4-frame quality as the
+dice roll's face swaps. `LoadingIndicator` wraps the pips in a `role="status"` live region;
+`Button`'s `loading` prop uses the bare pips, because a button in flight already carries
+`aria-busy`.
+
+`loading` on a `Button` swaps the **icon**, never the label. Keeping the label keeps the width,
+and the button disables itself — the version this replaced swapped the label to
+"Logging in..." and stayed live, which made double-submitting a registration reachable.
+
+**Empty is heading, body, optional action.** `EmptyState` at `page` scale for "there is nothing
+here at all" and `inline` for "this list has content but no matches". It is colour-neutral and
+inherits from whatever surface it lands on, because it lands on the white page and on a
+`darkblue` panel. `ErrorState` is the same shape at full-page scale with the 404's furniture.
+
+**Error brings its own surface.** `--color-error` is `#b5251f`, and both auth forms sit on a
+`darkblue` panel where red text measures **2.07:1** — so the obvious treatment fails outright.
+`Alert` is a white block with a red hairline, a red glyph and red text: 6.4:1, flat, square,
+and legible on any fill. `role="alert"` is the part that matters most; these failures used to
+be painted and never announced. `FieldError` is `Alert` at `sm`, and pairs with `invalid` on
+`Input` / `Textarea` — the control owns the box, `FieldError` owns the words, and
+`aria-describedby` joins them.
+
+## Focus
+
+Every interactive surface in `src/components/ui/` draws the same focus affordance:
+
+```
+focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2
+```
+
+on `--color-focus-ring`. Three things about it are deliberate, and form controls used to get
+all three wrong — they were the only place in the system still doing so, which is what the
+form-controls port (#86) corrected:
+
+- **`focus-visible:`, not `focus:`.** The ring is for keyboard navigation. Drawing it on a
+  mouse click as well is noise.
+- **`outline`, not `ring`.** A Tailwind `ring` is a `box-shadow`, and on this brand
+  `box-shadow` means the hard offset lift. Two different meanings on one property is how a
+  focused button ends up looking pressed.
+- **The token, not the colour.** `--color-focus-ring` exists for this. It resolves to orange
+  today, so reading it changes nothing on screen — it changes what happens when the brand
+  moves.
 
 ## Upstream
 

@@ -10,8 +10,16 @@ import block from '../../assets/icons/symbols/block.svg?react';
 import AscIcon from '../../assets/icons/symbols/asc.svg?react';
 import DescIcon from '../../assets/icons/symbols/desc.svg?react';
 import Add from '../../assets/icons/symbols/add.svg?react';
+import { LoadingPips } from './LoadingIndicator';
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  /**
+   * A request is in flight. The button disables itself and swaps its icon for the stepping
+   * pips, keeping the label — and so the width — exactly where it was. Swapping the *label*
+   * instead is what `LoginSection` and `RegisterSection` used to do, and because the button
+   * stayed live while it said "Logging in...", submitting a registration twice was reachable.
+   */
+  loading?: boolean;
   variant?: 'primary' | 'secondary' | 'tertiary' | 'toggle' | 'disabled';
   size?: 'xs' | 'sm' | 'md' | 'lg';
   icon?:
@@ -37,10 +45,14 @@ const base =
   'inline-flex whitespace-nowrap items-center justify-center font-heading rounded-none ' +
   'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange ';
 
+// `not-disabled:hover:` rather than `hover:`, because `:hover` still matches a disabled
+// element. Any variant can carry the attribute — a `loading` button always does — and without
+// this a button that cannot be clicked still lights up under the pointer. `lift` already
+// neutralises the travel and the shadow for the same reason; this is the colour half.
 const variants = {
-  primary: 'bg-orange text-darkblue hover:bg-darkorange',
-  secondary: 'bg-darkorange text-darkestblue hover:bg-orange',
-  tertiary: 'bg-darkblue text-white hover:bg-darkestblue',
+  primary: 'bg-orange text-darkblue not-disabled:hover:bg-darkorange',
+  secondary: 'bg-darkorange text-darkestblue not-disabled:hover:bg-orange',
+  tertiary: 'bg-darkblue text-white not-disabled:hover:bg-darkestblue',
   disabled: 'bg-gray-300 text-gray-500 cursor-not-allowed',
   toggle: 'bg-darkestblue text-white dark:bg-orange dark:text-darkblue',
 } as const;
@@ -68,7 +80,16 @@ const sizes = {
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    { className = '', variant = 'primary', size = 'md', icon = 'none', children, ...props },
+    {
+      className = '',
+      variant = 'primary',
+      size = 'md',
+      icon = 'none',
+      loading = false,
+      children,
+      disabled,
+      ...props
+    },
     ref,
   ) => {
     const symbolIcon = {
@@ -87,15 +108,38 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const Icon = symbolIcon[icon];
+    // The pips take the icon's slot on whichever side the icon was going to be, so the button
+    // keeps its layout and its width. `lift` already neutralises `:disabled`, so nothing moves.
+    const affordance = loading ? (
+      <LoadingPips size={size === 'xs' || size === 'sm' ? 'sm' : 'md'} />
+    ) : null;
+
     return (
       <button
         ref={ref}
-        className={[base, variants[variant], motion[variant], sizes[size], className].join(' ')}
+        disabled={disabled || loading}
+        aria-busy={loading || undefined}
+        className={[
+          base,
+          variants[variant],
+          motion[variant],
+          sizes[size],
+          loading ? 'cursor-wait' : '',
+          className,
+        ]
+          .filter(Boolean)
+          .join(' ')}
         {...props}
       >
-        {icon === 'left' && Icon ? <Icon className="h-3 min-h-3 w-5 min-w-2 fill-current" /> : null}
+        {icon === 'left'
+          ? (affordance ??
+            (Icon ? <Icon className="h-3 min-h-3 w-5 min-w-2 fill-current" /> : null))
+          : null}
         {children}
-        {icon !== 'left' && Icon ? <Icon className="h-5 min-h-2 w-3 min-w-3 fill-current" /> : null}
+        {icon !== 'left'
+          ? (affordance ??
+            (Icon ? <Icon className="h-5 min-h-2 w-3 min-w-3 fill-current" /> : null))
+          : null}
       </button>
     );
   },
