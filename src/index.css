@@ -407,8 +407,13 @@
     box-shadow: none;
   }
 
-  /* Below the two `:hover` rules on purpose — equal specificity, last one wins. */
-  &:active {
+  /* `:active:active` is (0,3,0), matching the `aria-pressed`/`:hover` rule above rather than
+     losing to it at (0,2,0) — you always hover while pressing with a mouse, so a plain
+     `:active` never won and a selected chip stayed flat when held down. Doubling `:active`
+     rather than gating on `[aria-pressed]` keeps the press feedback for chips that render no
+     such attribute (e.g. the AvatarStack counter). Below the `:hover` rules on purpose — equal
+     specificity now, last one wins. */
+  &:active:active {
     transform: var(--lift-press);
     box-shadow: none;
   }
