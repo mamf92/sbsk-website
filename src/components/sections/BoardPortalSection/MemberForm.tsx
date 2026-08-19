@@ -124,7 +124,7 @@ export default function MemberForm({ member, onSubmitMember, onClose }: MemberFo
   ];
   return (
     <div className="dark:bg-darkblue/70 fixed top-0 left-0 z-40 h-lvh w-screen bg-white/70 backdrop-blur-xs">
-      <div className="bg-darkblue absolute top-1/2 left-1/2 z-50 flex w-[calc(100vw-1rem)] max-w-150 -translate-x-1/2 -translate-y-1/2 flex-col justify-center gap-3 px-6 py-10">
+      <div className="bg-darkblue surface-dark absolute top-1/2 left-1/2 z-50 flex w-[calc(100vw-1rem)] max-w-150 -translate-x-1/2 -translate-y-1/2 flex-col justify-center gap-3 px-6 py-10">
         <h1 className="font-heading text-3xl text-white">
           {isEditMode ? 'Rediger medlem' : 'Legg til medlem'}
         </h1>

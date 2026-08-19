@@ -1,7 +1,10 @@
+import { PagePlaceholder } from '../components/ui/PagePlaceholder';
+
 export default function OurPartners() {
   return (
-    <div className="min-h-[60vh] bg-white">
-      <div className="text-darkestblue font-heading text-6xl font-bold">Våre partnere</div>
-    </div>
+    <PagePlaceholder
+      title="Våre partnere"
+      description="Vi holder på å samle sammen alle vi samarbeider med. Partnerne våre er allerede synlige nederst på forsiden."
+    />
   );
 }

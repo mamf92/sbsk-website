@@ -9,7 +9,7 @@ export default function App() {
       <div className="flex min-h-dvh flex-col">
         <a
           href="#main"
-          className="sr-only rounded bg-white px-3 py-2 focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
+          className="sr-only rounded-none bg-white px-3 py-2 focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
         >
           Skip to content
         </a>

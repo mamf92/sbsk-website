@@ -1,7 +1,10 @@
+import { PagePlaceholder } from '../components/ui/PagePlaceholder';
+
 export default function ContactUs() {
   return (
-    <div className="dark:bg-darkestblue min-h-[60vh] bg-white dark:text-white">
-      <div className="text-orange font-heading text-6xl font-bold">Kontakt Oss</div>
-    </div>
+    <PagePlaceholder
+      title="Kontakt oss"
+      description="Kontaktskjemaet kommer. Fram til da når du oss på hei@sbsk.no, eller i Facebook-gruppa vår — begge står i bunnen av siden."
+    />
   );
 }

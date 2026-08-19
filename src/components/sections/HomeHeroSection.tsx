@@ -60,7 +60,7 @@ export default function HomeHero({
             <h1 className="text-darkestblue text-left text-4xl font-bold dark:text-white">
               {resolvedTitle}
             </h1>
-            <p className="text-darkestblue text-regular text-left text-lg dark:text-white">
+            <p className="text-darkestblue text-left text-lg font-normal dark:text-white">
               {resolvedSubtitle}
             </p>
           </div>
@@ -106,7 +106,7 @@ export default function HomeHero({
               <h2 className="text-darkestblue text-left text-xl font-bold dark:text-white">
                 Vi samarbeider med:
               </h2>
-              <div className="flex w-full flex-col items-start justify-between gap-2 self-baseline rounded p-4 sm:flex-row md:gap-0 dark:bg-white/50">
+              <div className="flex w-full flex-col items-start justify-between gap-2 self-baseline rounded-none p-4 sm:flex-row md:gap-0 dark:bg-white/50">
                 {sponsors.map((sponsor, index) => (
                   <a
                     key={index}

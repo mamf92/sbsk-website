@@ -14,6 +14,9 @@
 /dist
 /build
 
+# Lint cache — lint-staged runs `eslint --cache` on every commit.
+.eslintcache
+
 # Logs
 npm-debug.log*
 yarn-debug.log*

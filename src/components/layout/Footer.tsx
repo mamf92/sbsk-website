@@ -5,7 +5,7 @@ import { Button } from '../ui/Buttons';
 
 export default function Footer() {
   return (
-    <footer className="bg-darkblue font-body max-xs:p-4 flex w-full flex-col p-8 text-white">
+    <footer className="bg-darkblue surface-dark font-body max-xs:p-4 flex w-full flex-col p-8 text-white">
       <div className="bg-darkestblue flex justify-center py-16">
         <div className="flex w-full max-w-300 flex-col gap-6">
           <div className="flex flex-col gap-8 md:flex-row md:flex-wrap lg:flex-nowrap lg:gap-10">

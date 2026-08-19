@@ -1,7 +1,10 @@
+import { PagePlaceholder } from '../components/ui/PagePlaceholder';
+
 export default function OurGames() {
   return (
-    <div className="min-h-[60vh] bg-white">
-      <div className="text-darkestblue font-heading text-6xl font-bold">Våre spill</div>
-    </div>
+    <PagePlaceholder
+      title="Våre spill"
+      description="Oversikten over spillsamlingen vår er på vei. Til da er alle spillene tilgjengelige på spillkveldene, og du finner de neste i kalenderen."
+    />
   );
 }

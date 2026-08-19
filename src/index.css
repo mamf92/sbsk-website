@@ -134,12 +134,19 @@
      `--shadow-*` namespace and would mint a broken `shadow-color` utility. */
   /* Both shadow colours stay behind a var on purpose. Tailwind resolves a literal colour
      inside a `--shadow-*` token at build time and inlines it, which would silently kill the
-     `.dark` override below; an unresolvable `var()` is kept as-is and flips at runtime. */
+     `.dark` override below; an unresolvable `var()` is kept as-is and flips at runtime.
+     That same indirection is what lets `surface-dark` / `surface-light` re-point the colour
+     per subtree — see those utilities at the bottom of this file. This value is the light
+     page background's shadow; it is a *default*, not the only value. */
   --hard-shadow-color: var(--color-darkestblue);
   --overlay-shadow-color: rgb(3 31 59 / 0.35);
   --shadow-1: 2px 2px 0 var(--hard-shadow-color);
   --shadow-2: 4px 4px 0 var(--hard-shadow-color);
   --shadow-3: 6px 6px 0 var(--hard-shadow-color);
+  /* The accent pair is the library's, and is deliberately not what `surface-dark` uses: an
+     orange shadow under a `variant="primary"` button is orange-on-orange, so the button reads
+     as a smeared parallelogram rather than a lifted rectangle. Kept for a deliberate accent
+     shadow on a non-orange element; not part of the lift utilities. */
   --shadow-accent-1: 2px 2px 0 var(--color-orange);
   --shadow-accent-2: 4px 4px 0 var(--color-orange);
   --shadow-overlay: 0 12px 32px -8px var(--overlay-shadow-color);
@@ -157,7 +164,12 @@
    Tailwind emits for `@theme` into the theme layer. `src/utils/theme.ts` owns
    putting `.dark` on <html>; nothing else should touch it. */
 .dark {
-  --hard-shadow-color: var(--color-black);
+  /* White, not brand black. `--color-black` was here so shadows would show against a dark
+     page and it never worked: brand black is #0d0d0d, the dark page is `darkestblue` #031f3b,
+     and the two are 1.17:1 apart — every lift shadow in dark mode was invisible. This is the
+     dark page background's shadow, and like the light one above it is only the default; a
+     surface inside the page that paints a light fill takes `surface-light`. */
+  --hard-shadow-color: var(--color-white);
   --color-hero-scrim: rgb(3 31 59 / 0.55);
   --color-toggle-bg: var(--color-orange);
   --color-toggle-text: var(--color-darkblue);
@@ -435,4 +447,37 @@
       transform: none;
     }
   }
+}
+
+/* The shadow colour is a property of the *surface*, not of the theme.
+
+   `lift` and friends paint a solid offset rectangle behind the element, onto whatever fill is
+   behind it. Two global values keyed off `.dark` cannot cover that: a `darkblue` panel exists
+   in light mode and an `orange` one exists in dark mode, and a shadow that contrasts with the
+   page background does not necessarily contrast with either. Measured against the brand
+   palette (WCAG 1.4.11 wants 3:1 for a non-text visual):
+
+   | fill                        | darkestblue shadow | white shadow |
+   | --------------------------- | ------------------ | ------------ |
+   | `darkestblue` / `darkblue`  | 1.00 / 1.24        | 16.63 /13.36 |
+   | `orange`                    | 7.64               | 2.18         |
+   | `darkorange`                | 4.99               | 3.33         |
+   | `white` / `gray-100` / `-300` | 16.63 / 15.34 / 11.78 | 1.00 / 1.08 / 1.41 |
+
+   So there are exactly two usable shadow colours and the fill decides which. These two
+   utilities declare that: put one on the element that paints the fill, and every lifting
+   descendant picks it up through the cascade with no per-component work.
+
+   `surface-light` covers `orange` and `darkorange` as well as the true light fills — the name
+   is about which shadow the fill can carry, and orange can only carry the dark one. Note that
+   the utility affects the element it sits on as well as its subtree, so it belongs on the
+   container that paints the fill, never on the lifting element itself: a `Card` casts its own
+   shadow onto the page behind it, while the header and panel *inside* it are the surfaces its
+   buttons cast onto. */
+@utility surface-dark {
+  --hard-shadow-color: var(--color-white);
+}
+
+@utility surface-light {
+  --hard-shadow-color: var(--color-darkestblue);
 }

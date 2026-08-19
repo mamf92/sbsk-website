@@ -62,6 +62,37 @@ for (const route of singleMainRoutes) {
     await page.goto(route);
     await expect(page.locator('main')).toHaveCount(1);
   });
+
+  // A route with no <h1> gives a screen reader a `main` landmark with nothing naming it. Six
+  // routes were in that state until #147 — they titled themselves with a <div>. This is a floor
+  // rather than an exact count: `/` legitimately has two h1s today (the hero and the posts
+  // header), which is its own finding and not this assertion's business.
+  test(`${route} renders a document heading`, async ({ page }) => {
+    await page.goto(route);
+    await expect(page.locator('h1')).not.toHaveCount(0);
+  });
+}
+
+// The six routes #147 replaced with `PagePlaceholder`. Each is one heading and nothing else, so
+// the exact count is safe to pin here and is what stops the next stub shipping without one.
+const placeholderRoutes = [
+  { route: '/om-oss', heading: 'Om oss' },
+  { route: '/våre-spill', heading: 'Våre spill' },
+  { route: '/bli-medlem', heading: 'Bli medlem' },
+  { route: '/kontakt-oss', heading: 'Kontakt oss' },
+  { route: '/våre-partnere', heading: 'Våre partnere' },
+  { route: '/board-game-masters', heading: 'Board Game Masters' },
+];
+
+for (const { route, heading } of placeholderRoutes) {
+  test(`${route} is a placeholder with one h1 and a way onward`, async ({ page }) => {
+    await page.goto(route);
+
+    await expect(page.locator('h1')).toHaveCount(1);
+    await expect(page.getByRole('heading', { level: 1, name: heading })).toBeVisible();
+    // The point of the component: a live route a visitor lands on always offers somewhere useful.
+    await expect(page.getByRole('button', { name: /Se kalender/ })).toBeVisible();
+  });
 }
 
 test('unknown routes render the 404 page, not a blank screen', async ({ page }) => {

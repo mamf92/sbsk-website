@@ -32,7 +32,7 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
   const revalidator = useRevalidator();
 
   return (
-    <div className="bg-darkblue mx-auto mb-4 flex w-full max-w-150 flex-col gap-2 px-2 py-24 md:max-w-200">
+    <div className="bg-darkblue surface-dark mx-auto mb-4 flex w-full max-w-150 flex-col gap-2 px-2 py-24 md:max-w-200">
       <div className="flex flex-col items-center gap-2 sm:gap-4 sm:px-2">
         <div className="flex flex-col items-start gap-2">
           <h2 className="font-heading text-2xl font-bold text-white">Medlemsliste</h2>
@@ -83,7 +83,7 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
           </div>
         </div>
         {loading && (
-          <div className="bg-mutedbackground/50 fixed top-0 left-0 z-40 h-full w-full backdrop-blur-sm dark:bg-black/50">
+          <div className="fixed top-0 left-0 z-40 h-full w-full bg-white/50 backdrop-blur-sm dark:bg-black/50">
             <p className="fixed top-1/3 left-1/2 z-50 -translate-x-1/2 -translate-y-1/3 dark:text-white">
               Laster medlemmer...
             </p>
@@ -99,7 +99,7 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
           <div className="flex flex-col bg-white px-2 py-4">
             {sortedMembers.map((member) => (
               <div
-                className="hover:bg-background hover:cursor-pointer"
+                className="hover:cursor-pointer hover:bg-gray-100"
                 key={member.id}
                 onClick={() => handleMemberClick(member)}
               >

@@ -48,7 +48,7 @@ export default function Header() {
   }, [isMobileMenuOpen]);
 
   return (
-    <header className="bg-darkblue font-heading relative z-1100 w-full text-white">
+    <header className="bg-darkblue surface-dark font-heading relative z-1100 w-full text-white">
       <div className="mx-auto flex max-w-300 items-center justify-between gap-5 px-6 py-3.5">
         {/* Logo group — dice + wordmark, both navigate home */}
         <div className="flex items-center gap-2.5">
