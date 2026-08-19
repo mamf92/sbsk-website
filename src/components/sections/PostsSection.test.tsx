@@ -50,8 +50,9 @@ const renderList = () =>
     </MemoryRouter>,
   );
 
-// Card toggles are the only buttons carrying aria-expanded — the filter and sort chips use
-// aria-pressed — so querying by expanded state selects exactly the post headers.
+// Card toggles are the only buttons carrying aria-expanded — the filter chips use
+// aria-pressed and sorting is a <select> — so querying by expanded state selects exactly
+// the post headers.
 const toggle = (title: string) => screen.getByRole('button', { name: new RegExp(title) });
 const openTitles = () =>
   screen

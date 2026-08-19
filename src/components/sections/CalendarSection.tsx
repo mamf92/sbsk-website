@@ -4,6 +4,8 @@ import { PortableText, toPlainText } from '@portabletext/react';
 import { Button } from '../ui/Buttons';
 import { Chip, type ChipCategory } from '../ui/Chip';
 import { Input } from '../ui/Input';
+import { Segmented } from '../ui/Segmented';
+import { Select } from '../ui/Select';
 import EmptyState from '../ui/EmptyState';
 import { AvatarStack, type AvatarStackPerson } from '../ui/AvatarStack';
 import { urlFor } from '../../sanity/sanityImageUrl';
@@ -333,51 +335,6 @@ function CalendarHero({
 }
 
 /* -------------------------------------------------------------------------- */
-/* Controls                                                                    */
-/* -------------------------------------------------------------------------- */
-
-function Segmented<T extends string>({
-  options,
-  value,
-  onChange,
-  label,
-}: {
-  options: { value: T; label: string }[];
-  value: T;
-  onChange: (value: T) => void;
-  label: string;
-}) {
-  return (
-    <div
-      role="group"
-      aria-label={label}
-      className="inline-flex border border-black dark:border-white"
-    >
-      {options.map((option, index) => (
-        <button
-          key={option.value}
-          type="button"
-          aria-pressed={value === option.value}
-          onClick={() => onChange(option.value)}
-          className={[
-            'font-heading cursor-pointer px-4 py-2 text-xs font-bold',
-            'focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2',
-            'focus-visible:outline-focus-ring',
-            'ease-standard transition-colors duration-(--duration-fast)',
-            index > 0 ? 'border-l border-black dark:border-white' : '',
-            value === option.value
-              ? 'bg-orange text-darkestblue'
-              : 'text-darkestblue bg-white hover:bg-gray-100 dark:bg-transparent dark:text-white dark:hover:bg-white/10',
-          ].join(' ')}
-        >
-          {option.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-/* -------------------------------------------------------------------------- */
 /* List                                                                        */
 /* -------------------------------------------------------------------------- */
 
@@ -518,18 +475,12 @@ function EventList({ events }: { events: CalendarEventTypes[] }) {
           )}
         </div>
 
-        <select
+        <Select
           aria-label="Sorter arrangementer"
+          options={SORT_OPTIONS}
           value={sort}
           onChange={(event) => setSort(event.target.value as Sort)}
-          className="font-heading text-darkestblue focus-visible:outline-focus-ring cursor-pointer rounded-none border border-black bg-white px-3 py-2 text-xs font-bold focus-visible:outline focus-visible:outline-2 dark:border-white dark:bg-transparent dark:text-white"
-        >
-          {SORT_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value} className="text-darkestblue">
-              {option.label}
-            </option>
-          ))}
-        </select>
+        />
       </div>
 
       {nextEvent && (
