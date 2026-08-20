@@ -25,6 +25,8 @@ import {
 
 interface CalendarSectionProps {
   calendarHero?: CalendarHeroTypes;
+  /** The fetch failed, as opposed to succeeding with nothing in it. See `calendarLoader`. */
+  failed?: boolean;
   events: CalendarEventTypes[];
   /** Portal mode: a plain heading instead of the full navy hero band. */
   compact?: boolean;
@@ -255,7 +257,12 @@ function toAvatarPeople(participants: CalendarEventParticipantTypes[]): AvatarSt
 /* Section                                                                     */
 /* -------------------------------------------------------------------------- */
 
-export default function CalendarSection({ calendarHero, events, compact }: CalendarSectionProps) {
+export default function CalendarSection({
+  calendarHero,
+  events,
+  compact,
+  failed = false,
+}: CalendarSectionProps) {
   return (
     <div className="flex flex-col items-center gap-2 py-6">
       {compact ? (
@@ -265,7 +272,7 @@ export default function CalendarSection({ calendarHero, events, compact }: Calen
       ) : (
         <CalendarHero />
       )}
-      <EventList events={events} />
+      <EventList events={events} failed={failed} />
     </div>
   );
 }
@@ -338,7 +345,7 @@ function CalendarHero({
 /* List                                                                        */
 /* -------------------------------------------------------------------------- */
 
-function EventList({ events }: { events: CalendarEventTypes[] }) {
+function EventList({ events, failed }: { events: CalendarEventTypes[]; failed?: boolean }) {
   const rsvp = useRsvp(events);
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<'all' | Category>('all');
@@ -412,10 +419,18 @@ function EventList({ events }: { events: CalendarEventTypes[] }) {
   if (events.length === 0) {
     return (
       <div className="max-w-content text-darkestblue mx-auto w-full dark:text-white">
-        <EmptyState
-          title="Ingen arrangementer"
-          body="Det ser ikke ut til å være noen kommende arrangementer for øyeblikket. Vennligst sjekk igjen senere."
-        />
+        {/* An unreachable backend must not be reported as an empty programme — see PostsSection. */}
+        {failed ? (
+          <EmptyState
+            title="Kunne ikke laste arrangementer"
+            body="Vi fikk ikke kontakt med innholdstjenesten. Prøv å laste siden på nytt om et øyeblikk."
+          />
+        ) : (
+          <EmptyState
+            title="Ingen arrangementer"
+            body="Det ser ikke ut til å være noen kommende arrangementer for øyeblikket. Vennligst sjekk igjen senere."
+          />
+        )}
       </div>
     );
   }

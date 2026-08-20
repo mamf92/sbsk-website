@@ -21,6 +21,7 @@ import BoardPortal from './pages/BoardPortal';
 import NotFound from './pages/NotFound';
 import { initTheme } from './utils/theme';
 import StudioRoute from './pages/StudioRoute';
+import RouteError from './components/sections/RouteError';
 import { homeLoader } from './loaders/home-loader';
 import { eventsListLoader, eventDetailLoader } from './sanity/queryHelpers/events';
 import { calendarLoader } from './loaders/calendar-loader';
@@ -34,23 +35,35 @@ const router = createBrowserRouter(
     {
       path: '/',
       element: <App />,
+      // A failure in the shell itself has no <Outlet /> left to render into, so it needs its own
+      // boundary. This is the only case that loses the header and footer.
+      errorElement: <RouteError />,
       children: [
-        { index: true, element: <Home />, loader: homeLoader },
-        { path: 'kalender', element: <Calendar />, loader: calendarLoader },
-        { path: 'board-game-masters', element: <BoardGameMasters /> },
-        { path: 'våre-spill', element: <OurGames /> },
-        { path: 'om-oss', element: <AboutUs /> },
-        { path: 'kontakt-oss', element: <ContactUs /> },
-        { path: 'bli-medlem', element: <BecomeAMember /> },
-        { path: 'arrangementer', element: <Events />, loader: eventsListLoader },
-        { path: 'arrangementer/:id', element: <Event />, loader: eventDetailLoader },
-        { path: 'våre-partnere', element: <OurPartners /> },
-        { path: 'lag-medlemsprofil', element: <Register /> },
-        { path: 'login', element: <Login /> },
-        { path: 'medlemsportal', element: <MemberPortal />, loader: memberPortalLoader },
-        { path: 'styreportal', element: <BoardPortal />, loader: boardPortalLoader },
-        { path: 'studio/*', element: <StudioRoute /> },
-        { path: '*', element: <NotFound /> },
+        {
+          // Pathless, so it adds no segment and renders a bare <Outlet />. Its only job is to be
+          // the error boundary every page below shares. It has to sit *inside* App rather than on
+          // it: an errorElement replaces the element of the route it is attached to, so putting
+          // this on the route above would take Header and Footer down with the page.
+          errorElement: <RouteError />,
+          children: [
+            { index: true, element: <Home />, loader: homeLoader },
+            { path: 'kalender', element: <Calendar />, loader: calendarLoader },
+            { path: 'board-game-masters', element: <BoardGameMasters /> },
+            { path: 'våre-spill', element: <OurGames /> },
+            { path: 'om-oss', element: <AboutUs /> },
+            { path: 'kontakt-oss', element: <ContactUs /> },
+            { path: 'bli-medlem', element: <BecomeAMember /> },
+            { path: 'arrangementer', element: <Events />, loader: eventsListLoader },
+            { path: 'arrangementer/:id', element: <Event />, loader: eventDetailLoader },
+            { path: 'våre-partnere', element: <OurPartners /> },
+            { path: 'lag-medlemsprofil', element: <Register /> },
+            { path: 'login', element: <Login /> },
+            { path: 'medlemsportal', element: <MemberPortal />, loader: memberPortalLoader },
+            { path: 'styreportal', element: <BoardPortal />, loader: boardPortalLoader },
+            { path: 'studio/*', element: <StudioRoute /> },
+            { path: '*', element: <NotFound /> },
+          ],
+        },
       ],
     },
   ],
