@@ -1,0 +1,4 @@
+# Every change needs the maintainer's review. Listing owners here is what lets the branch
+# ruleset in .github/rulesets/main.json require code-owner approval — the rule has no effect
+# without this file, so it is deliberately in place before the rule is turned on.
+* @mamf92
