@@ -95,6 +95,47 @@ for (const { route, heading } of placeholderRoutes) {
   });
 }
 
+// Every other test here stubs Sanity with an empty result, which means the list bodies never
+// run: `events.map(...)` over `[]` renders nothing and cannot throw. That blind spot hid a crash
+// on this page for every visitor who had an upcoming event to see — the projection returns
+// `eventSlug`, the component read `slug.current`. Stub a populated result so the row actually
+// renders.
+test('arrangementer renders real rows, not just an empty list', async ({ page }) => {
+  await page.route('**://*.sanity.io/**', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        result: [
+          {
+            _id: 'event-1',
+            title: 'Spillkveld, torsdag 3. september',
+            eventSlug: 'spillkveld-torsdag-3-september',
+            eventStartTime: '2026-09-03T15:00:00Z',
+            eventEndTime: '2026-09-03T21:30:00Z',
+            category: 'spillkveld',
+            location: 'Byhaugkafeen, Stavanger',
+          },
+        ],
+      }),
+    }),
+  );
+
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await page.goto('/arrangementer');
+
+  const link = page.getByRole('link', { name: /Spillkveld, torsdag 3\. september/ });
+  await expect(link).toBeVisible();
+  // The href is the half that was broken: an undefined slug still renders a heading.
+  await expect(link).toHaveAttribute('href', /\/arrangementer\/spillkveld-torsdag-3-september$/);
+  // A missing field in the projection renders "Invalid Date" rather than throwing, so it needs
+  // its own assertion.
+  await expect(page.locator('li')).not.toContainText('Invalid Date');
+  expect(errors, `page threw: ${errors.join(', ')}`).toEqual([]);
+});
+
 test('unknown routes render the 404 page, not a blank screen', async ({ page }) => {
   await page.goto('/denne-siden-finnes-ikke');
 
