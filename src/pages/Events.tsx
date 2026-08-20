@@ -12,9 +12,13 @@ export default function Events() {
       <ul className="flex flex-col gap-y-4">
         {events.map((event) => (
           <li className="hover:underline" key={event._id}>
-            <Link to={`/arrangementer/${event.slug.current}`}>
+            {/* `eventSlug`, not `slug.current`: EVENTS_LIST_QUERY projects the slug flat, so
+                `event.slug` is undefined here and reading `.current` off it threw for every
+                row. Likewise `publishedAt` is not in that projection — and an events list
+                wants the date the event happens on, not the date it was written. */}
+            <Link to={`/arrangementer/${event.eventSlug}`}>
               <h2 className="text-h2 font-semibold">{event.title}</h2>
-              <p>{new Date(event.publishedAt).toLocaleDateString()}</p>
+              <p>{new Date(event.eventStartTime).toLocaleDateString('nb-NO')}</p>
             </Link>
           </li>
         ))}
