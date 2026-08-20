@@ -181,6 +181,11 @@
   --shadow-1: 2px 2px 0 var(--hard-shadow-color);
   --shadow-2: 4px 4px 0 var(--hard-shadow-color);
   --shadow-3: 6px 6px 0 var(--hard-shadow-color);
+
+  /* The same 2px offset turned inward, and the only inset shadow in the system. It exists
+     for joined controls, which cannot travel: a selected segment reads as pressed *into* the
+     group where a chip reads as raised out of it. See the `segment` utility below. */
+  --shadow-inset-1: inset 2px 2px 0 var(--hard-shadow-color);
   /* The accent pair is the library's, and is deliberately not what `surface-dark` uses: an
      orange shadow under a `variant="primary"` button is orange-on-orange, so the button reads
      as a smeared parallelogram rather than a lifted rectangle. Kept for a deliberate accent
@@ -554,6 +559,40 @@
     &:active {
       transform: none;
     }
+  }
+}
+
+/* The answer to "do joined controls lift?" — they do not, and this is the whole of what
+   `Segmented` gets instead.
+
+   A segmented control's segments share their borders. Travelling one 2px up-left tears a
+   gap on one side of it and overlaps its neighbour on the other, so the group stops reading
+   as a single object the moment the pointer enters it. `lift-chip` is the closest cousin and
+   is specifically the wrong answer here.
+
+   What survives is the colour half of `lift`, plus a resting state the other utilities do
+   not have: the selected segment carries a hard *inset* shadow, read off `aria-pressed` the
+   way `lift-chip` reads it. Same offset as `--shadow-1`, pointing the other way — the on
+   segment is pressed into the group rather than raised out of it, which is the one depth cue
+   a control with no travel can still give.
+
+   No transform at any point, so there is nothing for `prefers-reduced-motion` to strip and
+   no reduced-motion block below. Same mutual-exclusion rule as `lift`: this owns `transition`
+   outright, so never pair it with a `transition-*` utility on the same element. */
+@utility segment {
+  transition:
+    box-shadow var(--transition-fast),
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+
+  &[aria-pressed='true'] {
+    box-shadow: var(--shadow-inset-1);
+  }
+
+  &:disabled {
+    box-shadow: none;
+    cursor: not-allowed;
   }
 }
 

@@ -219,6 +219,7 @@ Do not assemble the tokens by hand. `src/index.css` defines two custom utilities
 lift        buttons and the burger — hover onto shadow-2, press onto shadow-1
 lift-chip   chips — hover onto shadow-1, press onto no shadow, and no lift when selected
 lift-card   cards — hover 3px onto shadow-3, and stay raised on shadow-2 while expanded
+segment     joined segments — colour only, and the selected one sits on the inset shadow
 ```
 
 Each owns the hover offset, the press offset, the shadows, and the colour transition — on a
@@ -228,10 +229,33 @@ single `transition` declaration. That last part matters: an element takes one of
 half. A test on each component pins it.
 
 `lift-chip` additionally reads `aria-pressed`: a selected chip is already "down", so it still
-presses but never lifts.
+presses but never lifts. `segment` reads the same attribute, for the opposite reason — it has
+no travel to withhold, so `aria-pressed` is what puts the selected segment on
+`--shadow-inset-1`.
 
-Both honour `prefers-reduced-motion: reduce`, where they keep the shadow — a shadow is not
-motion — and drop the travel.
+The three `lift-*` utilities honour `prefers-reduced-motion: reduce`, where they keep the
+shadow — a shadow is not motion — and drop the travel. `segment` has no travel at any point,
+so there is nothing for it to drop.
+
+### Which single-choice control
+
+Three controls in this system take one choice out of a set, and the list pages had all three
+doing the same job before #148. They are not interchangeable:
+
+| Control     | Reads as                          | Reach for it when                                     |
+| ----------- | --------------------------------- | ----------------------------------------------------- |
+| `Chip`      | a filter — additive, multi-select | narrowing a list by category                          |
+| `Segmented` | all the options, exactly one on   | 2–4 short labels that fit on one line at 320px        |
+| `Select`    | one of many, folded away          | more options than that, or labels too long for a line |
+
+Sorting is `Select` on both list pages. It is single-select, so a chip row was the wrong
+shape for it outright — two visually identical rows of chips on Innlegg, one filtering and
+one sorting, is the specific confusion that settled this. `Segmented` was the first
+candidate, and the labels decide against it. Measured in the built stylesheet at the `md`
+size, Innlegg's four sort labels come to **475px** joined and Kalender's three to **362px**,
+against a 320px viewport — neither fits, and shortening `Dato (siste til første)` far enough
+to fit would cost more meaning than the control gains. Kalender's Kommende / Tidligere / Alle
+switcher measures 235px, which is what `Segmented` is for.
 
 ## Who lifts
 
@@ -254,6 +278,13 @@ Lift is for things you press. It is not decoration.
   `lift-chip` reads `aria-pressed`. There is no press state — a card settles by expanding,
   and a downward nudge would fight the panel opening beneath it. A card you cannot press
   keeps the border and nothing else.
+- **No:** joined controls — `Segmented`. Its segments share their borders, so travelling one
+  2px up-left tears a gap on one side and overlaps its neighbour on the other, and the group
+  stops reading as a single object the moment the pointer enters it. It takes the colour half
+  of `lift` and nothing else, via the `segment` utility. What it gains in exchange is the one
+  resting state no other control has: the selected segment carries `--shadow-inset-1`, the
+  same 2px hard offset turned inward, read off `aria-pressed` the way `lift-chip` reads it.
+  A chip is raised out of a row; a segment is pressed into a group.
 - **No:** form controls. A text field is not a pressable surface — you put a caret in it, you
   do not press it — so `Input`, `Textarea` and `Checkbox` stay flat in every state. What they
   did take from this pass is the focus treatment, which they were the last holdout on: see

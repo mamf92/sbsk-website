@@ -1,6 +1,7 @@
 import { Button } from '../ui/Buttons';
 import { Card, type CardCategory } from '../ui/Card';
 import { Chip, type ChipCategory } from '../ui/Chip';
+import { Select } from '../ui/Select';
 import { Input } from '../ui/Input';
 import EmptyState from '../ui/EmptyState';
 import { useState } from 'react';
@@ -191,17 +192,13 @@ function PostsList({ posts }: { posts: PostTypes[] }) {
             </Chip>
           ))}
         </div>
-        <div className="flex flex-wrap justify-center gap-2">
-          {sortOptions.map((option) => (
-            <Chip
-              key={option.value}
-              active={sortBy === option.value}
-              onClick={() => setSelectedSort(option.value)}
-            >
-              {option.label}
-            </Chip>
-          ))}
-        </div>
+        <Select
+          aria-label="Sorter innlegg"
+          options={sortOptions}
+          value={sortBy}
+          onChange={(event) => setSelectedSort(event.target.value)}
+          className="max-w-full"
+        />
       </div>
       {displayedPosts.length === 0 && (
         <div className="flex w-full flex-col items-center justify-center gap-4 p-6">
