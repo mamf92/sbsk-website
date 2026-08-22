@@ -16,6 +16,8 @@ import { useNavigate } from 'react-router-dom';
 interface PostsProps {
   postsHero?: PostsHeroTypes;
   posts: PostTypes[];
+  /** The fetch failed, as opposed to succeeding with nothing in it. See `homeLoader`. */
+  failed?: boolean;
 }
 
 type PostCategory = 'nyheter' | 'spillkveldrapporter' | 'arrangementer';
@@ -77,11 +79,11 @@ const sortOptions = [
   { label: 'Tittel (Å-A)', value: 'title-desc' },
 ] as const;
 
-export default function Posts({ postsHero, posts }: PostsProps) {
+export default function Posts({ postsHero, posts, failed = false }: PostsProps) {
   return (
     <div className="flex flex-col items-center gap-6 py-6">
       {postsHero ? <PostsHero {...postsHero} /> : <PostsHero />}
-      <PostsList posts={posts} />
+      <PostsList posts={posts} failed={failed} />
     </div>
   );
 }
@@ -102,7 +104,7 @@ function PostsHero({ title, subtitle }: PostsHeroTypes = {}) {
   );
 }
 
-function PostsList({ posts }: { posts: PostTypes[] }) {
+function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<'all' | PostCategory>('all');
   const [sortBy, setSelectedSort] = useState('date-desc');
@@ -162,10 +164,20 @@ function PostsList({ posts }: { posts: PostTypes[] }) {
   if (posts.length === 0 || !posts) {
     return (
       <div className="max-w-content text-darkestblue mx-auto px-2 sm:px-0 dark:text-white">
-        <EmptyState
-          title="Ingen innlegg"
-          body="Det ser ikke ut til å være noen innlegg for øyeblikket. Vennligst sjekk igjen senere."
-        />
+        {/* "There are no posts" and "we could not reach Sanity" look identical from here, and only
+            one of them is true. Saying the wrong one sends a visitor away believing the club has
+            gone quiet. */}
+        {failed ? (
+          <EmptyState
+            title="Kunne ikke laste innlegg"
+            body="Vi fikk ikke kontakt med innholdstjenesten. Prøv å laste siden på nytt om et øyeblikk."
+          />
+        ) : (
+          <EmptyState
+            title="Ingen innlegg"
+            body="Det ser ikke ut til å være noen innlegg for øyeblikket. Vennligst sjekk igjen senere."
+          />
+        )}
       </div>
     );
   }

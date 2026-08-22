@@ -116,3 +116,63 @@ test('an event links through to its own page', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1, name: UPCOMING_EVENT.title })).toBeVisible();
   expect(errors, `page threw: ${errors.join(', ')}`).toEqual([]);
 });
+
+// --- #63: what a visitor gets when something goes wrong -----------------------------------
+
+test('an event slug that does not resolve renders the 404 page inside the shell', async ({
+  page,
+}) => {
+  await page.goto('/arrangementer/finnes-ikke');
+
+  // eventDetailLoader throws a 404 Response. Without a boundary that produced React Router's
+  // developer error screen, stack trace and all, with no way to navigate away.
+  await expect(page.getByRole('heading', { name: 'Denne siden mangler i esken' })).toBeVisible();
+  // The shell has to survive, or the visitor is stranded.
+  await expect(page.locator('header')).toBeVisible();
+  await expect(page.locator('footer')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Til forsiden' }).click();
+  await expect(page).toHaveURL(/\/(sbsk-website\/)?$/);
+});
+
+test('a backend failure is reported as a fault, not as a missing page', async ({ page }) => {
+  // Override the content stub: this is Sanity being unreachable, not a slug that does not exist.
+  await page.route('**://*.sanity.io/**', (route) => route.abort('failed'));
+
+  await page.goto('/arrangementer');
+
+  await expect(page.getByRole('heading', { name: 'Noe gikk galt hos oss' })).toBeVisible();
+  // Telling someone the page does not exist when our backend fell over sends them away for good.
+  await expect(page.getByText('Denne siden mangler i esken')).toHaveCount(0);
+  await expect(page.locator('header')).toBeVisible();
+});
+
+test('the front page survives losing one of its two content sources', async ({ page }) => {
+  // The hero query fails; the posts query is left alone.
+  await page.route('**://*.sanity.io/**', async (route) => {
+    const query = new URL(route.request().url()).searchParams.get('query') ?? '';
+    if (query.includes('"homeHero"')) return route.abort('failed');
+    return route.fallback();
+  });
+
+  await page.goto('/');
+
+  // The feed still renders, and the hero falls back to its built-in copy rather than taking the
+  // page with it.
+  await expect(page.getByRole('heading', { name: POSTS[0].title })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Noe gikk galt hos oss' })).toHaveCount(0);
+});
+
+test('an unreachable feed says so rather than claiming there are no posts', async ({ page }) => {
+  await page.route('**://*.sanity.io/**', async (route) => {
+    const query = new URL(route.request().url()).searchParams.get('query') ?? '';
+    if (query.includes('"post"')) return route.abort('failed');
+    return route.fallback();
+  });
+
+  await page.goto('/');
+
+  await expect(page.getByText('Kunne ikke laste innlegg')).toBeVisible();
+  // "Ingen innlegg" would be a lie, and one that reads as "this club has gone quiet".
+  await expect(page.getByText('Ingen innlegg', { exact: true })).toHaveCount(0);
+});
