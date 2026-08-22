@@ -105,18 +105,23 @@ describe('Card', () => {
     expect(root).toHaveAttribute('data-expanded', 'true');
   });
 
-  it('renders the panel image with its alt text', () => {
-    render(<Card title="Spillkveld" image="/bilde.jpg" imageAlt="Spillbord" />);
-    expect(screen.getByRole('img', { name: 'Spillbord' })).toHaveAttribute('src', '/bilde.jpg');
-  });
-
-  it('shows a decorative thumbnail of the image in the closed header', () => {
-    const { container } = render(
-      <Card title="Spillkveld" image="/bilde.jpg" imageAlt="Spillbord" />,
-    );
+  it('shows a decorative thumbnail of the image in the closed header, bled to the edge', () => {
+    // The thumbnail is the post's own photo, so it must not carry a redundant accessible name —
+    // and it sits with no gap against the header, which is the "bleeds to the edge" contract.
+    const { container } = render(<Card title="Spillkveld" image="/bilde.jpg" />);
     const thumbnail = container.querySelector('h3 img');
     expect(thumbnail).toHaveAttribute('src', '/bilde.jpg');
     expect(thumbnail).toHaveAttribute('aria-hidden', 'true');
+    expect(thumbnail).toHaveAttribute('alt', '');
+    expect(thumbnail?.className).not.toMatch(/\bp-|\bm-/);
+  });
+
+  it('points the thumbnail at the hotspot via object-position', () => {
+    const { container } = render(
+      <Card title="Spillkveld" image="/bilde.jpg" imagePosition="30% 70%" />,
+    );
+    const thumbnail = container.querySelector('h3 img') as HTMLElement;
+    expect(thumbnail.style.objectPosition).toBe('30% 70%');
   });
 
   it('omits the header thumbnail when there is no image', () => {
@@ -124,23 +129,25 @@ describe('Card', () => {
     expect(container.querySelector('h3 img')).not.toBeInTheDocument();
   });
 
-  it('shows the panel image as a gallery, main image first, thumbnails swap the display', async () => {
-    render(
-      <Card
-        title="Spillkveld"
-        image="/hoved.jpg"
-        imageAlt="Hovedbilde"
-        gallery={[{ src: '/ekstra.jpg', alt: 'Ekstra bilde' }]}
-      />,
+  it('no longer renders the image inside the panel — the caller shows it via SanityImage', () => {
+    const { container } = render(
+      <Card title="Spillkveld" image="/bilde.jpg" onToggle={vi.fn()} expanded>
+        <p>Innhold</p>
+      </Card>,
     );
-
-    expect(screen.getByAltText('Hovedbilde')).toHaveAttribute('src', '/hoved.jpg');
-    await userEvent.click(screen.getByRole('button', { name: 'Ekstra bilde' }));
-    expect(screen.getByAltText('Ekstra bilde')).toHaveAttribute('src', '/ekstra.jpg');
+    // The one <img> is the decorative header thumbnail; aria-hidden keeps it out of
+    // `getByRole('img')`, so this asserts against the DOM directly.
+    expect(container.querySelectorAll('img')).toHaveLength(1);
+    expect(container.querySelector('.sbsk-rt img')).not.toBeInTheDocument();
   });
 
   it('omits the panel entirely when there is no body', () => {
     render(<Card title="Bare tittel" onToggle={vi.fn()} />);
+    expect(screen.getByRole('button')).not.toHaveAttribute('aria-controls');
+  });
+
+  it('omits the panel when only an image is given, since the image alone is not a body', () => {
+    render(<Card title="Bare bilde" image="/bilde.jpg" onToggle={vi.fn()} />);
     expect(screen.getByRole('button')).not.toHaveAttribute('aria-controls');
   });
 

@@ -1,6 +1,5 @@
 import * as React from 'react';
 import Expand from '../../assets/icons/arrows/expand.svg?react';
-import { ImageGallery, type GalleryImage } from './ImageGallery';
 
 export type CardCategory = 'nyheter' | 'spillkveld' | 'arrangementer' | 'turnering' | 'annet';
 
@@ -10,12 +9,13 @@ type CardProps = Omit<React.HTMLAttributes<HTMLElement>, 'title'> & {
   date?: React.ReactNode;
   title: React.ReactNode;
   subtitle?: React.ReactNode;
-  // `image` doubles as the closed-card thumbnail and the first image of the panel gallery —
-  // there is deliberately no separate "teaser" image, so the photo a reader sees closed is
-  // the same one that opens the gallery.
+  // The closed card's thumbnail. It is decorative here — the title beside it already says what
+  // the post is, and this sits inside the toggle button, where alt text would be read out as
+  // part of the control's name. The photo itself reappears, captioned, inside the panel.
   image?: string;
-  imageAlt?: string;
-  gallery?: GalleryImage[];
+  // `object-position` for the thumbnail, so a header that stretches taller than the square crop
+  // still keeps the subject in frame. See `hotspotPosition` in `SanityImage.tsx`.
+  imagePosition?: string;
   expanded?: boolean;
   onToggle?: () => void;
 };
@@ -60,8 +60,7 @@ export const Card = React.forwardRef<HTMLElement, CardProps>(
       title,
       subtitle,
       image,
-      imageAlt = '',
-      gallery = [],
+      imagePosition,
       expanded = false,
       onToggle,
       children,
@@ -73,8 +72,14 @@ export const Card = React.forwardRef<HTMLElement, CardProps>(
     // No toggle handler means this is a static block: no chevron, no cursor, no lift, and
     // the body simply renders. `expanded` is meaningless without something to collapse to.
     const interactive = typeof onToggle === 'function';
-    const hasBody = children != null || image != null;
+    const hasBody = children != null;
     const open = interactive ? expanded : true;
+
+    // The padding moves off the header row and onto the text and the chevron, so the thumbnail
+    // can sit flush against the card's own top, left and bottom borders. A photo inset by 16px
+    // reads as a stray icon; one bled to the edge reads as the card's picture.
+    const headerRow =
+      'flex w-full items-stretch justify-between' + (image ? ' min-h-20 sm:min-h-24' : '');
 
     const header = (
       <>
@@ -83,16 +88,17 @@ export const Card = React.forwardRef<HTMLElement, CardProps>(
             src={image}
             alt=""
             aria-hidden="true"
-            className="size-20 flex-none border border-black object-cover sm:size-24"
+            style={imagePosition ? { objectPosition: imagePosition } : undefined}
+            className="w-20 flex-none border-r border-black object-cover sm:w-24"
           />
         ) : null}
-        <span className="flex min-w-0 flex-1 flex-col gap-1 text-left">
+        <span className="flex min-w-0 flex-1 flex-col justify-center gap-1 p-4 text-left">
           {date ? <span className="text-sm font-normal">{date}</span> : null}
           <span className="font-heading text-h3 font-bold">{title}</span>
           {subtitle ? <span className="text-base font-normal">{subtitle}</span> : null}
         </span>
         {interactive ? (
-          <span className="flex size-7 flex-none items-center justify-center">
+          <span className="mr-4 flex size-7 flex-none items-center justify-center self-center">
             <Expand
               aria-hidden="true"
               className={
@@ -123,12 +129,12 @@ export const Card = React.forwardRef<HTMLElement, CardProps>(
               onClick={onToggle}
               aria-expanded={open}
               aria-controls={hasBody ? panelId : undefined}
-              className="focus-visible:outline-focus-ring flex w-full cursor-pointer items-center justify-between gap-4 p-4 text-left focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2"
+              className={`${headerRow} focus-visible:outline-focus-ring cursor-pointer gap-4 text-left focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2`}
             >
               {header}
             </button>
           ) : (
-            <div className="flex w-full items-center justify-between gap-4 p-4">{header}</div>
+            <div className={`${headerRow} gap-4 ${image ? '' : 'p-4'}`}>{header}</div>
           )}
         </h3>
         {hasBody ? (
@@ -148,9 +154,6 @@ export const Card = React.forwardRef<HTMLElement, CardProps>(
           >
             <div className="overflow-hidden">
               <div className={`${panels[category]} flex flex-col gap-4 border-t border-black p-4`}>
-                {image ? (
-                  <ImageGallery images={[{ src: image, alt: imageAlt }, ...gallery]} />
-                ) : null}
                 {children ? <div className="sbsk-rt">{children}</div> : null}
               </div>
             </div>
