@@ -10,7 +10,9 @@ export const components: PortableTextComponents = {
     normal: ({ children }) => <p className="font-body text-base">{children}</p>,
     // `clear-both`: a heading following a floated inline image (see `postsImageComponent.tsx`)
     // should start its own line below the image, not butt up against its side.
-    h2: ({ children }) => <h2 className="font-heading clear-both text-2xl font-bold">{children}</h2>,
+    h2: ({ children }) => (
+      <h2 className="font-heading clear-both text-2xl font-bold">{children}</h2>
+    ),
     h3: ({ children }) => <h3 className="font-heading clear-both text-xl font-bold">{children}</h3>,
   },
   list: {

@@ -111,7 +111,9 @@ describe('Card', () => {
   });
 
   it('shows a decorative thumbnail of the image in the closed header', () => {
-    const { container } = render(<Card title="Spillkveld" image="/bilde.jpg" imageAlt="Spillbord" />);
+    const { container } = render(
+      <Card title="Spillkveld" image="/bilde.jpg" imageAlt="Spillbord" />,
+    );
     const thumbnail = container.querySelector('h3 img');
     expect(thumbnail).toHaveAttribute('src', '/bilde.jpg');
     expect(thumbnail).toHaveAttribute('aria-hidden', 'true');
