@@ -29,12 +29,12 @@ const inactive =
 // `arrangementer` and `annet` — the same aliasing `Card` applies, kept as separate keys so
 // the two pairs can diverge without a rename.
 const active = {
-  neutral: 'border-darkblue bg-darkorange text-white',
+  neutral: 'border-darkblue bg-darkorange text-darkestblue',
   nyheter: 'border-darkblue bg-category-nyheter text-white',
   spillkveld: 'border-orange bg-category-spillkveld text-darkestblue',
-  arrangementer: 'border-darkorange bg-category-arrangementer text-white',
+  arrangementer: 'border-darkorange bg-category-arrangementer text-darkestblue',
   turnering: 'border-orange bg-category-turnering text-darkestblue',
-  annet: 'border-darkorange bg-category-annet text-white',
+  annet: 'border-darkorange bg-category-annet text-darkestblue',
 } as const;
 
 export const Chip = React.forwardRef<HTMLButtonElement, ChipProps>(

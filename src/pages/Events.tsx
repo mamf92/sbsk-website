@@ -6,9 +6,12 @@ export default function Events() {
   return (
     <div className="dark:bg-darkestblue min-h-[60vh] bg-white dark:text-white">
       {/* An <h1>, not a <div>: this route has content, so it is not one of #147's placeholders,
-          but it had the same missing document heading. The orange-on-white still belongs to
-          #136. */}
-      <h1 className="text-orange font-heading text-h1 font-bold">Arrangementer</h1>
+          but it had the same missing document heading. #136 fixed the orange-on-white: orange
+          only clears AA on the darkestblue fill dark mode uses here, so light mode takes
+          darkestblue instead, matching the pairing HomeHeroSection's <h1> already uses. */}
+      <h1 className="text-darkestblue dark:text-orange font-heading text-h1 font-bold">
+        Arrangementer
+      </h1>
       <ul className="flex flex-col gap-y-4">
         {events.map((event) => (
           <li className="hover:underline" key={event._id}>
