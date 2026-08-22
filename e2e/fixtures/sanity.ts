@@ -180,3 +180,17 @@ export async function stubSanityWithContent(page: Page, dataset: unknown[] = DAT
     });
   });
 }
+
+/**
+ * Answers every Sanity query with an empty result. For specs whose subject is not the content —
+ * the portals, the dialog — where what matters is that the shell reaches for no network.
+ */
+export async function stubSanityEmpty(page: Page) {
+  await page.route('**://*.sanity.io/**', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ result: [] }),
+    }),
+  );
+}

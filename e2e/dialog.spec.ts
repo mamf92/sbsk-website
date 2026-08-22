@@ -1,4 +1,6 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import { stubSanityEmpty } from './fixtures/sanity';
+import { stubSupabase } from './fixtures/supabase';
 
 /**
  * #149: `Dialog` is built on the native `<dialog>` and `showModal()`, and everything that
@@ -7,83 +9,13 @@ import { expect, test, type Page } from '@playwright/test';
  * of the element to mount), so the contract that actually matters is checked here.
  *
  * The board portal is the shortest route to a live dialog. It is behind a Supabase session,
- * so the session and the two queries the loader makes are stubbed below — no network.
+ * which `stubSupabase` seeds — this spec used to carry its own copy of that machinery, and the
+ * shared fixture grew out of it when the portal routes got tests of their own.
  */
 
-const SUPABASE = 'http://localhost:54321';
-const USER_ID = '00000000-0000-0000-0000-000000000001';
-
-const user = {
-  id: USER_ID,
-  aud: 'authenticated',
-  role: 'authenticated',
-  email: 'styret@sbsk.test',
-  app_metadata: {},
-  user_metadata: {},
-  created_at: '2024-01-01T00:00:00Z',
-};
-
-const profile = {
-  id: 'p1',
-  supabase_id: USER_ID,
-  email: 'styret@sbsk.test',
-  name: 'Kari',
-  surname: 'Nordmann',
-  address: 'Storgata 1',
-  postcode: '4005',
-  city: 'Stavanger',
-  created_at: '2024-01-01T00:00:00Z',
-  photo_url: null,
-  bio: null,
-};
-
-const members = [
-  {
-    id: 'm1',
-    name: 'Ola',
-    surname: 'Nordmann',
-    phone: '40000000',
-    address: 'Storgata 2',
-    postcode: '4005',
-    city: 'Stavanger',
-    email: 'ola@sbsk.test',
-    is_admin: false,
-  },
-];
-
-async function signInAndStub(page: Page) {
-  // supabase-js keys its session off the project URL's first hostname label.
-  await page.addInitScript(
-    ([key, session]) => window.localStorage.setItem(key as string, session as string),
-    [
-      'sb-localhost-auth-token',
-      JSON.stringify({
-        access_token: 'stub-access-token',
-        token_type: 'bearer',
-        expires_in: 3600,
-        expires_at: Math.floor(Date.now() / 1000) + 3600,
-        refresh_token: 'stub-refresh-token',
-        user,
-      }),
-    ],
-  );
-
-  const json = (body: unknown) => ({
-    status: 200,
-    contentType: 'application/json',
-    body: JSON.stringify(body),
-  });
-
-  await page.route(`${SUPABASE}/auth/v1/user*`, (route) => route.fulfill(json(user)));
-  // `.single()` asks PostgREST for an object rather than an array.
-  await page.route(`${SUPABASE}/rest/v1/profiles*`, (route) => route.fulfill(json(profile)));
-  await page.route(`${SUPABASE}/rest/v1/members*`, (route) => route.fulfill(json(members)));
-  await page.route(`${SUPABASE}/**`, (route) => route.fulfill(json([])));
-  await page.route('**://*.sanity.io/**', (route) => route.fulfill(json({ result: [] })));
-}
-
 test.beforeEach(async ({ page }) => {
-  await signInAndStub(page);
+  await stubSanityEmpty(page);
+  await stubSupabase(page);
 });
 
 test('the member dialog traps focus, closes on Escape and restores focus', async ({ page }) => {
