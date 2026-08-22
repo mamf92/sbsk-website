@@ -72,6 +72,16 @@ Only `VITE_*` variables reach the client via `import.meta.env` — never put a s
 router `basename`. Supabase reads `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.
 The Sanity project is `85tc4tb0`, dataset `production`, configured in `src/sanity/client.ts`.
 
+There is no committed `.env` of any kind — only `.env.example`. `.env` and every `.env.<mode>`
+file are gitignored, because Vite loads them identically and a `VITE_` variable in one is
+published in the bundle.
+
+GitHub Pages cannot set response headers, so the Content-Security-Policy is a `<meta>` element
+injected into `index.html` by a plugin in `vite.config.ts`; the policy itself is built in
+`src/security/csp.ts`. It is a single-page app, so the public site and the embedded Studio share
+one policy. Adding a script, font, image host or backend from anywhere but our own origin means
+adding it there too, with a reason — `e2e/csp.spec.ts` fails otherwise.
+
 Sandboxed sessions may have no network route to Sanity or Supabase. Prefer unit tests with
 mocked helpers over anything that needs a live backend.
 

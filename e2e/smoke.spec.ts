@@ -62,7 +62,79 @@ for (const route of singleMainRoutes) {
     await page.goto(route);
     await expect(page.locator('main')).toHaveCount(1);
   });
+
+  // A route with no <h1> gives a screen reader a `main` landmark with nothing naming it; a route
+  // with two leaves it without a single answer to "what is this page". Six routes were in the
+  // first state until #147 (they titled themselves with a <div>) and `/` was in the second until
+  // #144 demoted the posts header to an <h2>, so this can now pin the exact count.
+  test(`${route} renders exactly one document heading`, async ({ page }) => {
+    await page.goto(route);
+    await expect(page.locator('h1')).toHaveCount(1);
+  });
 }
+
+// The routes still on `PagePlaceholder`. Each is one heading and nothing else, so the exact
+// count is safe to pin here and is what stops the next stub shipping without one. `/våre-spill`
+// left this list once it got a real page — see e2e/content.spec.ts for its own coverage.
+const placeholderRoutes = [
+  { route: '/om-oss', heading: 'Om oss' },
+  { route: '/bli-medlem', heading: 'Bli medlem' },
+  { route: '/kontakt-oss', heading: 'Kontakt oss' },
+  { route: '/våre-partnere', heading: 'Våre partnere' },
+  { route: '/board-game-masters', heading: 'Board Game Masters' },
+];
+
+for (const { route, heading } of placeholderRoutes) {
+  test(`${route} is a placeholder with one h1 and a way onward`, async ({ page }) => {
+    await page.goto(route);
+
+    await expect(page.locator('h1')).toHaveCount(1);
+    await expect(page.getByRole('heading', { level: 1, name: heading })).toBeVisible();
+    // The point of the component: a live route a visitor lands on always offers somewhere useful.
+    await expect(page.getByRole('button', { name: /Se kalender/ })).toBeVisible();
+  });
+}
+
+// Every other test here stubs Sanity with an empty result, which means the list bodies never
+// run: `events.map(...)` over `[]` renders nothing and cannot throw. That blind spot hid a crash
+// on this page for every visitor who had an upcoming event to see — the projection returns
+// `eventSlug`, the component read `slug.current`. Stub a populated result so the row actually
+// renders.
+test('arrangementer renders real rows, not just an empty list', async ({ page }) => {
+  await page.route('**://*.sanity.io/**', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        result: [
+          {
+            _id: 'event-1',
+            title: 'Spillkveld, torsdag 3. september',
+            eventSlug: 'spillkveld-torsdag-3-september',
+            eventStartTime: '2026-09-03T15:00:00Z',
+            eventEndTime: '2026-09-03T21:30:00Z',
+            category: 'spillkveld',
+            location: 'Byhaugkafeen, Stavanger',
+          },
+        ],
+      }),
+    }),
+  );
+
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await page.goto('/arrangementer');
+
+  const link = page.getByRole('link', { name: /Spillkveld, torsdag 3\. september/ });
+  await expect(link).toBeVisible();
+  // The href is the half that was broken: an undefined slug still renders a heading.
+  await expect(link).toHaveAttribute('href', /\/arrangementer\/spillkveld-torsdag-3-september$/);
+  // A missing field in the projection renders "Invalid Date" rather than throwing, so it needs
+  // its own assertion.
+  await expect(page.locator('li')).not.toContainText('Invalid Date');
+  expect(errors, `page threw: ${errors.join(', ')}`).toEqual([]);
+});
 
 test('unknown routes render the 404 page, not a blank screen', async ({ page }) => {
   await page.goto('/denne-siden-finnes-ikke');

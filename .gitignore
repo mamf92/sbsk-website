@@ -3,16 +3,20 @@
 /.pnp
 .pnp.js
 
-# Environment files
+# Environment files. Only .env.example is committed: Vite loads .env.<mode> exactly the way it
+# loads .env, so a mode file is no safer to commit, and anything in one is published the moment
+# it is prefixed VITE_. Real values come from the environment — GitHub Actions variables for the
+# deploy, a local .env for development.
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
 
 # Build files
 /dist
 /build
+
+# Lint cache — lint-staged runs `eslint --cache` on every commit.
+.eslintcache
 
 # Logs
 npm-debug.log*

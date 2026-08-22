@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react';
+import { LoadingIndicator } from '../components/ui/LoadingIndicator';
 
 // The Sanity Studio pulls in several MB of editor code. Loading it lazily keeps
 // it out of the public site's entry bundle — only /studio visitors pay for it.
@@ -8,7 +9,7 @@ const Studio = lazy(() => import('./Studio'));
 
 export default function StudioRoute() {
   return (
-    <Suspense fallback={<div className="p-6">Laster studio …</div>}>
+    <Suspense fallback={<LoadingIndicator label="Laster studio…" className="p-6" />}>
       <Studio />
     </Suspense>
   );

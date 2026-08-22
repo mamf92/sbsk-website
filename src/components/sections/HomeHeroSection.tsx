@@ -56,11 +56,11 @@ export default function HomeHero({
       </div>
       <div className="absolute inset-0 flex h-[calc(80vh)] flex-col items-center justify-center bg-white/50 p-4 text-center dark:bg-black/50">
         <div className="flex flex-1 flex-col justify-center gap-12 md:w-[calc(60%)]">
-          <div className="flex max-w-150 flex-col items-start gap-4">
-            <h1 className="text-darkestblue text-left text-4xl font-bold dark:text-white">
+          <div className="max-w-form flex flex-col items-start gap-4">
+            <h1 className="text-darkestblue text-h1 text-left font-bold dark:text-white">
               {resolvedTitle}
             </h1>
-            <p className="text-darkestblue text-regular text-left text-lg dark:text-white">
+            <p className="text-darkestblue text-left text-lg font-normal dark:text-white">
               {resolvedSubtitle}
             </p>
           </div>
@@ -103,10 +103,10 @@ export default function HomeHero({
         <div className="flex w-full flex-col pb-2 lg:w-[calc(80%)]">
           {sponsorsExist && (
             <div className="flex flex-col items-start gap-4">
-              <h2 className="text-darkestblue text-left text-xl font-bold dark:text-white">
+              <h2 className="text-darkestblue text-h2 text-left font-bold dark:text-white">
                 Vi samarbeider med:
               </h2>
-              <div className="flex w-full flex-col items-start justify-between gap-2 self-baseline rounded p-4 sm:flex-row md:gap-0 dark:bg-white/50">
+              <div className="flex w-full flex-col items-start justify-between gap-2 self-baseline rounded-none p-4 sm:flex-row md:gap-0 dark:bg-white/50">
                 {sponsors.map((sponsor, index) => (
                   <a
                     key={index}

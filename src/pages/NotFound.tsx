@@ -14,7 +14,6 @@ export default function NotFound() {
 
   return (
     <ErrorState
-      variant="dark"
       code="404"
       onPrimary={() => navigate('/')}
       onSecondary={() => navigate('/kalender')}

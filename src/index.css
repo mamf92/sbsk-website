@@ -77,6 +77,9 @@
 
   /* Flips with the theme — see the `.dark` block below. */
   --color-hero-scrim: rgb(255 255 255 / 0.55);
+  /* The modal scrim. Paints on `::backdrop`, which no utility can reach, so it is consumed
+     by the `.sbsk-dialog::backdrop` rule below rather than as a `bg-*` class. */
+  --color-overlay-scrim: rgb(255 255 255 / 0.7);
   --color-toggle-bg: var(--color-darkestblue);
   --color-toggle-text: var(--color-white);
 
@@ -97,7 +100,48 @@
   --text-h4: 1rem;
   --text-h4--line-height: 1.375rem;
 
+  /* A statement heading on a page that is nothing but the statement — the 404 today, and the
+     only fluid step in the system. #144 deliberately did not add a display step to the heading
+     scale: with the placeholder pages excluded, no ordinary page heading needed one. This is
+     not an ordinary page heading. It keeps the exact clamp the error page already rendered
+     (34px on a phone, 56px from 1120px up), now named so a second full-page statement gets the
+     same type instead of a fresh `clamp()`. */
+  --text-display: clamp(2.125rem, 5vw, 3.5rem);
+  --text-display--line-height: 1.1;
+
+  /* The 404's flanking numerals. Decorative digits rather than a heading, so like
+     `--text-daymark` below they are a one-off size and not a step on the scale — 0.8 line-height
+     so the two digits sit tight against the die between them. */
+  --text-errorcode: clamp(6rem, 15vw, 11.25rem);
+  --text-errorcode--line-height: 0.8;
+
+  /* The calendar date block's day number. A display size deliberately above the heading
+     scale — the library pins it at 66px on a 0.78 line-height so the digits sit tight
+     against the month abbreviation under them. */
+  --text-daymark: 4.125rem;
+  --text-daymark--line-height: 0.78;
+
   --tracking-heading: 0.05em;
+
+  /* ---------------------------------------------------------------------
+     Layout. Three container widths, and the only three a page section should
+     pick from. Before these there were six, in two different notations, so the
+     content column jumped inward between routes while the 1200px header and
+     footer above and below it stayed put.
+
+     Tailwind v4 mints `max-w-*` (and `w-*`, `min-w-*`) utilities from the
+     `--container-*` namespace, so these read as `max-w-shell` / `-content` /
+     `-form`. The names are deliberately not sizes: a section picks the step by
+     what it holds, not by how wide it wants to be. `--container-prose` is not
+     among them on purpose — `max-w-prose` is a Tailwind default (65ch) and a
+     token of that name would shadow it.
+     --------------------------------------------------------------------- */
+  /* Header, footer, and any full-page section that lines up with them. */
+  --container-shell: 75rem; /* 1200 */
+  /* Card lists, the calendar, posts — anything multi-column. */
+  --container-content: 64rem; /* 1024 */
+  /* Forms, login, and single-column reading measures. */
+  --container-form: 37.5rem; /* 600 */
 
   /* ---------------------------------------------------------------------
      Motion. The brand is still flat — sharp corners, no blur, no scale — but not
@@ -128,12 +172,24 @@
      `--shadow-*` namespace and would mint a broken `shadow-color` utility. */
   /* Both shadow colours stay behind a var on purpose. Tailwind resolves a literal colour
      inside a `--shadow-*` token at build time and inlines it, which would silently kill the
-     `.dark` override below; an unresolvable `var()` is kept as-is and flips at runtime. */
+     `.dark` override below; an unresolvable `var()` is kept as-is and flips at runtime.
+     That same indirection is what lets `surface-dark` / `surface-light` re-point the colour
+     per subtree — see those utilities at the bottom of this file. This value is the light
+     page background's shadow; it is a *default*, not the only value. */
   --hard-shadow-color: var(--color-darkestblue);
   --overlay-shadow-color: rgb(3 31 59 / 0.35);
   --shadow-1: 2px 2px 0 var(--hard-shadow-color);
   --shadow-2: 4px 4px 0 var(--hard-shadow-color);
   --shadow-3: 6px 6px 0 var(--hard-shadow-color);
+
+  /* The same 2px offset turned inward, and the only inset shadow in the system. It exists
+     for joined controls, which cannot travel: a selected segment reads as pressed *into* the
+     group where a chip reads as raised out of it. See the `segment` utility below. */
+  --shadow-inset-1: inset 2px 2px 0 var(--hard-shadow-color);
+  /* The accent pair is the library's, and is deliberately not what `surface-dark` uses: an
+     orange shadow under a `variant="primary"` button is orange-on-orange, so the button reads
+     as a smeared parallelogram rather than a lifted rectangle. Kept for a deliberate accent
+     shadow on a non-orange element; not part of the lift utilities. */
   --shadow-accent-1: 2px 2px 0 var(--color-orange);
   --shadow-accent-2: 4px 4px 0 var(--color-orange);
   --shadow-overlay: 0 12px 32px -8px var(--overlay-shadow-color);
@@ -151,11 +207,86 @@
    Tailwind emits for `@theme` into the theme layer. `src/utils/theme.ts` owns
    putting `.dark` on <html>; nothing else should touch it. */
 .dark {
-  --hard-shadow-color: var(--color-black);
+  /* White, not brand black. `--color-black` was here so shadows would show against a dark
+     page and it never worked: brand black is #0d0d0d, the dark page is `darkestblue` #031f3b,
+     and the two are 1.17:1 apart — every lift shadow in dark mode was invisible. This is the
+     dark page background's shadow, and like the light one above it is only the default; a
+     surface inside the page that paints a light fill takes `surface-light`. */
+  --hard-shadow-color: var(--color-white);
   --color-hero-scrim: rgb(3 31 59 / 0.55);
+  --color-overlay-scrim: rgb(0 47 95 / 0.7);
   --color-toggle-bg: var(--color-orange);
   --color-toggle-text: var(--color-darkblue);
   --overlay-shadow-color: rgb(0 0 0 / 0.6);
+}
+
+/* The modal scrim, painted by `Dialog` (src/components/ui/Dialog.tsx) on the native
+   `<dialog>`'s `::backdrop`. Hand-written because `::backdrop` is a pseudo-element and no
+   Tailwind utility on the dialog can reach it.
+
+   The blur is the one deliberate exception to "no blur" in docs/DESIGN_LANGUAGE.md, and it
+   is an exception about *separation*, not elevation: nothing here pretends to float, the
+   page behind is being pushed out of focus because it is inert. It is the same call the
+   design language already made for `--shadow-overlay`, which it names as the single soft
+   shadow in the system and reserves for modals. Two ad-hoc `backdrop-blur-xs` copies used
+   to make this decision by accident; it is made once, here.
+
+   The fallback covers browsers where `::backdrop` inherits from nothing rather than from
+   its originating element — without it the scrim would resolve to transparent there. */
+.sbsk-dialog::backdrop {
+  background-color: var(--color-overlay-scrim, rgb(255 255 255 / 0.7));
+  backdrop-filter: blur(2px);
+}
+
+.dark .sbsk-dialog::backdrop {
+  background-color: var(--color-overlay-scrim, rgb(0 47 95 / 0.7));
+}
+
+/* Loading. The brand had no answer for this and each screen invented one: a swapped button
+   label, a full-screen blurred overlay, a Suspense string.
+
+   A rotating spinner is out of language — nothing here rotates, and nothing eases. A
+   shimmering skeleton is worse: it is a soft gradient sliding under a surface, which is the
+   depth cue the whole system rejects. What is left, and what the brand already does, is hard
+   discrete states: four square pips, one lit at a time, snapping between frames.
+
+   `steps(1, end)` is the point. There is no interpolation between keyframes at all, so a pip
+   is either lit or not — the same 4-frame quality as `sbsk-dice-roll`'s face swaps, and the
+   reason the opacity change reads as a state rather than as a fade. */
+@keyframes sbsk-load-step {
+  0% {
+    opacity: 1;
+  }
+  25% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0.3;
+  }
+}
+
+.sbsk-load-pip {
+  animation: sbsk-load-step 960ms steps(1, end) infinite;
+}
+
+.sbsk-load-pip:nth-child(2) {
+  animation-delay: 240ms;
+}
+
+.sbsk-load-pip:nth-child(3) {
+  animation-delay: 480ms;
+}
+
+.sbsk-load-pip:nth-child(4) {
+  animation-delay: 720ms;
+}
+
+/* The label still says what is happening, so dropping the loop costs nothing. */
+@media (prefers-reduced-motion: reduce) {
+  .sbsk-load-pip {
+    animation: none;
+    opacity: 0.55;
+  }
 }
 
 /* Dice — shared interactive die used in the header logo and the error page.
@@ -401,8 +532,13 @@
     box-shadow: none;
   }
 
-  /* Below the two `:hover` rules on purpose — equal specificity, last one wins. */
-  &:active {
+  /* `:active:active` is (0,3,0), matching the `aria-pressed`/`:hover` rule above rather than
+     losing to it at (0,2,0) — you always hover while pressing with a mouse, so a plain
+     `:active` never won and a selected chip stayed flat when held down. Doubling `:active`
+     rather than gating on `[aria-pressed]` keeps the press feedback for chips that render no
+     such attribute (e.g. the AvatarStack counter). Below the `:hover` rules on purpose — equal
+     specificity now, last one wins. */
+  &:active:active {
     transform: var(--lift-press);
     box-shadow: none;
   }
@@ -424,4 +560,71 @@
       transform: none;
     }
   }
+}
+
+/* The answer to "do joined controls lift?" — they do not, and this is the whole of what
+   `Segmented` gets instead.
+
+   A segmented control's segments share their borders. Travelling one 2px up-left tears a
+   gap on one side of it and overlaps its neighbour on the other, so the group stops reading
+   as a single object the moment the pointer enters it. `lift-chip` is the closest cousin and
+   is specifically the wrong answer here.
+
+   What survives is the colour half of `lift`, plus a resting state the other utilities do
+   not have: the selected segment carries a hard *inset* shadow, read off `aria-pressed` the
+   way `lift-chip` reads it. Same offset as `--shadow-1`, pointing the other way — the on
+   segment is pressed into the group rather than raised out of it, which is the one depth cue
+   a control with no travel can still give.
+
+   No transform at any point, so there is nothing for `prefers-reduced-motion` to strip and
+   no reduced-motion block below. Same mutual-exclusion rule as `lift`: this owns `transition`
+   outright, so never pair it with a `transition-*` utility on the same element. */
+@utility segment {
+  transition:
+    box-shadow var(--transition-fast),
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+
+  &[aria-pressed='true'] {
+    box-shadow: var(--shadow-inset-1);
+  }
+
+  &:disabled {
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+}
+
+/* The shadow colour is a property of the *surface*, not of the theme.
+
+   `lift` and friends paint a solid offset rectangle behind the element, onto whatever fill is
+   behind it. Two global values keyed off `.dark` cannot cover that: a `darkblue` panel exists
+   in light mode and an `orange` one exists in dark mode, and a shadow that contrasts with the
+   page background does not necessarily contrast with either. Measured against the brand
+   palette (WCAG 1.4.11 wants 3:1 for a non-text visual):
+
+   | fill                        | darkestblue shadow | white shadow |
+   | --------------------------- | ------------------ | ------------ |
+   | `darkestblue` / `darkblue`  | 1.00 / 1.24        | 16.63 /13.36 |
+   | `orange`                    | 7.64               | 2.18         |
+   | `darkorange`                | 4.99               | 3.33         |
+   | `white` / `gray-100` / `-300` | 16.63 / 15.34 / 11.78 | 1.00 / 1.08 / 1.41 |
+
+   So there are exactly two usable shadow colours and the fill decides which. These two
+   utilities declare that: put one on the element that paints the fill, and every lifting
+   descendant picks it up through the cascade with no per-component work.
+
+   `surface-light` covers `orange` and `darkorange` as well as the true light fills — the name
+   is about which shadow the fill can carry, and orange can only carry the dark one. Note that
+   the utility affects the element it sits on as well as its subtree, so it belongs on the
+   container that paints the fill, never on the lifting element itself: a `Card` casts its own
+   shadow onto the page behind it, while the header and panel *inside* it are the surfaces its
+   buttons cast onto. */
+@utility surface-dark {
+  --hard-shadow-color: var(--color-white);
+}
+
+@utility surface-light {
+  --hard-shadow-color: var(--color-darkestblue);
 }

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '../ui/Buttons';
+import { Input } from '../ui/Input';
+import { Alert } from '../ui/Alert';
 import { useAuthActions } from '../../hooks/useAuthActions';
 
 export default function LoginSection({ reason }: { reason?: string }) {
@@ -26,7 +28,7 @@ export default function LoginSection({ reason }: { reason?: string }) {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('Something went wrong');
+        setError('Noe gikk galt. Prøv igjen.');
       }
     } finally {
       setLoading(false);
@@ -34,20 +36,20 @@ export default function LoginSection({ reason }: { reason?: string }) {
   };
 
   return (
-    <div className="bg-darkblue my-4 flex w-full max-w-150 items-center justify-center px-4">
+    <div className="bg-darkblue surface-dark max-w-form my-4 flex w-full items-center justify-center px-4">
       <div className="flex w-full flex-col gap-8 py-24">
         <div className="flex flex-col items-center gap-4">
-          <h1 className="font-heading text-center text-3xl text-white">Velkommen tilbake!</h1>
+          <h1 className="font-heading text-h1 text-center text-white">Velkommen tilbake!</h1>
           {reason === 'not_authenticated' && (
-            <p className="text-body text-orange text-center">
+            <p className="font-body text-orange text-center">
               Det ser ut som at du ikke er logget inn. Logg inn igjen for å fortsette.
             </p>
           )}
-          <p className="text-body w-full text-center text-white">
+          <p className="font-body w-full text-center text-white">
             Her kan du logge inn på din medlemsprofil og få tilgang til arrangementer,
             medlemsfordeler og mer!
           </p>
-          <p className="text-body w-full text-center text-white">
+          <p className="font-body w-full text-center text-white">
             Ingen konto enda? Er du medlem i klubben kan du lage din egen medlemsprofil ved å klikke
             på lenken under.
           </p>
@@ -59,36 +61,34 @@ export default function LoginSection({ reason }: { reason?: string }) {
         <div className="w-full px-8 pt-8">
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <label className="flex w-full flex-col gap-1">
-              <span className="font-body text-white">Email</span>
-              <input
+              <span className="font-body text-white">E-post</span>
+              <Input
                 type="email"
                 id="email"
                 autoComplete="email"
-                placeholder="your@email.com"
-                className="focus:ring-orange border-darkblue dark:border-orange placeholder:text-placeholder text-darkblue placeholder:font-body w-full border bg-white px-3 py-2 focus:ring-2 focus:outline-none md:px-4 md:py-3"
+                placeholder="din@epost.no"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </label>
             <label className="flex w-full flex-col gap-1">
-              <span className="font-body text-white">Password</span>
-              <input
+              <span className="font-body text-white">Passord</span>
+              <Input
                 type="password"
                 id="password"
                 autoComplete="current-password"
                 placeholder="••••••••"
-                className="focus:ring-orange border-darkblue dark:border-orange placeholder:text-placeholder text-darkblue placeholder:font-body w-full border bg-white px-3 py-2 focus:ring-2 focus:outline-none md:px-4 md:py-3"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </label>
 
-            {error && <div className="text-orange text-sm">{error}</div>}
+            {error && <Alert>{error}</Alert>}
 
-            <Button type="submit" variant="primary" size="md" icon="right">
-              {loading ? 'Logging in...' : 'Log In'}
+            <Button type="submit" variant="primary" size="md" icon="right" loading={loading}>
+              Logg inn
             </Button>
           </form>
         </div>

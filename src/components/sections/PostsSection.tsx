@@ -1,6 +1,9 @@
 import { Button } from '../ui/Buttons';
 import { Card, type CardCategory } from '../ui/Card';
 import { Chip, type ChipCategory } from '../ui/Chip';
+import { Select } from '../ui/Select';
+import { Input } from '../ui/Input';
+import EmptyState from '../ui/EmptyState';
 import { useState } from 'react';
 import Clock from '../../assets/icons/symbols/clock.svg?react';
 import { getMainImage, type PostTypes } from '../../sanity/queryHelpers/posts';
@@ -14,6 +17,8 @@ import { urlFor } from '../../sanity/sanityImageUrl';
 interface PostsProps {
   postsHero?: PostsHeroTypes;
   posts: PostTypes[];
+  /** The fetch failed, as opposed to succeeding with nothing in it. See `homeLoader`. */
+  failed?: boolean;
 }
 
 type PostCategory = 'nyheter' | 'spillkveldrapporter' | 'arrangementer';
@@ -74,27 +79,32 @@ const sortOptions = [
   { label: 'Tittel (Å-A)', value: 'title-desc' },
 ] as const;
 
-export default function Posts({ postsHero, posts }: PostsProps) {
+export default function Posts({ postsHero, posts, failed = false }: PostsProps) {
   return (
     <div className="flex flex-col items-center gap-6 py-6">
       {postsHero ? <PostsHero {...postsHero} /> : <PostsHero />}
-      <PostsList posts={posts} />
+      <PostsList posts={posts} failed={failed} />
     </div>
   );
 }
 
+// An <h2>, not an <h1>. This renders on `/` under `HomeHeroSection`, whose title is the page's
+// document heading — two h1s on one page leaves a screen reader without a single answer to
+// "what is this page", and the h1 → h3 jump to the cards below came from the same place. The
+// posts stack is a section of the front page, so h2 is both the honest level and the step that
+// puts this heading above the card titles it introduces rather than below them.
 function PostsHero({ title, subtitle }: PostsHeroTypes = {}) {
   const resolvedTitle = title || FALLBACK_POSTS.title;
   const resolvedSubtitle = subtitle || FALLBACK_POSTS.subtitle;
   return (
-    <div className="bg-darkblue flex w-full max-w-5xl flex-col items-start gap-2 p-4 py-8 text-white">
-      <h1 className="text-xl font-bold sm:text-2xl">{resolvedTitle}</h1>
+    <div className="bg-darkblue max-w-content flex w-full flex-col items-start gap-2 p-4 py-8 text-white">
+      <h2 className="text-h2 font-bold">{resolvedTitle}</h2>
       <p> {resolvedSubtitle}</p>
     </div>
   );
 }
 
-function PostsList({ posts }: { posts: PostTypes[] }) {
+function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<'all' | PostCategory>('all');
   const [sortBy, setSelectedSort] = useState('date-desc');
@@ -153,26 +163,33 @@ function PostsList({ posts }: { posts: PostTypes[] }) {
 
   if (posts.length === 0 || !posts) {
     return (
-      <div className="mx-auto max-w-5xl px-2 sm:px-0">
-        <div className="mx-auto max-w-5xl px-5 py-8">
-          <h2 className="text-darkestblue mb-2 text-3xl font-bold md:text-4xl dark:text-white">
-            Ingen innlegg
-          </h2>
-          <p className="text-darkestblue mb-6 text-base dark:text-white">
-            Det ser ikke ut til å være noen innlegg for øyeblikket. Vennligst sjekk igjen senere.
-          </p>
-        </div>
+      <div className="max-w-content text-darkestblue mx-auto px-2 sm:px-0 dark:text-white">
+        {/* "There are no posts" and "we could not reach Sanity" look identical from here, and only
+            one of them is true. Saying the wrong one sends a visitor away believing the club has
+            gone quiet. */}
+        {failed ? (
+          <EmptyState
+            title="Kunne ikke laste innlegg"
+            body="Vi fikk ikke kontakt med innholdstjenesten. Prøv å laste siden på nytt om et øyeblikk."
+          />
+        ) : (
+          <EmptyState
+            title="Ingen innlegg"
+            body="Det ser ikke ut til å være noen innlegg for øyeblikket. Vennligst sjekk igjen senere."
+          />
+        )}
       </div>
     );
   }
   return (
-    <div className="flex w-full max-w-5xl flex-col items-center gap-4 px-2 pb-2 sm:px-0 sm:pb-4">
-      <input
-        type="text"
-        placeholder="Søk etter innlegg..."
+    <div className="max-w-content flex w-full flex-col items-center gap-4 px-2 pb-2 sm:px-0 sm:pb-4">
+      <Input
+        type="search"
+        icon="search"
+        aria-label="Søk etter innlegg"
+        placeholder="Søk etter innlegg…"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        className="focus:ring-orange border-darkblue dark:border-orange placeholder:text-placeholder text-darkblue w-full border px-4 py-3 focus:ring-2 focus:outline-none"
       />
       <div className="flex w-full flex-col items-center gap-2">
         <div className="flex flex-wrap justify-center gap-2">
@@ -187,21 +204,17 @@ function PostsList({ posts }: { posts: PostTypes[] }) {
             </Chip>
           ))}
         </div>
-        <div className="flex flex-wrap justify-center gap-2">
-          {sortOptions.map((option) => (
-            <Chip
-              key={option.value}
-              active={sortBy === option.value}
-              onClick={() => setSelectedSort(option.value)}
-            >
-              {option.label}
-            </Chip>
-          ))}
-        </div>
+        <Select
+          aria-label="Sorter innlegg"
+          options={sortOptions}
+          value={sortBy}
+          onChange={(event) => setSelectedSort(event.target.value)}
+          className="max-w-full"
+        />
       </div>
       {displayedPosts.length === 0 && (
         <div className="flex w-full flex-col items-center justify-center gap-4 p-6">
-          <p className="text-darkestblue text-3xl font-bold md:text-4xl dark:text-white">
+          <p className="text-darkestblue text-h2 font-bold dark:text-white">
             Ingen innlegg matcher søket.
           </p>
           <Button variant="primary" size="lg" icon="backspace" onClick={clearFilters}>

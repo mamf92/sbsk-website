@@ -10,20 +10,20 @@ export default function ProfileCard({ member }: { member: Profile }) {
   const revalidator = useRevalidator();
 
   return (
-    <div className="bg-darkblue">
+    <div className="bg-darkblue surface-dark">
       <div className="flex items-center gap-2 p-2 sm:gap-4">
         <div className="flex flex-col items-start">
           {member.name && member.surname && (
-            <h3 className="font-heading xs:text-2xl text-lg font-bold text-white">
+            <h3 className="font-heading text-h3 font-bold text-white">
               {member.name} {member.surname}
             </h3>
           )}
           {!member.name && !member.surname && (
-            <h3 className="font-heading xs:text-2xl text-lg font-bold text-white">Legg til navn</h3>
+            <h3 className="font-heading text-h3 font-bold text-white">Legg til navn</h3>
           )}
-          {member.bio && <p className="font-body xs:text-md text-xs text-white">{member.bio}</p>}
+          {member.bio && <p className="font-body xs:text-base text-xs text-white">{member.bio}</p>}
           {!member.bio && (
-            <p className="font-body xs:text-md text-xs text-white">
+            <p className="font-body xs:text-base text-xs text-white">
               Legg til en bio ved å redigere profilen din.
             </p>
           )}
