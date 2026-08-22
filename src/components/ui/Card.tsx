@@ -1,5 +1,6 @@
 import * as React from 'react';
 import Expand from '../../assets/icons/arrows/expand.svg?react';
+import { ImageGallery, type GalleryImage } from './ImageGallery';
 
 export type CardCategory = 'nyheter' | 'spillkveld' | 'arrangementer' | 'turnering' | 'annet';
 
@@ -9,8 +10,12 @@ type CardProps = Omit<React.HTMLAttributes<HTMLElement>, 'title'> & {
   date?: React.ReactNode;
   title: React.ReactNode;
   subtitle?: React.ReactNode;
+  // `image` doubles as the closed-card thumbnail and the first image of the panel gallery —
+  // there is deliberately no separate "teaser" image, so the photo a reader sees closed is
+  // the same one that opens the gallery.
   image?: string;
   imageAlt?: string;
+  gallery?: GalleryImage[];
   expanded?: boolean;
   onToggle?: () => void;
 };
@@ -50,6 +55,7 @@ export const Card = React.forwardRef<HTMLElement, CardProps>(
       subtitle,
       image,
       imageAlt = '',
+      gallery = [],
       expanded = false,
       onToggle,
       children,
@@ -66,6 +72,14 @@ export const Card = React.forwardRef<HTMLElement, CardProps>(
 
     const header = (
       <>
+        {image ? (
+          <img
+            src={image}
+            alt=""
+            aria-hidden="true"
+            className="size-20 flex-none border border-black object-cover sm:size-24"
+          />
+        ) : null}
         <span className="flex min-w-0 flex-1 flex-col gap-1 text-left">
           {date ? <span className="text-sm font-normal">{date}</span> : null}
           <span className="font-heading text-h3 font-bold">{title}</span>
@@ -129,11 +143,7 @@ export const Card = React.forwardRef<HTMLElement, CardProps>(
             <div className="overflow-hidden">
               <div className={`${panels[category]} flex flex-col gap-4 border-t border-black p-4`}>
                 {image ? (
-                  <img
-                    src={image}
-                    alt={imageAlt}
-                    className="block h-auto w-full border border-black"
-                  />
+                  <ImageGallery images={[{ src: image, alt: imageAlt }, ...gallery]} />
                 ) : null}
                 {children ? <div className="sbsk-rt">{children}</div> : null}
               </div>

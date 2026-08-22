@@ -44,6 +44,69 @@ export const postType = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
+      title: 'Hovedbilde',
+      name: 'mainImage',
+      type: 'image',
+      options: { hotspot: true },
+      description:
+        'Bildet som brukes som miniatyrbilde på kortet og som første bilde i galleriet. Brukes ikke i selve teksten – for bilder inni teksten, se «Innhold» lenger ned.',
+      fields: [
+        {
+          title: 'Bildetekst',
+          name: 'alt',
+          type: 'string',
+          description:
+            'Beskrivelse av bildet for tilgjengelighet og SEO. Valgfritt, men anbefales.',
+        },
+        {
+          title: 'Bildekilde navn',
+          name: 'imageSourceName',
+          type: 'string',
+          description: 'Navn på kilden for bildet.',
+        },
+        {
+          title: 'Bildekilde URL',
+          name: 'imageSourceUrl',
+          type: 'url',
+          description: 'URL til kilden for bildet.',
+        },
+      ],
+    }),
+    defineField({
+      title: 'Flere bilder',
+      name: 'gallery',
+      type: 'array',
+      description:
+        'Ekstra bilder som vises under hovedbildet. Leseren kan klikke på et av dem for å bytte ut hovedbildet. Valgfritt.',
+      of: [
+        {
+          type: 'image',
+          options: { hotspot: true },
+          fields: [
+            {
+              title: 'Bildetekst',
+              name: 'alt',
+              type: 'string',
+              description:
+                'Beskrivelse av bildet for tilgjengelighet og SEO. Valgfritt, men anbefales.',
+            },
+            {
+              title: 'Bildekilde navn',
+              name: 'imageSourceName',
+              type: 'string',
+              description: 'Navn på kilden for bildet.',
+            },
+            {
+              title: 'Bildekilde URL',
+              name: 'imageSourceUrl',
+              type: 'url',
+              description: 'URL til kilden for bildet.',
+            },
+          ],
+        },
+      ],
+    }),
+    defineField({
       title: 'Lenker',
       name: 'links',
       type: 'array',
@@ -117,9 +180,11 @@ export const postType = defineType({
         },
         {
           name: 'image',
-          title: 'Bilde',
+          title: 'Bilde i teksten',
           type: 'image',
           options: { hotspot: true },
+          description:
+            'For å illustrere et bestemt avsnitt. Bildet vises ved siden av teksten, ikke i full bredde. For post­ens hovedbilde, bruk «Hovedbilde»-feltet øverst i skjemaet i stedet.',
           fields: [
             {
               title: 'Bildetekst',
@@ -127,6 +192,21 @@ export const postType = defineType({
               type: 'string',
               description:
                 'Beskrivelse av bildet for tilgjengelighet og SEO. Valgfritt, men anbefales.',
+            },
+            {
+              title: 'Plassering',
+              name: 'alignment',
+              type: 'string',
+              description:
+                'Høyre: bildet står til høyre, teksten flyter til venstre for det. Venstre: motsatt.',
+              options: {
+                list: [
+                  { title: 'Høyre', value: 'høyre' },
+                  { title: 'Venstre', value: 'venstre' },
+                ],
+                layout: 'radio',
+              },
+              initialValue: 'høyre',
             },
             {
               title: 'Bildekilde navn',
