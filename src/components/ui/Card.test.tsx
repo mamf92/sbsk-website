@@ -105,9 +105,38 @@ describe('Card', () => {
     expect(root).toHaveAttribute('data-expanded', 'true');
   });
 
-  it('renders an image with its alt text', () => {
+  it('renders the panel image with its alt text', () => {
     render(<Card title="Spillkveld" image="/bilde.jpg" imageAlt="Spillbord" />);
-    expect(screen.getByRole('img', { name: 'Spillbord' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Spillbord' })).toHaveAttribute('src', '/bilde.jpg');
+  });
+
+  it('shows a decorative thumbnail of the image in the closed header', () => {
+    const { container } = render(
+      <Card title="Spillkveld" image="/bilde.jpg" imageAlt="Spillbord" />,
+    );
+    const thumbnail = container.querySelector('h3 img');
+    expect(thumbnail).toHaveAttribute('src', '/bilde.jpg');
+    expect(thumbnail).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('omits the header thumbnail when there is no image', () => {
+    const { container } = render(<Card title="Spillkveld" />);
+    expect(container.querySelector('h3 img')).not.toBeInTheDocument();
+  });
+
+  it('shows the panel image as a gallery, main image first, thumbnails swap the display', async () => {
+    render(
+      <Card
+        title="Spillkveld"
+        image="/hoved.jpg"
+        imageAlt="Hovedbilde"
+        gallery={[{ src: '/ekstra.jpg', alt: 'Ekstra bilde' }]}
+      />,
+    );
+
+    expect(screen.getByAltText('Hovedbilde')).toHaveAttribute('src', '/hoved.jpg');
+    await userEvent.click(screen.getByRole('button', { name: 'Ekstra bilde' }));
+    expect(screen.getByAltText('Ekstra bilde')).toHaveAttribute('src', '/ekstra.jpg');
   });
 
   it('omits the panel entirely when there is no body', () => {

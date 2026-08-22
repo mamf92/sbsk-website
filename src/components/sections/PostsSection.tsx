@@ -6,12 +6,13 @@ import { Input } from '../ui/Input';
 import EmptyState from '../ui/EmptyState';
 import { useState } from 'react';
 import Clock from '../../assets/icons/symbols/clock.svg?react';
-import type { PostTypes } from '../../sanity/queryHelpers/posts';
+import { getMainImage, type PostTypes } from '../../sanity/queryHelpers/posts';
 import type { PostsHeroTypes } from '../../sanity/queryHelpers/posts-hero';
 import { PortableText, toPlainText } from '@portabletext/react';
 import { components } from '../../sanity/editors/portableTextComponents';
 import type { PortableTextBlock } from '@portabletext/types';
 import { useNavigate } from 'react-router-dom';
+import { urlFor } from '../../sanity/sanityImageUrl';
 
 interface PostsProps {
   postsHero?: PostsHeroTypes;
@@ -31,7 +32,6 @@ type PostWithExtras = PostTypes & {
   category: PostCategory;
   publishedAt: string;
   links?: PostLink[];
-  eventSlug?: string;
   content?: PortableTextBlock[];
 };
 
@@ -283,6 +283,7 @@ function PostCard({
   const INTERNAL_ORIGIN = 'https://www.mamf92.github.io/sbsk-website';
   const publishedAt = new Date(post.publishedAt);
   const hasLinks = !!post.links && post.links.length > 0;
+  const mainImage = getMainImage(post);
 
   return (
     <Card
@@ -290,6 +291,12 @@ function PostCard({
       date={<PostDate publishedAt={publishedAt} />}
       title={post.title}
       subtitle={post.subtitle}
+      image={mainImage && urlFor(mainImage).width(200).height(200).fit('crop').url()}
+      imageAlt={mainImage?.alt || ''}
+      gallery={post.gallery?.map((image) => ({
+        src: urlFor(image).width(800).height(400).fit('crop').url(),
+        alt: image.alt || '',
+      }))}
       expanded={expanded}
       onToggle={onToggle}
     >
