@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs';
 import { defineConfig, devices } from '@playwright/test';
+import { SUPABASE_ANON_KEY, SUPABASE_URL } from './e2e/fixtures/supabase-env';
 
 function resolveChromium(): string | undefined {
   const candidates = [process.env.PLAYWRIGHT_CHROMIUM_PATH, '/opt/pw-browsers/chromium'].filter(
@@ -43,8 +44,10 @@ export default defineConfig({
     timeout: 180_000,
     env: {
       VITE_BASE: '/',
-      VITE_SUPABASE_URL: 'http://localhost:54321',
-      VITE_SUPABASE_PUBLISHABLE_KEY: 'test-anon-key',
+      // A stub answers this origin; nothing is served from it. See e2e/fixtures/supabase-env.ts
+      // for why it has to be a real https host rather than a localhost port.
+      VITE_SUPABASE_URL: SUPABASE_URL,
+      VITE_SUPABASE_PUBLISHABLE_KEY: SUPABASE_ANON_KEY,
     },
   },
 });
