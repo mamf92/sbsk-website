@@ -60,6 +60,11 @@ type Category = CalendarEventTypes['category'];
 // there would repoint the card's own shadow onto the page instead of its children's onto the
 // card. It goes on the header row inside, which is what the RSVP button actually casts onto.
 // `accent` only ever fills non-lifting elements, so it carries its tone inline.
+//
+// `surfaceButtonVariant`/`accentButtonVariant` name which `Button` variant survives on top of
+// that fill. `primary` is `bg-orange`, which is pixel-identical to `turnering`'s surface and to
+// `annet`'s accent — a button in that spot vanishes into its own card. Same collision
+// `PostsSection`'s `linkVariants` guards against for the news feed's orange-family panels.
 const CATEGORY_STYLES = {
   // `bg-darkblue`, not `bg-category-spillkveld`. #88 repointed that token at orange so the
   // news feed's spillkveld chip would match its cards, which are orange there. The calendar
@@ -70,16 +75,22 @@ const CATEGORY_STYLES = {
     surface: 'bg-darkblue text-white',
     surfaceTone: 'surface-dark',
     accent: 'bg-darkestblue surface-dark text-white',
+    surfaceButtonVariant: 'primary',
+    accentButtonVariant: 'primary',
   },
   turnering: {
     surface: 'bg-category-turnering text-darkestblue',
     surfaceTone: 'surface-light',
     accent: 'bg-darkorange surface-light text-darkestblue',
+    surfaceButtonVariant: 'tertiary',
+    accentButtonVariant: 'primary',
   },
   annet: {
     surface: 'bg-category-annet text-darkestblue',
     surfaceTone: 'surface-light',
     accent: 'bg-orange surface-light text-darkestblue',
+    surfaceButtonVariant: 'primary',
+    accentButtonVariant: 'tertiary',
   },
 } as const;
 
@@ -660,7 +671,7 @@ function EventRow({
                 <AvatarStack people={toAvatarPeople(attendees)} max={3} size="sm" />
               )}
               <Button
-                variant={attending ? 'toggle' : 'primary'}
+                variant={attending ? 'toggle' : styles.surfaceButtonVariant}
                 size="sm"
                 disabled={rsvp.pending[event._id]}
                 aria-label={attending ? `Meld deg av ${event.title}` : `Meld deg på ${event.title}`}
@@ -748,7 +759,7 @@ function EventRow({
               <div className="flex flex-row flex-wrap gap-2">
                 {detailPath && (
                   <Button
-                    variant="primary"
+                    variant={styles.accentButtonVariant}
                     size="sm"
                     icon="right"
                     onClick={() => navigate(detailPath)}
@@ -761,7 +772,7 @@ function EventRow({
                   return (
                     <Button
                       key={index}
-                      variant={event.category === 'annet' ? 'tertiary' : 'primary'}
+                      variant={styles.accentButtonVariant}
                       size="sm"
                       icon="right"
                       onClick={() =>
