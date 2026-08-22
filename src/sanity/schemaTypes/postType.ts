@@ -44,69 +44,6 @@ export const postType = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
-      title: 'Hovedbilde',
-      name: 'mainImage',
-      type: 'image',
-      options: { hotspot: true },
-      description:
-        'Bildet som brukes som miniatyrbilde på kortet og som første bilde i galleriet. Brukes ikke i selve teksten – for bilder inni teksten, se «Innhold» lenger ned.',
-      fields: [
-        {
-          title: 'Bildetekst',
-          name: 'alt',
-          type: 'string',
-          description:
-            'Beskrivelse av bildet for tilgjengelighet og SEO. Valgfritt, men anbefales.',
-        },
-        {
-          title: 'Bildekilde navn',
-          name: 'imageSourceName',
-          type: 'string',
-          description: 'Navn på kilden for bildet.',
-        },
-        {
-          title: 'Bildekilde URL',
-          name: 'imageSourceUrl',
-          type: 'url',
-          description: 'URL til kilden for bildet.',
-        },
-      ],
-    }),
-    defineField({
-      title: 'Flere bilder',
-      name: 'gallery',
-      type: 'array',
-      description:
-        'Ekstra bilder som vises under hovedbildet. Leseren kan klikke på et av dem for å bytte ut hovedbildet. Valgfritt.',
-      of: [
-        {
-          type: 'image',
-          options: { hotspot: true },
-          fields: [
-            {
-              title: 'Bildetekst',
-              name: 'alt',
-              type: 'string',
-              description:
-                'Beskrivelse av bildet for tilgjengelighet og SEO. Valgfritt, men anbefales.',
-            },
-            {
-              title: 'Bildekilde navn',
-              name: 'imageSourceName',
-              type: 'string',
-              description: 'Navn på kilden for bildet.',
-            },
-            {
-              title: 'Bildekilde URL',
-              name: 'imageSourceUrl',
-              type: 'url',
-              description: 'URL til kilden for bildet.',
-            },
-          ],
-        },
-      ],
-    }),
-    defineField({
       title: 'Lenker',
       name: 'links',
       type: 'array',
@@ -178,35 +115,33 @@ export const postType = defineType({
             ],
           },
         },
+        // There is exactly one way to add a photo: drop it in the text where it belongs. The
+        // separate main image, the extra-pictures gallery and the left/right placement radio
+        // were each a way for a post to come out looking wrong, and none of them had ever been
+        // used. Size, crop and placement are decided by the site, not by the editor — the only
+        // framing choice left is the hotspot, which is the one an editor is actually equipped
+        // to make.
         {
           name: 'image',
-          title: 'Bilde i teksten',
+          title: 'Bilde',
           type: 'image',
           options: { hotspot: true },
           description:
-            'For å illustrere et bestemt avsnitt. Bildet vises ved siden av teksten, ikke i full bredde. For post­ens hovedbilde, bruk «Hovedbilde»-feltet øverst i skjemaet i stedet.',
+            'Bildet vises der du plasserer det i teksten. Dra i sirkelen under «Hotspot» for å peke ut det viktigste i bildet – da blir det med uansett hvordan bildet beskjæres.',
           fields: [
-            {
-              title: 'Bildetekst',
+            defineField({
+              title: 'Alt-tekst',
               name: 'alt',
               type: 'string',
               description:
-                'Beskrivelse av bildet for tilgjengelighet og SEO. Valgfritt, men anbefales.',
-            },
+                'Beskriv hva bildet viser, for lesere som bruker skjermleser. Vises ikke på siden.',
+              validation: (rule) => rule.required(),
+            }),
             {
-              title: 'Plassering',
-              name: 'alignment',
+              title: 'Bildetekst',
+              name: 'caption',
               type: 'string',
-              description:
-                'Høyre: bildet står til høyre, teksten flyter til venstre for det. Venstre: motsatt.',
-              options: {
-                list: [
-                  { title: 'Høyre', value: 'høyre' },
-                  { title: 'Venstre', value: 'venstre' },
-                ],
-                layout: 'radio',
-              },
-              initialValue: 'høyre',
+              description: 'Teksten som står under bildet på siden. Valgfritt.',
             },
             {
               title: 'Bildekilde navn',
@@ -221,6 +156,9 @@ export const postType = defineType({
               description: 'URL til kilden for bildet.',
             },
           ],
+          preview: {
+            select: { media: 'asset', title: 'caption', subtitle: 'alt' },
+          },
         },
       ],
     }),
