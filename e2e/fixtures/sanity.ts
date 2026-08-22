@@ -135,6 +135,43 @@ export const CALENDAR_HERO = {
   subtitle: 'Oversikt over alle våre arrangementer.',
 };
 
+export const GAMES_HERO = {
+  _id: 'games-hero',
+  _type: 'gamesHero',
+  title: 'Våre spill',
+  subtitle: 'Spillene klubben eier, klare til å bli tatt med på en spillkveld.',
+};
+
+// Titles deliberately do not collide with `FALLBACK_GAMES` in OurGamesSection, so a spec can
+// assert the real Sanity content is what rendered, not the hardcoded fallback underneath it.
+export const GAME_LIGHT = {
+  _id: 'game-testkveld',
+  _type: 'game',
+  title: 'Testkveld',
+  genre: 'Familie · Terningspill',
+  description: 'Et lett spill for hele gjengen.',
+  difficulty: 1,
+  time: '20',
+  players: '2–4',
+  playersMin: 2,
+  playersMax: 4,
+};
+
+export const GAME_HEAVY = {
+  _id: 'game-storgruppe',
+  _type: 'game',
+  title: 'Storgruppe',
+  genre: 'Strategi · Områdekontroll',
+  description: 'Et tyngre spill for en stor gjeng.',
+  difficulty: 3,
+  time: '90–120',
+  players: '5–8',
+  playersMin: 5,
+  playersMax: 8,
+};
+
+export const GAMES = [GAME_LIGHT, GAME_HEAVY];
+
 /** The dataset the queries run against, in the same shape Sanity stores documents. */
 export const DATASET = [
   UPCOMING_EVENT,
@@ -143,6 +180,8 @@ export const DATASET = [
   ...POSTS,
   HOME_HERO,
   CALENDAR_HERO,
+  GAMES_HERO,
+  ...GAMES,
 ];
 
 /**

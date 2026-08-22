@@ -224,7 +224,11 @@ async function measureLiftingElements(page: Page): Promise<Measurement[]> {
 // The front page carries the widest mix (hero buttons, the header toggle, the filter and sort
 // chips, and one card per post category); the calendar adds `lift-card` on all three
 // `CATEGORY_STYLES` fills; the login panel is the `bg-darkblue` panel case in light mode.
-const ROUTES = ['/', '/kalender', '/login', '/arrangementer'];
+// `/våre-spill` adds `GameCard`'s own `lift-card` and its buy button's `lift`, neither of which
+// shares a fill with anything already covered above. An empty games query still measures these:
+// `OurGamesSection` renders its bundled fallback collection whenever Sanity has none, so this
+// needs no fixture of its own.
+const ROUTES = ['/', '/kalender', '/login', '/arrangementer', '/våre-spill'];
 
 for (const theme of ['light', 'dark'] as const) {
   for (const route of ROUTES) {
