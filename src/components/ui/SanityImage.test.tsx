@@ -79,7 +79,7 @@ describe('SanityImage', () => {
     expect(narrow).toContain('300w');
   });
 
-  it('renders the caption and the credit as a link below the image', () => {
+  it('renders the caption and the credit, prefixed "Foto:", as a link below the image', () => {
     render(
       <SanityImage
         value={imageValue(1536, 2048, {
@@ -92,7 +92,7 @@ describe('SanityImage', () => {
     );
 
     expect(screen.getByText(/Dugnadsgjengen i Byhaugkafeen/)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Ola Nordmann' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Foto: Ola Nordmann' })).toHaveAttribute(
       'href',
       'https://example.test/ola',
     );
@@ -101,6 +101,28 @@ describe('SanityImage', () => {
   it('omits the caption element entirely when there is nothing to say', () => {
     const { container } = render(<SanityImage value={imageValue(1536, 2048, { alt: 'Bilde' })} />);
     expect(container.querySelector('figcaption')).toBeNull();
+  });
+
+  it('frames the photo as one bordered insert, left-anchored rather than centered', () => {
+    const { container } = render(<SanityImage value={imageValue(1536, 2048, { alt: 'Bilde' })} />);
+
+    const figure = container.querySelector('figure');
+    expect(figure).toHaveClass('border', 'border-black');
+    expect(figure?.className).not.toMatch(/\bmx-auto\b/);
+    // The frame belongs to the figure now, not a second border drawn by the image itself.
+    expect(container.querySelector('img')).toHaveClass('border-0');
+  });
+
+  it('gives the caption strip a hard rule and a tint of its own text colour', () => {
+    const { container } = render(
+      <SanityImage value={imageValue(1536, 2048, { alt: 'Bilde', caption: 'En bildetekst' })} />,
+    );
+
+    expect(container.querySelector('figcaption')).toHaveClass(
+      'border-t',
+      'border-black',
+      'bg-current/10',
+    );
   });
 
   it('treats an image with no alt text as decorative', () => {

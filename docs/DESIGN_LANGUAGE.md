@@ -323,6 +323,33 @@ Lift is for things you press. It is not decoration.
   did take from this pass is the focus treatment, which they were the last holdout on: see
   "Focus" below.
 
+## Rich text images are a miniature `Card`
+
+A photo inside a post's body (`src/components/ui/SanityImage.tsx`) is not a bare `<img>` with a
+line of caption text floating beneath it — it borrows `Card`'s own shape: a photo, a hard rule,
+and a tinted panel below carrying whatever the photo needs to say. Applying that grammar one
+level down, instead of inventing a second visual language for images, is the point.
+
+- **The frame lives on the figure, not the image.** `border border-black` wraps the photo and
+  its caption strip as one bordered insert; the `<img>` itself is `border-0`, beating
+  `.sbsk-rt img`'s base-layer hairline exactly the way that rule's own comment says a component
+  should — with a plain Tailwind utility, no `index.css` edit.
+- **Left-anchored, not centered.** The desktop reading column is wide (~992px); a portrait photo
+  clamped to a sane height is necessarily narrower than it. Centering that gap makes the photo
+  read as a stray thumbnail adrift in whitespace. Dropping `mx-auto` anchors it to the column's
+  own margin instead — a photo sits in a printed column, it doesn't float in the middle of one.
+- **The caption strip is `border-t border-black bg-current/10`** — the identical rule `Card`
+  draws between its header and its panel, and a tint of whatever text colour the strip already
+  inherits (white inside a `nyheter` panel, `darkestblue` everywhere else). No category prop,
+  no `dark:` variant, and no contrast risk: a 10% tint only pushes an already-passing ratio
+  (see "The shadow colour belongs to the surface") further from the line, never closer.
+- **Credit reads "Foto: {name}"**, not a bare name — the ordinary Norwegian photo-credit form —
+  on its own line under the caption rather than joined to it with an em dash.
+
+What this is not: a licence to reach for `shadow-*` here. An inline image is not pressable, so it
+stays flat — border only, per "Who lifts" above. The rule this section documents is about
+placement and framing, not about borrowing the lift system.
+
 ## Loading, empty, error
 
 Three states every async screen passes through, and before #153 each screen invented its own —
