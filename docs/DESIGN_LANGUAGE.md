@@ -179,6 +179,39 @@ They stay in the theme for a deliberate accent on a non-orange element.
 Note also that `--duration-*` is **not** a Tailwind utility namespace — there is no
 `duration-fast` class. Read the variable directly: `duration-(--duration-fast)`.
 
+## Foreground on fill
+
+Text contrast is a property of the fill too, and one pairing shipped wrong: `white` on
+`darkorange` measures 3.33:1 (WCAG 2.1, sRGB), which only clears AA at large text (≥24px, or
+≥18.66px bold). It was body-sized `text-white` on every `darkorange` fill — `Card`'s
+`arrangementer`/`annet` header, its `spillkveld`/`turnering` panel, the active `Chip` for
+`neutral`/`arrangementer`/`annet`, and `CalendarSection`'s `turnering` accent and `annet`
+surface (#136).
+
+Measured across the brand palette:
+
+| pair                                    | ratio   | verdict                |
+| --------------------------------------- | ------- | ---------------------- |
+| `white` on `darkblue`                   | 13.36:1 | AA                     |
+| `white` on `darkestblue`                | 16.63:1 | AA                     |
+| `darkestblue` on `orange`               | 7.64:1  | AA                     |
+| `darkblue` on `orange` (Button primary) | 6.14:1  | AA                     |
+| `darkestblue` on `darkorange`           | 4.99:1  | AA                     |
+| `gray-500` on `white` (Chip inactive)   | 7.00:1  | AA                     |
+| `white` on `darkorange`                 | 3.33:1  | fails AA for body text |
+
+The fix is `darkestblue`, not a new colour — it is already the pairing `Button
+variant="secondary"` uses on the same fill. So `darkorange` (and its aliases,
+`--color-category-arrangementer` / `--color-category-annet`) takes exactly one foreground
+everywhere:
+
+```
+darkorange fill → darkestblue text
+```
+
+the same way [`surface-light`/`surface-dark`](#the-shadow-colour-belongs-to-the-surface) above
+pick one shadow colour per fill. Every other pairing in the table already held and is unchanged.
+
 ## The modal layer
 
 A modal is the one place the flat rule bends, and the theme has said so from the start:

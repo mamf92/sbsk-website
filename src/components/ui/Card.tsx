@@ -27,9 +27,9 @@ const base = 'relative w-full rounded-none border border-black font-body';
 const headers = {
   nyheter: 'bg-darkblue text-white',
   spillkveld: 'bg-orange text-darkestblue',
-  arrangementer: 'bg-darkorange text-white',
+  arrangementer: 'bg-darkorange text-darkestblue',
   turnering: 'bg-orange text-darkestblue',
-  annet: 'bg-darkorange text-white',
+  annet: 'bg-darkorange text-darkestblue',
 } as const;
 
 // The panel carries a `surface-*` tone and the header deliberately does not. `children` is
@@ -40,9 +40,9 @@ const headers = {
 // and a `surface-*` there would repoint the card's *own* shadow onto the page behind it.
 const panels = {
   nyheter: 'bg-darkestblue surface-dark text-white',
-  spillkveld: 'bg-darkorange surface-light text-white',
+  spillkveld: 'bg-darkorange surface-light text-darkestblue',
   arrangementer: 'bg-orange surface-light text-darkestblue',
-  turnering: 'bg-darkorange surface-light text-white',
+  turnering: 'bg-darkorange surface-light text-darkestblue',
   annet: 'bg-orange surface-light text-darkestblue',
 } as const;
 

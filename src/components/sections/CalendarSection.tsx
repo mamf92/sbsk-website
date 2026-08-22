@@ -74,10 +74,10 @@ const CATEGORY_STYLES = {
   turnering: {
     surface: 'bg-category-turnering text-darkestblue',
     surfaceTone: 'surface-light',
-    accent: 'bg-darkorange surface-light text-white',
+    accent: 'bg-darkorange surface-light text-darkestblue',
   },
   annet: {
-    surface: 'bg-category-annet text-white',
+    surface: 'bg-category-annet text-darkestblue',
     surfaceTone: 'surface-light',
     accent: 'bg-orange surface-light text-darkestblue',
   },
