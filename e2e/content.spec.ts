@@ -104,6 +104,51 @@ test('the calendar category filter keeps only the chosen category', async ({ pag
   await expect(page.getByRole('heading', { name: UPCOMING_EVENT.title })).toHaveCount(0);
 });
 
+test('the games page renders the real collection rather than the local fallback', async ({
+  page,
+}) => {
+  const errors = watchForErrors(page);
+
+  await page.goto('/våre-spill');
+
+  await expect(page.getByRole('heading', { name: 'Testkveld' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Storgruppe' })).toBeVisible();
+  // `OurGamesSection` only reaches for its bundled fallback when Sanity returns nothing —
+  // seeing the fallback's "Wingspan" here would mean the real games never rendered.
+  await expect(page.getByRole('heading', { name: 'Wingspan' })).toHaveCount(0);
+  expect(errors, `page threw: ${errors.join(', ')}`).toEqual([]);
+});
+
+test('searching the games list narrows it by title', async ({ page }) => {
+  await page.goto('/våre-spill');
+
+  await page.getByRole('searchbox', { name: 'Søk etter spill' }).fill('storgruppe');
+
+  await expect(page.getByRole('heading', { name: 'Storgruppe' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Testkveld' })).toHaveCount(0);
+});
+
+test('filtering the games list by difficulty keeps only that difficulty', async ({ page }) => {
+  await page.goto('/våre-spill');
+
+  await page.getByRole('button', { name: 'Vanskelig' }).click();
+
+  await expect(page.getByRole('heading', { name: 'Storgruppe' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Testkveld' })).toHaveCount(0);
+});
+
+test('a games search matching nothing offers a way back rather than a blank grid', async ({
+  page,
+}) => {
+  await page.goto('/våre-spill');
+
+  await page.getByRole('searchbox', { name: 'Søk etter spill' }).fill('zzzznomatch');
+  await expect(page.getByText('Ingen spill matcher søket')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Fjern filtre' }).click();
+  await expect(page.getByRole('heading', { name: 'Testkveld' })).toBeVisible();
+});
+
 // eventDetailLoader has never run in this suite: reaching it needs a slug, and an empty stub
 // never produces one.
 test('an event links through to its own page', async ({ page }) => {

@@ -25,6 +25,7 @@ import RouteError from './components/sections/RouteError';
 import { homeLoader } from './loaders/home-loader';
 import { eventsListLoader, eventDetailLoader } from './sanity/queryHelpers/events';
 import { calendarLoader } from './loaders/calendar-loader';
+import { ourGamesLoader } from './loaders/our-games-loader';
 import { boardPortalLoader } from './loaders/board-portal-loader';
 import { memberPortalLoader } from './loaders/member-portal-loader';
 
@@ -49,7 +50,7 @@ const router = createBrowserRouter(
             { index: true, element: <Home />, loader: homeLoader },
             { path: 'kalender', element: <Calendar />, loader: calendarLoader },
             { path: 'board-game-masters', element: <BoardGameMasters /> },
-            { path: 'våre-spill', element: <OurGames /> },
+            { path: 'våre-spill', element: <OurGames />, loader: ourGamesLoader },
             { path: 'om-oss', element: <AboutUs /> },
             { path: 'kontakt-oss', element: <ContactUs /> },
             { path: 'bli-medlem', element: <BecomeAMember /> },
