@@ -43,9 +43,12 @@ const segmentBase =
   'focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 ' +
   'focus-visible:outline-focus-ring ';
 
+// Height rather than padding-driven, so a segment stands exactly as tall as `Button` at the
+// same size name — `sm` onto `h-9`, `md` onto `h-11` — instead of a shorter, independent scale
+// that happened to land close by.
 const sizes = {
-  sm: 'px-3 py-1.5 text-xs',
-  md: 'px-4 py-2 text-xs',
+  sm: 'h-9 px-3 text-xs',
+  md: 'h-11 px-4 text-xs',
 } as const;
 
 // Orange because that is the brand's "this one is on", not because of the category coding.
@@ -57,8 +60,11 @@ const sizes = {
 // both modes, and white-on-orange measures 2.18:1 while darkestblue-on-orange measures 7.64:1.
 const selected = 'bg-orange text-darkestblue surface-light';
 
+// The hover tint reads off the same two ink tokens as the group's own border — `black` and
+// `white` — rather than a Tailwind default grey, which nothing else in the button/control
+// system carries and which read as a foreign, off-brand hover.
 const unselected =
-  'text-darkestblue bg-white hover:bg-gray-100 ' +
+  'text-darkestblue bg-white hover:bg-black/5 ' +
   'dark:bg-transparent dark:text-white dark:hover:bg-white/10';
 
 /**
