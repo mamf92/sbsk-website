@@ -115,7 +115,7 @@ export default function OurGamesSection({ gamesHero, games }: OurGamesProps) {
     <div className="flex flex-col">
       <GamesHero gamesHero={gamesHero} searchValue={query} onSearch={setQuery} />
 
-      <div className="max-w-content mx-auto flex w-full flex-col gap-6 px-2 py-8 sm:px-0">
+      <div className="max-w-content mx-auto flex w-full flex-col gap-6 px-2 py-8 lg:px-0">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex flex-col gap-3">
             <FilterRow label="Vanskegrad">

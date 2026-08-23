@@ -291,7 +291,7 @@ export default function CalendarSection({
 /** Portal mode — no image, and an h2 because the portal page owns the h1. */
 function CompactHeading({ title, subtitle }: CalendarHeroTypes = {}) {
   return (
-    <div className="max-w-content flex w-full flex-col gap-2 px-3 sm:px-0">
+    <div className="max-w-content flex w-full flex-col gap-2 px-3 lg:px-0">
       <h2 className="font-heading text-h2 text-darkestblue tracking-heading font-bold dark:text-white">
         {title || FALLBACK_CALENDAR.title}
       </h2>
@@ -314,7 +314,7 @@ function CalendarHero({
   const resolvedImageSource = imageSourceName || FALLBACK_CALENDAR.imageSourceName;
   const resolvedImageSourceUrl = imageSourceUrl || FALLBACK_CALENDAR.imageSourceUrl;
   return (
-    <div className="max-w-content flex w-full flex-col px-3 sm:px-0">
+    <div className="max-w-content flex w-full flex-col px-3 lg:px-0">
       <div className="relative">
         {image ? (
           <img
@@ -447,7 +447,7 @@ function EventList({ events, failed }: { events: CalendarEventTypes[]; failed?: 
   }
 
   return (
-    <div className="max-w-content flex w-full flex-col gap-4 px-2 sm:px-0">
+    <div className="max-w-content flex w-full flex-col gap-4 px-2 lg:px-0">
       <div className="flex justify-end">
         <Segmented
           label="Vis arrangementer"
