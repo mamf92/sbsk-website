@@ -4,7 +4,7 @@ import { NavMenuButton } from '../ui/NavMenuButton';
 import { DiceLogo } from '../ui/DiceLogo';
 import { navLinkClasses } from '../ui/Link';
 import { useTheme } from '../../hooks/theme/ThemeContext';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../hooks/authContext/authContext';
 
 const desktopNavLink = `${navLinkClasses} text-sm`;
@@ -25,6 +25,7 @@ export default function Header() {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const { logout, isAuthenticated, isAdmin, user } = useAuth();
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
@@ -46,6 +47,22 @@ export default function Header() {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isMobileMenuOpen]);
+
+  useEffect(() => {
+    if (!isDropdownOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsDropdownOpen(false);
+    };
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!dropdownRef.current?.contains(event.target as Node)) setIsDropdownOpen(false);
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('pointerdown', handlePointerDown);
+    };
+  }, [isDropdownOpen]);
 
   return (
     <header className="bg-darkblue surface-dark font-heading relative z-1100 w-full text-white">
@@ -98,7 +115,7 @@ export default function Header() {
 
           {/* Login / profile — desktop only */}
           {isAuthenticated ? (
-            <div className="relative z-50 hidden lg:block">
+            <div ref={dropdownRef} className="relative z-50 hidden lg:block">
               <Button
                 variant="primary"
                 size="sm"
@@ -162,8 +179,10 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile nav — collapses via max-height */}
+      {/* Mobile nav — collapses via max-height. `inert` is what actually removes the closed
+          panel's links from the tab order; max-height alone leaves them focusable. */}
       <nav
+        inert={!isMobileMenuOpen}
         className={`bg-darkestblue flex flex-col overflow-hidden transition-[max-height] duration-(--duration-slow) ease-out lg:hidden ${
           isMobileMenuOpen ? 'max-h-[460px]' : 'max-h-0'
         }`}

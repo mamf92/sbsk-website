@@ -66,7 +66,10 @@ export const AvatarStack = React.forwardRef<HTMLDivElement, AvatarStackProps>(
               type="button"
               onClick={onMore}
               aria-label={`Vis ${extra} deltakere til`}
-              className={[counterClasses, 'lift-chip cursor-pointer'].join(' ')}
+              className={[
+                counterClasses,
+                'lift-chip focus-visible:outline-focus-ring cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+              ].join(' ')}
             >
               +{extra}
             </button>
