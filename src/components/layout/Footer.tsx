@@ -1,8 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { SocialIcon } from 'react-social-icons';
 import Logo from '../../assets/logos/dicelogo.png';
-import { Input } from '../ui/Input';
-import { Button } from '../ui/Buttons';
 
 export default function Footer() {
   return (
@@ -69,25 +67,6 @@ export default function Footer() {
                 fgColor="#002f5f"
                 style={{ height: '1.5rem', width: '1.5rem' }}
               />
-              <p className="font-bold">Meld deg på vårt månedlige nyhetsbrev: </p>
-              {/* The newsletter field is not wired up yet, so `disabled` is the whole design:
-                  the fill, the missing hairline and the muted placeholder are the primitive's
-                  `:disabled` state rather than a class string of this file's own. */}
-              <Input
-                type="email"
-                aria-label="E-postadresse for nyhetsbrev"
-                placeholder="E-postadresse"
-                disabled
-              />
-              <Button
-                variant="disabled"
-                size="sm"
-                icon="block"
-                className="mt-0"
-                onClick={() => alert('Denne funksjonen er ikke implementert ennå')}
-              >
-                Meld på
-              </Button>
             </div>
           </div>
           <div className="border-t pt-6">
