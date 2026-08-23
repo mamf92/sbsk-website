@@ -55,7 +55,7 @@ export const SanityImage = React.forwardRef<HTMLElement, SanityImageProps>(
       <figure
         ref={ref}
         style={{ maxWidth: `${displayWidth}px` }}
-        className={['w-full border border-black', className].join(' ')}
+        className={['w-full border border-black dark:border-white', className].join(' ')}
         {...props}
       >
         <img
@@ -81,7 +81,7 @@ export const SanityImage = React.forwardRef<HTMLElement, SanityImageProps>(
           // subtle shade of its own panel with no category prop and no dark: variant, and never
           // a contrast regression (it only pushes an already-passing ratio further from the
           // line). `border-t` is the exact rule `Card` draws between its own header and panel.
-          <figcaption className="border-t border-black bg-current/10 px-3 py-2 text-sm">
+          <figcaption className="border-t border-black bg-current/10 px-3 py-2 text-sm dark:border-white">
             {value.caption ? <span className="block">{value.caption}</span> : null}
             {credit ? <span className="mt-0.5 block text-xs opacity-80">{credit}</span> : null}
           </figcaption>

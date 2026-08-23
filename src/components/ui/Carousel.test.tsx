@@ -35,7 +35,7 @@ describe('Carousel', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('renders a single image with no arrows, thumbnails, ticks or live region', () => {
+  it('renders a single image with no arrows, ticks or live region', () => {
     render(<Carousel images={photos(1)} />);
 
     expect(screen.getByRole('img', { name: 'Bilde 1' })).toBeInTheDocument();
@@ -64,44 +64,40 @@ describe('Carousel', () => {
     expect(screen.getByRole('img', { name: 'Bilde 3' })).toBeInTheDocument();
   });
 
-  it('swaps the main photo and its aria-current when a thumbnail is clicked', async () => {
+  it('swaps the main photo when a tick is clicked, and marks it pressed', async () => {
     const user = userEvent.setup();
     render(<Carousel images={photos(3)} />);
 
-    const thumbnail2 = screen.getByRole('button', { name: 'Bilde 2' });
-    await user.click(thumbnail2);
+    const tick2 = screen.getByRole('button', { name: 'Bilde 2 av 3' });
+    await user.click(tick2);
 
-    expect(thumbnail2).toHaveAttribute('aria-current', 'true');
+    expect(tick2).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('img', { name: 'Bilde 2' })).toHaveAttribute(
       'src',
       'https://cdn.test/img2?w=960&h=640',
     );
-    // The two other desktop thumbnails (still on the same page) must not also claim to be
-    // current — matched with the same numeric-only pattern as the pagination test, so this
-    // doesn't also pick up the mobile tick row's differently-worded (and separately current)
-    // label.
-    const desktopThumbs = screen.getAllByRole('button', { name: /^Bilde \d$/ });
-    expect(desktopThumbs.filter((el) => el.getAttribute('aria-current') === 'true')).toHaveLength(
-      1,
-    );
+    // The other two ticks must not also claim to be pressed.
+    const ticks = screen.getAllByRole('button', { name: /^Bilde \d av 3$/ });
+    expect(ticks.filter((el) => el.getAttribute('aria-pressed') === 'true')).toHaveLength(1);
   });
 
-  it('paginates the thumbnail row in groups of three', () => {
-    render(<Carousel images={photos(9)} initialIndex={3} />);
+  it('gives the active tick a hard inset shadow, not just a colour change', async () => {
+    const user = userEvent.setup();
+    render(<Carousel images={photos(3)} />);
 
-    // Index 3 is the first image of the second page (3, 4, 5) — the first page (0, 1, 2) must
-    // not be showing.
-    const desktopThumbs = screen.getAllByRole('button', { name: /^Bilde \d$/ });
-    const labels = desktopThumbs.map((el) => el.getAttribute('aria-label'));
-    expect(labels).toEqual(expect.arrayContaining(['Bilde 4', 'Bilde 5', 'Bilde 6']));
-    expect(labels).not.toContain('Bilde 1');
+    const tick2 = screen.getByRole('button', { name: 'Bilde 2 av 3' });
+    await user.click(tick2);
+
+    const mark = tick2.querySelector('span');
+    expect(mark).toHaveClass('shadow-inset-1');
   });
 
-  it('labels the mobile ticks with position and total, and marks the current one', () => {
+  it('labels every tick with its position and total', () => {
     render(<Carousel images={photos(9)} initialIndex={2} />);
 
     const tick = screen.getByRole('button', { name: 'Bilde 3 av 9' });
-    expect(tick).toHaveAttribute('aria-current', 'true');
+    expect(tick).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getAllByRole('button', { name: /^Bilde \d av 9$/ })).toHaveLength(9);
   });
 
   it('advances on ArrowRight from a focused control', async () => {

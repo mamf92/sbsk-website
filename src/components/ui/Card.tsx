@@ -23,7 +23,7 @@ type CardProps = Omit<React.HTMLAttributes<HTMLElement>, 'title'> & {
 // A flat solid block with sharp corners and a brand-black hairline — no radius, no blur.
 // `lift-card` (src/index.css) carries the hover and open elevation, so no `transition-*`
 // utility may join it on this element.
-const base = 'relative w-full rounded-none border border-black font-body';
+const base = 'relative w-full rounded-none border border-black dark:border-white font-body';
 
 // The fill is the whole visual signal. The header takes the category colour and the panel a
 // second step of it, so an open card reads as one block in two tones rather than as a card
@@ -84,7 +84,7 @@ export const Card = React.forwardRef<HTMLElement, CardProps>(
     // can sit flush against the card's own top, left and bottom borders. A photo inset by 16px
     // reads as a stray icon; one bled to the edge reads as the card's picture.
     const headerRow =
-      'flex w-full items-stretch justify-between' + (image ? ' min-h-20 sm:min-h-24' : '');
+      'flex w-full items-stretch justify-between' + (image ? ' min-h-24 sm:min-h-28' : '');
 
     const header = (
       <>
@@ -100,11 +100,24 @@ export const Card = React.forwardRef<HTMLElement, CardProps>(
             // because a bare `border-r` at zero width still paints a 1px rule with nothing left
             // to clip it. Same clock as the panel's own `grid-template-rows` transition, so the
             // photo sliding shut and the panel opening read as one motion.
+            //
+            // `size-24 sm:size-28` — an explicit equal width and height, not `aspect-square`
+            // derived from the row's stretched height. That was the first attempt, and it broke
+            // in a genuinely nasty way: the text column is `min-w-0` (free to shrink and wrap
+            // word-by-word), so a wider image leaves less room for text, which wraps more, which
+            // grows the row's height, which (via aspect-ratio) grows the image wider still — a
+            // feedback loop that ran the thumbnail up to nearly the full card width on a narrow
+            // screen before anything capped it. Two independent, fixed dimensions can't feed that
+            // loop. It's larger than the old `w-20 sm:w-24` — genuinely square and a bit more
+            // presence — but it no longer tracks the header's height, which the row's own
+            // `min-h-24 sm:min-h-28` (above) is sized to match instead.
             className={[
               'flex-none object-cover',
               'transition-[width,border-right-width] duration-(--duration-slow) ease-out',
               'motion-reduce:transition-none',
-              thumbnailCollapsed ? 'w-0 border-r-0' : 'w-20 border-r border-black sm:w-24',
+              thumbnailCollapsed
+                ? 'w-0 border-r-0'
+                : 'size-24 border-r border-black sm:size-28 dark:border-white',
             ].join(' ')}
           />
         ) : null}
@@ -169,7 +182,9 @@ export const Card = React.forwardRef<HTMLElement, CardProps>(
             }
           >
             <div className="overflow-hidden">
-              <div className={`${panels[category]} flex flex-col gap-4 border-t border-black p-4`}>
+              <div
+                className={`${panels[category]} flex flex-col gap-4 border-t border-black p-4 dark:border-white`}
+              >
                 {/* `flow-root`: a floated inline image or carousel (see `postsImageComponent.tsx`
                     and `PostsSection.tsx`) must not be able to poke out past this panel's tinted
                     fill and the card's own border. That containment happens to hold today because

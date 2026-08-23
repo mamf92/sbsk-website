@@ -15,7 +15,6 @@ type CarouselProps = Omit<React.HTMLAttributes<HTMLElement>, 'children'> & {
 // the same shape as the reader pages through photos of different ratios (a real photo set can
 // range from ~1.5:1 to ~2.9:1), so it's fixed rather than computed per image.
 const MAIN_ASPECT = 3 / 2;
-const THUMBNAILS_PER_PAGE = 3;
 
 function clampIndex(index: number, length: number) {
   return Math.min(Math.max(index, 0), Math.max(length - 1, 0));
@@ -61,28 +60,19 @@ export const Carousel = React.forwardRef<HTMLElement, CarouselProps>(
         </a>
       ) : null;
 
-    // Paginated in groups of three rather than a window that slides on every step: the row only
-    // moves on a page turn, so the tile a reader is reaching for never shifts out from under the
-    // pointer. A photo count not divisible by three just has a short last page.
-    const page = Math.floor(index / THUMBNAILS_PER_PAGE);
-    const pageStart = page * THUMBNAILS_PER_PAGE;
-    const thumbnails = images
-      .slice(pageStart, pageStart + THUMBNAILS_PER_PAGE)
-      .map((image, i) => ({ image, index: pageStart + i }));
-
     return (
       <section
         ref={ref}
         aria-roledescription="karusell"
         aria-label={label}
         onKeyDown={onKeyDown}
-        // The literal vh budget belongs to the whole component, not just the photo: the
-        // thumbnail/tick row and the caption strip are `shrink-0` below, so the flex algorithm
-        // shrinks only the photo box when the sum would exceed the cap.
+        // The literal vh budget belongs to the whole component, not just the photo: the tick
+        // row and the caption strip are `shrink-0` below, so the flex algorithm shrinks only
+        // the photo box when the sum would exceed the cap.
         className={['flex max-h-[80vh] w-full flex-col gap-2 lg:max-h-[60vh]', className].join(' ')}
         {...props}
       >
-        <figure className="flex min-h-0 flex-col border border-black">
+        <figure className="flex min-h-0 flex-col border border-black dark:border-white">
           <div className="relative aspect-[3/2] min-h-0 w-full shrink">
             <img
               src={cropUrl(current, 960, MAIN_ASPECT)}
@@ -122,7 +112,7 @@ export const Carousel = React.forwardRef<HTMLElement, CarouselProps>(
             ) : null}
           </div>
           {current.caption || credit ? (
-            <figcaption className="shrink-0 border-t border-black bg-current/10 px-3 py-2 text-sm">
+            <figcaption className="shrink-0 border-t border-black bg-current/10 px-3 py-2 text-sm dark:border-white">
               {current.caption ? <span className="block">{current.caption}</span> : null}
               {credit ? <span className="mt-0.5 block text-xs opacity-80">{credit}</span> : null}
             </figcaption>
@@ -131,48 +121,41 @@ export const Carousel = React.forwardRef<HTMLElement, CarouselProps>(
 
         {hasControls ? (
           <>
-            {/* Desktop: a paginated row of three thumbnails. */}
-            <div className="hidden shrink-0 grid-cols-3 gap-2 lg:grid">
-              {thumbnails.map(({ image, index: i }) => (
-                <button
-                  key={i}
-                  type="button"
-                  aria-current={i === index}
-                  aria-label={image.alt || `Bilde ${i + 1}`}
-                  onClick={() => setIndex(i)}
-                  className={[
-                    'focus-visible:outline-focus-ring h-16 w-full focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2',
-                    i === index ? 'border-orange border-2' : 'border-2 border-black',
-                  ].join(' ')}
-                >
-                  <img
-                    src={cropUrl(image, 320, 5 / 2)}
-                    alt=""
-                    aria-hidden="true"
-                    loading="lazy"
-                    style={{ objectPosition: hotspotPosition(image) }}
-                    className="h-full w-full object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-            {/* Mobile/tablet: square ticks — the brand's zero-radius rule rules out a circular
-                dot, so this keeps the idea (position indicator) in the house style, and unlike
-                Instagram's own dots these are real, tappable, labelled controls. */}
-            <div className="flex shrink-0 flex-wrap items-center justify-center gap-1 lg:hidden">
+            {/* The one position indicator, at every breakpoint — a paginated row of desktop
+                thumbnails used to sit alongside this, but paging through undifferentiated
+                photos didn't make "which one is this" any clearer than the ticks already do, so
+                it's gone rather than kept as a second, redundant control. Square, not circular:
+                the brand's zero-radius rule rules out a dot, and unlike Instagram's own
+                (non-interactive) dots these are real, tappable, labelled buttons. */}
+            <div className="flex shrink-0 flex-wrap items-center justify-center gap-1.5">
               {images.map((_image, i) => (
                 <button
                   key={i}
                   type="button"
-                  aria-current={i === index}
+                  // `aria-pressed`, not `aria-current`: this is the same "which one of a small
+                  // row of buttons is selected" shape `Chip` and `Segmented` already use, so a
+                  // screen reader hears it the same way. The 24px button is the tap target;
+                  // `--shadow-inset-1` (src/index.css) — the same hard inset shadow `Segmented`
+                  // reads off its own `aria-pressed` — lands on the small mark below instead of
+                  // the invisible outer button, so it draws where the fill actually is rather
+                  // than as a stray corner shadow on empty space. That's the depth cue this
+                  // control was missing; the arrows already inherit `lift` through `Button`.
+                  //
+                  // No `bg-current` on the active mark: `--hard-shadow-color` is chosen to
+                  // contrast with the *panel*, which in this system is always the same colour as
+                  // the panel's own text — so a `currentColor` fill and the inset shadow would be
+                  // painted in identical colours and the shadow would vanish into its own fill.
+                  // Left transparent, the shadow paints directly against the panel instead, where
+                  // its contrast actually holds.
+                  aria-pressed={i === index}
                   aria-label={`Bilde ${i + 1} av ${count}`}
                   onClick={() => setIndex(i)}
                   className="focus-visible:outline-focus-ring flex size-6 items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2"
                 >
                   <span
                     className={[
-                      'size-2.5 border border-current',
-                      i === index ? 'bg-current' : '',
+                      'ease-standard size-2.5 border border-current transition-[box-shadow] duration-(--duration-fast)',
+                      i === index ? 'shadow-inset-1' : '',
                     ].join(' ')}
                   />
                 </button>

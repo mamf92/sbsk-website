@@ -136,7 +136,7 @@ describe('Card', () => {
       </Card>,
     );
     const thumbnail = () => container.querySelector('h3 img') as HTMLElement;
-    expect(thumbnail().className).toContain('w-20');
+    expect(thumbnail().className).toContain('size-24');
     expect(thumbnail().className).not.toContain('w-0');
 
     rerender(
@@ -146,13 +146,27 @@ describe('Card', () => {
     );
     expect(thumbnail().className).toContain('w-0');
     expect(thumbnail().className).toContain('border-r-0');
+    expect(thumbnail().className).not.toContain('size-24');
   });
 
   it('keeps the thumbnail on a static card, which is always "open" but has nothing to replace it with', () => {
     const { container } = render(<Card title="Spillkveld" image="/bilde.jpg" />);
     const thumbnail = container.querySelector('h3 img') as HTMLElement;
-    expect(thumbnail.className).toContain('w-20');
+    expect(thumbnail.className).toContain('size-24');
     expect(thumbnail.className).not.toContain('w-0');
+  });
+
+  it('gives the thumbnail equal, fixed width and height rather than an aspect-ratio derived from the row', () => {
+    // A first attempt derived the width from the row's own stretched height via
+    // `aspect-square`, which fed back into itself: the text column can shrink and wrap
+    // word-by-word, so a wider image left less room for text, which wrapped more, which grew
+    // the row taller, which (via the aspect ratio) grew the image wider still. Two independent
+    // fixed dimensions can't feed that loop.
+    const { container } = render(<Card title="Spillkveld" image="/bilde.jpg" />);
+    const thumbnail = container.querySelector('h3 img') as HTMLElement;
+    expect(thumbnail.className).toContain('size-24');
+    expect(thumbnail.className).not.toContain('aspect-square');
+    expect(thumbnail.className).not.toContain('h-full');
   });
 
   it('no longer renders the image inside the panel — the caller shows it via SanityImage', () => {
