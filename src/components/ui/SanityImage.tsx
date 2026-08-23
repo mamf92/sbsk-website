@@ -1,6 +1,5 @@
 import * as React from 'react';
-import { urlFor } from '../../sanity/sanityImageUrl';
-import { clampAspect, MAX_IMAGE_HEIGHT } from '../../utils/sanityImage';
+import { clampAspect, cropUrl, MAX_IMAGE_HEIGHT } from '../../utils/sanityImage';
 import type { SanityImageSource } from '@sanity/asset-utils';
 
 type Dimensions = { width?: number; height?: number; aspectRatio?: number };
@@ -17,19 +16,6 @@ export type SanityImageValue = SanityImageSource & {
 type SanityImageProps = Omit<React.HTMLAttributes<HTMLElement>, 'children'> & {
   value: SanityImageValue;
 };
-
-// `fit('crop')` is what makes @sanity/image-url honour the editor's hotspot, and it only does so
-// when both width and height are given — which is why every URL below carries both. When the
-// clamp leaves the ratio untouched the crop is a no-op and the hotspot simply does nothing.
-function cropUrl(value: SanityImageValue, width: number, aspect: number) {
-  return urlFor(value)
-    .width(width)
-    .height(Math.round(width / aspect))
-    .fit('crop')
-    .auto('format')
-    .quality(80)
-    .url();
-}
 
 export const SanityImage = React.forwardRef<HTMLElement, SanityImageProps>(
   ({ className = '', value, ...props }, ref) => {

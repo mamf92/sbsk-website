@@ -334,10 +334,17 @@ level down, instead of inventing a second visual language for images, is the poi
   its caption strip as one bordered insert; the `<img>` itself is `border-0`, beating
   `.sbsk-rt img`'s base-layer hairline exactly the way that rule's own comment says a component
   should — with a plain Tailwind utility, no `index.css` edit.
-- **Left-anchored, not centered.** The desktop reading column is wide (~992px); a portrait photo
-  clamped to a sane height is necessarily narrower than it. Centering that gap makes the photo
-  read as a stray thumbnail adrift in whitespace. Dropping `mx-auto` anchors it to the column's
-  own margin instead — a photo sits in a printed column, it doesn't float in the middle of one.
+- **Left-anchored is the mobile rule; from `md` up, an editor-chosen float wraps text beside the
+  photo.** The desktop reading column is wide (~992px), and a portrait photo clamped to a sane
+  height is necessarily narrower than it — centering that gap makes the photo read as a stray
+  thumbnail adrift in whitespace, and simply anchoring it left (no `mx-auto`) leaves the same gap
+  on the other side with nothing wrapping into it. The fix is Sanity's own documented shape for
+  this exact problem: an `alignment` field (`postType.ts`) storing `høyre`/`venstre`/`full`, and
+  `postsImageComponent.tsx` translating it to `md:float-right`/`md:float-left`/nothing. Below
+  `md` every value collapses to full-width and stacked — a wrapped column that narrow is a ragged
+  ribbon, not a layout. Headings and lists (`portableTextComponents.tsx`) carry `clear-both` so
+  they always start a fresh line below a pending float rather than squeeze beside it — and below
+  the carousel's own left float (next section) once a post has one.
 - **The caption strip is `border-t border-black bg-current/10`** — the identical rule `Card`
   draws between its header and its panel, and a tint of whatever text colour the strip already
   inherits (white inside a `nyheter` panel, `darkestblue` everywhere else). No category prop,
@@ -349,6 +356,30 @@ level down, instead of inventing a second visual language for images, is the poi
 What this is not: a licence to reach for `shadow-*` here. An inline image is not pressable, so it
 stays flat — border only, per "Who lifts" above. The rule this section documents is about
 placement and framing, not about borrowing the lift system.
+
+## The carousel
+
+An optional per-post photo set (`postType.ts`'s `carousel` field, `src/components/ui/Carousel.tsx`)
+embodies three brand decisions worth naming, because each one reads as an obvious choice only
+after you've ruled out the more obvious-looking alternative:
+
+- **Square ticks, not circular dots.** Instagram's own position indicator is a circle; zero
+  border-radius is a hard rule here with no image-specific exception, so the indicator is a small
+  flat square instead — `currentColor`-tinted like the caption strip, so it self-adapts to
+  whichever panel it's sitting in. Unlike Instagram's dots, these are real buttons: tappable, and
+  labelled `"Bilde N av totalt"` for a screen reader.
+- **No `lift-chip` on the thumbnails**, even though they're pressable and the utility would fit.
+  A photo tile lifting onto a hard offset shadow reads as elevation _on a photograph_, which is
+  the one thing the flat language avoids — border colour and the focus ring are the whole
+  affordance, same as the ticks.
+- **A literal `vh` budget on the whole component, not just the photo.** "Never more than 60% of
+  the screen" means the viewport, not the card — `max-h-[80vh] lg:max-h-[60vh]` on the root, with
+  the thumbnail/tick row and caption strip `shrink-0` so the image itself is the only part the
+  flex algorithm can squeeze. The carousel floats left from `lg` up (same reasoning as an inline
+  image's float, one breakpoint later — a half-width carousel with a thumbnail row needs more
+  room than a half-width photo does) with the post's own text wrapping beside it and continuing
+  at full width once it runs past the carousel's bottom edge — an ordinary consequence of
+  wrapping a float, not a separately built region.
 
 ## Loading, empty, error
 

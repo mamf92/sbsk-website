@@ -4,7 +4,12 @@ import type { SanityImageValue } from '../../components/ui/SanityImage';
 
 export type PostImage = SanityImageValue & { _type: 'image' };
 
-type PostContent = PortableTextBlock | PostImage;
+// `alignment` only means something for a photo sitting inline in running text — a carousel
+// image's layout is decided by the carousel itself, so `PostImage` alone (no alignment) is what
+// `carousel` uses.
+type InlinePostImage = PostImage & { alignment?: 'høyre' | 'venstre' | 'full' };
+
+type PostContent = PortableTextBlock | InlinePostImage;
 
 export interface PostTypes {
   _id: string;
@@ -15,6 +20,7 @@ export interface PostTypes {
   category: 'nyheter' | 'spillkveldrapporter' | 'arrangementer';
   links?: { label: string; url: string }[];
   content: PostContent[];
+  carousel?: PostImage[];
 }
 
 // The image blocks are sub-projected so `metadata.dimensions` comes along: without the real
@@ -33,6 +39,10 @@ const POSTS_QUERY = `*[
       ...,
       asset->{_id, url, metadata{dimensions, lqip}}
     }
+  },
+  carousel[]{
+    ...,
+    asset->{_id, url, metadata{dimensions, lqip}}
   }
 }`;
 
@@ -40,9 +50,12 @@ export async function postsLoader() {
   return { posts: await client.fetch<PostTypes[]>(POSTS_QUERY) };
 }
 
-// The closed card's thumbnail is simply the post's first photo. There is deliberately no
-// separate "teaser image" field to fill in and no way for the two to disagree — the picture a
-// reader sees on the closed card is the one they meet again at the top of the article.
+// The closed card's thumbnail is simply the post's first photo — an inline one if the body has
+// one, otherwise the carousel's own first image, so a carousel-only post still gets a thumbnail
+// and the header's collapse animation. There is deliberately no separate "teaser image" field to
+// fill in and no way for it to disagree with the body — the picture a reader sees on the closed
+// card is one they meet again at the top of the article.
 export function getThumbnail(post: PostTypes): PostImage | undefined {
-  return post.content?.find((block) => block._type === 'image') as PostImage | undefined;
+  const inline = post.content?.find((block) => block._type === 'image') as PostImage | undefined;
+  return inline ?? post.carousel?.[0];
 }

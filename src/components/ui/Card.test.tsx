@@ -129,6 +129,32 @@ describe('Card', () => {
     expect(container.querySelector('h3 img')).not.toBeInTheDocument();
   });
 
+  it('collapses the header thumbnail to zero width once an interactive card opens', () => {
+    const { container, rerender } = render(
+      <Card title="Spillkveld" image="/bilde.jpg" onToggle={vi.fn()}>
+        <p>Innhold</p>
+      </Card>,
+    );
+    const thumbnail = () => container.querySelector('h3 img') as HTMLElement;
+    expect(thumbnail().className).toContain('w-20');
+    expect(thumbnail().className).not.toContain('w-0');
+
+    rerender(
+      <Card title="Spillkveld" image="/bilde.jpg" onToggle={vi.fn()} expanded>
+        <p>Innhold</p>
+      </Card>,
+    );
+    expect(thumbnail().className).toContain('w-0');
+    expect(thumbnail().className).toContain('border-r-0');
+  });
+
+  it('keeps the thumbnail on a static card, which is always "open" but has nothing to replace it with', () => {
+    const { container } = render(<Card title="Spillkveld" image="/bilde.jpg" />);
+    const thumbnail = container.querySelector('h3 img') as HTMLElement;
+    expect(thumbnail.className).toContain('w-20');
+    expect(thumbnail.className).not.toContain('w-0');
+  });
+
   it('no longer renders the image inside the panel — the caller shows it via SanityImage', () => {
     const { container } = render(
       <Card title="Spillkveld" image="/bilde.jpg" onToggle={vi.fn()} expanded>

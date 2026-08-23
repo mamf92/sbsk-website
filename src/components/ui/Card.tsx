@@ -74,6 +74,11 @@ export const Card = React.forwardRef<HTMLElement, CardProps>(
     const interactive = typeof onToggle === 'function';
     const hasBody = children != null;
     const open = interactive ? expanded : true;
+    // The same photo reappears, properly framed, in the body below once a card opens — so the
+    // header's small copy shrinks away rather than sitting there duplicated. Guarded to
+    // interactive cards with a body: `open` is unconditionally `true` on a static card (nothing
+    // to replace the thumbnail with), so collapsing there would just make the photo vanish.
+    const thumbnailCollapsed = interactive && hasBody && open;
 
     // The padding moves off the header row and onto the text and the chevron, so the thumbnail
     // can sit flush against the card's own top, left and bottom borders. A photo inset by 16px
@@ -89,7 +94,18 @@ export const Card = React.forwardRef<HTMLElement, CardProps>(
             alt=""
             aria-hidden="true"
             style={imagePosition ? { objectPosition: imagePosition } : undefined}
-            className="w-20 flex-none border-r border-black object-cover sm:w-24"
+            // The row's own `gap-4` used to double up with the text span's `p-4`, so removing it
+            // (below) meant the thumbnail's width and its trailing border have to be the only
+            // things collapsing here — `border-right-width` is transitioned alongside `width`
+            // because a bare `border-r` at zero width still paints a 1px rule with nothing left
+            // to clip it. Same clock as the panel's own `grid-template-rows` transition, so the
+            // photo sliding shut and the panel opening read as one motion.
+            className={[
+              'flex-none object-cover',
+              'transition-[width,border-right-width] duration-(--duration-slow) ease-out',
+              'motion-reduce:transition-none',
+              thumbnailCollapsed ? 'w-0 border-r-0' : 'w-20 border-r border-black sm:w-24',
+            ].join(' ')}
           />
         ) : null}
         <span className="flex min-w-0 flex-1 flex-col justify-center gap-1 p-4 text-left">
@@ -129,12 +145,12 @@ export const Card = React.forwardRef<HTMLElement, CardProps>(
               onClick={onToggle}
               aria-expanded={open}
               aria-controls={hasBody ? panelId : undefined}
-              className={`${headerRow} focus-visible:outline-focus-ring cursor-pointer gap-4 text-left focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2`}
+              className={`${headerRow} focus-visible:outline-focus-ring cursor-pointer text-left focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2`}
             >
               {header}
             </button>
           ) : (
-            <div className={`${headerRow} gap-4 ${image ? '' : 'p-4'}`}>{header}</div>
+            <div className={headerRow}>{header}</div>
           )}
         </h3>
         {hasBody ? (
@@ -154,7 +170,12 @@ export const Card = React.forwardRef<HTMLElement, CardProps>(
           >
             <div className="overflow-hidden">
               <div className={`${panels[category]} flex flex-col gap-4 border-t border-black p-4`}>
-                {children ? <div className="sbsk-rt">{children}</div> : null}
+                {/* `flow-root`: a floated inline image or carousel (see `postsImageComponent.tsx`
+                    and `PostsSection.tsx`) must not be able to poke out past this panel's tinted
+                    fill and the card's own border. That containment happens to hold today because
+                    this div is a flex item of the row above it, but that's invisible and would
+                    silently break the day this layout changes — one class of cheap insurance. */}
+                {children ? <div className="sbsk-rt flow-root">{children}</div> : null}
               </div>
             </div>
           </div>
