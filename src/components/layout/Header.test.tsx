@@ -56,19 +56,29 @@ describe('Header — mobile nav tab order', () => {
 // CSS class, not removed from the DOM), so role queries by name are ambiguous. The dropdown
 // panel is the toggle button's next sibling — scope into it to reach the desktop copy only.
 function getDropdownPanel() {
-  const toggle = screen.getByRole('button', { name: 'Hi, Martin' });
+  // No `name` on the mocked user — the toggle falls back to the fixed "Min profil" label
+  // rather than "Hi, {name}", which keeps this query stable regardless of greeting copy.
+  const toggle = screen.getByRole('button', { name: 'Min profil' });
   return toggle.nextElementSibling as HTMLElement;
 }
 
 describe('Header — desktop profile dropdown', () => {
   beforeEach(() => {
     auth.isAuthenticated = true;
-    auth.user = { supabase_id: 'member-1', name: 'Martin', surname: 'Fischer' } as Profile;
+    auth.user = { supabase_id: 'member-1' } as Profile;
+  });
+
+  it('opens and closes on toggle', async () => {
+    renderHeader();
+    expect(getDropdownPanel()).toHaveClass('hidden');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Min profil' }));
+    expect(getDropdownPanel()).not.toHaveClass('hidden');
   });
 
   it('closes on Escape', async () => {
     renderHeader();
-    await userEvent.click(screen.getByRole('button', { name: 'Hi, Martin' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Min profil' }));
     expect(getDropdownPanel()).not.toHaveClass('hidden');
 
     await userEvent.keyboard('{Escape}');
@@ -77,7 +87,7 @@ describe('Header — desktop profile dropdown', () => {
 
   it('closes on an outside click', async () => {
     renderHeader();
-    await userEvent.click(screen.getByRole('button', { name: 'Hi, Martin' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Min profil' }));
     expect(getDropdownPanel()).not.toHaveClass('hidden');
 
     await userEvent.click(document.body);
@@ -86,7 +96,7 @@ describe('Header — desktop profile dropdown', () => {
 
   it('stays open when clicking inside its own bounds', async () => {
     renderHeader();
-    await userEvent.click(screen.getByRole('button', { name: 'Hi, Martin' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Min profil' }));
     await userEvent.click(getDropdownPanel());
     expect(getDropdownPanel()).not.toHaveClass('hidden');
   });
