@@ -1,6 +1,7 @@
 import { defineField, defineType } from 'sanity';
 import ExternalLink from '../../assets/icons/symbols/external-link.svg?react';
 import AddLink from '../../assets/icons/symbols/add-link.svg?react';
+import { postImageFields, postImagePreview } from './postImageFields';
 
 export const postType = defineType({
   name: 'post',
@@ -115,12 +116,11 @@ export const postType = defineType({
             ],
           },
         },
-        // There is exactly one way to add a photo: drop it in the text where it belongs. The
-        // separate main image, the extra-pictures gallery and the left/right placement radio
-        // were each a way for a post to come out looking wrong, and none of them had ever been
-        // used. Size, crop and placement are decided by the site, not by the editor — the only
-        // framing choice left is the hotspot, which is the one an editor is actually equipped
-        // to make.
+        // Drop a photo where it belongs in the text, then choose how it sits: beside the text
+        // (it floats, and the paragraph wraps around it — Sanity's own recommended shape for
+        // this, see the `alignment` field below) or alone at full width. Size and crop are still
+        // decided by the site, not the editor — the hotspot is the one framing choice an editor
+        // is actually equipped to make.
         {
           name: 'image',
           title: 'Bilde',
@@ -129,38 +129,47 @@ export const postType = defineType({
           description:
             'Bildet vises der du plasserer det i teksten. Dra i sirkelen under «Hotspot» for å peke ut det viktigste i bildet – da blir det med uansett hvordan bildet beskjæres.',
           fields: [
+            ...postImageFields,
             defineField({
-              title: 'Alt-tekst',
-              name: 'alt',
+              title: 'Plassering',
+              name: 'alignment',
               type: 'string',
               description:
-                'Beskriv hva bildet viser, for lesere som bruker skjermleser. Vises ikke på siden.',
-              validation: (rule) => rule.required(),
+                'Høyre/venstre: bildet flyter til siden og teksten renner rundt det, fra ' +
+                'nettbrettbredde og oppover. Full bredde: bildet står alene, uten tekst ved siden.',
+              options: {
+                list: [
+                  { title: 'Høyre', value: 'høyre' },
+                  { title: 'Venstre', value: 'venstre' },
+                  { title: 'Full bredde', value: 'full' },
+                ],
+                layout: 'radio',
+              },
+              initialValue: 'høyre',
             }),
-            {
-              title: 'Bildetekst',
-              name: 'caption',
-              type: 'string',
-              description: 'Teksten som står under bildet på siden. Valgfritt.',
-            },
-            {
-              title: 'Bildekilde navn',
-              name: 'imageSourceName',
-              type: 'string',
-              description: 'Navn på kilden for bildet.',
-            },
-            {
-              title: 'Bildekilde URL',
-              name: 'imageSourceUrl',
-              type: 'url',
-              description: 'URL til kilden for bildet.',
-            },
           ],
-          preview: {
-            select: { media: 'asset', title: 'caption', subtitle: 'alt' },
-          },
+          preview: postImagePreview,
         },
       ],
+    }),
+    defineField({
+      title: 'Bildekarusell',
+      name: 'carousel',
+      type: 'array',
+      description:
+        'Valgfritt. Flere bilder fra samme anledning, vist som en karusell øverst i innlegget, ' +
+        'med teksten ved siden av på store skjermer. Dra i «Hotspot» for å peke ut det ' +
+        'viktigste i hvert bilde.',
+      options: { layout: 'grid' },
+      of: [
+        {
+          type: 'image',
+          options: { hotspot: true },
+          fields: postImageFields,
+          preview: postImagePreview,
+        },
+      ],
+      validation: (rule) => rule.max(12),
     }),
   ],
 });
