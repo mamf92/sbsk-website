@@ -42,6 +42,12 @@ describe('AvatarStack', () => {
     expect(onMore).toHaveBeenCalledOnce();
   });
 
+  it('gives the "+N" button its own focus-visible ring, since lift-chip does not carry one', () => {
+    render(<AvatarStack people={people} max={3} onMore={vi.fn()} />);
+    const counter = screen.getByRole('button', { name: 'Vis 2 deltakere til' });
+    expect(counter.className).toContain('focus-visible:outline');
+  });
+
   it('renders nothing but the wrapper for an empty list', () => {
     render(<AvatarStack people={[]} data-testid="stack" />);
 

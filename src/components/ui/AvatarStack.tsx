@@ -66,7 +66,13 @@ export const AvatarStack = React.forwardRef<HTMLDivElement, AvatarStackProps>(
               type="button"
               onClick={onMore}
               aria-label={`Vis ${extra} deltakere til`}
-              className={[counterClasses, 'lift-chip cursor-pointer'].join(' ')}
+              // `lift-chip` only carries hover/press states — every other pressable primitive
+              // (`Button`, `Chip`) pairs it with its own explicit `focus-visible` ring, and this
+              // one hadn't been wired up yet.
+              className={[
+                counterClasses,
+                'lift-chip focus-visible:outline-focus-ring cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+              ].join(' ')}
             >
               +{extra}
             </button>

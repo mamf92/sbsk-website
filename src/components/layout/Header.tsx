@@ -4,7 +4,7 @@ import { NavMenuButton } from '../ui/NavMenuButton';
 import { DiceLogo } from '../ui/DiceLogo';
 import { navLinkClasses } from '../ui/Link';
 import { useTheme } from '../../hooks/theme/ThemeContext';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../hooks/authContext/authContext';
 
 const desktopNavLink = `${navLinkClasses} text-sm`;
@@ -26,6 +26,7 @@ export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { logout, isAuthenticated, isAdmin, user } = useAuth();
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
@@ -46,6 +47,26 @@ export default function Header() {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isMobileMenuOpen]);
+
+  // The profile dropdown previously only closed by clicking one of its own buttons or
+  // re-clicking the toggle — no Escape, no outside click, both standard for any disclosure
+  // menu. `mousedown` rather than `click` so the close beats the toggle button's own click
+  // handler on the same interaction when the click lands outside the menu.
+  useEffect(() => {
+    if (!isDropdownOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsDropdownOpen(false);
+    };
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!dropdownRef.current?.contains(event.target as Node)) setIsDropdownOpen(false);
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   return (
     <header className="bg-darkblue surface-dark font-heading relative z-1100 w-full text-white">
@@ -98,7 +119,7 @@ export default function Header() {
 
           {/* Login / profile — desktop only */}
           {isAuthenticated ? (
-            <div className="relative z-50 hidden lg:block">
+            <div ref={dropdownRef} className="relative z-50 hidden lg:block">
               <Button
                 variant="primary"
                 size="sm"
@@ -162,12 +183,17 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile nav — collapses via max-height */}
+      {/* Mobile nav — collapses via max-height. `overflow-hidden` alone hides it visually but
+          leaves every link at tabIndex 0: a keyboard user tabbing past the hamburger button
+          would land on invisible links. `inert` is what actually pulls the closed panel out of
+          the tab order and the accessibility tree, matching the pattern `Card`'s own collapsible
+          panel already uses. */}
       <nav
         className={`bg-darkestblue flex flex-col overflow-hidden transition-[max-height] duration-(--duration-slow) ease-out lg:hidden ${
           isMobileMenuOpen ? 'max-h-[460px]' : 'max-h-0'
         }`}
         aria-label="Mobilmeny"
+        inert={!isMobileMenuOpen}
       >
         {isAuthenticated && (
           <div className="flex gap-2 border-t border-white/12 px-6 py-[15px]">
