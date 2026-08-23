@@ -165,7 +165,7 @@ function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) 
 
   if (posts.length === 0 || !posts) {
     return (
-      <div className="max-w-content text-darkestblue mx-auto px-2 sm:px-0 dark:text-white">
+      <div className="max-w-content text-darkestblue content-gutter:px-0 mx-auto px-2 dark:text-white">
         {/* "There are no posts" and "we could not reach Sanity" look identical from here, and only
             one of them is true. Saying the wrong one sends a visitor away believing the club has
             gone quiet. */}
@@ -184,7 +184,7 @@ function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) 
     );
   }
   return (
-    <div className="max-w-content flex w-full flex-col items-center gap-4 px-2 pb-2 sm:px-0 sm:pb-4">
+    <div className="max-w-content content-gutter:px-0 flex w-full flex-col items-center gap-4 px-2 pb-2 sm:pb-4">
       <Input
         type="search"
         icon="search"
