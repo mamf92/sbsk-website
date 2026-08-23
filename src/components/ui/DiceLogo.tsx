@@ -46,9 +46,19 @@ export const DiceLogo = React.forwardRef<DiceLogoHandle, DiceLogoProps>(
     });
     const [rolling, setRolling] = React.useState(false);
     const timers = React.useRef<number[]>([]);
+    const reducedMotion = React.useRef(false);
 
+    React.useEffect(() => {
+      const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+      reducedMotion.current = media.matches;
+      const handleChange = (e: MediaQueryListEvent) => {
+        reducedMotion.current = e.matches;
+      };
+      media.addEventListener('change', handleChange);
+      return () => media.removeEventListener('change', handleChange);
+    }, []);
     const roll = React.useCallback(() => {
-      if (rolling) return;
+      if (rolling || reducedMotion.current) return;
       setRolling(true);
       const iv = window.setInterval(
         () => setFace(1 + Math.floor(Math.random() * 6)),
