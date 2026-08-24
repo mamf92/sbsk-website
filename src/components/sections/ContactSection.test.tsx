@@ -141,6 +141,30 @@ describe('ContactSection', () => {
     );
   });
 
+  it('keeps the honeypot field out of the tab order and the accessibility tree', () => {
+    const { container } = render(<ContactSection />);
+
+    expect(screen.queryByRole('textbox', { name: 'Nettside' })).not.toBeInTheDocument();
+    const honeypot = container.querySelector('#website');
+    expect(honeypot).toHaveAttribute('tabindex', '-1');
+    expect(honeypot).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('pretends to succeed without sending anything when the honeypot field is filled', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<ContactSection />);
+
+    await fillValid(user);
+    const honeypot = container.querySelector('#website') as HTMLInputElement;
+    await user.type(honeypot, 'http://spam.example');
+    await user.click(fields().submit);
+
+    expect(createContactMessage).not.toHaveBeenCalled();
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      'Meldingen din er sendt. Vi svarer så snart vi kan.',
+    );
+  });
+
   it('shows the generic failure banner when the helper rejects, not the raw backend error', async () => {
     createContactMessage.mockRejectedValue(new Error('duplicate key value violates unique...'));
     const user = userEvent.setup();
