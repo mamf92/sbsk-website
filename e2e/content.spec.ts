@@ -4,6 +4,8 @@ import {
   UPCOMING_EVENT,
   UPCOMING_TOURNAMENT,
   PAST_EVENT,
+  ABOUT_PAGE,
+  BOARD_MEMBER,
   stubSanityWithContent,
 } from './fixtures/sanity';
 
@@ -147,6 +149,21 @@ test('a games search matching nothing offers a way back rather than a blank grid
 
   await page.getByRole('button', { name: 'Fjern filtre' }).click();
   await expect(page.getByRole('heading', { name: 'Testkveld' })).toBeVisible();
+});
+
+test('the om oss page renders the real board rather than the local fallback', async ({ page }) => {
+  const errors = watchForErrors(page);
+
+  await page.goto('/om-oss');
+
+  await expect(page.getByRole('heading', { level: 1, name: ABOUT_PAGE.clubTitle })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 2, name: ABOUT_PAGE.boardTitle })).toBeVisible();
+  await expect(page.getByRole('heading', { name: BOARD_MEMBER.name })).toBeVisible();
+  await expect(page.getByText(BOARD_MEMBER.role)).toBeVisible();
+  // `AboutUsSection` only reaches for its bundled fallback when Sanity returns no members —
+  // seeing "Astrid Lindgren" here would mean the real board never rendered.
+  await expect(page.getByText('Astrid Lindgren')).toHaveCount(0);
+  expect(errors, `page threw: ${errors.join(', ')}`).toEqual([]);
 });
 
 // eventDetailLoader has never run in this suite: reaching it needs a slug, and an empty stub

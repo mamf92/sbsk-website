@@ -172,6 +172,27 @@ export const GAME_HEAVY = {
 
 export const GAMES = [GAME_LIGHT, GAME_HEAVY];
 
+export const ABOUT_PAGE = {
+  _id: 'about-page',
+  _type: 'aboutPage',
+  clubTitle: 'Om Stavanger Brettspillklubb',
+  clubIntro: 'Klubben samler brettspillentusiaster i hele regionen.',
+  clubBody: ['Vi møtes annenhver torsdag på Byhaugkafeen.'],
+  boardTitle: 'Styret vårt',
+  boardIntro: 'Frivillige som driver klubben fremover.',
+};
+
+// Names deliberately do not collide with `FALLBACK_BOARD` in AboutUsSection, so a spec can
+// assert the real Sanity members are what rendered, not the hardcoded fallback underneath it.
+export const BOARD_MEMBER = {
+  _id: 'board-member-1',
+  _type: 'boardMember',
+  name: 'Turid Vik',
+  role: 'Leder',
+  bio: 'Har sittet i styret siden klubben startet.',
+  order: 1,
+};
+
 /** The dataset the queries run against, in the same shape Sanity stores documents. */
 export const DATASET = [
   UPCOMING_EVENT,
@@ -182,6 +203,8 @@ export const DATASET = [
   CALENDAR_HERO,
   GAMES_HERO,
   ...GAMES,
+  ABOUT_PAGE,
+  BOARD_MEMBER,
 ];
 
 /**

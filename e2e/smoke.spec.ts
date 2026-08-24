@@ -75,9 +75,9 @@ for (const route of singleMainRoutes) {
 
 // The routes still on `PagePlaceholder`. Each is one heading and nothing else, so the exact
 // count is safe to pin here and is what stops the next stub shipping without one. `/våre-spill`
-// left this list once it got a real page — see e2e/content.spec.ts for its own coverage.
+// and `/om-oss` left this list once they got a real page — see e2e/content.spec.ts for their
+// own coverage.
 const placeholderRoutes = [
-  { route: '/om-oss', heading: 'Om oss' },
   { route: '/bli-medlem', heading: 'Bli medlem' },
   { route: '/kontakt-oss', heading: 'Kontakt oss' },
   { route: '/våre-partnere', heading: 'Våre partnere' },
