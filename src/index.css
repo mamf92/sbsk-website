@@ -388,6 +388,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .sbsk-dice:hover svg,
+  .sbsk-dice.rolling:hover svg {
+    transform: none;
+  }
   .sbsk-dice.rolling svg {
     animation-duration: 0.25s;
   }

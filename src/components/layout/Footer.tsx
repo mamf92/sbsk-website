@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { SocialIcon } from 'react-social-icons';
-import Logo from '../../assets/logos/dicelogo.png';
+import { DiceLogo } from '../ui/DiceLogo';
 
 export default function Footer() {
   return (
@@ -12,7 +12,7 @@ export default function Footer() {
               <div className="flex items-center justify-start gap-4">
                 <div>
                   <NavLink to="/" end className="flex max-w-12.25 min-w-12.25">
-                    <img src={Logo} alt="SBSK Logo" className="w-full" />
+                    <DiceLogo size={48} />
                   </NavLink>
                 </div>
                 <div>
