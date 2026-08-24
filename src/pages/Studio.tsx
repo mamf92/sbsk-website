@@ -7,6 +7,8 @@ import { eventType } from '../sanity/schemaTypes/eventType';
 import { postType } from '../sanity/schemaTypes/postType';
 import { gameType } from '../sanity/schemaTypes/gameType';
 import { gamesHeroType } from '../sanity/schemaTypes/gamesHeroType';
+import { aboutPageType } from '../sanity/schemaTypes/aboutPageType';
+import { boardMemberType } from '../sanity/schemaTypes/boardMemberType';
 
 const appBase = import.meta.env.VITE_BASE ?? '/';
 const basePrefix = appBase === '/' ? '' : appBase.replace(/\/$/, '');
@@ -20,7 +22,16 @@ const config = defineConfig({
   subtitle: 'production',
   plugins: [structureTool(), visionTool()],
   schema: {
-    types: [homeHeroType, eventType, calendarHeroType, postType, gameType, gamesHeroType],
+    types: [
+      homeHeroType,
+      eventType,
+      calendarHeroType,
+      postType,
+      gameType,
+      gamesHeroType,
+      aboutPageType,
+      boardMemberType,
+    ],
   },
 });
 
