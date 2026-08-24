@@ -41,6 +41,23 @@ describe('Alert', () => {
     render(<Alert ref={ref}>x</Alert>);
     expect(ref.current).toBe(screen.getByRole('alert'));
   });
+
+  it('defaults to the error tone', () => {
+    render(<Alert>x</Alert>);
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+  });
+
+  it('announces a success tone as a status, not an alert, and uses a distinct class list', () => {
+    const { unmount } = render(<Alert>x</Alert>);
+    const errorClass = screen.getByRole('alert').className;
+    unmount();
+
+    render(<Alert tone="success">Meldingen din er sendt.</Alert>);
+    const status = screen.getByRole('status');
+    expect(status).toHaveTextContent('Meldingen din er sendt.');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(status.className).not.toBe(errorClass);
+  });
 });
 
 describe('FieldError', () => {

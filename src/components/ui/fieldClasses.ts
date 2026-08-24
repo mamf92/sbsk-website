@@ -30,6 +30,35 @@ export const fieldSurface =
  */
 export const fieldBorder = 'border border-darkblue dark:border-orange';
 export const fieldBorderInvalid = 'border border-error dark:border-error';
+export const fieldBorderValid = 'border border-success dark:border-success';
+
+/**
+ * The hard offset shadow that lends a field's interaction state a coloured edge — orange
+ * while focused, red once it fails validation, green once it passes — the same square-offset
+ * language `lift` gives a pressable surface, applied to state instead of motion. A field never
+ * moves, so this owns colour only; `invalid`/`valid` never both apply, and `invalid` wins if a
+ * caller somehow passes both, matching the glyph precedence in `Input`/`Textarea`.
+ *
+ * `focus:`, not `focus-visible:` — this is a state indicator, not the keyboard affordance
+ * (`fieldSurface`'s outline already owns that), so it is fine to show on a mouse click too.
+ *
+ * Never the only signal a field's state is carried on: see the note by `--shadow-error-2` in
+ * `src/index.css` for why `--color-error` cannot sit alone on a `darkblue` panel. The border
+ * and the glyph in the class lists above say the same thing on their own with this omitted.
+ */
+export function fieldStateShadow({ invalid = false, valid = false } = {}) {
+  if (invalid) return 'shadow-error-2';
+  if (valid) return 'shadow-success-2';
+  return 'focus:shadow-accent-2';
+}
+
+/**
+ * Pairs with `fieldStateShadow` and `fieldBorderValid`/`-Invalid`. Its own transition, not
+ * `lift`'s — a field never travels, so it has no motion half to keep off a separate clock,
+ * and pairing it with `lift` would trip the mutual-exclusion rule that utility enforces.
+ */
+export const fieldStateTransition =
+  'transition-[box-shadow,border-color] duration-(--duration-fast) ease-standard';
 
 /**
  * The permanently-disabled newsletter input in `Footer` was the one field with a class string

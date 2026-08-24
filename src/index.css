@@ -74,6 +74,10 @@
      this is the red-error-700 value from its Figma token dump, made concrete so
      the forms work has something real to bind to. */
   --color-error: #b5251f;
+  /* The library's green-success-700, `--color-error`'s sibling. 6.20:1 on white — see the
+     field-state note on `--shadow-success-2` below for why it is never asked to sit on
+     `darkblue` alone. */
+  --color-success: #007124;
 
   /* Flips with the theme — see the `.dark` block below. */
   --color-hero-scrim: rgb(255 255 255 / 0.55);
@@ -192,6 +196,18 @@
      shadow on a non-orange element; not part of the lift utilities. */
   --shadow-accent-1: 2px 2px 0 var(--color-orange);
   --shadow-accent-2: 4px 4px 0 var(--color-orange);
+  /* Field state, painted as the brand's hard offset rather than a coloured border alone —
+     `Input`/`Textarea` land these via `fieldStateShadow()` in `fieldClasses.ts`. Deliberately
+     not built on `--hard-shadow-color`: that token is a *surface* property that
+     `surface-dark`/`-light` re-point per panel, where a field's state colour must not move —
+     a red field means the same thing on the white page and on a `darkblue` panel. Both are
+     literal colours, not `var()`, which is normally the mistake `docs/DESIGN_LANGUAGE.md`
+     warns kills the `.dark` override — harmless here because the field fill is white in both
+     themes, so neither colour has one. Never the only signal: `--color-error` measures 2.01:1
+     on `darkblue`, which is why `Input`'s red hairline, its `AlertCircle` glyph and
+     `aria-invalid` all still carry the state on their own. */
+  --shadow-error-2: 4px 4px 0 var(--color-error);
+  --shadow-success-2: 4px 4px 0 var(--color-success);
   --shadow-overlay: 0 12px 32px -8px var(--overlay-shadow-color);
 
   --lift-hover: translate(-2px, -2px);

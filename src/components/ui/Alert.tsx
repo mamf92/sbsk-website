@@ -1,9 +1,14 @@
 import * as React from 'react';
 import AlertCircle from '../../assets/icons/symbols/alert-circle.svg?react';
+import Check from '../../assets/icons/symbols/check.svg?react';
 
 type AlertProps = React.HTMLAttributes<HTMLDivElement> & {
   size?: 'sm' | 'md';
+  /** See the tone note below. Defaults to `error`, the only tone this had until #180. */
+  tone?: 'error' | 'success';
 };
+
+const toneGlyph = { error: AlertCircle, success: Check } as const;
 
 /**
  * The error message, announced rather than merely painted. `role="alert"` is the whole point:
@@ -17,19 +22,27 @@ type AlertProps = React.HTMLAttributes<HTMLDivElement> & {
  * `darkblue` form panel and on the white page alike. It stays flat and square; the brand's
  * only concession here is that it brings its own fill.
  *
- * Error is the only tone, on purpose — there is no success or info case in the app yet, and
- * a tone map with one entry is a guess about the other two.
+ * **Two tones now, not one.** Error was the only tone until the Kontakt oss form (#180) needed
+ * to confirm a send rather than only report a failure — a genuine second case, not a guess at
+ * a map nobody asked for. `tone="success"` swaps the red for `--color-success` (`#007124`,
+ * 6.20:1 on white) and the glyph for a check, and announces via `role="status"` instead of
+ * `role="alert"`: a status update should not interrupt the way an alert does. `FieldError`
+ * stays error-only — nothing pairs a field-level success message with it yet.
  */
 export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
-  { size = 'md', className = '', children, ...props },
+  { size = 'md', tone = 'error', className = '', children, ...props },
   ref,
 ) {
+  const Glyph = toneGlyph[tone];
+  const toneClass = tone === 'success' ? 'border-success text-success' : 'border-error text-error';
+
   return (
     <div
       ref={ref}
-      role="alert"
+      role={tone === 'success' ? 'status' : 'alert'}
       className={[
-        'border-error text-error font-body flex w-full items-start rounded-none border bg-white',
+        toneClass,
+        'font-body flex w-full items-start rounded-none border bg-white',
         size === 'sm' ? 'gap-2 px-2 py-1.5 text-sm' : 'gap-3 px-3 py-2 text-base',
         className,
       ]
@@ -37,7 +50,7 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert
         .join(' ')}
       {...props}
     >
-      <AlertCircle
+      <Glyph
         aria-hidden="true"
         className={['mt-0.5 shrink-0', size === 'sm' ? 'size-4' : 'size-5'].join(' ')}
       />
