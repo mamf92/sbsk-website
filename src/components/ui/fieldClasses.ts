@@ -39,17 +39,25 @@ export const fieldBorderValid = 'border border-success dark:border-success';
  * moves, so this owns colour only; `invalid`/`valid` never both apply, and `invalid` wins if a
  * caller somehow passes both, matching the glyph precedence in `Input`/`Textarea`.
  *
- * `focus:`, not `focus-visible:` — this is a state indicator, not the keyboard affordance
- * (`fieldSurface`'s outline already owns that), so it is fine to show on a mouse click too.
+ * `focus-visible:`, matching `fieldSurface`'s outline trigger — not `focus:`. The two used to
+ * fire on different conditions (shadow on any focus, outline only via keyboard), so a mouse
+ * click showed the shadow alone while a keyboard tab-in showed shadow and outline together —
+ * an inconsistent "sometimes both, sometimes one" reported as the field looking like two
+ * unrelated affordances mixed together (#203). Sharing one trigger makes the combination
+ * predictable instead of removing either half — see the next paragraph for why the outline
+ * itself has to stay.
  *
  * Never the only signal a field's state is carried on: see the note by `--shadow-error-2` in
  * `src/index.css` for why `--color-error` cannot sit alone on a `darkblue` panel. The border
- * and the glyph in the class lists above say the same thing on their own with this omitted.
+ * and the glyph in the class lists above say the same thing on their own with this omitted —
+ * and the same reasoning rules out dropping the outline in favour of the shadow alone here:
+ * `--color-focus-ring` (orange) on white measures 2.18:1, under the 3:1 WCAG 2.4.11 minimum
+ * for a non-text focus indicator, so the shadow cannot be the *only* focus signal either.
  */
 export function fieldStateShadow({ invalid = false, valid = false } = {}) {
   if (invalid) return 'shadow-error-2';
   if (valid) return 'shadow-success-2';
-  return 'focus:shadow-accent-2';
+  return 'focus-visible:shadow-accent-2';
 }
 
 /**

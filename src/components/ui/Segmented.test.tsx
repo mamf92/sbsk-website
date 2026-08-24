@@ -97,17 +97,6 @@ describe('Segmented', () => {
     expect(new Set(classes).size).toBe(2);
   });
 
-  it('divides the segments without doubling the outer border', () => {
-    // Each segment but the first draws the hairline to its left; the group draws the frame.
-    renderSegmented();
-    const [first, ...rest] = screen.getAllByRole('button');
-
-    expect(first.className).not.toContain('border-l');
-    for (const button of rest) {
-      expect(button.className).toContain('border-l');
-    }
-  });
-
   it('merges a caller-supplied className instead of dropping it', () => {
     renderSegmented({ className: 'w-full' });
     expect(screen.getByRole('group')).toHaveClass('w-full');
@@ -124,19 +113,7 @@ describe('Segmented', () => {
     expect(ref.current).toBeInstanceOf(HTMLDivElement);
   });
 
-  it('carries segment and never a competing transition utility', () => {
-    // `segment` sets `transition` in full. A second transition-property utility would win or
-    // lose by stylesheet order and silently drop half the interaction.
-    renderSegmented();
-
-    for (const button of screen.getAllByRole('button')) {
-      const classes = button.className.split(/\s+/);
-      expect(classes).toContain('segment');
-      expect(classes.filter((name) => /^transition(-|$)/.test(name))).toHaveLength(0);
-    }
-  });
-
-  it('never lifts — joined segments cannot travel without tearing the group', () => {
+  it('never lifts — this is an underline tab, not a pressable surface', () => {
     renderSegmented();
 
     for (const button of screen.getAllByRole('button')) {
@@ -145,9 +122,18 @@ describe('Segmented', () => {
     }
   });
 
-  it('pins the selected segment to the dark shadow its orange fill can carry', () => {
-    // White-on-orange is 2.18:1; the inset rule has to stay `surface-light` in both themes.
+  it('marks the selected segment with the orange underline treatment', () => {
     renderSegmented({ value: 'past' });
-    expect(screen.getByRole('button', { name: 'Tidligere' })).toHaveClass('surface-light');
+    const button = screen.getByRole('button', { name: 'Tidligere' });
+
+    expect(button).toHaveClass('text-orange', 'after:scale-x-100');
+  });
+
+  it("leaves an unselected segment's underline scaled in only on hover, not at rest", () => {
+    renderSegmented({ value: 'past' });
+    const classes = screen.getByRole('button', { name: 'Kommende' }).className.split(/\s+/);
+
+    expect(classes).not.toContain('after:scale-x-100');
+    expect(classes).toContain('hover:after:scale-x-100');
   });
 });

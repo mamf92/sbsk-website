@@ -50,9 +50,10 @@ const renderList = () =>
     </MemoryRouter>,
   );
 
-// Card toggles are the only buttons carrying aria-expanded — the filter chips use
-// aria-pressed and sorting is a <select> — so querying by expanded state selects exactly
-// the post headers.
+// Card toggles are the only buttons whose aria-expanded is ever true in these tests — the
+// filter chips use aria-pressed, and the sort Dropdown's trigger also carries aria-expanded
+// but stays closed (false) throughout — so querying by `expanded: true` selects exactly the
+// open post headers.
 const toggle = (title: string) => screen.getByRole('button', { name: new RegExp(title) });
 const openTitles = () =>
   screen
@@ -98,6 +99,78 @@ describe('PostsSection expand behaviour', () => {
 
     await userEvent.click(toggle('Nyeste innlegg'));
     expect(screen.queryAllByRole('button', { expanded: true })).toHaveLength(0);
+  });
+});
+
+describe('PostsSection month grouping', () => {
+  it('groups posts under uppercase month dividers when sorted by date', () => {
+    renderList();
+
+    expect(screen.getByText('JUNI 2026')).toBeInTheDocument();
+    expect(screen.getByText('MAI 2026')).toBeInTheDocument();
+    expect(screen.getByText('APRIL 2026')).toBeInTheDocument();
+  });
+
+  it('hides the month dividers under a title sort, without dropping any post', async () => {
+    renderList();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Sorter innlegg' }));
+    await userEvent.click(screen.getByRole('option', { name: 'Tittel (A-Å)' }));
+
+    expect(screen.queryByText('JUNI 2026')).not.toBeInTheDocument();
+    expect(screen.queryByText('MAI 2026')).not.toBeInTheDocument();
+    expect(screen.queryByText('APRIL 2026')).not.toBeInTheDocument();
+    expect(toggle('Nyeste innlegg')).toBeInTheDocument();
+    expect(toggle('Midterste innlegg')).toBeInTheDocument();
+    expect(toggle('Eldste innlegg')).toBeInTheDocument();
+  });
+});
+
+describe('PostsSection links', () => {
+  it('shows a post’s link buttons only while it is open', async () => {
+    const withLinks: PostTypes[] = [
+      {
+        ...posts[0],
+        links: [{ label: 'Meld deg på', url: 'https://example.com/paamelding' }],
+      },
+      posts[1],
+      posts[2],
+    ];
+    render(
+      <MemoryRouter>
+        <Posts posts={withLinks} />
+      </MemoryRouter>,
+    );
+
+    // posts[0] ("Nyeste innlegg") opens by default.
+    expect(screen.getByRole('button', { name: /Meld deg på/ })).toBeInTheDocument();
+
+    await userEvent.click(toggle('Nyeste innlegg'));
+    expect(screen.queryByRole('button', { name: /Meld deg på/ })).not.toBeInTheDocument();
+  });
+
+  it('renders every link a post has, not just one or two', () => {
+    const withManyLinks: PostTypes[] = [
+      {
+        ...posts[0],
+        links: [
+          { label: 'Første lenke', url: 'https://example.com/1' },
+          { label: 'Andre lenke', url: 'https://example.com/2' },
+          { label: 'Tredje lenke', url: 'https://example.com/3' },
+        ],
+      },
+      posts[1],
+      posts[2],
+    ];
+    render(
+      <MemoryRouter>
+        <Posts posts={withManyLinks} />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('button', { name: /Første lenke/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Andre lenke/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Tredje lenke/ })).toBeInTheDocument();
   });
 });
 

@@ -65,6 +65,12 @@
   --color-category-arrangementer: var(--color-darkorange);
   --color-category-turnering: var(--color-orange);
   --color-category-annet: var(--color-darkorange);
+  /* The calendar's own spillkveld cards stay navy (`CATEGORY_STYLES` in `CalendarSection.tsx`)
+     rather than following `--color-category-spillkveld` above — that token was repointed to
+     orange for the news feed (#88) and the calendar deliberately kept its own tone. The
+     calendar's spillkveld chip needs this second alias so it can match its own cards instead
+     of the feed's (#203). */
+  --color-category-spillkveld-kalender: var(--color-darkblue);
 
   /* States. */
   --color-disabled-bg: var(--color-gray-300);
@@ -586,40 +592,6 @@
     &:active {
       transform: none;
     }
-  }
-}
-
-/* The answer to "do joined controls lift?" — they do not, and this is the whole of what
-   `Segmented` gets instead.
-
-   A segmented control's segments share their borders. Travelling one 2px up-left tears a
-   gap on one side of it and overlaps its neighbour on the other, so the group stops reading
-   as a single object the moment the pointer enters it. `lift-chip` is the closest cousin and
-   is specifically the wrong answer here.
-
-   What survives is the colour half of `lift`, plus a resting state the other utilities do
-   not have: the selected segment carries a hard *inset* shadow, read off `aria-pressed` the
-   way `lift-chip` reads it. Same offset as `--shadow-1`, pointing the other way — the on
-   segment is pressed into the group rather than raised out of it, which is the one depth cue
-   a control with no travel can still give.
-
-   No transform at any point, so there is nothing for `prefers-reduced-motion` to strip and
-   no reduced-motion block below. Same mutual-exclusion rule as `lift`: this owns `transition`
-   outright, so never pair it with a `transition-*` utility on the same element. */
-@utility segment {
-  transition:
-    box-shadow var(--transition-fast),
-    background-color var(--transition-fast),
-    border-color var(--transition-fast),
-    color var(--transition-fast);
-
-  &[aria-pressed='true'] {
-    box-shadow: var(--shadow-inset-1);
-  }
-
-  &:disabled {
-    box-shadow: none;
-    cursor: not-allowed;
   }
 }
 

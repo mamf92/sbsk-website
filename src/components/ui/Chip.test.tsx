@@ -10,6 +10,7 @@ const categories: ChipCategory[] = [
   'arrangementer',
   'turnering',
   'annet',
+  'spillkveldKalender',
 ];
 
 // Pins the contract, not the class values: the category fills change when the design system
@@ -66,13 +67,31 @@ describe('Chip', () => {
     expect(new Set(classes).size).toBe(categories.length);
   });
 
-  it('ignores the category until the chip is selected', () => {
-    // An unselected chip is one shared outline — category only drives the active fill.
+  it('gives every category a distinct hover preview even before the chip is selected', () => {
+    // An unselected chip shares one resting outline, but previews its own category's colour
+    // on hover so a filter signals what it filters to before it is ever pressed (#203).
     const classes = categories.map((category) => {
       const { unmount } = render(<Chip category={category}>x</Chip>);
       const { className } = screen.getByRole('button');
       unmount();
       return className;
+    });
+
+    expect(new Set(classes).size).toBe(categories.length);
+  });
+
+  it('keeps the resting (non-hover) treatment identical across categories', () => {
+    // Only the hover preview is category-coded — the resting border, fill and text stay one
+    // shared look until the pointer arrives.
+    const classes = categories.map((category) => {
+      const { unmount } = render(<Chip category={category}>x</Chip>);
+      const { className } = screen.getByRole('button');
+      unmount();
+      return className
+        .split(/\s+/)
+        .filter((name) => !name.startsWith('hover:') && !name.startsWith('dark:hover:'))
+        .sort()
+        .join(' ');
     });
 
     expect(new Set(classes).size).toBe(1);

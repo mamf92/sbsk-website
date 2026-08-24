@@ -5,10 +5,10 @@ import { DiceLogo } from '../ui/DiceLogo';
 export default function Footer() {
   return (
     <footer className="bg-darkblue surface-dark font-body max-xs:p-4 flex w-full flex-col p-8 text-white">
-      <div className="bg-darkestblue flex justify-center py-16">
+      <div className="bg-darkestblue max-xs:px-4 flex justify-center px-6 py-16">
         <div className="max-w-shell flex w-full flex-col gap-6">
           <div className="flex flex-col gap-8 md:flex-row md:flex-wrap lg:flex-nowrap lg:gap-10">
-            <div className="flex flex-1 flex-col justify-between gap-6 px-2 md:min-w-full md:items-center md:gap-2 lg:min-w-auto lg:items-start lg:justify-around">
+            <div className="flex flex-1 flex-col justify-between gap-6 md:min-w-full md:items-center md:gap-2 lg:min-w-auto lg:items-start lg:justify-around">
               <div className="flex items-center justify-start gap-4">
                 <div>
                   <NavLink to="/" end className="flex max-w-12.25 min-w-12.25">
@@ -26,7 +26,7 @@ export default function Footer() {
                 </a>
               </div>
             </div>
-            <div className="flex flex-1 flex-row px-2">
+            <div className="flex flex-1 flex-row">
               <nav className="flex flex-1 flex-col items-start gap-4">
                 <NavLink to="/bli-medlem" className="font-bold">
                   Bli medlem nå!
@@ -59,7 +59,7 @@ export default function Footer() {
                 </NavLink>
               </nav>
             </div>
-            <div className="flex flex-1 flex-col flex-nowrap items-start gap-2 px-2">
+            <div className="flex flex-1 flex-col flex-nowrap items-start gap-2">
               <p className="font-bold">Følg oss: </p>
               <SocialIcon
                 url="https://www.facebook.com/groups/1699569943629396"

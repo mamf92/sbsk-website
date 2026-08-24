@@ -55,6 +55,8 @@ export default function ContactSection() {
   const [apiError, setApiError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  const isValid = contactSchema.safeParse(values).success;
+
   const handleChange =
     (field: FieldName) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const value = e.target.value;
@@ -66,6 +68,9 @@ export default function ContactSection() {
   const handleBlur = (field: FieldName) => () => {
     const result = contactSchema.shape[field].safeParse(values[field]);
     setValidFields((prev) => ({ ...prev, [field]: result.success }));
+    setErrors((prev) =>
+      result.success ? without(prev, field) : { ...prev, [field]: result.error.issues[0].message },
+    );
   };
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
@@ -150,6 +155,7 @@ export default function ContactSection() {
               onBlur={handleBlur('name')}
               invalid={!!errors.name}
               valid={validFields.name}
+              disabled={loading}
               aria-describedby={errors.name ? 'name-error' : undefined}
             />
             {errors.name && <FieldError id="name-error">{errors.name}</FieldError>}
@@ -170,6 +176,7 @@ export default function ContactSection() {
               onBlur={handleBlur('email')}
               invalid={!!errors.email}
               valid={validFields.email}
+              disabled={loading}
               aria-describedby={errors.email ? 'email-error' : undefined}
             />
             {errors.email && <FieldError id="email-error">{errors.email}</FieldError>}
@@ -188,6 +195,7 @@ export default function ContactSection() {
               onBlur={handleBlur('message')}
               invalid={!!errors.message}
               valid={validFields.message}
+              disabled={loading}
               aria-describedby={errors.message ? 'message-error' : undefined}
             />
             {errors.message && <FieldError id="message-error">{errors.message}</FieldError>}
@@ -196,7 +204,14 @@ export default function ContactSection() {
           {apiError && <Alert>{apiError}</Alert>}
           {success && <Alert tone="success">{SUCCESS_MESSAGE}</Alert>}
 
-          <Button type="submit" variant="primary" size="md" icon="right" loading={loading}>
+          <Button
+            type="submit"
+            variant="primary"
+            size="md"
+            icon="right"
+            loading={loading}
+            disabled={!isValid}
+          >
             Send melding
           </Button>
 

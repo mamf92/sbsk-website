@@ -149,13 +149,17 @@ test('kontakt-oss sends a message and shows the success notice', async ({ page }
     'mailto:hei@sbsk.no',
   );
 
-  // Submitting empty is caught before anything reaches the network.
-  await page.getByRole('button', { name: 'Send melding' }).click();
-  await expect(page.getByText('Navn er påkrevd')).toBeVisible();
+  // Send stays disabled until every field is valid (#203), so an empty form is caught by
+  // blurring a required field rather than by a submit attempt.
+  await expect(page.getByRole('button', { name: 'Send melding' })).toBeDisabled();
+  await page.getByPlaceholder('Ditt navn').click();
+  await page.getByPlaceholder('deg@epost.no').click();
+  await expect(page.getByText('Navn må være minst 2 tegn')).toBeVisible();
 
   await page.getByPlaceholder('Ditt navn').fill('Ola Nordmann');
   await page.getByPlaceholder('deg@epost.no').fill('ola@epost.no');
   await page.getByPlaceholder('Skriv din melding her...').fill('Hei, jeg har et spørsmål.');
+  await expect(page.getByRole('button', { name: 'Send melding' })).toBeEnabled();
   await page.getByRole('button', { name: 'Send melding' }).click();
 
   await expect(page.getByRole('status')).toHaveText(

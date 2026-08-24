@@ -1,13 +1,15 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { PortableText, toPlainText } from '@portabletext/react';
 import { Button } from '../ui/Buttons';
 import { Chip, type ChipCategory } from '../ui/Chip';
 import { Input } from '../ui/Input';
 import { Segmented } from '../ui/Segmented';
-import { Select } from '../ui/Select';
+import { Dropdown } from '../ui/Dropdown';
+import { Divider } from '../ui/Divider';
 import EmptyState from '../ui/EmptyState';
 import { AvatarStack, type AvatarStackPerson } from '../ui/AvatarStack';
+import { groupByMonth } from '../../utils/groupByMonth';
 import { urlFor } from '../../sanity/sanityImageUrl';
 import calendarPlaceholderImage from '../../assets/images/calendar-placeholder.png';
 import ExpandIcon from '../../assets/icons/arrows/expand.svg?react';
@@ -97,9 +99,13 @@ const CATEGORY_STYLES = {
 const categoryStyles = (category: Category) =>
   CATEGORY_STYLES[category] ?? CATEGORY_STYLES.spillkveld;
 
+// `spillkveld` uses the `spillkveldKalender` chip, not the plain `spillkveld` one: the
+// calendar's own spillkveld cards stay navy (`CATEGORY_STYLES` above) rather than following
+// `--color-category-spillkveld`, which was repointed to orange for the posts feed (#88). The
+// chip has to match its own page's cards, not the other page's (#203).
 const CATEGORY_FILTERS: { value: 'all' | Category; label: string; chip: ChipCategory }[] = [
   { value: 'all', label: 'Alle', chip: 'neutral' },
-  { value: 'spillkveld', label: 'Spillkveld', chip: 'spillkveld' },
+  { value: 'spillkveld', label: 'Spillkveld', chip: 'spillkveldKalender' },
   { value: 'turnering', label: 'Turnering', chip: 'turnering' },
   { value: 'annet', label: 'Annet', chip: 'annet' },
 ];
@@ -125,16 +131,6 @@ const SORT_OPTIONS: { value: Sort; label: string }[] = [
 /* -------------------------------------------------------------------------- */
 
 const LOCALE = 'no-NO';
-
-/** "AUGUST 2026" — the month divider between groups. */
-function monthLabel(date: Date): string {
-  return date.toLocaleDateString(LOCALE, { month: 'long', year: 'numeric' }).toUpperCase();
-}
-
-/** Sorts and groups by real calendar month, not by the rendered label. */
-function monthKey(date: Date): string {
-  return `${date.getFullYear()}-${date.getMonth()}`;
-}
 
 /** "AUG". Sliced off the long name because the short one carries a trailing period. */
 function monthAbbreviation(date: Date): string {
@@ -409,14 +405,11 @@ function EventList({ events, failed }: { events: CalendarEventTypes[]; failed?: 
   const rest = nextEvent ? sorted.filter((event) => event._id !== nextEvent._id) : sorted;
   const visible = rest.slice(0, visibleCount);
 
-  const groups: { key: string; label: string; items: CalendarEventTypes[] }[] = [];
-  for (const event of visible) {
-    const start = new Date(event.eventStartTime);
-    const key = monthKey(start);
-    const group = groups.find((candidate) => candidate.key === key);
-    if (group) group.items.push(event);
-    else groups.push({ key, label: monthLabel(start), items: [event] });
-  }
+  // Dividers only read as month sections on a date-sorted list — grouping a title-sorted one
+  // the same way would print the same month's divider again every time the alphabetical order
+  // revisits it (see `groupByMonth`'s own comment), so title sort renders `visible` flat.
+  const groups =
+    sort === 'title-asc' ? [] : groupByMonth(visible, (event) => new Date(event.eventStartTime));
 
   function clearFilters() {
     setQuery('');
@@ -501,11 +494,11 @@ function EventList({ events, failed }: { events: CalendarEventTypes[]; failed?: 
           )}
         </div>
 
-        <Select
-          aria-label="Sorter arrangementer"
+        <Dropdown
+          label="Sorter arrangementer"
           options={SORT_OPTIONS}
           value={sort}
-          onChange={(event) => setSort(event.target.value as Sort)}
+          onChange={setSort}
         />
       </div>
 
@@ -524,12 +517,8 @@ function EventList({ events, failed }: { events: CalendarEventTypes[]; failed?: 
         </div>
       )}
 
-      {groups.map((group) => (
-        <div key={group.key} className="flex flex-col gap-3">
-          <Divider>
-            <span>{group.label}</span>
-          </Divider>
-          {group.items.map((event) => (
+      {sort === 'title-asc'
+        ? visible.map((event) => (
             <EventRow
               key={event._id}
               event={event}
@@ -537,9 +526,23 @@ function EventList({ events, failed }: { events: CalendarEventTypes[]; failed?: 
               expanded={expandedId === event._id}
               onToggle={() => setExpandedId(expandedId === event._id ? null : event._id)}
             />
+          ))
+        : groups.map((group) => (
+            <div key={group.key} className="flex flex-col gap-3">
+              <Divider>
+                <span>{group.label}</span>
+              </Divider>
+              {group.items.map((event) => (
+                <EventRow
+                  key={event._id}
+                  event={event}
+                  rsvp={rsvp}
+                  expanded={expandedId === event._id}
+                  onToggle={() => setExpandedId(expandedId === event._id ? null : event._id)}
+                />
+              ))}
+            </div>
           ))}
-        </div>
-      ))}
 
       {sorted.length === 0 && (
         <EmptyState
@@ -572,14 +575,6 @@ function EventList({ events, failed }: { events: CalendarEventTypes[]; failed?: 
           </Button>
         </div>
       )}
-    </div>
-  );
-}
-
-function Divider({ children }: { children: ReactNode }) {
-  return (
-    <div className="font-heading text-darkestblue tracking-heading flex items-baseline justify-between gap-3 border-b border-current pb-1.5 text-xs font-bold uppercase opacity-70 dark:text-white">
-      {children}
     </div>
   );
 }

@@ -154,6 +154,19 @@ describe('CalendarSection', () => {
     expect(screen.getByText('SEPTEMBER 2026')).toBeInTheDocument();
   });
 
+  it('hides the month dividers under a title sort, without dropping any event', async () => {
+    renderSection();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Sorter arrangementer' }));
+    await userEvent.click(screen.getByRole('option', { name: 'Tittel (A–Å)' }));
+
+    expect(screen.queryByText('AUGUST 2026')).not.toBeInTheDocument();
+    expect(screen.queryByText('SEPTEMBER 2026')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Ukentlig spillkveld' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Spillkveld nummer to' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Høstturnering' })).toBeInTheDocument();
+  });
+
   it('shows only upcoming events until the scope is changed', async () => {
     renderSection();
     expect(screen.queryByRole('heading', { name: 'Sommerspillkveld' })).not.toBeInTheDocument();

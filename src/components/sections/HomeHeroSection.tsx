@@ -70,7 +70,7 @@ export default function HomeHero({
                 <Button
                   key={index}
                   onClick={() => navigate(link.url)}
-                  variant={index % 2 === 0 ? 'primary' : 'secondary'}
+                  variant="primary"
                   size="lg"
                   icon="right"
                 >
@@ -91,7 +91,7 @@ export default function HomeHero({
               </Button>
               <Button
                 onClick={() => navigate('/bli-medlem')}
-                variant="secondary"
+                variant="primary"
                 size="lg"
                 icon="right"
               >

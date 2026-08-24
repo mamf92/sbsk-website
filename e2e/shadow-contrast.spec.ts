@@ -100,7 +100,13 @@ async function stubSanity(page: Page) {
  * alone, and re-queried each round because opening a card re-renders the list.
  */
 async function expandEverything(page: Page) {
-  const collapsed = page.locator('#main [aria-expanded="false"][aria-controls]');
+  // `:not([aria-haspopup])` excludes the sort `Dropdown`'s trigger (#203) — it also carries
+  // `aria-expanded`/`aria-controls` while closed, a legitimate ARIA combination for a listbox
+  // button, but clicking it here would open the sort panel over the cards this loop still needs
+  // to reach rather than expand another card.
+  const collapsed = page.locator(
+    '#main [aria-expanded="false"][aria-controls]:not([aria-haspopup])',
+  );
   for (let round = 0; round < 20; round += 1) {
     if ((await collapsed.count()) === 0) return;
     await collapsed.first().click({ timeout: 5_000 });
