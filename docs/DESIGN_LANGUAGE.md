@@ -318,10 +318,54 @@ Lift is for things you press. It is not decoration.
   resting state no other control has: the selected segment carries `--shadow-inset-1`, the
   same 2px hard offset turned inward, read off `aria-pressed` the way `lift-chip` reads it.
   A chip is raised out of a row; a segment is pressed into a group.
-- **No:** form controls. A text field is not a pressable surface — you put a caret in it, you
-  do not press it — so `Input`, `Textarea` and `Checkbox` stay flat in every state. What they
-  did take from this pass is the focus treatment, which they were the last holdout on: see
-  "Focus" below.
+- **No:** form controls, still — a text field is not a pressable surface, you put a caret in
+  it rather than press it, so `Input`, `Textarea`, `Select` and `Checkbox` never move and never
+  take `lift`. What changed with the Kontakt oss form (#180) is that they gained a hard offset
+  shadow of their own: see "Field state" below. The distinction that keeps both statements
+  true is _lift is motion, a field's shadow is state_ — a lift is transform-plus-shadow on
+  press, a field's shadow is colour-only and permanent for as long as the state holds.
+
+## Field state
+
+`Input`, `Textarea` and `Select` paint a second hard offset shadow, on top of the resting
+border, to say what state a field is in: orange while focused, red once it fails validation,
+green once it passes. `Checkbox` gets the same shadow on focus and invalid, without a valid
+state — nothing pairs a checkbox with a pass/fail check yet. This resolves a disagreement with
+the upstream Claude Design library rather than porting it silently, per "Upstream" below: the
+library's `Input.jsx` always painted `--shadow-accent-2` on focus and a red offset when
+destructive, and the port that shipped without it was corrected once the Kontakt oss form
+needed the same signal plus a third, green state the library does not have.
+
+`fieldStateShadow()` in `src/components/ui/fieldClasses.ts` is the one place that decides the
+class: `invalid` outranks `valid`, matching the glyph precedence `Input`/`Textarea` already
+had, and the resting case is `focus:shadow-accent-2` — `focus:`, not `focus-visible:`, because
+this is a state indicator rather than the keyboard affordance already owned by `fieldSurface`'s
+outline (see "Focus" below, which the field's border and outline still use unchanged).
+
+**Not built on `--hard-shadow-color`.** That token is a _surface_ property — `surface-dark` /
+`surface-light` re-point it per panel — and a field's state colour must not move with it: a red
+field means the same thing on the white page and on a `darkblue` panel. `--shadow-error-2` and
+`--shadow-success-2` in `src/index.css` are literal colours instead, which is normally the
+mistake this document warns kills the `.dark` override — harmless here because the field fill
+is white in both themes, so neither colour has one to lose.
+
+**Never the only signal.** `--color-error` measures 2.01:1 on `darkblue`, well under the 3:1 a
+non-text shadow needs (WCAG 1.4.11) — the same failure `Alert` exists to route around. The
+shadow is additive: `fieldBorderInvalid` (a red hairline on the white field itself) and the
+`AlertCircle` glyph and `aria-invalid` already carry the state on their own, exactly as before
+this shadow existed.
+
+| pair                               | ratio  | verdict                                          |
+| ---------------------------------- | ------ | ------------------------------------------------ |
+| `--color-error` on white           | 6.46:1 | AA — the field's own fill                        |
+| `--color-error` on `darkblue`      | 2.01:1 | fails 1.4.11 — why it is never the only signal   |
+| `--color-success` on white         | 6.20:1 | AA                                               |
+| `orange` on white (existing focus) | 2.18:1 | already accepted repo-wide for the focus outline |
+
+`--color-success` (`#007124`) is new, the library's `green-success-700` and the sibling
+`--color-error` already was — the first tone besides red the system has needed. `Alert` grew a
+matching `tone="success"` (`role="status"` rather than `role="alert"`, since a confirmation is
+not an interruption); `FieldError` stays error-only.
 
 ## Rich text images are a miniature `Card`
 
@@ -428,8 +472,9 @@ form-controls port (#86) corrected:
 - **`focus-visible:`, not `focus:`.** The ring is for keyboard navigation. Drawing it on a
   mouse click as well is noise.
 - **`outline`, not `ring`.** A Tailwind `ring` is a `box-shadow`, and on this brand
-  `box-shadow` means the hard offset lift. Two different meanings on one property is how a
-  focused button ends up looking pressed.
+  `box-shadow` is spoken for — the hard offset lift, and since #180 a field's state colour (see
+  "Field state" above). Reaching for `ring` on top of either is how a focused button ends up
+  looking pressed, or a focused field ends up fighting its own state shadow.
 - **The token, not the colour.** `--color-focus-ring` exists for this. It resolves to orange
   today, so reading it changes nothing on screen — it changes what happens when the brand
   moves.
