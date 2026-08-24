@@ -14,7 +14,7 @@ import { z } from 'zod';
  * Norwegian copy is verbatim from the handoff.
  */
 export const contactSchema = z.object({
-  name: z.string().trim().min(1, 'Navn er påkrevd'),
+  name: z.string().trim().min(2, 'Navn må være minst 2 tegn'),
   email: z
     .string()
     .trim()

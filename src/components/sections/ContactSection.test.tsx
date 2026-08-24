@@ -44,42 +44,65 @@ describe('ContactSection', () => {
     );
   });
 
-  it('shows an error under every empty field on submit, and never calls the helper', async () => {
+  it('disables Send until every field is valid', async () => {
     const user = userEvent.setup();
     render(<ContactSection />);
 
-    await user.click(fields().submit);
+    expect(fields().submit).toBeDisabled();
 
-    expect(screen.getByText('Navn er påkrevd')).toBeInTheDocument();
+    await fillValid(user);
+    expect(fields().submit).not.toBeDisabled();
+  });
+
+  it('shows the invalid treatment on every field once each is blurred while still empty', async () => {
+    const user = userEvent.setup();
+    render(<ContactSection />);
+
+    const { name, email, message } = fields();
+    await user.click(name);
+    await user.tab();
+    await user.tab();
+    await user.tab();
+
+    expect(screen.getByText('Navn må være minst 2 tegn')).toBeInTheDocument();
     expect(screen.getByText('E-post er påkrevd')).toBeInTheDocument();
     expect(screen.getByText('Skriv en melding før du sender')).toBeInTheDocument();
+    expect(name).toHaveAttribute('aria-invalid', 'true');
+    expect(email).toHaveAttribute('aria-invalid', 'true');
+    expect(message).toHaveAttribute('aria-invalid', 'true');
+    expect(fields().submit).toBeDisabled();
     expect(createContactMessage).not.toHaveBeenCalled();
   });
 
-  it('flags a malformed email without complaining about the fields that are fine', async () => {
+  it('flags a malformed email on blur without complaining about the fields that are fine', async () => {
     const user = userEvent.setup();
     render(<ContactSection />);
 
     const { name, email, message } = fields();
     await user.type(name, 'Ola Nordmann');
     await user.type(email, 'ikke-en-epost');
+    await user.tab();
     await user.type(message, 'Hei!');
-    await user.click(fields().submit);
+    await user.tab();
 
     expect(screen.getByText('Ugyldig e-post — må inneholde @ og et domene')).toBeInTheDocument();
-    expect(screen.queryByText('Navn er påkrevd')).not.toBeInTheDocument();
+    expect(screen.queryByText('Navn må være minst 2 tegn')).not.toBeInTheDocument();
     expect(screen.queryByText('Skriv en melding før du sender')).not.toBeInTheDocument();
+    expect(fields().submit).toBeDisabled();
   });
 
-  it('clears a field error as soon as the user retypes it, without a second submit', async () => {
+  it('clears a field error as soon as the user retypes it, without a second blur', async () => {
     const user = userEvent.setup();
     render(<ContactSection />);
 
-    await user.click(fields().submit);
-    expect(screen.getByText('Navn er påkrevd')).toBeInTheDocument();
+    const { name } = fields();
+    await user.click(name);
+    await user.tab();
+    expect(screen.getByText('Navn må være minst 2 tegn')).toBeInTheDocument();
 
-    await user.type(fields().name, 'O');
-    expect(screen.queryByText('Navn er påkrevd')).not.toBeInTheDocument();
+    await user.click(name);
+    await user.type(name, 'Ola');
+    expect(screen.queryByText('Navn må være minst 2 tegn')).not.toBeInTheDocument();
   });
 
   it('marks a field valid once it is blurred and passes, not before', async () => {
@@ -133,7 +156,7 @@ describe('ContactSection', () => {
     expect(alert).not.toHaveTextContent('duplicate key');
   });
 
-  it('disables the submit button while the request is in flight', async () => {
+  it('disables the submit button and every field while the request is in flight', async () => {
     let resolveSubmit!: () => void;
     createContactMessage.mockReturnValue(
       new Promise<void>((resolve) => {
@@ -146,9 +169,17 @@ describe('ContactSection', () => {
     await fillValid(user);
     await user.click(fields().submit);
 
-    expect(fields().submit).toBeDisabled();
+    const { name, email, message, submit } = fields();
+    expect(submit).toBeDisabled();
+    expect(name).toBeDisabled();
+    expect(email).toBeDisabled();
+    expect(message).toBeDisabled();
 
     resolveSubmit();
-    await waitFor(() => expect(fields().submit).not.toBeDisabled());
+    await waitFor(() => expect(fields().name).not.toBeDisabled());
+
+    // The form resets to empty on success, so Send goes back to disabled — now because
+    // there is nothing valid to send, not because a request is in flight.
+    expect(fields().submit).toBeDisabled();
   });
 });

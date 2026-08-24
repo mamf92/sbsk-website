@@ -13,7 +13,7 @@ describe('contactSchema', () => {
     const result = contactSchema.safeParse({ ...VALID, name: '' });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toBe('Navn er påkrevd');
+      expect(result.error.issues[0].message).toBe('Navn må være minst 2 tegn');
       expect(result.error.issues[0].path).toEqual(['name']);
     }
   });
@@ -21,6 +21,14 @@ describe('contactSchema', () => {
   it('treats a whitespace-only name as empty', () => {
     const result = contactSchema.safeParse({ ...VALID, name: '   ' });
     expect(result.success).toBe(false);
+  });
+
+  it('rejects a single-letter name', () => {
+    const result = contactSchema.safeParse({ ...VALID, name: 'O' });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0].message).toBe('Navn må være minst 2 tegn');
+    }
   });
 
   it('requires an email', () => {

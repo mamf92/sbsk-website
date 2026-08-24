@@ -75,7 +75,7 @@ export default function OurGamesSection({ gamesHero, games }: OurGamesProps) {
       ? games.map((game) => ({
           ...game,
           image: game.image
-            ? urlFor(game.image).width(600).height(375).fit('crop').url()
+            ? urlFor(game.image).width(600).height(600).fit('crop').url()
             : undefined,
         }))
       : FALLBACK_GAMES;
@@ -113,12 +113,21 @@ export default function OurGamesSection({ gamesHero, games }: OurGamesProps) {
 
   return (
     <div className="flex flex-col">
-      <GamesHero gamesHero={gamesHero} searchValue={query} onSearch={setQuery} />
+      <GamesHero gamesHero={gamesHero} />
 
       <div className="max-w-content content-gutter:px-0 mx-auto flex w-full flex-col gap-6 px-2 py-8">
+        <Input
+          type="search"
+          icon="search"
+          aria-label="Søk etter spill"
+          placeholder="Søk etter spill…"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+        />
+
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex flex-col gap-3">
-            <FilterRow label="Vanskegrad">
+            <FilterRow label="Vanskelighetsgrad">
               {DIFFICULTIES.map((d) => (
                 <Chip
                   key={d.value}
@@ -129,7 +138,7 @@ export default function OurGamesSection({ gamesHero, games }: OurGamesProps) {
                 </Chip>
               ))}
             </FilterRow>
-            <FilterRow label="Spillere">
+            <FilterRow label="Antall spillere">
               {PLAYER_BUCKETS.map((b) => (
                 <Chip
                   key={b.key}
@@ -196,15 +205,7 @@ function FilterRow({ label, children }: { label: string; children: React.ReactNo
   );
 }
 
-function GamesHero({
-  gamesHero,
-  searchValue,
-  onSearch,
-}: {
-  gamesHero?: GamesHeroTypes | null;
-  searchValue: string;
-  onSearch: (value: string) => void;
-}) {
+function GamesHero({ gamesHero }: { gamesHero?: GamesHeroTypes | null }) {
   const navigate = useNavigate();
   const title = gamesHero?.title || 'Våre spill';
   const subtitle =
@@ -229,26 +230,15 @@ function GamesHero({
               {subtitle}
             </p>
           </div>
-          <div className="flex w-full flex-wrap items-stretch gap-4">
-            <Input
-              type="search"
-              icon="search"
-              aria-label="Søk etter spill"
-              placeholder="Søk etter spill…"
-              value={searchValue}
-              onChange={(event) => onSearch(event.target.value)}
-              className="min-w-60 flex-1 basis-70 bg-white"
-            />
-            <Button
-              variant="primary"
-              size="lg"
-              icon="right"
-              onClick={() => navigate('/bli-medlem')}
-              className="flex-none"
-            >
-              Bli medlem
-            </Button>
-          </div>
+          <Button
+            variant="primary"
+            size="lg"
+            icon="right"
+            onClick={() => navigate('/bli-medlem')}
+            className="flex-none"
+          >
+            Bli medlem
+          </Button>
         </div>
       </div>
     </div>

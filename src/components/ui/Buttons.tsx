@@ -50,7 +50,10 @@ const base =
 // this a button that cannot be clicked still lights up under the pointer. `lift` already
 // neutralises the travel and the shadow for the same reason; this is the colour half.
 const variants = {
-  primary: 'bg-orange text-darkblue not-disabled:hover:bg-darkorange',
+  // `darkestblue`, not `darkblue`: the hover fill is `darkorange`, and darkblue-on-darkorange
+  // measures 4.01:1 — below AA for body text. darkestblue clears both fills (7.64:1 resting,
+  // 4.99:1 on hover). See "Foreground on fill" in docs/DESIGN_LANGUAGE.md.
+  primary: 'bg-orange text-darkestblue not-disabled:hover:bg-darkorange',
   secondary: 'bg-darkorange text-darkestblue not-disabled:hover:bg-orange',
   tertiary: 'bg-darkblue text-white not-disabled:hover:bg-darkestblue',
   disabled: 'bg-gray-300 text-gray-500 cursor-not-allowed',

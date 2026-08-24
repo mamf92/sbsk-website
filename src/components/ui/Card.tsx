@@ -18,6 +18,11 @@ type CardProps = Omit<React.HTMLAttributes<HTMLElement>, 'title'> & {
   imagePosition?: string;
   expanded?: boolean;
   onToggle?: () => void;
+  // The header's own call-to-action row — `PostsSection`'s post links, moved out of the panel
+  // and into the space the thumbnail vacates on open (#203). Only ever rendered while `open`,
+  // same guard as the thumbnail collapse: a closed card has nothing to put there. Never assume
+  // exactly one or two — a caller may pass any number.
+  actions?: React.ReactNode;
 };
 
 // A flat solid block with sharp corners and a brand-black hairline — no radius, no blur.
@@ -35,6 +40,19 @@ const headers = {
   arrangementer: 'bg-darkorange text-darkestblue',
   turnering: 'bg-orange text-darkestblue',
   annet: 'bg-darkorange text-darkestblue',
+} as const;
+
+// Which hard-shadow colour `actions`' `Button`s can carry against the header's own fill —
+// see the pairing table by `surface-light`/`surface-dark` in `src/index.css`. This belongs on
+// the header's own wrapper, not on `<article>`: the article carries `lift-card`, which casts
+// the card's *own* shadow onto the page behind it, and repointing that at the header's colour
+// would answer a different question (#203).
+const headerSurfaces = {
+  nyheter: 'surface-dark',
+  spillkveld: 'surface-light',
+  arrangementer: 'surface-light',
+  turnering: 'surface-light',
+  annet: 'surface-light',
 } as const;
 
 // The panel carries a `surface-*` tone and the header deliberately does not. `children` is
@@ -63,6 +81,7 @@ export const Card = React.forwardRef<HTMLElement, CardProps>(
       imagePosition,
       expanded = false,
       onToggle,
+      actions,
       children,
       ...props
     },
@@ -79,13 +98,26 @@ export const Card = React.forwardRef<HTMLElement, CardProps>(
     // interactive cards with a body: `open` is unconditionally `true` on a static card (nothing
     // to replace the thumbnail with), so collapsing there would just make the photo vanish.
     const thumbnailCollapsed = interactive && hasBody && open;
+    const hasActions = actions != null && open;
+
+    // Grid, not a single flex row: `actions` and the chevron have to sit between the text and
+    // the card's right edge on a wide screen, but below the text — as their own full-width row
+    // — on a narrow one, with the chevron staying a single column spanning both. A flex row
+    // cannot reflow like that without either duplicating the actions markup per breakpoint or
+    // reordering DOM nodes with `order`, which still leaves one layout's row circling back
+    // through the other's column. `[1fr_auto]` narrow, `[1fr_auto_auto]` wide — text, chevron;
+    // text, actions, chevron.
+    //
+    // The `min-h-24 sm:min-h-28` on `image` still belongs on the grid rather than the toggle
+    // inside it: the thumbnail's own `size-24 sm:size-28` is fixed, and without this the row
+    // could sit shorter than the photo before the panel ever opens.
+    const headerGrid =
+      `grid w-full grid-cols-[1fr_auto] sm:grid-cols-[1fr_auto_auto] ${headerSurfaces[category]}` +
+      (image ? ' min-h-24 sm:min-h-28' : '');
 
     // The padding moves off the header row and onto the text and the chevron, so the thumbnail
     // can sit flush against the card's own top, left and bottom borders. A photo inset by 16px
     // reads as a stray icon; one bled to the edge reads as the card's picture.
-    const headerRow =
-      'flex w-full items-stretch justify-between' + (image ? ' min-h-24 sm:min-h-28' : '');
-
     const header = (
       <>
         {image ? (
@@ -126,18 +158,6 @@ export const Card = React.forwardRef<HTMLElement, CardProps>(
           <span className="font-heading text-h3 font-bold">{title}</span>
           {subtitle ? <span className="text-base font-normal">{subtitle}</span> : null}
         </span>
-        {interactive ? (
-          <span className="mr-4 flex size-7 flex-none items-center justify-center self-center">
-            <Expand
-              aria-hidden="true"
-              className={
-                'h-5 w-5 fill-current transition-transform duration-(--duration-base) ease-out ' +
-                'motion-reduce:transition-none ' +
-                (open ? 'rotate-180' : 'rotate-0')
-              }
-            />
-          </span>
-        ) : null}
       </>
     );
 
@@ -148,24 +168,59 @@ export const Card = React.forwardRef<HTMLElement, CardProps>(
         className={[base, headers[category], interactive ? 'lift-card' : '', className].join(' ')}
         {...props}
       >
-        {/* Heading wraps the control rather than sitting inside it: a heading is flow content
-            and a button only takes phrasing content, so the other nesting is invalid HTML.
-            This is also the WAI-ARIA accordion shape — the whole header row is the target. */}
-        <h3>
-          {interactive ? (
-            <button
-              type="button"
-              onClick={onToggle}
-              aria-expanded={open}
-              aria-controls={hasBody ? panelId : undefined}
-              className={`${headerRow} focus-visible:outline-focus-ring cursor-pointer text-left focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2`}
+        <div className={headerGrid}>
+          {/* Heading wraps the toggle rather than sitting inside it: a heading is flow content
+              and a button only takes phrasing content, so the other nesting is invalid HTML.
+              `actions` is flow content too — a caller's `Button`s, and a button cannot nest
+              inside another button regardless — which is why it and the chevron sit here as
+              the heading's grid siblings instead of inside it. The toggle no longer covers the
+              full header row the way it did before `actions` existed; it still covers the
+              thumbnail and the title, the largest and most obvious target. */}
+          <h3 className="col-start-1 row-start-1 min-w-0">
+            {interactive ? (
+              <button
+                type="button"
+                onClick={onToggle}
+                aria-expanded={open}
+                aria-controls={hasBody ? panelId : undefined}
+                className="focus-visible:outline-focus-ring flex h-full w-full cursor-pointer items-stretch text-left focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2"
+              >
+                {header}
+              </button>
+            ) : (
+              <div className="flex h-full w-full items-stretch">{header}</div>
+            )}
+          </h3>
+
+          {hasActions ? (
+            <div
+              className={
+                'col-start-1 row-start-2 flex flex-row flex-wrap items-center gap-2 p-4 pt-0 ' +
+                'sm:col-start-2 sm:row-start-1 sm:flex-col sm:items-stretch sm:justify-center sm:pt-4'
+              }
             >
-              {header}
-            </button>
-          ) : (
-            <div className={headerRow}>{header}</div>
-          )}
-        </h3>
+              {actions}
+            </div>
+          ) : null}
+
+          {interactive ? (
+            <span
+              aria-hidden="true"
+              className={
+                'col-start-2 row-start-1 flex flex-none items-center justify-center px-4' +
+                (hasActions ? ' row-span-2 sm:col-start-3 sm:row-span-1' : '')
+              }
+            >
+              <Expand
+                className={
+                  'h-5 w-5 fill-current transition-transform duration-(--duration-base) ease-out ' +
+                  'motion-reduce:transition-none ' +
+                  (open ? 'rotate-180' : 'rotate-0')
+                }
+              />
+            </span>
+          ) : null}
+        </div>
         {hasBody ? (
           // `grid-template-rows: 0fr → 1fr` rather than the library's `max-height: 0 → 800px`.
           // Both animate identically, but the max-height version silently clips any post

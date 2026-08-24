@@ -73,7 +73,7 @@ export function GameCard({
 
   return (
     <article className="dark:bg-darkblue lift-card text-darkestblue flex w-full flex-col border border-black bg-white dark:border-white dark:text-white">
-      <div className="bg-darkblue relative aspect-16/10 overflow-hidden border-b border-black dark:border-white">
+      <div className="bg-darkblue relative aspect-square overflow-hidden border-b border-black dark:border-white">
         {image ? (
           <img src={image} alt="" className="h-full w-full object-cover" />
         ) : (
@@ -101,8 +101,8 @@ export function GameCard({
           </p>
         )}
 
-        <div className="my-4 flex border-t border-b border-black dark:border-white">
-          <div className="flex flex-1 flex-col items-center gap-1.5 p-3 text-center">
+        <div className="my-3 flex border-t border-b border-black dark:border-white">
+          <div className="flex flex-1 flex-row items-center justify-center gap-1.5 p-2 text-center">
             <Signal aria-hidden="true" className="h-[18px] w-[18px] fill-current" />
             <span
               className="flex gap-[3px]"
@@ -122,17 +122,18 @@ export function GameCard({
                 />
               ))}
             </span>
-            <span className="text-[11px]">{difficultyLabel}</span>
           </div>
-          <div className="flex flex-1 flex-col items-center gap-1 border-l border-gray-300 p-3 text-center dark:border-white/30">
+          <div className="flex flex-1 flex-row items-center justify-center gap-1.5 border-l border-gray-300 p-2 text-center dark:border-white/30">
             <Clock aria-hidden="true" className="h-[18px] w-[18px] fill-current" />
-            <span className="font-heading text-xs font-bold">{time}</span>
-            <span className="text-[11px]">{timeUnit}</span>
+            <span className="font-heading text-xs font-bold">
+              {time} {timeUnit}
+            </span>
           </div>
-          <div className="flex flex-1 flex-col items-center gap-1 border-l border-gray-300 p-3 text-center dark:border-white/30">
+          <div className="flex flex-1 flex-row items-center justify-center gap-1.5 border-l border-gray-300 p-2 text-center dark:border-white/30">
             <Players aria-hidden="true" className="h-[18px] w-[18px] fill-none stroke-current" />
-            <span className="font-heading text-xs font-bold">{players}</span>
-            <span className="text-[11px]">{playersUnit}</span>
+            <span className="font-heading text-xs font-bold">
+              {players} {playersUnit}
+            </span>
           </div>
         </div>
 

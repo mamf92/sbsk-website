@@ -249,6 +249,72 @@ describe('Card', () => {
     expect(screen.getByTestId('kort')).toBeInTheDocument();
   });
 
+  it('renders actions in the header only while the card is open', () => {
+    const { rerender } = render(
+      <Card
+        title="Turneringen"
+        onToggle={vi.fn()}
+        actions={<button type="button">Meld deg på</button>}
+      >
+        <p>Innhold</p>
+      </Card>,
+    );
+
+    expect(screen.queryByRole('button', { name: 'Meld deg på' })).not.toBeInTheDocument();
+
+    rerender(
+      <Card
+        title="Turneringen"
+        expanded
+        onToggle={vi.fn()}
+        actions={<button type="button">Meld deg på</button>}
+      >
+        <p>Innhold</p>
+      </Card>,
+    );
+
+    expect(screen.getByRole('button', { name: 'Meld deg på' })).toBeInTheDocument();
+  });
+
+  it('keeps actions as siblings of the toggle, not nested inside it', () => {
+    render(
+      <Card
+        title="Turneringen"
+        expanded
+        onToggle={vi.fn()}
+        actions={<button type="button">Meld deg på</button>}
+      >
+        <p>Innhold</p>
+      </Card>,
+    );
+
+    const toggle = screen.getByRole('button', { name: /Turneringen/ });
+    expect(toggle).not.toContainElement(screen.getByRole('button', { name: 'Meld deg på' }));
+  });
+
+  it('renders any number of actions, not just one or two', () => {
+    render(
+      <Card
+        title="Turneringen"
+        expanded
+        onToggle={vi.fn()}
+        actions={
+          <>
+            <button type="button">Én</button>
+            <button type="button">To</button>
+            <button type="button">Tre</button>
+          </>
+        }
+      >
+        <p>Innhold</p>
+      </Card>,
+    );
+
+    expect(screen.getByRole('button', { name: 'Én' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'To' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Tre' })).toBeInTheDocument();
+  });
+
   it('exposes the underlying element through a ref', () => {
     const ref = { current: null as HTMLElement | null };
     render(<Card title="x" ref={ref} />);

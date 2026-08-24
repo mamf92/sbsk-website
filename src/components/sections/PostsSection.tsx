@@ -2,9 +2,11 @@ import { Button } from '../ui/Buttons';
 import { Card, type CardCategory } from '../ui/Card';
 import { Carousel } from '../ui/Carousel';
 import { Chip, type ChipCategory } from '../ui/Chip';
-import { Select } from '../ui/Select';
+import { Dropdown } from '../ui/Dropdown';
+import { Divider } from '../ui/Divider';
 import { Input } from '../ui/Input';
 import EmptyState from '../ui/EmptyState';
+import { groupByMonth } from '../../utils/groupByMonth';
 import { useState } from 'react';
 import Clock from '../../assets/icons/symbols/clock.svg?react';
 import { getThumbnail, type PostTypes } from '../../sanity/queryHelpers/posts';
@@ -66,8 +68,12 @@ const cardCategories: Record<PostCategory, CardCategory> = {
   arrangementer: 'arrangementer',
 };
 
-// Which Button variant survives on the open panel's fill. `primary` is orange, which all but
-// vanishes on the orange-family panels the other two categories expand to.
+// Which Button variant survives on the open card's *header* fill — these render in `Card`'s
+// `actions` slot now, not the panel below it (#203). `primary` is orange, which all but
+// vanishes on `spillkveld`'s orange header and `arrangementer`'s darkorange one; `tertiary`'s
+// navy clears both. The values are unchanged from when this was keyed off the panel fill — the
+// header and panel swap which of the two orange tones each category gets, but navy clears
+// either one, so the same assignment still holds.
 const linkVariants: Record<PostCategory, 'primary' | 'tertiary'> = {
   nyheter: 'primary',
   spillkveldrapporter: 'tertiary',
@@ -80,6 +86,8 @@ const sortOptions = [
   { label: 'Tittel (A-Å)', value: 'title-asc' },
   { label: 'Tittel (Å-A)', value: 'title-desc' },
 ] as const;
+
+type SortOption = (typeof sortOptions)[number]['value'];
 
 export default function Posts({ postsHero, posts, failed = false }: PostsProps) {
   return (
@@ -109,7 +117,7 @@ function PostsHero({ title, subtitle }: PostsHeroTypes = {}) {
 function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<'all' | PostCategory>('all');
-  const [sortBy, setSelectedSort] = useState('date-desc');
+  const [sortBy, setSelectedSort] = useState<SortOption>('date-desc');
   const [visibleItemCount, setVisibleItemCount] = useState(5);
   // Each card opens and closes on its own, seeded with the newest post open. `posts` arrives
   // publishedAt-desc from the GROQ query, so [0] is newest.
@@ -153,6 +161,15 @@ function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) 
 
   const displayedPosts = sortedPosts.slice(0, visibleItemCount);
 
+  // Dividers only read as month sections on a date-sorted list — grouping a title-sorted one
+  // the same way would print the same month's divider again every time the alphabetical order
+  // revisits it (see `groupByMonth`'s own comment, and the same call in `CalendarSection`), so
+  // a title sort renders `displayedPosts` flat.
+  const isTitleSort = sortBy === 'title-asc' || sortBy === 'title-desc';
+  const postGroups = isTitleSort
+    ? []
+    : groupByMonth(displayedPosts, (post) => new Date(post.publishedAt));
+
   const handleLoadedMore = () => {
     setVisibleItemCount((prev) => prev + 5);
   };
@@ -193,8 +210,8 @@ function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) 
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
-      <div className="flex w-full flex-col items-center gap-2">
-        <div className="flex flex-wrap justify-center gap-2">
+      <div className="flex w-full flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           {categories.map((category) => (
             <Chip
               key={category}
@@ -206,12 +223,11 @@ function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) 
             </Chip>
           ))}
         </div>
-        <Select
-          aria-label="Sorter innlegg"
+        <Dropdown
+          label="Sorter innlegg"
           options={sortOptions}
           value={sortBy}
-          onChange={(event) => setSelectedSort(event.target.value)}
-          className="max-w-full"
+          onChange={setSelectedSort}
         />
       </div>
       {displayedPosts.length === 0 && (
@@ -224,7 +240,7 @@ function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) 
           </Button>
         </div>
       )}
-      {displayedPosts.length > 0 && (
+      {displayedPosts.length > 0 && isTitleSort && (
         // 14px between cards, per the design library — enough that the 6px hover shadow of
         // one card never touches the next.
         <div className="flex w-full flex-col gap-3.5">
@@ -242,6 +258,31 @@ function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) 
                 })
               }
             />
+          ))}
+        </div>
+      )}
+      {displayedPosts.length > 0 && !isTitleSort && (
+        <div className="flex w-full flex-col gap-4">
+          {postGroups.map((group) => (
+            <div key={group.key} className="flex flex-col gap-3.5">
+              <Divider>
+                <span>{group.label}</span>
+              </Divider>
+              {group.items.map((post) => (
+                <PostCard
+                  key={post._id}
+                  post={post}
+                  expanded={expandedIds.has(post._id)}
+                  onToggle={() =>
+                    setExpandedIds((prev) => {
+                      const next = new Set(prev);
+                      if (!next.delete(post._id)) next.add(post._id);
+                      return next;
+                    })
+                  }
+                />
+              ))}
+            </div>
           ))}
         </div>
       )}
@@ -287,6 +328,30 @@ function PostCard({
   const hasLinks = !!post.links && post.links.length > 0;
   const thumbnail = getThumbnail(post);
 
+  const actions = hasLinks
+    ? post.links?.map((link, index) => {
+        const isInternal = link.url.startsWith(INTERNAL_ORIGIN);
+
+        return (
+          <Button
+            key={index}
+            variant={linkVariants[post.category]}
+            size="sm"
+            icon="right"
+            onClick={() => {
+              if (isInternal) {
+                navigate(new URL(link.url, window.location.href).pathname);
+              } else {
+                window.location.href = link.url;
+              }
+            }}
+          >
+            {link.label}
+          </Button>
+        );
+      })
+    : undefined;
+
   return (
     <Card
       category={cardCategories[post.category]}
@@ -297,6 +362,7 @@ function PostCard({
       imagePosition={thumbnail && hotspotPosition(thumbnail)}
       expanded={expanded}
       onToggle={onToggle}
+      actions={actions}
     >
       {/* First child in the same normal-flow block as the body text below it — a carousel is a
           flex sibling of nothing, so the float here is what lets the body's text wrap beside it.
@@ -310,33 +376,6 @@ function PostCard({
         />
       )}
       {post.content && <PortableText value={post.content} components={components} />}
-      {hasLinks && (
-        // `clear-both`: the link row always sits full width below both a floated carousel and
-        // any floated inline image, never squeezed into the narrow column beside one.
-        <div className="clear-both flex flex-row flex-wrap gap-2">
-          {post.links?.map((link, index) => {
-            const isInternal = link.url.startsWith(INTERNAL_ORIGIN);
-
-            return (
-              <Button
-                key={index}
-                variant={linkVariants[post.category]}
-                size="sm"
-                icon="right"
-                onClick={() => {
-                  if (isInternal) {
-                    navigate(new URL(link.url, window.location.href).pathname);
-                  } else {
-                    window.location.href = link.url;
-                  }
-                }}
-              >
-                {link.label}
-              </Button>
-            );
-          })}
-        </div>
-      )}
     </Card>
   );
 }
