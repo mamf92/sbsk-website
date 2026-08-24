@@ -4,6 +4,8 @@ import {
   fieldBorderInvalid,
   fieldDisabled,
   fieldPadding,
+  fieldStateShadow,
+  fieldStateTransition,
   fieldSurface,
 } from './fieldClasses';
 
@@ -48,6 +50,8 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(function 
         'cursor-pointer rounded-none',
         fieldSurface,
         invalid ? fieldBorderInvalid : fieldBorder,
+        fieldStateShadow({ invalid }),
+        fieldStateTransition,
         fieldDisabled,
         fieldPadding,
         className,

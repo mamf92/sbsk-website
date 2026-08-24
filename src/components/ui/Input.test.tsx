@@ -88,4 +88,20 @@ describe('Input', () => {
     expect(className).toContain('focus-visible:outline');
     expect(className).not.toContain('focus:ring');
   });
+
+  it('marks itself valid with a check glyph, distinct from the resting class list', () => {
+    const { unmount } = render(<Input placeholder="x" />);
+    const resting = screen.getByPlaceholderText('x').className;
+    unmount();
+
+    const { container } = render(<Input valid placeholder="x" />);
+    expect(screen.getByPlaceholderText('x').className).not.toBe(resting);
+    expect(container.querySelectorAll('svg')).toHaveLength(1);
+  });
+
+  it('lets invalid win over valid — a field says one thing at a time', () => {
+    const { container } = render(<Input invalid valid placeholder="x" />);
+    expect(screen.getByPlaceholderText('x')).toHaveAttribute('aria-invalid', 'true');
+    expect(container.querySelectorAll('svg')).toHaveLength(1);
+  });
 });

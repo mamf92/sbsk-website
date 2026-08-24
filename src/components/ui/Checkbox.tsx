@@ -1,6 +1,11 @@
 import * as React from 'react';
 import Check from '../../assets/icons/symbols/check.svg?react';
-import { fieldBorder, fieldBorderInvalid } from './fieldClasses';
+import {
+  fieldBorder,
+  fieldBorderInvalid,
+  fieldStateShadow,
+  fieldStateTransition,
+} from './fieldClasses';
 
 type CheckboxProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> & {
   /** See `Input`. */
@@ -27,6 +32,8 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(functi
         className={[
           'peer size-4 appearance-none rounded-none bg-white',
           invalid ? fieldBorderInvalid : fieldBorder,
+          fieldStateShadow({ invalid }),
+          fieldStateTransition,
           // Orange in both themes, not the theme's own text colour. A `darkblue` fill is
           // what the string this replaces implied, and every checkbox in the app sits on a
           // `darkblue` panel — the checked box would have disappeared into it.

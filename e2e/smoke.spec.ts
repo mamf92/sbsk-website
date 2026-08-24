@@ -75,11 +75,11 @@ for (const route of singleMainRoutes) {
 
 // The routes still on `PagePlaceholder`. Each is one heading and nothing else, so the exact
 // count is safe to pin here and is what stops the next stub shipping without one. `/våre-spill`
-// left this list once it got a real page — see e2e/content.spec.ts for its own coverage.
+// left this list once it got a real page, and `/kontakt-oss` left it in #180 — see
+// e2e/content.spec.ts and the dedicated Kontakt oss test below for their own coverage.
 const placeholderRoutes = [
   { route: '/om-oss', heading: 'Om oss' },
   { route: '/bli-medlem', heading: 'Bli medlem' },
-  { route: '/kontakt-oss', heading: 'Kontakt oss' },
   { route: '/våre-partnere', heading: 'Våre partnere' },
   { route: '/board-game-masters', heading: 'Board Game Masters' },
 ];
@@ -134,6 +134,34 @@ test('arrangementer renders real rows, not just an empty list', async ({ page })
   // its own assertion.
   await expect(page.locator('li')).not.toContainText('Invalid Date');
   expect(errors, `page threw: ${errors.join(', ')}`).toEqual([]);
+});
+
+// #180: /kontakt-oss stopped being a PagePlaceholder. The default `stubBackends` answers
+// `**://*.supabase.co/**` with `200 []`, which is enough for `createContactMessage`'s insert —
+// it never chains `.select()`, so supabase-js treats any 2xx as success without needing a
+// representation back.
+test('kontakt-oss sends a message and shows the success notice', async ({ page }) => {
+  await page.goto('/kontakt-oss');
+
+  await expect(page.getByRole('heading', { level: 1, name: 'Kontakt oss!' })).toBeVisible();
+  // Scoped to #main: the footer carries the same mailto link on every page.
+  await expect(page.locator('#main').getByRole('link', { name: 'hei@sbsk.no' })).toHaveAttribute(
+    'href',
+    'mailto:hei@sbsk.no',
+  );
+
+  // Submitting empty is caught before anything reaches the network.
+  await page.getByRole('button', { name: 'Send melding' }).click();
+  await expect(page.getByText('Navn er påkrevd')).toBeVisible();
+
+  await page.getByPlaceholder('Ditt navn').fill('Ola Nordmann');
+  await page.getByPlaceholder('deg@epost.no').fill('ola@epost.no');
+  await page.getByPlaceholder('Skriv din melding her...').fill('Hei, jeg har et spørsmål.');
+  await page.getByRole('button', { name: 'Send melding' }).click();
+
+  await expect(page.getByRole('status')).toHaveText(
+    'Meldingen din er sendt. Vi svarer så snart vi kan.',
+  );
 });
 
 test('unknown routes render the 404 page, not a blank screen', async ({ page }) => {
