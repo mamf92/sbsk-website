@@ -1,5 +1,6 @@
 import { Button } from '../ui/Buttons';
 import { Card, type CardCategory } from '../ui/Card';
+import { Carousel } from '../ui/Carousel';
 import { Chip, type ChipCategory } from '../ui/Chip';
 import { Select } from '../ui/Select';
 import { Input } from '../ui/Input';
@@ -164,7 +165,7 @@ function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) 
 
   if (posts.length === 0 || !posts) {
     return (
-      <div className="max-w-content text-darkestblue mx-auto px-2 lg:px-0 dark:text-white">
+      <div className="max-w-content text-darkestblue content-gutter:px-0 mx-auto px-2 dark:text-white">
         {/* "There are no posts" and "we could not reach Sanity" look identical from here, and only
             one of them is true. Saying the wrong one sends a visitor away believing the club has
             gone quiet. */}
@@ -183,7 +184,7 @@ function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) 
     );
   }
   return (
-    <div className="max-w-content flex w-full flex-col items-center gap-4 px-2 pb-2 sm:pb-4 lg:px-0">
+    <div className="max-w-content content-gutter:px-0 flex w-full flex-col items-center gap-4 px-2 pb-2 sm:pb-4">
       <Input
         type="search"
         icon="search"
@@ -297,9 +298,22 @@ function PostCard({
       expanded={expanded}
       onToggle={onToggle}
     >
+      {/* First child in the same normal-flow block as the body text below it — a carousel is a
+          flex sibling of nothing, so the float here is what lets the body's text wrap beside it.
+          Floated only from `lg` up; below that it's a full-width block at the top of the panel,
+          per the mobile/tablet "top and centered, one column" treatment. */}
+      {post.carousel && post.carousel.length > 0 && (
+        <Carousel
+          images={post.carousel}
+          label={`Bilder fra «${post.title}»`}
+          className="lg:float-left lg:mr-4 lg:mb-4 lg:w-1/2"
+        />
+      )}
       {post.content && <PortableText value={post.content} components={components} />}
       {hasLinks && (
-        <div className="flex flex-row flex-wrap gap-2">
+        // `clear-both`: the link row always sits full width below both a floated carousel and
+        // any floated inline image, never squeezed into the narrow column beside one.
+        <div className="clear-both flex flex-row flex-wrap gap-2">
           {post.links?.map((link, index) => {
             const isInternal = link.url.startsWith(INTERNAL_ORIGIN);
 

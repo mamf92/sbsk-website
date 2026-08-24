@@ -201,6 +201,13 @@
   --lift-card-hover: translate(-3px, -3px);
 
   --breakpoint-xs: 25rem;
+
+  /* One hair above `--container-content` (64rem) rather than equal to it. `lg` (64rem) is a
+     `min-width`, so at a viewport of exactly 1024px — the content max-width itself, and also
+     the classic iPad landscape width — it would already strip the side padding, leaving cards
+     touching the screen edge at precisely the width #184 named as a checkpoint. This variant
+     only kicks in once the viewport is genuinely wider than the container, never equal to it. */
+  --breakpoint-content-gutter: 64.0625rem; /* 1025 */
 }
 
 /* Theme-dependent token values. Unlayered, so these beat the `:root` values
@@ -365,6 +372,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .sbsk-dice:hover svg,
+  .sbsk-dice.rolling:hover svg {
+    transform: none;
+  }
   .sbsk-dice.rolling svg {
     animation-duration: 0.25s;
   }

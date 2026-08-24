@@ -100,3 +100,40 @@ describe('PostsSection expand behaviour', () => {
     expect(screen.queryAllByRole('button', { expanded: true })).toHaveLength(0);
   });
 });
+
+describe('PostsSection carousel', () => {
+  it('renders a floated carousel region for a post that has one', () => {
+    const withCarousel: PostTypes[] = [
+      {
+        ...posts[0],
+        carousel: [
+          {
+            _type: 'image',
+            _key: 'c1',
+            alt: 'Bilde 1',
+            asset: { _ref: 'image-abc-1536x2048-png' },
+          },
+          {
+            _type: 'image',
+            _key: 'c2',
+            alt: 'Bilde 2',
+            asset: { _ref: 'image-def-1536x2048-png' },
+          },
+        ],
+      },
+    ];
+    render(
+      <MemoryRouter>
+        <Posts posts={withCarousel} />
+      </MemoryRouter>,
+    );
+
+    const region = screen.getByRole('region', { name: /Bilder fra/ });
+    expect(region).toHaveClass('lg:float-left', 'lg:w-1/2');
+  });
+
+  it('renders no carousel region for a post without one', () => {
+    renderList();
+    expect(screen.queryByRole('region')).not.toBeInTheDocument();
+  });
+});

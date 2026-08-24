@@ -1,3 +1,6 @@
+import { urlFor } from '../sanity/sanityImageUrl';
+import type { SanityImageSource } from '@sanity/asset-utils';
+
 // Phone cameras shoot 3:4 portrait and the old renderer force-cropped every one of them to a
 // 2:1 letterbox, which takes the heads off. Instead of imposing one ratio we clamp the image's
 // own ratio into a band: anything taller than 4:5 is trimmed to 4:5, anything wider than 16:9
@@ -32,4 +35,17 @@ export function hotspotPosition(value: {
   const { x, y } = value.hotspot ?? {};
   if (typeof x !== 'number' || typeof y !== 'number') return undefined;
   return `${(x * 100).toFixed(2)}% ${(y * 100).toFixed(2)}%`;
+}
+
+// Shared by `SanityImage` and `Carousel` — both crop through @sanity/image-url the same way.
+// `fit('crop')` is what makes the library honour the editor's hotspot, and it only does so when
+// both width and height are given, which is why every caller here supplies both.
+export function cropUrl(value: SanityImageSource, width: number, aspect: number) {
+  return urlFor(value)
+    .width(width)
+    .height(Math.round(width / aspect))
+    .fit('crop')
+    .auto('format')
+    .quality(80)
+    .url();
 }
