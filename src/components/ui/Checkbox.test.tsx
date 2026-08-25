@@ -62,11 +62,12 @@ describe('Checkbox', () => {
     expect(ref.current).toBe(screen.getByRole('checkbox'));
   });
 
-  it('uses the outline focus treatment, not a ring', () => {
+  it('uses the hard offset shadow as its focus treatment, not an outline or a ring', () => {
     render(<Checkbox aria-label="x" />);
     const { className } = screen.getByRole('checkbox');
 
-    expect(className).toContain('focus-visible:outline');
+    expect(className).toContain('focus-visible:shadow-focus-2');
+    expect(className).not.toContain('focus-visible:outline');
     expect(className).not.toContain('focus:ring');
   });
 });

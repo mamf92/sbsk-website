@@ -1,19 +1,30 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '../ui/Buttons';
 import { Input } from '../ui/Input';
 import { Alert } from '../ui/Alert';
 import { useAuthActions } from '../../hooks/useAuthActions';
+import { useAutofillSync } from '../../hooks/useAutofillSync';
 
 export default function LoginSection({ reason }: { reason?: string }) {
   const navigate = useNavigate();
   const { signInWithPassword } = useAuthActions();
+  const formRef = useRef<HTMLFormElement>(null);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Saved credentials are the classic autofill case this closes: the browser can write both
+  // fields before this component's first paint, without ever firing `change`, and `email` /
+  // `password` above would otherwise stay `''` — a submit right after page load would then
+  // send an empty password to Supabase despite the field showing one on screen.
+  useAutofillSync(formRef, ['email', 'password'], (filled) => {
+    if (filled.email !== undefined) setEmail(filled.email);
+    if (filled.password !== undefined) setPassword(filled.password);
+  });
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -59,12 +70,13 @@ export default function LoginSection({ reason }: { reason?: string }) {
         </div>
 
         <div className="w-full px-8 pt-8">
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-5">
             <label className="flex w-full flex-col gap-1">
               <span className="font-body text-white">E-post</span>
               <Input
                 type="email"
                 id="email"
+                name="email"
                 autoComplete="email"
                 placeholder="din@epost.no"
                 value={email}
@@ -77,6 +89,7 @@ export default function LoginSection({ reason }: { reason?: string }) {
               <Input
                 type="password"
                 id="password"
+                name="password"
                 autoComplete="current-password"
                 placeholder="••••••••"
                 value={password}

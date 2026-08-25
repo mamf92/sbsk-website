@@ -9,6 +9,12 @@ type DialogProps = Omit<
   /** Optional content pinned to the right of the heading — an avatar, a badge. */
   headerEnd?: React.ReactNode;
   /**
+   * `'form'` (default) is the narrow, centred, padded panel every existing caller wants.
+   * `'full'` is near-viewport-filling with no internal scroll — for content that has to lay
+   * itself out, like the carousel lightbox, rather than stack in a scrolling column.
+   */
+  size?: 'form' | 'full';
+  /**
    * A dialog is modal whenever it is rendered. Callers that mount it conditionally
    * (`{showForm && <Dialog …>}`) can leave this alone; callers that keep it mounted
    * drive it with the prop.
@@ -50,10 +56,21 @@ function unlockPageScroll() {
 // `sbsk-dialog` is the hook for the `::backdrop` rule in src/index.css — the scrim and its
 // blur cannot be expressed as utilities on this element, because they paint on a pseudo.
 // `shadow-overlay` is the system's one soft shadow and is reserved for exactly this.
-const panel =
-  'sbsk-dialog bg-darkblue surface-dark max-w-form shadow-overlay ' +
-  'm-auto flex w-[calc(100vw-1rem)] max-h-[calc(100dvh-2rem)] flex-col justify-center gap-3 ' +
-  'overflow-y-auto rounded-none border-0 px-6 py-10 text-white';
+const panelBase =
+  'sbsk-dialog bg-darkblue surface-dark shadow-overlay ' +
+  'm-auto flex w-[calc(100vw-1rem)] flex-col gap-3 rounded-none border-0 text-white';
+
+// A lookup map, not two competing `max-w-*`/`px-*` strings concatenated — Tailwind resolves
+// conflicting utilities by emit order, not by which one is listed last in a template literal,
+// so the two sizes have to be mutually exclusive branches rather than layered classes.
+const panelSizes = {
+  // Every dialog before the carousel lightbox: a narrow column, padded, centred, and scrolling
+  // internally once its content outgrows the viewport.
+  form: 'max-w-form max-h-[calc(100dvh-2rem)] justify-center overflow-y-auto px-6 py-10',
+  // The lightbox: near-viewport-filling with a small gutter, no internal scroll — the image
+  // lays itself out inside a fixed-height panel instead of stacking in a scrolling column.
+  full: 'max-w-none h-[calc(100dvh-2rem)] overflow-hidden p-3 md:p-4',
+} as const;
 
 /**
  * The modal wrapper, on the native `<dialog>` element. `showModal()` is what buys the focus
@@ -63,7 +80,17 @@ const panel =
  * unmounted by a revalidation.
  */
 export const Dialog = React.forwardRef<HTMLDialogElement, DialogProps>(function Dialog(
-  { title, headerEnd, open = true, onClose, returnFocusTo, className = '', children, ...props },
+  {
+    title,
+    headerEnd,
+    size = 'form',
+    open = true,
+    onClose,
+    returnFocusTo,
+    className = '',
+    children,
+    ...props
+  },
   forwardedRef,
 ) {
   const dialogRef = React.useRef<HTMLDialogElement>(null);
@@ -114,7 +141,7 @@ export const Dialog = React.forwardRef<HTMLDialogElement, DialogProps>(function 
       onClose={() => {
         if (openRef.current) onClose();
       }}
-      className={[panel, className].filter(Boolean).join(' ')}
+      className={[panelBase, panelSizes[size], className].filter(Boolean).join(' ')}
       {...props}
     >
       <div className="flex items-center justify-between gap-4">

@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Alert, FieldError } from '../ui/Alert';
 import { Button } from '../ui/Buttons';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { createContactMessage } from '../../supabase/queryHelpers/createContactMessage';
 import { contactSchema, type ContactValues } from '../../schemas/contact';
+import { useAutofillSync } from '../../hooks/useAutofillSync';
 
 type FieldName = keyof ContactValues;
 
@@ -56,6 +57,7 @@ function without<T>(
  * differently would tell a scripted sender its message was caught and worth retrying past.
  */
 export default function ContactSection() {
+  const formRef = useRef<HTMLFormElement>(null);
   const [values, setValues] = useState<ContactValues>(EMPTY_VALUES);
   const [honeypot, setHoneypot] = useState('');
   const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
@@ -63,6 +65,14 @@ export default function ContactSection() {
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  // A saved-password-style autofill can write straight into the DOM before this component's
+  // first paint, without ever firing `change` — so `values` stays the empty state below and
+  // `isValid` never sees what is actually sitting in the fields until the user edits something
+  // by hand. One mount-time read of the form's own `FormData` closes that gap.
+  useAutofillSync(formRef, ['name', 'email', 'message'], (filled) =>
+    setValues((v) => ({ ...v, ...filled })),
+  );
 
   const isValid = contactSchema.safeParse(values).success;
 
@@ -74,13 +84,24 @@ export default function ContactSection() {
       setValidFields((prev) => without(prev, field));
     };
 
-  const handleBlur = (field: FieldName) => () => {
-    const result = contactSchema.shape[field].safeParse(values[field]);
-    setValidFields((prev) => ({ ...prev, [field]: result.success }));
-    setErrors((prev) =>
-      result.success ? without(prev, field) : { ...prev, [field]: result.error.issues[0].message },
-    );
-  };
+  const handleBlur =
+    (field: FieldName) => (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      // Read `e.target.value`, not `values[field]`: the same autofill gap `useAutofillSync`
+      // closes at mount can also fill a field between renders — the browser's own suggestion
+      // dropdown, picked after the page has already painted — and `values` would still be
+      // stale for it at the moment this fires. Synced into state here too, so the value this
+      // validates is the one the field actually shows.
+      const value = e.target.value;
+      setValues((v) => (v[field] === value ? v : { ...v, [field]: value }));
+
+      const result = contactSchema.shape[field].safeParse(value);
+      setValidFields((prev) => ({ ...prev, [field]: result.success }));
+      setErrors((prev) =>
+        result.success
+          ? without(prev, field)
+          : { ...prev, [field]: result.error.issues[0].message },
+      );
+    };
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -152,7 +173,7 @@ export default function ContactSection() {
           </p>
         </div>
 
-        <form noValidate onSubmit={handleSubmit} className="flex flex-col gap-5">
+        <form ref={formRef} noValidate onSubmit={handleSubmit} className="flex flex-col gap-5">
           {/* Honeypot (#202): zero-size and `opacity-0`, not `display:none`, so a bot that
               checks computed style still finds it fillable. `tabIndex={-1}` and `aria-hidden`
               keep it out of the tab order and the accessibility tree for real visitors. */}
@@ -176,8 +197,12 @@ export default function ContactSection() {
               div too, and nesting it inside the `<label>` would fold its text into the
               field's accessible name the moment an error appears — "Navn Navn er påkrevd" on
               every future tab-in. `aria-describedby` is the association that is meant to
-              carry the message instead. */}
-          <div className="flex w-full flex-col gap-1">
+              carry the message instead.
+
+              `gap-2`, not the `gap-1` the label/field pair used to share: `fieldStateShadow`'s
+              hard offset shadow reaches 4px below the field, which touched `FieldError`'s text
+              directly at `gap-1`. */}
+          <div className="flex w-full flex-col gap-2">
             <label htmlFor="name" className="font-body text-white">
               Navn
             </label>
@@ -197,7 +222,7 @@ export default function ContactSection() {
             {errors.name && <FieldError id="name-error">{errors.name}</FieldError>}
           </div>
 
-          <div className="flex w-full flex-col gap-1">
+          <div className="flex w-full flex-col gap-2">
             <label htmlFor="email" className="font-body text-white">
               E-post
             </label>
@@ -218,7 +243,7 @@ export default function ContactSection() {
             {errors.email && <FieldError id="email-error">{errors.email}</FieldError>}
           </div>
 
-          <div className="flex w-full flex-col gap-1">
+          <div className="flex w-full flex-col gap-2">
             <label htmlFor="message" className="font-body text-white">
               Melding
             </label>
@@ -240,9 +265,14 @@ export default function ContactSection() {
           {apiError && <Alert>{apiError}</Alert>}
           {success && <Alert tone="success">{SUCCESS_MESSAGE}</Alert>}
 
+          {/* `variant="disabled"` is cosmetic only — `Buttons.tsx` still needs the `disabled`
+              attribute below to actually stop the submit, but without the variant the button
+              stayed orange and looked live while every click did nothing. `isValid` covers
+              both: it never goes false while `loading` (the values it was computed from are
+              already known-valid at that point), so the button never flips grey mid-submit. */}
           <Button
             type="submit"
-            variant="primary"
+            variant={isValid ? 'primary' : 'disabled'}
             size="md"
             icon="right"
             loading={loading}

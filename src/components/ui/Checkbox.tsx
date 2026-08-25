@@ -38,9 +38,7 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(functi
           // what the string this replaces implied, and every checkbox in the app sits on a
           // `darkblue` panel — the checked box would have disappeared into it.
           'checked:border-orange checked:bg-orange',
-          'disabled:bg-disabled-bg disabled:cursor-not-allowed disabled:border-transparent',
-          'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
-          'focus-visible:outline-focus-ring',
+          'disabled:bg-disabled-bg disabled:cursor-not-allowed disabled:border-transparent disabled:shadow-none',
           className,
         ]
           .filter(Boolean)

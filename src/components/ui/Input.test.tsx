@@ -81,11 +81,12 @@ describe('Input', () => {
     expect(ref.current).toBe(screen.getByPlaceholderText('x'));
   });
 
-  it('uses the outline focus treatment the rest of the system uses, not a ring', () => {
+  it('uses the hard offset shadow as its focus treatment, not an outline or a ring', () => {
     render(<Input placeholder="x" />);
     const { className } = screen.getByPlaceholderText('x');
 
-    expect(className).toContain('focus-visible:outline');
+    expect(className).toContain('focus-visible:shadow-focus-2');
+    expect(className).not.toContain('focus-visible:outline');
     expect(className).not.toContain('focus:ring');
   });
 

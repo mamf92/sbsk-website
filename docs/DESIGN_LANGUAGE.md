@@ -239,6 +239,14 @@ Both live on `Dialog` (`src/components/ui/Dialog.tsx`), which is the only thing 
 paint them. The scrim is a hand-written `.sbsk-dialog::backdrop` rule in `src/index.css`,
 because `::backdrop` is a pseudo-element and no utility on the dialog can reach it.
 
+`size` picks the panel shape and defaults to `'form'` — the narrow, padded, internally-scrolling
+column every dialog wanted until the carousel lightbox needed the opposite: `'full'` is
+near-viewport-filling with no internal scroll, for content that lays itself out rather than
+stacking. The two are a lookup map of mutually exclusive class strings, not two partial strings
+layered together — Tailwind resolves conflicting utilities (two `max-w-*` values, say) by emit
+order, not by which one a template literal happens to list last, so a panel's size can't be
+assembled from pieces that might both land.
+
 `Dialog` is built on the native `<dialog>` and `showModal()`. That is where the focus trap,
 Escape, the top layer and the inertness of the page behind come from — none of it
 hand-written, and none of it optional. What the component adds on top is the two things
@@ -333,40 +341,54 @@ Lift is for things you press. It is not decoration.
 
 ## Field state
 
-`Input` and `Textarea` paint a second hard offset shadow, on top of the resting
-border, to say what state a field is in: orange while focused, red once it fails validation,
-green once it passes. `Checkbox` gets the same shadow on focus and invalid, without a valid
-state — nothing pairs a checkbox with a pass/fail check yet. This resolves a disagreement with
-the upstream Claude Design library rather than porting it silently, per "Upstream" below: the
-library's `Input.jsx` always painted `--shadow-accent-2` on focus and a red offset when
-destructive, and the port that shipped without it was corrected once the Kontakt oss form
-needed the same signal plus a third, green state the library does not have.
+`Input` and `Textarea` paint a hard offset shadow, alongside the resting border, to say what
+state a field is in: a colour while focused, red once it fails validation, green once it
+passes. `Checkbox` gets the same shadow on focus and invalid, without a valid state — nothing
+pairs a checkbox with a pass/fail check yet. This resolves a disagreement with the upstream
+Claude Design library rather than porting it silently, per "Upstream" below: the library's
+`Input.jsx` always painted `--shadow-accent-2` on focus and a red offset when destructive, and
+the port that shipped without it was corrected once the Kontakt oss form needed the same
+signal plus a third, green state the library does not have.
 
 `fieldStateShadow()` in `src/components/ui/fieldClasses.ts` is the one place that decides the
 class: `invalid` outranks `valid`, matching the glyph precedence `Input`/`Textarea` already
-had, and the resting case is `focus:shadow-accent-2` — `focus:`, not `focus-visible:`, because
-this is a state indicator rather than the keyboard affordance already owned by `fieldSurface`'s
-outline (see "Focus" below, which the field's border and outline still use unchanged).
+had, and the resting case is `focus-visible:shadow-focus-2`.
+
+**`focus-visible:`, and the field's _only_ focus indicator.** It started as `focus:`, painted
+alongside a separate `focus-visible:outline` on `fieldSurface` — a field showed the shadow on
+any focus and the outline only via keyboard, so a mouse click and a keyboard tab-in painted two
+different combinations. Making both fire on `focus-visible:` fixed the inconsistency but not
+the doubling: every keyboard focus now drew a full 2px outline _and_ a 4px offset shadow at
+once, and the shadow's own offset landed directly against whatever sat below the field — a
+`FieldError` four pixels under it, at the `gap-1` the two used to share. `fieldSurface`'s
+outline is gone on `Input`/`Textarea`/`Checkbox` now; the shadow is the whole affordance, and
+"Focus" below documents fields as the one exception to the site-wide outline for this reason.
 
 **Not built on `--hard-shadow-color`.** That token is a _surface_ property — `surface-dark` /
 `surface-light` re-point it per panel — and a field's state colour must not move with it: a red
-field means the same thing on the white page and on a `darkblue` panel. `--shadow-error-2` and
-`--shadow-success-2` in `src/index.css` are literal colours instead, which is normally the
-mistake this document warns kills the `.dark` override — harmless here because the field fill
-is white in both themes, so neither colour has one to lose.
+field means the same thing on the white page and on a `darkblue` panel. `--shadow-error-2`,
+`--shadow-success-2` and `--shadow-focus-2` in `src/index.css` are literal colours instead,
+which is normally the mistake this document warns kills the `.dark` override — harmless here
+because the field fill is white in both themes, so none of the three has one to lose.
 
-**Never the only signal.** `--color-error` measures 2.01:1 on `darkblue`, well under the 3:1 a
-non-text shadow needs (WCAG 1.4.11) — the same failure `Alert` exists to route around. The
-shadow is additive: `fieldBorderInvalid` (a red hairline on the white field itself) and the
-`AlertCircle` glyph and `aria-invalid` already carry the state on their own, exactly as before
-this shadow existed.
+**Never the only signal — except the resting shadow, which now has to be.** `--color-error`
+measures 2.01:1 on `darkblue`, well under the 3:1 a non-text indicator needs (WCAG 1.4.11) —
+the same failure `Alert` exists to route around — so the invalid/valid shadows stay additive:
+`fieldBorderInvalid`/`-Valid` (a coloured hairline on the white field itself) and the
+`AlertCircle`/`Check` glyph and `aria-invalid` already carry those two states on their own. The
+resting focus shadow is different: once the outline it used to share the job with was removed,
+it became the _only_ visual focus signal a field has, which is what forced its colour off the
+site's usual `orange` (`--color-focus-ring`) and onto `darkorange` instead — the one brand tone
+that clears 3:1 against every fill a field actually sits on.
 
-| pair                               | ratio  | verdict                                          |
-| ---------------------------------- | ------ | ------------------------------------------------ |
-| `--color-error` on white           | 6.46:1 | AA — the field's own fill                        |
-| `--color-error` on `darkblue`      | 2.01:1 | fails 1.4.11 — why it is never the only signal   |
-| `--color-success` on white         | 6.20:1 | AA                                               |
-| `orange` on white (existing focus) | 2.18:1 | already accepted repo-wide for the focus outline |
+| pair                          | ratio  | verdict                                            |
+| ----------------------------- | ------ | -------------------------------------------------- |
+| `--color-error` on white      | 6.46:1 | AA — the field's own fill                          |
+| `--color-error` on `darkblue` | 2.01:1 | fails 1.4.11 — why invalid/valid stay additive     |
+| `--color-success` on white    | 6.20:1 | AA                                                 |
+| `orange` on white             | 2.18:1 | fails 1.4.11 — why the resting shadow isn't this   |
+| `darkorange` on white         | 3.33:1 | AA — `--shadow-focus-2`'s colour                   |
+| `darkorange` on `darkblue`    | 4.01:1 | AA — same colour, the Kontakt oss/login panel fill |
 
 `--color-success` (`#007124`) is new, the library's `green-success-700` and the sibling
 `--color-error` already was — the first tone besides red the system has needed. `Alert` grew a
@@ -410,7 +432,7 @@ placement and framing, not about borrowing the lift system.
 ## The carousel
 
 An optional per-post photo set (`postType.ts`'s `carousel` field, `src/components/ui/Carousel.tsx`)
-embodies three brand decisions worth naming, because each one reads as an obvious choice only
+embodies several brand decisions worth naming, because each one reads as an obvious choice only
 after you've ruled out the more obvious-looking alternative:
 
 - **Square ticks, not circular dots.** Instagram's own position indicator is a circle; zero
@@ -418,6 +440,15 @@ after you've ruled out the more obvious-looking alternative:
   flat square instead — `currentColor`-tinted like the caption strip, so it self-adapts to
   whichever panel it's sitting in. Unlike Instagram's dots, these are real buttons: tappable, and
   labelled `"Bilde N av totalt"` for a screen reader.
+- **The active tick is filled, and reads its state off `--shadow-1`, not `--shadow-inset-1`.**
+  It used to be the inset shadow `Segmented` reads off its own `aria-pressed` — the "pressed
+  into the group" cue a _joined_ control needs, borrowed because it was the nearest existing
+  affordance. A carousel tick isn't joined to anything, though, and every other "this one is
+  selected/raised" surface in the system reads the plain offset shadow instead — the tick now
+  does too. The offset paints outside the mark, onto the panel, where `surface-dark`/`-light`
+  already guarantee its contrast, which is what frees the mark itself to fill solid with
+  `bg-current`: the old inset shadow painted _inside_ the mark in the same `currentColor` a fill
+  would have used, so filling it then would have painted the shadow directly over itself.
 - **No `lift-chip` on the thumbnails**, even though they're pressable and the utility would fit.
   A photo tile lifting onto a hard offset shadow reads as elevation _on a photograph_, which is
   the one thing the flat language avoids — border colour and the focus ring are the whole
@@ -430,6 +461,21 @@ after you've ruled out the more obvious-looking alternative:
   room than a half-width photo does) with the post's own text wrapping beside it and continuing
   at full width once it runs past the carousel's bottom edge — an ordinary consequence of
   wrapping a float, not a separately built region.
+- **The photo opens a full-screen `Dialog`, on click or tap, with the arrows and ticks carried
+  over.** `Dialog` gained a `size="full"` panel for this — every prior caller wanted the narrow,
+  padded `'form'` column, and a lightbox needed the opposite: near-viewport-filling, no internal
+  scroll, the image laying itself out instead of stacking in a column. It shows the photo at its
+  own aspect (clamped to the same `MIN_ASPECT`/`MAX_ASPECT` band `SanityImage` uses), not the
+  strip's fixed `3:2` — the inline crop exists so the box doesn't resize under a reader paging
+  through photos of different ratios, a constraint a full-screen view with no neighbour to stay
+  level with doesn't have.
+- **Swipe is touch and pen only.** `onPointerDown`/`onPointerUp` on the image measure the drag
+  and bail immediately when `pointerType === 'mouse'` — a mouse drag stays a plain drag (native
+  image drag, text selection), and a mouse click always opens the lightbox with nothing to
+  suppress. A touch drag has to clear 40px and be more horizontal than vertical before it pages
+  rather than opens; `touch-pan-y` on the image keeps vertical page scroll working for a finger
+  that lands on the photo without meaning to swipe it. The same threshold and the same handlers
+  drive both the inline strip and the lightbox, since both page the one shared `index`.
 
 ## Loading, empty, error
 
@@ -465,7 +511,8 @@ be painted and never announced. `FieldError` is `Alert` at `sm`, and pairs with 
 
 ## Focus
 
-Every interactive surface in `src/components/ui/` draws the same focus affordance:
+Every interactive surface in `src/components/ui/` draws the same focus affordance, `Input`,
+`Textarea` and `Checkbox` excepted (see below):
 
 ```
 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2
@@ -480,10 +527,19 @@ form-controls port (#86) corrected:
 - **`outline`, not `ring`.** A Tailwind `ring` is a `box-shadow`, and on this brand
   `box-shadow` is spoken for — the hard offset lift, and since #180 a field's state colour (see
   "Field state" above). Reaching for `ring` on top of either is how a focused button ends up
-  looking pressed, or a focused field ends up fighting its own state shadow.
+  looking pressed.
 - **The token, not the colour.** `--color-focus-ring` exists for this. It resolves to orange
   today, so reading it changes nothing on screen — it changes what happens when the brand
   moves.
+
+**Text fields are the one exception.** `Input`, `Textarea` and `Checkbox` used to draw this
+outline _and_ `fieldStateShadow()`'s hard offset shadow on the same `focus-visible:` trigger —
+which meant every keyboard focus painted twice, a full ring plus a 4px shadow, and the shadow's
+own offset ran straight into whatever sat below the field. The outline is gone from all three
+now; the state shadow (`--shadow-focus-2`, `darkorange` rather than the token above — see
+"Field state" for why) is a field's whole focus affordance. Nothing else in the system shares
+this exception: buttons, chips, links, `NavMenuButton` and `Card` never carried a competing
+shadow on focus, so the doubling was specific to form controls and the fix is too.
 
 ## Upstream
 
