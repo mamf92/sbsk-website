@@ -1,8 +1,8 @@
 import { Link, useLoaderData } from 'react-router-dom';
-import type { SanityDocument } from '@sanity/client';
+import type { CalendarEventTypes } from '../sanity/queryHelpers/events';
 
 export default function Events() {
-  const { events } = useLoaderData() as { events: SanityDocument[] };
+  const { events } = useLoaderData() as { events: CalendarEventTypes[] };
   return (
     <div className="dark:bg-darkestblue min-h-[60vh] bg-white dark:text-white">
       {/* An <h1>, not a <div>: this route has content, so it is not one of #147's placeholders,
@@ -13,18 +13,25 @@ export default function Events() {
         Arrangementer
       </h1>
       <ul className="flex flex-col gap-y-4">
-        {events.map((event) => (
-          <li className="hover:underline" key={event._id}>
-            {/* `eventSlug`, not `slug.current`: EVENTS_LIST_QUERY projects the slug flat, so
-                `event.slug` is undefined here and reading `.current` off it threw for every
-                row. Likewise `publishedAt` is not in that projection — and an events list
-                wants the date the event happens on, not the date it was written. */}
-            <Link to={`/arrangementer/${event.eventSlug}`}>
+        {events.map((event) => {
+          // Only events flagged with `hasDetailPage` in Sanity have a page to link to — that
+          // is a content decision, independent of category or event size, so it is never
+          // inferred from `eventSlug` alone.
+          const detailPath =
+            event.hasDetailPage && event.eventSlug ? `/arrangementer/${event.eventSlug}` : null;
+          const body = (
+            <>
               <h2 className="text-h2 font-semibold">{event.title}</h2>
               <p>{new Date(event.eventStartTime).toLocaleDateString('nb-NO')}</p>
-            </Link>
-          </li>
-        ))}
+            </>
+          );
+
+          return (
+            <li className={detailPath ? 'hover:underline' : ''} key={event._id}>
+              {detailPath ? <Link to={detailPath}>{body}</Link> : body}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

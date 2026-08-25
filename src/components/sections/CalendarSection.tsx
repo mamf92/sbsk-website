@@ -17,6 +17,7 @@ import ArrowRight from '../../assets/icons/arrows/arrowright.svg?react';
 import type { CalendarEventTypes } from '../../sanity/queryHelpers/events';
 import type { CalendarHeroTypes } from '../../sanity/queryHelpers/calendar-hero';
 import { components } from '../../sanity/editors/portableTextComponents';
+import { monthAbbreviation, timeRange } from '../../utils/eventDateFormat';
 import { useAuth } from '../../hooks/authContext/authContext';
 import {
   createParticipantFromProfile,
@@ -129,46 +130,6 @@ const SORT_OPTIONS: { value: Sort; label: string }[] = [
 /* -------------------------------------------------------------------------- */
 /* Formatting                                                                  */
 /* -------------------------------------------------------------------------- */
-
-const LOCALE = 'no-NO';
-
-/** "AUG". Sliced off the long name because the short one carries a trailing period. */
-function monthAbbreviation(date: Date): string {
-  return date.toLocaleDateString(LOCALE, { month: 'long' }).slice(0, 3).toUpperCase();
-}
-
-/** "Man" — likewise stripped of the abbreviating period. */
-function weekdayAbbreviation(date: Date): string {
-  const weekday = date.toLocaleDateString(LOCALE, { weekday: 'short' }).replace('.', '');
-  return weekday.charAt(0).toUpperCase() + weekday.slice(1);
-}
-
-function clockTime(date: Date): string {
-  return date.toLocaleTimeString(LOCALE, { hour: '2-digit', minute: '2-digit', hour12: false });
-}
-
-/** "Man 18:00–22:00", widening to include both dates when the event runs past midnight. */
-function timeRange(start: Date, end: Date): string {
-  const sameDay = start.toDateString() === end.toDateString();
-  if (sameDay) {
-    return `${weekdayAbbreviation(start)} ${clockTime(start)}–${clockTime(end)}`;
-  }
-
-  // Without the year a range that crosses New Year reads as though it runs backwards
-  // ("26. feb. – 25. jan."), so it is spelled out only in that case.
-  const crossesYears = start.getFullYear() !== end.getFullYear();
-  const dayAndMonth = (date: Date) =>
-    date.toLocaleDateString(LOCALE, {
-      day: 'numeric',
-      month: 'short',
-      ...(crossesYears ? { year: 'numeric' } : {}),
-    });
-
-  return (
-    `${weekdayAbbreviation(start)} ${dayAndMonth(start)} ${clockTime(start)} – ` +
-    `${weekdayAbbreviation(end)} ${dayAndMonth(end)} ${clockTime(end)}`
-  );
-}
 
 /** Whole calendar days between two instants, ignoring the time of day. */
 function daysBetween(from: Date, to: Date): number {
@@ -599,7 +560,10 @@ function EventRow({
   const start = new Date(event.eventStartTime);
   const end = new Date(event.eventEndTime);
 
-  const detailPath = event.eventSlug ? `/arrangementer/${event.eventSlug}` : null;
+  // Whether the event has a page of its own is a content decision (`hasDetailPage` in Sanity),
+  // never inferred from category, size, or whether there happens to be inline content.
+  const detailPath =
+    event.hasDetailPage && event.eventSlug ? `/arrangementer/${event.eventSlug}` : null;
   // The chevron is now driven by whether there is anything to open, not by the category —
   // a turnering with a description expands like any other event, and reaches its own page
   // through the "Se arrangementet" button in the panel.
