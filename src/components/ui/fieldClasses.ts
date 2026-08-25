@@ -5,22 +5,16 @@
  * hoisted to a private `INPUT_CLASS_NAME` const, the extraction instinct stopping at the file
  * boundary both times. `Input`, `Textarea` and `Checkbox` are the only things that read it now.
  *
- * Two deliberate corrections to what was copied:
- *
- * - **`focus-visible:outline`, not `focus:ring`.** Form controls were the only surface in the
- *   system still drawing a Tailwind `ring` — which is a `box-shadow`, and the brand reserves
- *   `box-shadow` for the hard offset lift — and the only one showing it on a mouse click as
- *   well as on keyboard focus. `Button`, `Chip`, `Link`, `NavMenuButton` and `Card` all use
- *   the outline; these now match.
- * - **`--color-focus-ring`, not a hardcoded `orange`.** The token exists for this. It resolves
- *   to the same colour today, so the change is in what the class says rather than what it paints.
+ * A field's focus indicator is `fieldStateShadow()`'s hard offset shadow alone — see that
+ * function below for why the outline this used to carry is gone. `Checkbox` used to draw its
+ * own literal copy of the outline classes on top of the same `fieldStateShadow()` call, which
+ * reintroduced the identical double-affordance this file exists to prevent; it was dropped
+ * there too rather than left as the one field that still doubles up.
  */
 
 /** Colour, type and focus — everything that is not the box itself. */
 export const fieldSurface =
-  'font-body text-darkblue bg-white placeholder:text-placeholder placeholder:font-body ' +
-  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ' +
-  'focus-visible:outline-focus-ring';
+  'font-body text-darkblue bg-white placeholder:text-placeholder placeholder:font-body';
 
 /**
  * The resting hairline. Split from the error border rather than layered under it: a
@@ -39,25 +33,25 @@ export const fieldBorderValid = 'border border-success dark:border-success';
  * moves, so this owns colour only; `invalid`/`valid` never both apply, and `invalid` wins if a
  * caller somehow passes both, matching the glyph precedence in `Input`/`Textarea`.
  *
- * `focus-visible:`, matching `fieldSurface`'s outline trigger — not `focus:`. The two used to
- * fire on different conditions (shadow on any focus, outline only via keyboard), so a mouse
- * click showed the shadow alone while a keyboard tab-in showed shadow and outline together —
- * an inconsistent "sometimes both, sometimes one" reported as the field looking like two
- * unrelated affordances mixed together (#203). Sharing one trigger makes the combination
- * predictable instead of removing either half — see the next paragraph for why the outline
- * itself has to stay.
- *
- * Never the only signal a field's state is carried on: see the note by `--shadow-error-2` in
- * `src/index.css` for why `--color-error` cannot sit alone on a `darkblue` panel. The border
- * and the glyph in the class lists above say the same thing on their own with this omitted —
- * and the same reasoning rules out dropping the outline in favour of the shadow alone here:
- * `--color-focus-ring` (orange) on white measures 2.18:1, under the 3:1 WCAG 2.4.11 minimum
- * for a non-text focus indicator, so the shadow cannot be the *only* focus signal either.
+ * `focus-visible:`, matching the invalid/valid states below — not `focus:`, and not paired
+ * with `focus-visible:outline` any more. #203 made the shadow and a separate outline share one
+ * trigger so a mouse click and a keyboard tab-in would at least show the *same* combination;
+ * that still left every focus painted twice — a full 2px ring plus the offset shadow at once —
+ * and the shadow landing hard against whatever sits below the field (`FieldError`, four pixels
+ * under it at `gap-1`, touched the shadow directly). Removing the outline and keeping the
+ * shadow as the sole indicator needed the colour to change: `--color-focus-ring` (orange) on
+ * white measures 2.18:1, under the WCAG 2.4.11 non-text minimum of 3:1, so orange could carry
+ * the ring (thin, but paired with the shadow) but not the shadow alone. `--shadow-focus-2` in
+ * `src/index.css` uses `darkorange` instead, which clears 3:1 against every fill a field sits
+ * on — see the contrast table there. `--color-error` / `--color-success` stay literal for the
+ * same reason the comment there gives: the border and the `AlertCircle`/`Check` glyph
+ * `Input`/`Textarea` render alongside them are colour+shape, not colour alone, so those two
+ * states were never resting on contrast the way the plain focus shadow now has to.
  */
 export function fieldStateShadow({ invalid = false, valid = false } = {}) {
   if (invalid) return 'shadow-error-2';
   if (valid) return 'shadow-success-2';
-  return 'focus-visible:shadow-accent-2';
+  return 'focus-visible:shadow-focus-2';
 }
 
 /**
@@ -72,10 +66,15 @@ export const fieldStateTransition =
  * The permanently-disabled newsletter input in `Footer` was the one field with a class string
  * of its own. It is the `:disabled` state, not a variant — it is driven by the attribute the
  * element already carries.
+ *
+ * `disabled:shadow-none` beats `fieldStateShadow`'s `invalid`/`valid` shadows, which are
+ * unconditional classes rather than pseudo-classed — `ContactSection` disables every field
+ * while `loading`, and without this a field mid-submit could still be showing its red or
+ * green offset shadow with no way left to act on it.
  */
 export const fieldDisabled =
   'disabled:cursor-not-allowed disabled:border-transparent disabled:bg-disabled-bg ' +
-  'disabled:text-disabled-text disabled:placeholder:text-disabled-text';
+  'disabled:text-disabled-text disabled:placeholder:text-disabled-text disabled:shadow-none';
 
 /**
  * `px-3 py-2 md:px-4 md:py-3`, which is what five of the six copies said. The sixth —

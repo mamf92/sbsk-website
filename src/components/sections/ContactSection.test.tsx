@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import ContactSection from './ContactSection';
@@ -103,6 +103,31 @@ describe('ContactSection', () => {
     await user.click(name);
     await user.type(name, 'Ola');
     expect(screen.queryByText('Navn må være minst 2 tegn')).not.toBeInTheDocument();
+  });
+
+  it('validates the value actually in the field on blur, not stale React state', () => {
+    render(<ContactSection />);
+    const { name } = fields();
+
+    // Autocomplete writes straight to the DOM without firing `change`, so React's own
+    // `values.name` state never learns about it before the field blurs — this is exactly
+    // that gap, reproduced by mutating the DOM value directly rather than through `user.type`.
+    (name as HTMLInputElement).value = 'Ola';
+    fireEvent.blur(name);
+
+    expect(screen.queryByText('Navn må være minst 2 tegn')).not.toBeInTheDocument();
+    expect(name).not.toHaveAttribute('aria-invalid');
+  });
+
+  it('paints Send grey while disabled and orange once every field is valid', async () => {
+    const user = userEvent.setup();
+    render(<ContactSection />);
+
+    expect(fields().submit.className).toMatch(/bg-gray-300/);
+
+    await fillValid(user);
+    expect(fields().submit.className).toMatch(/bg-orange\b/);
+    expect(fields().submit.className).not.toMatch(/bg-gray-300/);
   });
 
   it('marks a field valid once it is blurred and passes, not before', async () => {

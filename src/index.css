@@ -192,10 +192,6 @@
   --shadow-2: 4px 4px 0 var(--hard-shadow-color);
   --shadow-3: 6px 6px 0 var(--hard-shadow-color);
 
-  /* The same 2px offset turned inward, and the only inset shadow in the system. It exists
-     for joined controls, which cannot travel: a selected segment reads as pressed *into* the
-     group where a chip reads as raised out of it. See the `segment` utility below. */
-  --shadow-inset-1: inset 2px 2px 0 var(--hard-shadow-color);
   /* The accent pair is the library's, and is deliberately not what `surface-dark` uses: an
      orange shadow under a `variant="primary"` button is orange-on-orange, so the button reads
      as a smeared parallelogram rather than a lifted rectangle. Kept for a deliberate accent
@@ -214,6 +210,22 @@
      `aria-invalid` all still carry the state on their own. */
   --shadow-error-2: 4px 4px 0 var(--color-error);
   --shadow-success-2: 4px 4px 0 var(--color-success);
+  /* A field's resting focus indicator, same family as the pair above and painted for the same
+     reason: `fieldSurface` used to draw this state as `focus-visible:outline` *and*
+     `fieldStateShadow()` drew the shadow, so a focused field carried both at once (#210). The
+     shadow now carries the state alone, which means it has to clear WCAG 1.4.11's 3:1 on
+     every fill a field sits on rather than just on `darkblue`. `--color-orange` does not:
+
+       colour          white  gray-100  darkblue  darkestblue
+       orange          2.18   2.01      6.14      7.64
+       darkorange      3.33   3.07      4.01      4.99
+       darkestorange   4.51   4.16      2.96 ✗    3.68
+
+     `darkorange` is the only one of the three that passes on all four, so the field focus
+     state is the one place in the system that shows `darkorange` instead of `orange` —
+     `--color-focus-ring` (still orange) is unchanged and still used everywhere the outline
+     survives (`Button`, `Chip`, `Link`, `NavMenuButton`, `Card`, `Checkbox`). */
+  --shadow-focus-2: 4px 4px 0 var(--color-darkorange);
   --shadow-overlay: 0 12px 32px -8px var(--overlay-shadow-color);
 
   --lift-hover: translate(-2px, -2px);
