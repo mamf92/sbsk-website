@@ -47,10 +47,19 @@ function without<T>(
  * with) rather than an email — no provider is chosen yet (#133). No `.select()` on the insert:
  * the table's RLS policy gives an anonymous sender no read grant, so reading the row back
  * would fail even though the insert itself succeeded.
+ *
+ * `honeypot` (#202) is a field no real visitor can see or reach — zero-size, `tabIndex={-1}`,
+ * `aria-hidden` — that a bot filling every input in the DOM will fill anyway. It isn't
+ * `display:none`/`visibility:hidden`, since a bot that reads computed style would skip it same
+ * as a screen reader does; zero size and `opacity-0` are invisible to both without being
+ * detectable as a trap. A non-empty value short-circuits `handleSubmit` before validation or
+ * the API call, and reports the same success the sender would have gotten otherwise — reacting
+ * differently would tell a scripted sender its message was caught and worth retrying past.
  */
 export default function ContactSection() {
   const formRef = useRef<HTMLFormElement>(null);
   const [values, setValues] = useState<ContactValues>(EMPTY_VALUES);
+  const [honeypot, setHoneypot] = useState('');
   const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
   const [validFields, setValidFields] = useState<Partial<Record<FieldName, boolean>>>({});
   const [loading, setLoading] = useState(false);
@@ -99,6 +108,14 @@ export default function ContactSection() {
 
     setSuccess(false);
     setApiError(null);
+
+    if (honeypot) {
+      setValues(EMPTY_VALUES);
+      setHoneypot('');
+      setValidFields({});
+      setSuccess(true);
+      return;
+    }
 
     const result = contactSchema.safeParse(values);
     if (!result.success) {
@@ -157,6 +174,25 @@ export default function ContactSection() {
         </div>
 
         <form ref={formRef} noValidate onSubmit={handleSubmit} className="flex flex-col gap-5">
+          {/* Honeypot (#202): zero-size and `opacity-0`, not `display:none`, so a bot that
+              checks computed style still finds it fillable. `tabIndex={-1}` and `aria-hidden`
+              keep it out of the tab order and the accessibility tree for real visitors. */}
+          <div className="h-0 w-0 overflow-hidden opacity-0">
+            <label htmlFor="website" aria-hidden="true">
+              Nettside
+            </label>
+            <input
+              id="website"
+              name="website"
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              value={honeypot}
+              onChange={(e) => setHoneypot(e.target.value)}
+            />
+          </div>
+
           {/* Label and field are siblings, not label-wraps-field: `FieldError` sits in this
               div too, and nesting it inside the `<label>` would fold its text into the
               field's accessible name the moment an error appears — "Navn Navn er påkrevd" on
