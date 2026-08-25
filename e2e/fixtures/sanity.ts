@@ -56,6 +56,9 @@ export const UPCOMING_EVENT = {
   content: [block('b1', 'Åpen spillkveld for alle som vil være med.')],
   links: [{ _key: 'link-1', label: 'Facebook-gruppa', url: 'https://example.test/fb' }],
   participants: [],
+  // Content-flagged as having its own page — see eventType.ts's `hasDetailPage`. Without this,
+  // neither /arrangementer nor the calendar row links out to /arrangementer/spillkveld-torsdag.
+  hasDetailPage: true,
 };
 
 export const UPCOMING_TOURNAMENT = {

@@ -114,6 +114,7 @@ test('arrangementer renders real rows, not just an empty list', async ({ page })
             eventEndTime: '2026-09-03T21:30:00Z',
             category: 'spillkveld',
             location: 'Byhaugkafeen, Stavanger',
+            hasDetailPage: true,
           },
         ],
       }),
