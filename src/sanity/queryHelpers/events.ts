@@ -4,6 +4,22 @@ import { client } from '../client';
 import type { PortableTextBlock } from 'sanity';
 import type { CalendarEventParticipantTypes } from './updateEventParticipants';
 
+export interface EventSponsorTypes {
+  logo?: SanityImageSource;
+  altText: string;
+  link?: string;
+  ctaLabel?: string;
+  ctaLink?: string;
+}
+
+export interface EventScheduleEntryTypes {
+  _key: string;
+  label: string;
+  startTime: Date;
+  endTime: Date;
+  location?: string;
+}
+
 export interface CalendarEventTypes {
   _id: string;
   title: string;
@@ -16,11 +32,21 @@ export interface CalendarEventTypes {
   location?: string;
   links?: { label: string; url: string }[];
   participants?: CalendarEventParticipantTypes[];
+  /** Whether the event has its own page at `/arrangementer/:slug` — a content decision, not
+   *  something inferred from category or from having inline content. */
+  hasDetailPage?: boolean;
+  signupUrl?: { label?: string; url?: string };
+  showSponsors?: boolean;
+  sponsors?: EventSponsorTypes[];
+  pricingInfo?: PortableTextBlock[];
+  programInfo?: PortableTextBlock[];
+  schedule?: EventScheduleEntryTypes[];
 }
 
-const EVENTS_LIST_QUERY = `*[
-  _type == "event" && eventEndTime >= now()
-] | order(eventStartTime asc){
+// Fields every list/calendar row needs — including `hasDetailPage`, which decides whether the
+// row links out at all. The richer detail-only fields (sponsors, pricing, schedule…) are only
+// fetched by `EVENT_BY_SLUG_QUERY` below.
+const EVENT_ROW_PROJECTION = `
   _id,
   title,
   content,
@@ -31,7 +57,14 @@ const EVENTS_LIST_QUERY = `*[
   "eventSlug": slug.current,
   location,
   links,
-  participants
+  participants,
+  hasDetailPage
+`;
+
+const EVENTS_LIST_QUERY = `*[
+  _type == "event" && eventEndTime >= now()
+] | order(eventStartTime asc){
+  ${EVENT_ROW_PROJECTION}
 }`;
 
 // The Kalender page needs past events too — its scope filter offers "Tidligere" and "Alle"
@@ -43,6 +76,13 @@ const EVENTS_LIST_QUERY = `*[
 const CALENDAR_EVENTS_QUERY = `*[
   _type == "event"
 ] | order(eventStartTime desc)[0...200]{
+  ${EVENT_ROW_PROJECTION}
+}`;
+
+const EVENT_BY_SLUG_QUERY = `*[
+  _type == "event"
+  && slug.current == $slug
+][0]{
   _id,
   title,
   content,
@@ -53,23 +93,14 @@ const CALENDAR_EVENTS_QUERY = `*[
   "eventSlug": slug.current,
   location,
   links,
-  participants
-}`;
-
-const EVENT_BY_SLUG_QUERY = `*[
-  _type == "event"
-  && slug.current == $slug
-][0]{
-  _id,
-  title,
-  content,
-  eventStartTime,
-  eventEndTime,
-  category,
-  "eventSlug": slug.current,
-  location,
-  links,
-  participants
+  participants,
+  hasDetailPage,
+  signupUrl,
+  showSponsors,
+  sponsors[]{ logo, altText, link, ctaLabel, ctaLink },
+  pricingInfo,
+  programInfo,
+  schedule[]{ _key, label, startTime, endTime, location }
 }`;
 
 export async function eventsListLoader() {

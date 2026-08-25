@@ -101,6 +101,7 @@ const events: CalendarEventTypes[] = [
     title: 'Høstturnering',
     category: 'turnering',
     eventSlug: 'hostturnering',
+    hasDetailPage: true,
     eventStartTime: new Date('2026-09-20T10:00:00'),
     eventEndTime: new Date('2026-09-20T18:00:00'),
     content: body,
@@ -298,11 +299,36 @@ describe('CalendarSection', () => {
   it('links an event with a page of its own out to that page', async () => {
     renderSection();
 
-    // Høstturnering has a slug, so its open panel offers the route to the detail page.
+    // Høstturnering has a slug and hasDetailPage, so its open panel offers the route to the
+    // detail page.
     await userEvent.click(within(card('Høstturnering')).getByRole('button', { name: /Vis mer/ }));
     expect(
       within(card('Høstturnering')).getByRole('button', { name: 'Se arrangementet' }),
     ).toBeInTheDocument();
+  });
+
+  it('never links out an event with a slug but hasDetailPage not set', () => {
+    // A single event with content is auto-expanded as "the next event", so the panel is
+    // already open — this only needs to check it never offers the detail-page button.
+    renderSection({
+      events: [
+        {
+          _id: 'no-detail-page',
+          title: 'Spillkveld uten egen side',
+          category: 'spillkveld',
+          eventSlug: 'spillkveld-uten-egen-side',
+          eventStartTime: new Date('2026-09-05T18:00:00'),
+          eventEndTime: new Date('2026-09-05T22:00:00'),
+          content: body,
+        },
+      ],
+    });
+
+    expect(
+      within(card('Spillkveld uten egen side')).queryByRole('button', {
+        name: 'Se arrangementet',
+      }),
+    ).not.toBeInTheDocument();
   });
 
   it('gives an event with nothing to open no expand affordance at all', () => {
