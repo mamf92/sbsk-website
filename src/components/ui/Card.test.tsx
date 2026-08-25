@@ -315,6 +315,24 @@ describe('Card', () => {
     expect(screen.getByRole('button', { name: 'Tre' })).toBeInTheDocument();
   });
 
+  it('toggles when the chevron itself is clicked, not just the title (#208)', async () => {
+    const onToggle = vi.fn();
+    const { container } = render(
+      <Card
+        title="Turneringen"
+        expanded
+        onToggle={onToggle}
+        actions={<button type="button">Meld deg på</button>}
+      >
+        <p>Innhold</p>
+      </Card>,
+    );
+
+    const chevron = container.querySelector('svg')?.parentElement as HTMLElement;
+    await userEvent.click(chevron);
+    expect(onToggle).toHaveBeenCalledOnce();
+  });
+
   it('exposes the underlying element through a ref', () => {
     const ref = { current: null as HTMLElement | null };
     render(<Card title="x" ref={ref} />);
