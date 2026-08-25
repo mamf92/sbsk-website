@@ -204,10 +204,16 @@ export const Card = React.forwardRef<HTMLElement, CardProps>(
           ) : null}
 
           {interactive ? (
+            // Not a second `<button>` — that would duplicate the h3 button's tab stop for
+            // the same action. `aria-hidden` keeps it out of the accessibility tree, and the
+            // click handler makes it a mouse/touch-only bonus target so the chevron itself is
+            // clickable again, closing the gap the header grid opened when `actions` (a real
+            // sibling, never nested — see the h3 button above) split the row (#208).
             <span
               aria-hidden="true"
+              onClick={onToggle}
               className={
-                'col-start-2 row-start-1 flex flex-none items-center justify-center px-4' +
+                'col-start-2 row-start-1 flex flex-none cursor-pointer items-center justify-center px-4' +
                 (hasActions ? ' row-span-2 sm:col-start-3 sm:row-span-1' : '')
               }
             >
