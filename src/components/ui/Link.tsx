@@ -43,3 +43,22 @@ export const navLinkClasses =
   'aria-[current=page]:text-orange aria-[current=page]:after:scale-x-100 ' +
   'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 ' +
   'focus-visible:outline-focus-ring';
+
+/**
+ * `navLinkClasses`, with `font-body` in place of `font-heading` — `Footer` is deliberately
+ * body-font, unlike `Header`'s desktop nav which composes `navLinkClasses` as-is. A second whole
+ * string rather than a `${navLinkClasses} font-body` composition at the call site: two `font-*`
+ * utilities on one element are decided by emit order in the generated stylesheet, not by which
+ * one a template literal happens to list last (the same reason `Dialog`'s size variants are a
+ * lookup map of whole strings rather than layered partials) — this way exactly one `font-*`
+ * utility ever appears in the string a caller uses.
+ */
+export const navLinkClassesBody =
+  'relative inline-block px-0.5 py-1.5 font-body no-underline ' +
+  'transition-colors duration-(--duration-fast) ease-standard ' +
+  'after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left ' +
+  'after:scale-x-0 after:bg-orange after:transition-transform ' +
+  'after:duration-(--duration-base) after:ease-out hover:after:scale-x-100 ' +
+  'aria-[current=page]:text-orange aria-[current=page]:after:scale-x-100 ' +
+  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 ' +
+  'focus-visible:outline-focus-ring';

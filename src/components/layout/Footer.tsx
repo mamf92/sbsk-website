@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { SocialIcon } from 'react-social-icons';
 import { DiceLogo } from '../ui/DiceLogo';
+import { navLinkClassesBody } from '../ui/Link';
 
 export default function Footer() {
   return (
@@ -27,34 +28,49 @@ export default function Footer() {
               </div>
             </div>
             <div className="flex flex-1 flex-row">
-              <nav className="flex flex-1 flex-col items-start gap-4">
-                <NavLink to="/bli-medlem" className="font-bold">
-                  Bli medlem nå!
-                </NavLink>
-                <NavLink to="/kalender" className="font-body">
+              <nav
+                aria-labelledby="footer-member-nav-heading"
+                className="flex flex-1 flex-col items-start gap-4"
+              >
+                <h2 id="footer-member-nav-heading" className="text-base">
+                  <NavLink to="/bli-medlem" className={`${navLinkClassesBody} font-bold`}>
+                    Bli medlem nå!
+                  </NavLink>
+                </h2>
+                <NavLink to="/kalender" className={navLinkClassesBody}>
                   Kalender
                 </NavLink>
-                <NavLink to="/våre-spill" className="font-body">
+                <NavLink to="/våre-spill" className={navLinkClassesBody}>
                   Våre spill
                 </NavLink>
-                <NavLink to="/om-oss" className="font-body">
+                <NavLink to="/om-oss" className={navLinkClassesBody}>
                   Om oss
                 </NavLink>
-                <NavLink to="/kontakt-oss" className="font-body">
+                <NavLink to="/kontakt-oss" className={navLinkClassesBody}>
                   Kontakt oss
                 </NavLink>
               </nav>
-              <nav className="flex flex-1 flex-col items-start gap-4">
-                <NavLink to="/våre-partnere" className="font-bold">
-                  Våre partnere
-                </NavLink>
-                <a href="https://www.outland.no/" target="_blank">
+              <nav
+                aria-labelledby="footer-partner-nav-heading"
+                className="flex flex-1 flex-col items-start gap-4"
+              >
+                <h2 id="footer-partner-nav-heading" className="text-base">
+                  <NavLink to="/våre-partnere" className={`${navLinkClassesBody} font-bold`}>
+                    Våre partnere
+                  </NavLink>
+                </h2>
+                <a
+                  href="https://www.outland.no/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
                   Outland.no
                 </a>
-                <NavLink to="/våre-spill" className="font-body">
+                <NavLink to="/våre-spill" className={navLinkClassesBody}>
                   Kjøp spill med rabatt
                 </NavLink>
-                <NavLink to="/kontakt-oss" className="font-body">
+                <NavLink to="/kontakt-oss" className={navLinkClassesBody}>
                   Bli støttespiller
                 </NavLink>
               </nav>

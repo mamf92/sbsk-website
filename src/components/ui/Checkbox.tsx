@@ -30,7 +30,11 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(functi
         type="checkbox"
         aria-invalid={invalid || undefined}
         className={[
-          'peer size-4 appearance-none rounded-none bg-white',
+          // `focus-visible:outline-none` — see `fieldClasses.ts`'s `fieldSurface` comment.
+          // `Checkbox` doesn't read `fieldSurface` (no font/placeholder to inherit from it),
+          // so it needs its own copy of the same suppression to avoid the same doubled-up
+          // native ring plus offset shadow.
+          'peer size-4 appearance-none rounded-none bg-white focus-visible:outline-none',
           invalid ? fieldBorderInvalid : fieldBorder,
           fieldStateShadow({ invalid }),
           fieldStateTransition,

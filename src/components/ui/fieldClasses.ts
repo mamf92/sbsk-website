@@ -12,9 +12,17 @@
  * there too rather than left as the one field that still doubles up.
  */
 
-/** Colour, type and focus — everything that is not the box itself. */
+/**
+ * Colour, type and focus — everything that is not the box itself.
+ *
+ * `focus-visible:outline-none`: nothing else in this file paints an outline any more (see
+ * `fieldStateShadow` below), but nothing had told the browser to stop painting its own —
+ * every field kept its native focus ring (blue in Chromium, varying elsewhere) doubled up
+ * against the offset shadow that was supposed to be the field's only focus signal.
+ */
 export const fieldSurface =
-  'font-body text-darkblue bg-white placeholder:text-placeholder placeholder:font-body';
+  'font-body text-darkblue bg-white placeholder:text-placeholder placeholder:font-body ' +
+  'focus-visible:outline-none';
 
 /**
  * The resting hairline. Split from the error border rather than layered under it: a

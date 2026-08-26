@@ -67,7 +67,11 @@ describe('Checkbox', () => {
     const { className } = screen.getByRole('checkbox');
 
     expect(className).toContain('focus-visible:shadow-focus-2');
-    expect(className).not.toContain('focus-visible:outline');
+    // `focus-visible:outline-none` is the fix, not the thing being guarded against here — it
+    // suppresses the browser's own default ring rather than painting one. No `outline-<n>` /
+    // `outline-focus-ring` utility should paint an actual outline alongside the shadow.
+    expect(className).toContain('focus-visible:outline-none');
+    expect(className).not.toMatch(/focus-visible:outline-(?!none)/);
     expect(className).not.toContain('focus:ring');
   });
 });

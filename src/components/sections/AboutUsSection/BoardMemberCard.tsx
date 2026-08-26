@@ -16,23 +16,27 @@ export interface BoardMemberCardProps {
  * `darkestorange` measures 4.51:1. `CalendarSection`'s day-mark footer already pairs the same
  * two colours.
  *
- * `min-h-44` (not the taller `min-h-56` this started as) and a half-width image column: the
- * grid this sits in (`AboutUsSection`) floors each card at 290px wide, and 290/176 lands the
- * card close to the 2:1 the design handoff asks for. At that ratio a half-width column is close
- * to as tall as it is wide, so the portrait/initials placeholder reads as a square instead of
- * the narrow vertical strip `w-2/5` produced. Still `min-h`, not a fixed `aspect-ratio` — a
- * long bio can push the card taller without clipping, same reasoning `Card.tsx`'s thumbnail
- * comment documents for avoiding an aspect-ratio-off-a-stretched-row feedback loop.
+ * `min-h-44` and a half-width image column: the grid this sits in (`AboutUsSection`) floors
+ * each card at 290px wide, and 290/176 lands the card close to the 2:1 the design handoff asks
+ * for, where a half-width column reads as a square portrait rather than the narrow vertical
+ * strip `w-2/5` used to produce. That ratio only holds at the floor, though — the image column
+ * is `items-stretch`, tracking whatever height the text column actually needs, not `min-h-44`
+ * itself. An unbounded bio stretches the card (and with it, the fixed-proportion image) into a
+ * tall narrow strip the same way an unbounded subtitle did in `Card.tsx`'s thumbnail before that
+ * was given `h-full`. There, the photo is meant to keep growing with the text. Here the portrait
+ * is meant to read as a person, not an unpredictable rectangle, so `line-clamp-3` on the bio
+ * bounds the card's height instead — keeping every card close to the 2:1 the image column was
+ * actually designed around, at the cost of truncating a long bio rather than growing to fit it.
  */
 export function BoardMemberCard({ name, role, bio, imageUrl }: BoardMemberCardProps) {
   return (
     <article className="bg-darkestorange flex min-h-44 items-stretch border border-black text-white dark:border-white">
-      <div className="flex flex-1 flex-col gap-1 p-4">
+      <div className="flex min-w-0 flex-1 flex-col gap-1 p-4">
         <h3 className="font-heading text-h3 font-bold">{name}</h3>
         {role ? (
           <span className="text-xs font-bold tracking-[0.06em] uppercase">{role}</span>
         ) : null}
-        {bio ? <p className="font-body mt-1 text-sm">{bio}</p> : null}
+        {bio ? <p className="font-body mt-1 line-clamp-3 text-sm">{bio}</p> : null}
       </div>
       <div className="w-1/2 shrink-0">
         {imageUrl ? (

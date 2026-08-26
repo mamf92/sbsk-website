@@ -52,9 +52,14 @@ const sizes = {
   md: 'px-4 py-2 text-xs',
 } as const;
 
-const selected = 'text-orange after:scale-x-100';
+// `darkestorange`, not `orange` — `orange` text on the control's white surface measures 2.18:1,
+// well under the 4.5:1 AA body text needs. `darkestorange` clears it at 4.51:1, the tone
+// `docs/DESIGN_LANGUAGE.md`'s "Field state" table reaches for whenever orange-family text has
+// to sit directly on white. Dark mode is unaffected — orange on `darkestblue` already clears AA.
+const selected = 'text-darkestorange after:scale-x-100 dark:text-orange';
 
-const unselected = 'text-darkestblue hover:text-orange dark:text-white dark:hover:text-orange';
+const unselected =
+  'text-darkestblue hover:text-darkestorange dark:text-white dark:hover:text-orange';
 
 /**
  * An underline-tab group for one small mutually-exclusive choice — the calendar's
