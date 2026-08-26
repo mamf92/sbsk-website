@@ -122,11 +122,13 @@ describe('Segmented', () => {
     }
   });
 
-  it('marks the selected segment with the orange underline treatment', () => {
+  it('marks the selected segment with the darkestorange underline treatment', () => {
+    // `darkestorange`, not `orange` — see `Segmented.tsx`'s `selected` comment: plain `orange`
+    // text on the control's white surface fails AA (2.18:1).
     renderSegmented({ value: 'past' });
     const button = screen.getByRole('button', { name: 'Tidligere' });
 
-    expect(button).toHaveClass('text-orange', 'after:scale-x-100');
+    expect(button).toHaveClass('text-darkestorange', 'after:scale-x-100');
   });
 
   it("leaves an unselected segment's underline scaled in only on hover, not at rest", () => {

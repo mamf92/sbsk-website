@@ -109,8 +109,8 @@ export const Card = React.forwardRef<HTMLElement, CardProps>(
     // text, actions, chevron.
     //
     // The `min-h-24 sm:min-h-28` on `image` still belongs on the grid rather than the toggle
-    // inside it: the thumbnail's own `size-24 sm:size-28` is fixed, and without this the row
-    // could sit shorter than the photo before the panel ever opens.
+    // inside it: the thumbnail's own `w-24 sm:w-28` floor needs a row at least that tall before
+    // it has anything to stretch against.
     const headerGrid =
       `grid w-full grid-cols-[1fr_auto] sm:grid-cols-[1fr_auto_auto] ${headerSurfaces[category]}` +
       (image ? ' min-h-24 sm:min-h-28' : '');
@@ -133,23 +133,29 @@ export const Card = React.forwardRef<HTMLElement, CardProps>(
             // to clip it. Same clock as the panel's own `grid-template-rows` transition, so the
             // photo sliding shut and the panel opening read as one motion.
             //
-            // `size-24 sm:size-28` — an explicit equal width and height, not `aspect-square`
-            // derived from the row's stretched height. That was the first attempt, and it broke
-            // in a genuinely nasty way: the text column is `min-w-0` (free to shrink and wrap
-            // word-by-word), so a wider image leaves less room for text, which wraps more, which
-            // grows the row's height, which (via aspect-ratio) grows the image wider still — a
+            // `w-24 sm:w-28` — a fixed width, not `aspect-square`. A first attempt derived the
+            // width from the row's own stretched height via `aspect-square`, which broke in a
+            // genuinely nasty way: the text column is `min-w-0` (free to shrink and wrap
+            // word-by-word), so a wider image left less room for text, which wrapped more, which
+            // grew the row taller, which (via the aspect ratio) grew the image wider still — a
             // feedback loop that ran the thumbnail up to nearly the full card width on a narrow
-            // screen before anything capped it. Two independent, fixed dimensions can't feed that
-            // loop. It's larger than the old `w-20 sm:w-24` — genuinely square and a bit more
-            // presence — but it no longer tracks the header's height, which the row's own
-            // `min-h-24 sm:min-h-28` (above) is sized to match instead.
+            // screen before anything capped it.
+            //
+            // Fixing only the width sidesteps that loop the same way fixing both dimensions did
+            // (the text column's available space still never depends on the image's own cross
+            // size), but lets the height be `h-full` instead of a second fixed number — so a
+            // subtitle that wraps past two lines grows the row, and the thumbnail grows with it
+            // instead of stopping short and leaving a band of header colour under a
+            // now-too-short square. `object-cover` keeps the crop centred as it stretches; the
+            // image reads as square at the row's usual height and as a taller strip once a long
+            // subtitle pushes past it, rather than as a fixed square floating above empty space.
             className={[
               'flex-none object-cover',
               'transition-[width,border-right-width] duration-(--duration-slow) ease-out',
               'motion-reduce:transition-none',
               thumbnailCollapsed
-                ? 'w-0 border-r-0'
-                : 'size-24 border-r border-black sm:size-28 dark:border-white',
+                ? 'h-full w-0 border-r-0'
+                : 'h-full w-24 border-r border-black sm:w-28 dark:border-white',
             ].join(' ')}
           />
         ) : null}

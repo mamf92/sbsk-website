@@ -44,7 +44,11 @@ const option =
   'text-darkestblue dark:text-white';
 
 const optionActive = 'bg-gray-100 dark:bg-white/10';
-const optionSelected = 'text-orange dark:text-orange';
+// `darkestorange`, not `orange` — `orange` on the panel's white fill measures 2.18:1, well
+// under the 4.5:1 AA text needs (this is a bold `text-xs` label, not large text); `darkestorange`
+// clears it at 4.51:1, the same tone `docs/DESIGN_LANGUAGE.md`'s "Field state" table reaches for
+// whenever body-sized orange-family text has to sit directly on white.
+const optionSelected = 'text-darkestorange dark:text-orange';
 
 const NAV_KEYS = ['ArrowDown', 'ArrowUp', 'Home', 'End', 'Enter', ' ', 'Escape', 'Tab'];
 
