@@ -57,7 +57,14 @@ const variants = {
   secondary: 'bg-darkorange text-darkestblue not-disabled:hover:bg-orange',
   tertiary: 'bg-darkblue text-white not-disabled:hover:bg-darkestblue',
   disabled: 'bg-gray-300 text-gray-500 cursor-not-allowed',
-  toggle: 'bg-darkestblue text-white dark:bg-orange dark:text-darkblue',
+  // No `surface-light` override for the dark-mode fill here, unlike the orange/darkorange
+  // fills in `Card.tsx`: those panels are self-contained, so their own fill is what the
+  // offset shadow lands on. This button always sits on the header, which is `surface-dark`
+  // (white shadow) regardless of theme — the header's navy is what the shadow lands on, not
+  // the button's own fill — so the toggle inherits that rather than setting its own.
+  toggle:
+    'bg-darkestblue text-white not-disabled:hover:bg-darkblue ' +
+    'dark:bg-orange dark:text-darkblue dark:not-disabled:hover:bg-darkorange',
 } as const;
 
 // `lift` (src/index.css) carries the hover/press micro-action *and* the colour swap on one
