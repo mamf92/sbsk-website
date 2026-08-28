@@ -31,8 +31,9 @@ function without<T>(
 
 /**
  * Kontakt oss (#180). One column — heading and intro on top, fields stacked below — on the
- * same `bg-darkblue surface-dark` panel treatment `LoginSection` uses, full width rather than
- * centered to a narrow column, matching the design handoff's screenshot.
+ * same `bg-darkblue surface-dark max-w-form` framed panel `LoginSection` and `RegisterSection`
+ * use, sitting on the page's own `bg-white dark:bg-darkestblue` background (`ContactUs.tsx`)
+ * rather than spanning full width on its own navy backdrop.
  *
  * Validation is `contactSchema` (`src/schemas/contact.ts`), the first form on `src/schemas/` —
  * the pattern #83 wants the rest of the site's forms to eventually move onto. It runs on
@@ -147,8 +148,8 @@ export default function ContactSection() {
   };
 
   return (
-    <div className="bg-darkblue surface-dark flex w-full flex-1 justify-center px-4 py-16 md:py-24">
-      <div className="max-w-form flex w-full flex-col gap-8">
+    <div className="bg-darkblue surface-dark max-w-form my-4 flex w-full items-center justify-center px-4">
+      <div className="flex w-full flex-col gap-8 py-16 md:py-24">
         <div className="flex flex-col gap-4 text-white">
           <h1 className="font-heading text-h1 tracking-heading font-bold">Kontakt oss!</h1>
           <p className="font-body">
