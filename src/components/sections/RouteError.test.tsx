@@ -77,7 +77,7 @@ describe('RouteError', () => {
     renderThrowing(new Error('boom'));
 
     await screen.findByRole('heading', { name: 'Noe gikk galt hos oss' });
-    expect(logged).toHaveBeenCalled();
+    await waitFor(() => expect(logged).toHaveBeenCalled());
   });
 
   it('stays quiet for a 404, which is not a fault', async () => {
