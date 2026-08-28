@@ -1,21 +1,16 @@
 import { supabase } from '../client';
 
-export default async function getImage(userId: string): Promise<string | null> {
+const SIGNED_URL_TTL_SECONDS = 3600;
+
+export default async function getImage(path: string): Promise<string | null> {
   const { data, error } = await supabase.storage
     .from('profile-images')
-    .list(userId + '/', { limit: 1, offset: 0, sortBy: { column: 'name', order: 'asc' } });
+    .createSignedUrl(path, SIGNED_URL_TTL_SECONDS);
 
   if (error) {
-    console.error('Error fetching image:', error);
+    console.error('Error creating signed image URL:', error);
     return null;
   }
 
-  if (!data || data.length === 0) {
-    return null;
-  }
-
-  const { data: publicData } = await supabase.storage
-    .from('profile-images')
-    .getPublicUrl(`${userId}/${data[0].name}`);
-  return publicData?.publicUrl || null;
+  return data?.signedUrl || null;
 }

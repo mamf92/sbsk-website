@@ -3,6 +3,7 @@ import { Button } from '../../ui/Buttons';
 import { Dialog } from '../../ui/Dialog';
 import { Input } from '../../ui/Input';
 import { Textarea } from '../../ui/Textarea';
+import getImage from '../../../supabase/queryHelpers/getImage';
 import uploadImage from '../../../supabase/queryHelpers/uploadImage';
 import { useState } from 'react';
 import { type ProfileFormValues } from '../../../supabase/queryHelpers/editProfile';
@@ -17,6 +18,7 @@ const NAME_PATTERN = "^[a-zA-ZÀ-ÿ\\-\\s'’]{2,}$";
 
 export default function ProfileForm({ profile, onSubmitProfile, onClose }: ProfileFormProps) {
   const [imageURL, setImageURL] = useState<string | null>(profile.photo_url);
+  const [photoPath, setPhotoPath] = useState<string | null>(profile.photo_path);
 
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -27,7 +29,7 @@ export default function ProfileForm({ profile, onSubmitProfile, onClose }: Profi
       name: formData.get('name') as string,
       surname: formData.get('surname') as string | null,
       bio: formData.get('bio') as string | null,
-      photo_url: imageURL ?? (formData.get('photo_file') as File | null),
+      photo_url: photoPath ?? (formData.get('photo_file') as File | null),
     };
     onSubmitProfile(profileData);
   };
@@ -66,9 +68,14 @@ export default function ProfileForm({ profile, onSubmitProfile, onClose }: Profi
       onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-          uploadImage(profile.supabase_id, file).then((url) => {
-            if (url) {
-              setImageURL(url);
+          uploadImage(profile.supabase_id, file).then((path) => {
+            if (path) {
+              setPhotoPath(path);
+              getImage(path).then((url) => {
+                if (url) {
+                  setImageURL(url);
+                }
+              });
             }
           });
         }
