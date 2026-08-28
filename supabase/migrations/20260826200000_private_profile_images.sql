@@ -9,7 +9,9 @@ set public = false,
     allowed_mime_types = array['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 where id = 'profile-images';
 
-alter table storage.objects enable row level security;
+-- storage.objects ships with RLS already enabled on every Supabase project, and the table
+-- is owned by supabase_storage_admin rather than the migration role, so re-enabling it here
+-- fails with "must be owner of table objects". Safe to skip.
 
 -- Any signed-in member can view any profile photo (matches prior public behaviour, now
 -- gated behind auth so createSignedUrl can be used to render it).
