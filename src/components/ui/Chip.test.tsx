@@ -67,17 +67,27 @@ describe('Chip', () => {
     expect(new Set(classes).size).toBe(categories.length);
   });
 
-  it('gives every category a distinct hover preview even before the chip is selected', () => {
+  it('previews its category on the border and never paints a hover fill', () => {
     // An unselected chip shares one resting outline, but previews its own category's colour
-    // on hover so a filter signals what it filters to before it is ever pressed (#203).
-    const classes = categories.map((category) => {
-      const { unmount } = render(<Chip category={category}>x</Chip>);
-      const { className } = screen.getByRole('button');
-      unmount();
-      return className;
-    });
+    // on hover so a filter signals what it filters to before it is ever pressed (#203). The
+    // preview is border-only: the 10% category fill this used to add read as a washed yellow
+    // on the orange-family categories and sat too close to the selected fill (#223).
+    const borders = new Set<string>();
 
-    expect(new Set(classes).size).toBe(categories.length);
+    for (const category of categories) {
+      const { unmount } = render(<Chip category={category}>x</Chip>);
+      const classes = screen.getByRole('button').className.split(/\s+/);
+      unmount();
+
+      expect(classes.filter((name) => name.includes('hover:bg-'))).toHaveLength(0);
+      const border = classes.find((name) => name.startsWith('hover:border-'));
+      expect(border).toBeDefined();
+      borders.add(border!);
+    }
+
+    // Not one per category — categories that share a card colour share a border preview. What
+    // matters is that the preview is category-coded at all rather than one shared hover.
+    expect(borders.size).toBeGreaterThan(1);
   });
 
   it('keeps the resting (non-hover) treatment identical across categories', () => {

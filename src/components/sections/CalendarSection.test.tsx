@@ -133,17 +133,18 @@ afterEach(() => {
 });
 
 describe('CalendarSection', () => {
-  it('highlights the next upcoming event and opens it by default', () => {
+  it('highlights the next upcoming event but leaves it closed', () => {
     renderSection();
 
     expect(screen.getByText('Neste arrangement')).toBeInTheDocument();
     // 10 August → 12 August is two days out.
     expect(screen.getByText('Om 2 dager')).toBeInTheDocument();
 
+    // Featured, not opened (#223): the divider and the countdown carry the emphasis.
     const next = card('Ukentlig spillkveld');
-    expect(within(next).getByRole('button', { name: /Skjul/ })).toHaveAttribute(
+    expect(within(next).getByRole('button', { name: /Vis mer om/ })).toHaveAttribute(
       'aria-expanded',
-      'true',
+      'false',
     );
   });
 
@@ -280,6 +281,12 @@ describe('CalendarSection', () => {
 
   it('expands and collapses an event through the chevron', async () => {
     renderSection();
+
+    // Open the featured event first, so the single-panel rule below is actually exercised
+    // rather than passing on a list that happened to start with nothing open (#223).
+    await userEvent.click(
+      within(card('Ukentlig spillkveld')).getByRole('button', { name: /Vis mer/ }),
+    );
 
     const autumn = card('Høstturnering');
     const chevron = within(autumn).getByRole('button', { name: /Vis mer/ });

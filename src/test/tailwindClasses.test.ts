@@ -197,13 +197,22 @@ const NAMED_CONTAINER_STEP = /^(?:[3-7]?xs|sm|md|lg|[2-7]?xl|prose)$/;
 /** 24rem in Tailwind spacing steps: `max-w-96` is 384px, the narrowest width we call a column. */
 const PAGE_WIDTH_FLOOR = 96;
 
+/** `max-w-[44ch]`: measured in the text itself, so a reading measure rather than a page width. */
+const READING_MEASURE = /^\[\d+(\.\d+)?ch\]$/;
+
+/**
+ * `max-w-[calc(100vw-1rem)]`: a clamp that keeps a popup inside the screen — `Dropdown`'s
+ * option panel is positioned against its trigger rather than the content column, so what it
+ * must not outgrow is the viewport, not a container. Like `ch`, no container token expresses it.
+ */
+const VIEWPORT_CLAMP = /^\[(?:100vw|calc\(100vw[^)]*\))\]$/;
+
 function isRawPageWidth(token: string): boolean {
   const value = token.slice('max-w-'.length);
   if (NAMED_CONTAINER_STEP.test(value)) return true;
-  // A one-off `max-w-[1100px]`: the exact shape a converted inline style comes back as. A `ch`
-  // value is the exception — it is measured in the text itself, so it is a reading measure
-  // rather than a page width, and no container token could express it.
-  if (value.startsWith('[')) return !/^\[\d+(\.\d+)?ch\]$/.test(value);
+  // A one-off `max-w-[1100px]`: the exact shape a converted inline style comes back as. The two
+  // exceptions above are the arbitrary values that are not page widths at all.
+  if (value.startsWith('[')) return !READING_MEASURE.test(value) && !VIEWPORT_CLAMP.test(value);
   const steps = Number(value);
   return Number.isFinite(steps) && steps >= PAGE_WIDTH_FLOOR;
 }
@@ -232,6 +241,11 @@ describe('page containers come from the container tokens', () => {
     ).toHaveLength(4);
     // A reading measure, not a container: the 404 body copy's `max-w-[44ch]`.
     expect(isRawPageWidth('max-w-[44ch]')).toBe(false);
+    // A viewport clamp, not a container: `Dropdown`'s option panel staying on screen.
+    expect(isRawPageWidth('max-w-[calc(100vw-1rem)]')).toBe(false);
+    expect(isRawPageWidth('max-w-[100vw]')).toBe(false);
+    // Still a page width even though it is arbitrary — the exceptions are narrow on purpose.
+    expect(isRawPageWidth('max-w-[90vw]')).toBe(true);
     // Component-sized, not a container: the footer wordmark's 49px box.
     expect(isRawPageWidth('max-w-12.25')).toBe(false);
   });

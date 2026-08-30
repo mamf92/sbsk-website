@@ -71,11 +71,15 @@ export function PagePlaceholder({
 
       {actions.length > 0 ? (
         <div className="mt-2 flex flex-row flex-wrap justify-center gap-4">
-          {actions.map((action, index) => (
+          {/* All `primary` (#223). `secondary` is `darkorange` against `primary`'s `orange` —
+              two fills a shade apart, which on a page whose only content is these buttons
+              reads as one of them being subtly wrong rather than as a hierarchy. Neither
+              destination outranks the other here anyway. */}
+          {actions.map((action) => (
             <Button
               key={action.to}
               onClick={() => navigate(action.to)}
-              variant={index === 0 ? 'primary' : 'secondary'}
+              variant="primary"
               size="lg"
               icon="right"
             >

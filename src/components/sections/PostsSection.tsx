@@ -119,17 +119,17 @@ function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) 
   const [selectedCategory, setSelectedCategory] = useState<'all' | PostCategory>('all');
   const [sortBy, setSelectedSort] = useState<SortOption>('date-desc');
   const [visibleItemCount, setVisibleItemCount] = useState(5);
-  // Each card opens and closes on its own, seeded with the newest post open. `posts` arrives
-  // publishedAt-desc from the GROQ query, so [0] is newest.
+  // Each card opens and closes on its own, and the page loads with every one of them closed
+  // (#223). Seeding the newest post open meant the list arrived already scrolled past by one
+  // article's worth of body copy, which is not what a list of headlines is for.
   //
   // Deliberately not an accordion, even though the design library specifies one. Auto-closing
   // the previously open card moves everything below it up by that card's full height, so the
   // header you just clicked jumps out from under the pointer — worst exactly when the open
   // card was long, which is when the reader is most likely to be mid-article. Nothing here
-  // closes without the reader asking for it, so the only content shift is one they caused.
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(() =>
-    posts[0] ? new Set([posts[0]._id]) : new Set(),
-  );
+  // opens or closes without the reader asking for it, so the only content shift is one they
+  // caused.
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
   const postItems = posts as PostWithExtras[];
 
   const filteredPosts = postItems.filter((post) => {

@@ -39,7 +39,7 @@ export const gameType = defineType({
         list: [
           { title: 'Lett', value: 1 },
           { title: 'Middels', value: 2 },
-          { title: 'Vanskelig', value: 3 },
+          { title: 'Avansert', value: 3 },
         ],
         layout: 'radio',
       },
