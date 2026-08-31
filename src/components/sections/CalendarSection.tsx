@@ -333,7 +333,9 @@ function EventList({ events, failed }: { events: CalendarEventTypes[]; failed?: 
     return upcoming.length ? upcoming[0]._id : null;
   }, [events, now]);
 
-  const [expandedId, setExpandedId] = useState<string | null>(nextEventId);
+  // Closed on load, the featured event included (#223) — `nextEventId` still lifts it out of
+  // its month group and drives the countdown, it just no longer opens itself.
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const filtered = events
     .filter((event) => category === 'all' || event.category === category)

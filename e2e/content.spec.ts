@@ -133,7 +133,7 @@ test('searching the games list narrows it by title', async ({ page }) => {
 test('filtering the games list by difficulty keeps only that difficulty', async ({ page }) => {
   await page.goto('/våre-spill');
 
-  await page.getByRole('button', { name: 'Vanskelig' }).click();
+  await page.getByRole('button', { name: 'Avansert' }).click();
 
   await expect(page.getByRole('heading', { name: 'Storgruppe' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Testkveld' })).toHaveCount(0);

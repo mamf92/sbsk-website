@@ -61,10 +61,10 @@ const openTitles = () =>
     .map((el) => el.textContent?.match(/\w[\wåøæÅØÆ ]*innlegg/)?.[0]);
 
 describe('PostsSection expand behaviour', () => {
-  it('opens the newest post and leaves the rest closed', () => {
+  it('leaves every post closed on load, the newest one included', () => {
     renderList();
 
-    expect(toggle('Nyeste innlegg')).toHaveAttribute('aria-expanded', 'true');
+    expect(toggle('Nyeste innlegg')).toHaveAttribute('aria-expanded', 'false');
     expect(toggle('Midterste innlegg')).toHaveAttribute('aria-expanded', 'false');
     expect(toggle('Eldste innlegg')).toHaveAttribute('aria-expanded', 'false');
   });
@@ -74,6 +74,7 @@ describe('PostsSection expand behaviour', () => {
     // below it up by that post's full height, yanking the header out from under the pointer.
     renderList();
 
+    await userEvent.click(toggle('Nyeste innlegg'));
     await userEvent.click(toggle('Midterste innlegg'));
     expect(openTitles()).toHaveLength(2);
 
@@ -87,6 +88,7 @@ describe('PostsSection expand behaviour', () => {
   it('closes only the post that was clicked', async () => {
     renderList();
 
+    await userEvent.click(toggle('Nyeste innlegg'));
     await userEvent.click(toggle('Midterste innlegg'));
     await userEvent.click(toggle('Nyeste innlegg'));
 
@@ -96,6 +98,9 @@ describe('PostsSection expand behaviour', () => {
 
   it('can close every post, leaving nothing open', async () => {
     renderList();
+
+    await userEvent.click(toggle('Nyeste innlegg'));
+    expect(screen.queryAllByRole('button', { expanded: true })).toHaveLength(1);
 
     await userEvent.click(toggle('Nyeste innlegg'));
     expect(screen.queryAllByRole('button', { expanded: true })).toHaveLength(0);
@@ -142,14 +147,17 @@ describe('PostsSection links', () => {
       </MemoryRouter>,
     );
 
-    // posts[0] ("Nyeste innlegg") opens by default.
+    // Every post loads closed (#223), so the link is not reachable until one is opened.
+    expect(screen.queryByRole('button', { name: /Meld deg på/ })).not.toBeInTheDocument();
+
+    await userEvent.click(toggle('Nyeste innlegg'));
     expect(screen.getByRole('button', { name: /Meld deg på/ })).toBeInTheDocument();
 
     await userEvent.click(toggle('Nyeste innlegg'));
     expect(screen.queryByRole('button', { name: /Meld deg på/ })).not.toBeInTheDocument();
   });
 
-  it('renders every link a post has, not just one or two', () => {
+  it('renders every link a post has, not just one or two', async () => {
     const withManyLinks: PostTypes[] = [
       {
         ...posts[0],
@@ -167,6 +175,8 @@ describe('PostsSection links', () => {
         <Posts posts={withManyLinks} />
       </MemoryRouter>,
     );
+
+    await userEvent.click(toggle('Nyeste innlegg'));
 
     expect(screen.getByRole('button', { name: /Første lenke/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Andre lenke/ })).toBeInTheDocument();

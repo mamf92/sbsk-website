@@ -40,7 +40,11 @@ type GameCardProps = {
   onBuy?: (info: BuyInfo) => void;
 };
 
-const DIFFICULTY_LABEL = { 1: 'Lett', 2: 'Middels', 3: 'Vanskelig' } as const;
+// `Avansert`, not `Vanskelig` (#223) — the pip meter says how demanding the game is to learn,
+// which "advanced" names without implying the game is a slog. Must stay in step with
+// `DIFFICULTIES` in `OurGamesSection`: the filter chip and the card's own label read the same
+// number, so two spellings of it would look like two different scales.
+const DIFFICULTY_LABEL = { 1: 'Lett', 2: 'Middels', 3: 'Avansert' } as const;
 
 export function GameCard({
   title,
@@ -162,6 +166,11 @@ export function GameCard({
               </>
             )}
           </p>
+          {/* Two on one row under the full-width buy link, never three across (#223): at the
+              290px the grid tracks bottom out at, a third would leave each button too narrow
+              for its label. Both `flex-1`, so one on its own still spans the row rather than
+              sitting off to one side. The BGG mark is a wordmark and needs no label; the video
+              link takes one, because a bare play button does not say what it plays. */}
           {(bggUrl || videoUrl) && (
             <div className="mt-1 flex gap-2">
               {bggUrl && (
@@ -181,12 +190,11 @@ export function GameCard({
                   href={videoUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  title="Se videoforklaring på YouTube"
-                  aria-label="Se videoforklaring på YouTube"
+                  title="Se reglene forklart på video"
                   className="border-darkestblue not-disabled:hover:bg-darkestblue dark:not-disabled:hover:text-darkestblue lift flex h-11 min-w-11 flex-1 items-center justify-center gap-2 border text-xs font-bold not-disabled:hover:text-white dark:border-white dark:not-disabled:hover:bg-white"
                 >
                   <YouTube aria-hidden="true" className="h-[18px] w-auto fill-current" />
-                  YouTube
+                  Se reglene
                 </a>
               )}
             </div>

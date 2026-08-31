@@ -202,6 +202,70 @@ describe('Dropdown', () => {
     );
   });
 
+  /**
+   * Stands the panel's measurement in for a real layout — jsdom reports every rect as zero, and
+   * the alignment flip is the one behaviour here that can only be decided by measuring (#223).
+   */
+  function measurePanelAt(rect: { left: number; right: number }) {
+    return vi.spyOn(HTMLUListElement.prototype, 'getBoundingClientRect').mockReturnValue({
+      ...rect,
+      width: rect.right - rect.left,
+      height: 120,
+      top: 0,
+      bottom: 120,
+      x: rect.left,
+      y: 0,
+      toJSON: () => ({}),
+    } as DOMRect);
+  }
+
+  it('right-aligns the panel by default', async () => {
+    renderDropdown();
+    await userEvent.click(screen.getByRole('button', { name: 'Sorter arrangementer' }));
+
+    expect(screen.getByRole('listbox')).toHaveClass('right-0');
+    expect(screen.getByRole('listbox')).not.toHaveClass('left-0');
+  });
+
+  it('flips to left-alignment when right-alignment would run off the left edge', async () => {
+    // The reported case: the filter row wraps, the trigger lands near the left edge, and a
+    // panel wider than that narrow trigger grows leftward off the screen.
+    const rect = measurePanelAt({ left: -42, right: 258 });
+    renderDropdown();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Sorter arrangementer' }));
+    expect(screen.getByRole('listbox')).toHaveClass('left-0');
+    expect(screen.getByRole('listbox')).not.toHaveClass('right-0');
+
+    rect.mockRestore();
+  });
+
+  it('goes back to right-alignment the next time it opens', async () => {
+    // The flip belongs to one opening, not to the component: the trigger moves as the row
+    // rewraps, so a panel that had to flip once must not stay flipped afterwards.
+    const rect = measurePanelAt({ left: -42, right: 258 });
+    renderDropdown();
+    const trigger = screen.getByRole('button', { name: 'Sorter arrangementer' });
+
+    await userEvent.click(trigger);
+    expect(screen.getByRole('listbox')).toHaveClass('left-0');
+    await userEvent.click(trigger);
+
+    rect.mockRestore();
+    await userEvent.click(trigger);
+    expect(screen.getByRole('listbox')).toHaveClass('right-0');
+  });
+
+  it('leaves the panel right-aligned when it already fits', async () => {
+    const rect = measurePanelAt({ left: 120, right: 420 });
+    renderDropdown();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Sorter arrangementer' }));
+    expect(screen.getByRole('listbox')).toHaveClass('right-0');
+
+    rect.mockRestore();
+  });
+
   it('merges a caller-supplied className onto the wrapper instead of dropping it', () => {
     renderDropdown({ className: 'w-full' });
     expect(screen.getByRole('button').parentElement).toHaveClass('w-full');
