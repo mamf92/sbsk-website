@@ -22,4 +22,12 @@ export default tseslint.config([
       globals: globals.browser,
     },
   },
+  {
+    // The entry module is not a Fast Refresh boundary — it never re-exports anything, it mounts
+    // the app. `react-refresh/only-export-components` reads the PascalCase `React.lazy` route
+    // components there (see the split-route comment in src/main.tsx) as components in a file with
+    // no exports, which is exactly what an entry module is.
+    files: ['src/main.tsx'],
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
 ]);

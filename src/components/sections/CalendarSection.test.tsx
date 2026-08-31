@@ -159,7 +159,7 @@ describe('CalendarSection', () => {
   it('hides the month dividers under a title sort, without dropping any event', async () => {
     renderSection();
 
-    await userEvent.click(screen.getByRole('button', { name: 'Sorter arrangementer' }));
+    await userEvent.click(screen.getByRole('button', { name: /Sorter arrangementer/ }));
     await userEvent.click(screen.getByRole('option', { name: 'Tittel (A–Å)' }));
 
     expect(screen.queryByText('AUGUST 2026')).not.toBeInTheDocument();
