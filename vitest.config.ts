@@ -12,6 +12,9 @@ export default defineConfig({
     env: {
       VITE_SUPABASE_URL: 'http://localhost:54321',
       VITE_SUPABASE_PUBLISHABLE_KEY: 'test-anon-key',
+      // The portal is hidden in production (#213); tests keep it on so the gated routes and
+      // components stay covered.
+      VITE_ENABLE_MEMBER_PORTAL: 'true',
     },
     setupFiles: ['./src/test/setup.ts'],
     // Setting `exclude` replaces vitest's defaults rather than extending them,
