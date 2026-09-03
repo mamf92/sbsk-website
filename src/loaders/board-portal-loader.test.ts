@@ -63,7 +63,7 @@ describe('boardPortalLoader', () => {
   // The two tiers are the whole point of this loader: no session is a login problem, a session
   // without permission is not. Collapsing them would send a member who is already past login
   // back to it with nothing to do there.
-  it('falls back to the member portal when the registry is out of reach', async () => {
+  it('falls back to the member portal, with a reason, when the registry denies permission', async () => {
     signedIn();
     getProfile.mockResolvedValue(profile);
     // What a non-admin actually gets: RLS on `members` answers with an error rather than rows.
@@ -73,21 +73,34 @@ describe('boardPortalLoader', () => {
 
     expect(thrown).toBeInstanceOf(Response);
     expect((thrown as Response).status).toBe(302);
-    expect((thrown as Response).headers.get('Location')).toBe('/medlemsportal');
+    expect((thrown as Response).headers.get('Location')).toBe('/medlemsportal?reason=not_admin');
   });
 
-  // Worth knowing about the tier above: the catch cannot see *why* getMembers failed, so an admin
-  // hitting a Supabase outage is bounced to the member portal as though they lacked permission,
-  // with no explanation. Telling the two apart needs the loader to inspect the error — a change
-  // to behaviour, not to tests. This pins today's answer so that change is visible when it lands.
-  it('also falls back when the registry fails for a reason that is not permission', async () => {
+  // The same fallback, recognised from the Postgres error code alone (no message text to key
+  // off) — the shape a real PostgREST 401/403 response actually carries.
+  it('also recognises a permission failure carried only as an HTTP-style code', async () => {
+    signedIn();
+    getProfile.mockResolvedValue(profile);
+    getMembers.mockRejectedValue({ code: '403', message: 'Forbidden' });
+
+    const thrown = await thrownBy(boardPortalLoader);
+
+    expect((thrown as Response).headers.get('Location')).toBe('/medlemsportal?reason=not_admin');
+  });
+
+  // #82: the catch used to be unable to see *why* getMembers failed, so an admin hitting a
+  // genuine Supabase outage was bounced to the member portal as though they lacked permission,
+  // with no explanation. That is now a fault like any other loader failure — the same tier the
+  // profile-query test below already gets — rather than a silent, mislabelled redirect.
+  it('lets a registry failure that is not a permission denial reach the error boundary', async () => {
     signedIn();
     getProfile.mockResolvedValue(profile);
     getMembers.mockRejectedValue(new Error('fetch failed'));
 
     const thrown = await thrownBy(boardPortalLoader);
 
-    expect((thrown as Response).headers.get('Location')).toBe('/medlemsportal');
+    expect(thrown).not.toBeInstanceOf(Response);
+    expect(thrown).toEqual(new Error('fetch failed'));
   });
 
   it('lets a failing profile query reach the error boundary', async () => {

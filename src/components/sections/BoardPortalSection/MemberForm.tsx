@@ -3,6 +3,8 @@ import { Button } from '../../ui/Buttons';
 import { Checkbox } from '../../ui/Checkbox';
 import { Dialog } from '../../ui/Dialog';
 import { Input } from '../../ui/Input';
+import { Alert } from '../../ui/Alert';
+import { useState } from 'react';
 
 type MemberFormValues = {
   id?: string;
@@ -18,7 +20,7 @@ type MemberFormValues = {
 
 type MemberFormProps = {
   member?: Member;
-  onSubmitMember: (member: MemberFormValues) => void;
+  onSubmitMember: (member: MemberFormValues) => Promise<unknown>;
   onClose: () => void;
 };
 
@@ -31,8 +33,10 @@ const EMAIL_PATTERN = '^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$';
 
 export default function MemberForm({ member, onSubmitMember, onClose }: MemberFormProps) {
   const isEditMode = Boolean(member?.id);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const memberData: MemberFormValues = {
@@ -46,8 +50,19 @@ export default function MemberForm({ member, onSubmitMember, onClose }: MemberFo
       email: String(formData.get('email') ?? ''),
       is_admin: formData.get('is_admin') === 'on',
     };
-    onSubmitMember(memberData);
-    onClose();
+
+    setSubmitError(null);
+    setSubmitting(true);
+    try {
+      // Only a successful save closes the dialog — a rejection here used to close it anyway
+      // and swallow the failure entirely (#169).
+      await onSubmitMember(memberData);
+      onClose();
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Kunne ikke lagre medlemmet.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const fields = [
@@ -152,6 +167,7 @@ export default function MemberForm({ member, onSubmitMember, onClose }: MemberFo
             <span className="font-body text-white">Administrator</span>
           </label>
         </div>
+        {submitError && <Alert>{submitError}</Alert>}
         <div className="flex w-full flex-col gap-3 sm:flex-row sm:justify-end">
           <Button
             onClick={onClose}
@@ -162,7 +178,7 @@ export default function MemberForm({ member, onSubmitMember, onClose }: MemberFo
           >
             Avbryt
           </Button>
-          <Button type="submit" variant="primary" size="md" icon="right">
+          <Button type="submit" variant="primary" size="md" icon="right" loading={submitting}>
             {isEditMode ? 'Lagre endringer' : 'Legg til medlem'}
           </Button>
         </div>
