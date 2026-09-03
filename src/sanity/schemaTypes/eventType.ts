@@ -1,4 +1,5 @@
 import { defineField, defineType } from 'sanity';
+import type { Rule } from 'sanity';
 import ExternalLink from '../../assets/icons/symbols/external-link.svg?react';
 import AddLink from '../../assets/icons/symbols/add-link.svg?react';
 
@@ -34,6 +35,7 @@ const richTextBlocks = [
             {
               name: 'url',
               type: 'url',
+              validation: (rule: Rule) => rule.uri({ scheme: ['http', 'https'] }),
             },
           ],
         },
@@ -47,6 +49,8 @@ const richTextBlocks = [
             {
               name: 'url',
               type: 'url',
+              validation: (rule: Rule) =>
+                rule.uri({ scheme: ['http', 'https'], allowRelative: true }),
             },
           ],
         },
@@ -148,7 +152,12 @@ export const eventType = defineType({
           title: 'Knappetekst',
           initialValue: 'Meld deg på',
         }),
-        defineField({ name: 'url', type: 'url', title: 'URL' }),
+        defineField({
+          name: 'url',
+          type: 'url',
+          title: 'URL',
+          validation: (rule) => rule.uri({ scheme: ['http', 'https'] }),
+        }),
       ],
     }),
     defineField({
@@ -187,6 +196,7 @@ export const eventType = defineType({
               type: 'url',
               title: 'Lenke',
               description: 'Dit logoen tar deg når du klikker. Valgfritt.',
+              validation: (rule) => rule.uri({ scheme: ['http', 'https'] }),
             }),
             defineField({
               name: 'ctaLabel',
@@ -199,6 +209,7 @@ export const eventType = defineType({
               type: 'url',
               title: 'Tilbudslenke',
               description: 'Lenke tilbudsteksten peker til, hvis ulik logoens lenke. Valgfritt.',
+              validation: (rule) => rule.uri({ scheme: ['http', 'https'] }),
             }),
           ],
           preview: {
@@ -279,7 +290,12 @@ export const eventType = defineType({
               type: 'string',
               description: 'Tekst som vises på knappen.',
             }),
-            defineField({ name: 'url', type: 'url', description: 'URL for lenken.' }),
+            defineField({
+              name: 'url',
+              type: 'url',
+              description: 'URL for lenken.',
+              validation: (rule) => rule.uri({ scheme: ['http', 'https'] }),
+            }),
           ],
         },
       ],
