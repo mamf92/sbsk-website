@@ -149,7 +149,24 @@ test('a board portal that cannot read the registry falls back to the member port
 
   await page.goto(BOARD_PORTAL);
 
-  await expect(page).toHaveURL(new RegExp(`${MEMBER_PORTAL}$`));
+  await expect(page).toHaveURL(`${MEMBER_PORTAL}?reason=not_admin`);
   await expect(page.getByRole('heading', { level: 1, name: 'Velkommen, Ingrid!' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Medlemsliste' })).toHaveCount(0);
+  // #82: the fallback used to be silent. A non-admin now sees why they landed here.
+  await expect(page.getByRole('alert')).toHaveText(
+    'Du har ikke administratortilgang til styreportalen.',
+  );
+});
+
+// #82's other tier: a registry failure that is *not* permission-related (an outage, say) must
+// not be mislabelled as "you're not an admin" — it is a fault like any other loader failure.
+test('a board portal registry failure that is not a permission denial is a fault, not a fallback', async ({
+  page,
+}) => {
+  await stubSupabase(page, { fail: { members: 500 } });
+
+  await page.goto(BOARD_PORTAL);
+
+  await expect(page).toHaveURL(BOARD_PORTAL);
+  await expect(page.getByRole('heading', { name: 'Noe gikk galt hos oss' })).toBeVisible();
 });

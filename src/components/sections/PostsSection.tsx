@@ -17,6 +17,7 @@ import { components } from '../../sanity/editors/portableTextComponents';
 import type { PortableTextBlock } from '@portabletext/types';
 import { useNavigate } from 'react-router-dom';
 import { urlFor } from '../../sanity/sanityImageUrl';
+import { isInternalLink, internalLinkPath } from '../../utils/internalLinks';
 
 interface PostsProps {
   postsHero?: PostsHeroTypes;
@@ -323,14 +324,13 @@ function PostCard({
   onToggle: () => void;
 }) {
   const navigate = useNavigate();
-  const INTERNAL_ORIGIN = 'https://www.mamf92.github.io/sbsk-website';
   const publishedAt = new Date(post.publishedAt);
   const hasLinks = !!post.links && post.links.length > 0;
   const thumbnail = getThumbnail(post);
 
   const actions = hasLinks
     ? post.links?.map((link, index) => {
-        const isInternal = link.url.startsWith(INTERNAL_ORIGIN);
+        const isInternal = isInternalLink(link.url);
 
         return (
           <Button
@@ -340,7 +340,7 @@ function PostCard({
             icon="right"
             onClick={() => {
               if (isInternal) {
-                navigate(new URL(link.url, window.location.href).pathname);
+                navigate(internalLinkPath(link.url));
               } else {
                 window.location.href = link.url;
               }
