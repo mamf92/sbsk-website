@@ -135,6 +135,6 @@ Deno.serve(async (req) => {
     });
   } catch (err) {
     console.error('fatal', err);
-    return new Response(String(err), { status: 500, headers: corsHeaders });
+    return new Response('Internal error', { status: 500, headers: corsHeaders });
   }
 });
