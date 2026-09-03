@@ -49,8 +49,9 @@ have to be re-issued every session. Tried it; the server reported that authoriza
 required and could not proceed.
 
 The stdio server avoids both problems: `SUPABASE_ACCESS_TOKEN` comes from the environment
-settings, which persist across every session. It is pinned `--read-only`; remove that flag
-only if we decide agents should run migrations.
+settings, which persist across every session. It was pinned `--read-only` until #98 needed a
+migration; the flag is the only thing that ever gated write access — the token itself carries
+no read/write distinction, so nothing about `SUPABASE_ACCESS_TOKEN` changed to unpin it.
 
 ### Why `docs` is excluded from the feature list
 
