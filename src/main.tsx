@@ -16,6 +16,7 @@ import { ourGamesLoader } from './loaders/our-games-loader';
 import { aboutUsLoader } from './loaders/about-us-loader';
 import { boardPortalLoader } from './loaders/board-portal-loader';
 import { memberPortalLoader } from './loaders/member-portal-loader';
+import { memberPortalEnabled } from './utils/featureFlags';
 
 // Every page below the home page is its own chunk. Lighthouse measured ~58% of the entry bundle
 // unused on the home page (#222) — that was thirteen other pages' markup and component trees,
@@ -80,10 +81,23 @@ const router = createBrowserRouter(
             { path: 'arrangementer', element: <Events />, loader: eventsListLoader },
             { path: 'arrangementer/:id', element: <Event />, loader: eventDetailLoader },
             { path: 'våre-partnere', element: <OurPartners /> },
-            { path: 'lag-medlemsprofil', element: <Register /> },
-            { path: 'login', element: <Login /> },
-            { path: 'medlemsportal', element: <MemberPortal />, loader: memberPortalLoader },
-            { path: 'styreportal', element: <BoardPortal />, loader: boardPortalLoader },
+            // Gated behind #213: no member/board portal for the MVP launch, so these four
+            // routes are absent from the production build and fall through to the catch-all
+            // 404 below. `memberPortalEnabled` is true in unit tests and the Playwright config
+            // so the pages stay covered while hidden. Re-enable by setting
+            // VITE_ENABLE_MEMBER_PORTAL=true at build time.
+            ...(memberPortalEnabled
+              ? [
+                  { path: 'lag-medlemsprofil', element: <Register /> },
+                  { path: 'login', element: <Login /> },
+                  {
+                    path: 'medlemsportal',
+                    element: <MemberPortal />,
+                    loader: memberPortalLoader,
+                  },
+                  { path: 'styreportal', element: <BoardPortal />, loader: boardPortalLoader },
+                ]
+              : []),
             { path: 'studio/*', element: <StudioRoute /> },
             { path: '*', element: <NotFound /> },
           ],

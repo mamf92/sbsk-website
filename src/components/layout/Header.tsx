@@ -6,6 +6,7 @@ import { navLinkClasses } from '../ui/Link';
 import { useTheme } from '../../hooks/theme/ThemeContext';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../hooks/authContext/authContext';
+import { memberPortalEnabled } from '../../utils/featureFlags';
 
 const desktopNavLink = `${navLinkClasses} text-sm`;
 
@@ -117,63 +118,65 @@ export default function Header() {
             {isDarkMode ? 'LM' : 'DM'}
           </Button>
 
-          {/* Login / profile — desktop only */}
-          {isAuthenticated ? (
-            <div ref={dropdownRef} className="relative z-50 hidden lg:block">
-              <Button
-                variant="primary"
-                size="sm"
-                icon="expand"
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              >
-                {(user?.name && 'Hi, ' + user.name) || 'Min profil'}
-              </Button>
-              <div
-                className={`bg-darkestblue absolute top-11 right-0 z-50 flex w-40 flex-col items-start gap-2 p-4 ${isDropdownOpen ? '' : 'hidden'}`}
-              >
-                {isAdmin && (
+          {/* Login / profile — desktop only. Gated behind #213: no member/board portal for the
+              MVP launch, so there is no login option to show at all. */}
+          {memberPortalEnabled &&
+            (isAuthenticated ? (
+              <div ref={dropdownRef} className="relative z-50 hidden lg:block">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  icon="expand"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                >
+                  {(user?.name && 'Hi, ' + user.name) || 'Min profil'}
+                </Button>
+                <div
+                  className={`bg-darkestblue absolute top-11 right-0 z-50 flex w-40 flex-col items-start gap-2 p-4 ${isDropdownOpen ? '' : 'hidden'}`}
+                >
+                  {isAdmin && (
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      icon="right"
+                      onClick={() => {
+                        navigate('/styreportal');
+                        setIsDropdownOpen(false);
+                      }}
+                    >
+                      Styreportal
+                    </Button>
+                  )}
                   <Button
                     variant="primary"
                     size="sm"
                     icon="right"
                     onClick={() => {
-                      navigate('/styreportal');
+                      navigate('/medlemsportal');
                       setIsDropdownOpen(false);
                     }}
                   >
-                    Styreportal
+                    Profil
                   </Button>
-                )}
-                <Button
-                  variant="primary"
-                  size="sm"
-                  icon="right"
-                  onClick={() => {
-                    navigate('/medlemsportal');
-                    setIsDropdownOpen(false);
-                  }}
-                >
-                  Profil
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  icon="right"
-                  onClick={() => {
-                    logout();
-                    setIsDropdownOpen(false);
-                    navigate('/');
-                  }}
-                >
-                  Logg ut
-                </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    icon="right"
+                    onClick={() => {
+                      logout();
+                      setIsDropdownOpen(false);
+                      navigate('/');
+                    }}
+                  >
+                    Logg ut
+                  </Button>
+                </div>
               </div>
-            </div>
-          ) : (
-            <Button variant="primary" size="sm" icon="right" onClick={() => navigate('/login')}>
-              Logg inn
-            </Button>
-          )}
+            ) : (
+              <Button variant="primary" size="sm" icon="right" onClick={() => navigate('/login')}>
+                Logg inn
+              </Button>
+            ))}
 
           <NavMenuButton
             open={isMobileMenuOpen}
@@ -192,7 +195,7 @@ export default function Header() {
         }`}
         aria-label="Mobilmeny"
       >
-        {isAuthenticated && (
+        {memberPortalEnabled && isAuthenticated && (
           <div className="flex gap-2 border-t border-white/12 px-6 py-[15px]">
             {isAdmin && (
               <Button

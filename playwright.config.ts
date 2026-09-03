@@ -48,6 +48,9 @@ export default defineConfig({
       // for why it has to be a real https host rather than a localhost port.
       VITE_SUPABASE_URL: SUPABASE_URL,
       VITE_SUPABASE_PUBLISHABLE_KEY: SUPABASE_ANON_KEY,
+      // The portal is hidden in production (#213); the smoke suite keeps it on so
+      // portal.spec.ts, dialog.spec.ts and the login/register coverage below stay exercised.
+      VITE_ENABLE_MEMBER_PORTAL: 'true',
     },
   },
 });
