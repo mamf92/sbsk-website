@@ -39,6 +39,17 @@ function renderHeader() {
   );
 }
 
+// WCAG 2.5.3 Label in Name, the same rule `Dropdown` is held to: someone driving the page by
+// voice says the text they can see. A name of only "Bytt til mørk modus" gave "click DM" nothing
+// to match, and Lighthouse failed the page on it (label-content-name-mismatch, #222).
+describe('Header — theme toggle name', () => {
+  it('names the theme toggle with the visible abbreviation it shows', () => {
+    renderHeader();
+    const toggle = screen.getByRole('button', { name: /^DM\b/ });
+    expect(toggle).toHaveTextContent('DM');
+  });
+});
+
 describe('Header — mobile nav tab order', () => {
   it('removes the closed mobile nav panel from the tab order via inert', () => {
     renderHeader();

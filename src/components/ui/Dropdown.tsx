@@ -201,19 +201,33 @@ export function Dropdown<T extends string>({
 
   return (
     <div ref={setRefs} className={['relative inline-block', className].join(' ')} {...props}>
+      {/* The trigger is named by this plus its own visible value, rather than by an
+          `aria-label`, so that the name *contains* the visible text instead of replacing it. An
+          `aria-label="Sorter innlegg"` on a trigger reading "Nyeste først" leaves someone driving
+          the page by voice with nothing to say — WCAG 2.5.3 Label in Name, and the audit
+          Lighthouse fails the page on (label-content-name-mismatch, #222).
+
+          Two `aria-labelledby` references rather than a hidden span inside the button: the
+          algorithm joins referenced elements with a space, where it concatenates adjacent inline
+          children with nothing between them and trims the whitespace out of any separator you
+          try to add. So this announces as "Sorter innlegg Nyeste først" — the field's name and
+          its current value, which is what the trigger of a collapsed listbox should say anyway. */}
+      <span id={`${listboxId}-label`} className="sr-only">
+        {label}
+      </span>
       <button
         ref={triggerRef}
         type="button"
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={listboxId}
-        aria-label={label}
+        aria-labelledby={`${listboxId}-label ${listboxId}-value`}
         aria-activedescendant={open ? `${listboxId}-option-${activeIndex}` : undefined}
         className={trigger}
         onClick={() => (open ? close() : openMenu())}
         onKeyDown={handleKeyDown}
       >
-        <span>{selected?.label ?? ''}</span>
+        <span id={`${listboxId}-value`}>{selected?.label ?? ''}</span>
         <Expand
           aria-hidden="true"
           className={

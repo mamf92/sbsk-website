@@ -5,13 +5,13 @@ import { Input } from '../ui/Input';
 import { Dialog } from '../ui/Dialog';
 import EmptyState from '../ui/EmptyState';
 import { GameCard, type BuyInfo } from '../ui/GameCard';
+import { HeroImage } from '../ui/HeroImage';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/authContext/authContext';
 import { urlFor } from '../../sanity/sanityImageUrl';
 import type { GameTypes } from '../../sanity/queryHelpers/games';
 import type { GamesHeroTypes } from '../../sanity/queryHelpers/games-hero';
 import { FALLBACK_GAMES } from './fallbackGames';
-import heroPlaceholderImage from '../../assets/images/hero-placeholder.jpg';
 
 interface OurGamesProps {
   gamesHero?: GamesHeroTypes | null;
@@ -226,14 +226,11 @@ function GamesHero({ gamesHero }: { gamesHero?: GamesHeroTypes | null }) {
   const subtitle =
     gamesHero?.subtitle ||
     'Sjekk ut spillene i samlingen vår. Som medlem får du rabatt hos vår samarbeidspartner Outland.';
-  const imageUrl = gamesHero?.image
-    ? urlFor(gamesHero.image).width(1440).fit('crop').url()
-    : heroPlaceholderImage;
-
   return (
     <div className="relative flex h-[calc(62vh)] flex-col items-center justify-center p-4">
       <div className="absolute inset-0">
-        <img src={imageUrl} alt="" className="h-full w-full object-cover" />
+        {/* LCP element on /våre-spill, the same way the home hero is on / (#222). */}
+        <HeroImage image={gamesHero?.image} priority />
       </div>
       <div className="absolute inset-0 flex h-[calc(62vh)] flex-col justify-center bg-white/50 p-4 dark:bg-black/50">
         <div className="max-w-content mx-auto flex w-full flex-col items-start gap-6">

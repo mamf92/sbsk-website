@@ -2,13 +2,12 @@ import { Button } from '../ui/Buttons';
 import { useNavigate } from 'react-router-dom';
 import type { HomeHeroTypes } from '../../sanity/queryHelpers/home-hero';
 import { urlFor } from '../../sanity/sanityImageUrl';
-import heroPlaceholderImage from '../../assets/images/hero-placeholder.jpg';
+import { HeroImage } from '../ui/HeroImage';
 
 const FALLBACK_HERO = {
   title: 'Stavanger Brettspillklubb',
   subtitle:
     'Bli med på ukentlige brettspillkvelder og prøv ut ny og kjente spill sammen med andre spilleglade folk.',
-  imageUrl: heroPlaceholderImage,
   imageSourceName: 'Designed by Freepik',
   imageSourceUrl: 'www.freepik.com',
 };
@@ -36,23 +35,8 @@ export default function HomeHero({
       }
     >
       <div className="absolute inset-0">
-        {image && (
-          <img
-            src={urlFor(image).width(1440).fit('crop').url()}
-            srcSet={[
-              `${urlFor(image).width(400).fit('crop').url()} 400w`,
-              `${urlFor(image).width(800).fit('crop').url()} 800w`,
-              `${urlFor(image).width(1200).fit('crop').url()} 1200w`,
-              `${urlFor(image).width(1440).fit('crop').url()} 1440w`,
-            ].join(', ')}
-            sizes="(max-width: 400px) 400px, (max-width: 800px) 800px, (max-width: 1200px) 1200px, 1440px"
-            alt=""
-            className="h-full w-full object-cover"
-          />
-        )}
-        {!image && (
-          <img src={FALLBACK_HERO.imageUrl} alt="" className="h-full w-full object-cover" />
-        )}
+        {/* The home hero is the LCP element on the route every visitor lands on first (#222). */}
+        <HeroImage image={image} priority />
       </div>
       <div className="absolute inset-0 flex h-[calc(80vh)] flex-col items-center justify-center bg-white/50 p-4 text-center dark:bg-black/50">
         <div className="flex flex-1 flex-col justify-center gap-12 md:w-[calc(60%)]">

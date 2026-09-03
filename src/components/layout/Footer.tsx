@@ -1,9 +1,11 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { SocialIcon } from 'react-social-icons';
 import { DiceLogo } from '../ui/DiceLogo';
 import { navLinkClassesBody } from '../ui/Link';
 
 export default function Footer() {
+  const navigate = useNavigate();
+
   return (
     <footer className="bg-darkblue surface-dark font-body max-xs:p-4 flex w-full flex-col p-8 text-white">
       <div className="bg-darkestblue max-xs:px-4 flex justify-center px-6 py-16">
@@ -11,10 +13,12 @@ export default function Footer() {
           <div className="flex flex-col gap-8 md:flex-row md:flex-wrap lg:flex-nowrap lg:gap-10">
             <div className="flex flex-1 flex-col justify-between gap-6 md:min-w-full md:items-center md:gap-2 lg:min-w-auto lg:items-start lg:justify-around">
               <div className="flex items-center justify-start gap-4">
-                <div>
-                  <NavLink to="/" end className="flex max-w-12.25 min-w-12.25">
-                    <DiceLogo size={48} />
-                  </NavLink>
+                {/* The dice used to be a <button> wrapped in a <NavLink>, which is invalid
+                    nesting and put two interactive targets on the exact same 48px box — the
+                    reason Lighthouse failed target-size (WCAG 2.5.8) here (#222). One control
+                    now, navigating on click the way the header's dice already does. */}
+                <div className="flex max-w-12.25 min-w-12.25">
+                  <DiceLogo size={48} onClick={() => navigate('/')} />
                 </div>
                 <div>
                   <p className="font-heading text-h2 font-bold">Stavanger Brettspillklubb</p>

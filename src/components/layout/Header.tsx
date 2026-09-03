@@ -103,12 +103,16 @@ export default function Header() {
 
         {/* Right controls */}
         <div className="flex items-center gap-2.5">
+          {/* The accessible name has to start with the visible "LM"/"DM", not replace it. WCAG
+              2.5.3 Label in Name: someone driving the page by voice says what they can see —
+              "click DM" — and a name of only "Bytt til mørk modus" leaves nothing for that to
+              match. Lighthouse flags the same thing as label-content-name-mismatch (#222). */}
           <Button
             onClick={toggleDarkMode}
             variant="toggle"
             size="xs"
             icon={isDarkMode ? 'sun' : 'moon'}
-            aria-label={isDarkMode ? 'Bytt til lys modus' : 'Bytt til mørk modus'}
+            aria-label={isDarkMode ? 'LM – bytt til lys modus' : 'DM – bytt til mørk modus'}
           >
             {isDarkMode ? 'LM' : 'DM'}
           </Button>

@@ -5,23 +5,10 @@ import AuthProvider from './hooks/authContext/authProvider';
 import './index.css';
 import App from './App';
 import Home from './pages/Home';
-import Calendar from './pages/Calendar';
-import BoardGameMasters from './pages/BoardGameMasters';
-import OurGames from './pages/OurGames';
-import AboutUs from './pages/AboutUs';
-import ContactUs from './pages/ContactUs';
-import BecomeAMember from './pages/BecomeAMember';
-import Event from './pages/SingleEventPage';
-import Events from './pages/Events';
-import OurPartners from './pages/OurPartners';
-import Register from './pages/Register';
-import Login from './pages/Login';
-import MemberPortal from './pages/MemberPortal';
-import BoardPortal from './pages/BoardPortal';
-import NotFound from './pages/NotFound';
 import { initTheme } from './utils/theme';
 import StudioRoute from './pages/StudioRoute';
 import RouteError from './components/sections/RouteError';
+import RouteFallback from './components/sections/RouteFallback';
 import { homeLoader } from './loaders/home-loader';
 import { eventsListLoader, eventDetailLoader } from './sanity/queryHelpers/events';
 import { calendarLoader } from './loaders/calendar-loader';
@@ -29,6 +16,33 @@ import { ourGamesLoader } from './loaders/our-games-loader';
 import { aboutUsLoader } from './loaders/about-us-loader';
 import { boardPortalLoader } from './loaders/board-portal-loader';
 import { memberPortalLoader } from './loaders/member-portal-loader';
+
+// Every page below the home page is its own chunk. Lighthouse measured ~58% of the entry bundle
+// unused on the home page (#222) — that was thirteen other pages' markup and component trees,
+// downloaded and parsed before anything could paint. `<Suspense>` in `App` is what these resolve
+// against; React Router runs navigations inside a transition, so the fallback only ever shows on
+// a cold load of one of these URLs, never as a flash mid-navigation.
+//
+// `Home` is deliberately *not* lazy: it is the route the overwhelming majority of visits land on,
+// and splitting it would put a second round trip in front of the LCP element this change exists
+// to speed up. Loaders stay eager for the same reason — they are small, they are shared, and a
+// lazy loader could not start fetching until its chunk had arrived.
+//
+// `RouteError` and `RouteFallback` are eager on purpose: see their own doc comments.
+const Calendar = React.lazy(() => import('./pages/Calendar'));
+const BoardGameMasters = React.lazy(() => import('./pages/BoardGameMasters'));
+const OurGames = React.lazy(() => import('./pages/OurGames'));
+const AboutUs = React.lazy(() => import('./pages/AboutUs'));
+const ContactUs = React.lazy(() => import('./pages/ContactUs'));
+const BecomeAMember = React.lazy(() => import('./pages/BecomeAMember'));
+const Event = React.lazy(() => import('./pages/SingleEventPage'));
+const Events = React.lazy(() => import('./pages/Events'));
+const OurPartners = React.lazy(() => import('./pages/OurPartners'));
+const Register = React.lazy(() => import('./pages/Register'));
+const Login = React.lazy(() => import('./pages/Login'));
+const MemberPortal = React.lazy(() => import('./pages/MemberPortal'));
+const BoardPortal = React.lazy(() => import('./pages/BoardPortal'));
+const NotFound = React.lazy(() => import('./pages/NotFound'));
 
 initTheme();
 
@@ -47,6 +61,14 @@ const router = createBrowserRouter(
           // it: an errorElement replaces the element of the route it is attached to, so putting
           // this on the route above would take Header and Footer down with the page.
           errorElement: <RouteError />,
+          // The same reasoning, for the other of the two states a route can be in before it has
+          // anything to show. On the first paint the matched page's loader has not resolved yet,
+          // and React Router renders the nearest hydrate fallback while it runs — with none
+          // anywhere on the tree it renders nothing and warns "No `HydrateFallback` element
+          // provided to render during initial hydration" (#222). Attached here rather than to
+          // the shell route for the same reason as the errorElement: a fallback on the route
+          // above would replace `<App />` and blank the header and footer on every cold load.
+          hydrateFallbackElement: <RouteFallback />,
           children: [
             { index: true, element: <Home />, loader: homeLoader },
             { path: 'kalender', element: <Calendar />, loader: calendarLoader },

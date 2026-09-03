@@ -6,7 +6,9 @@
 //
 //   1. `frame-ancestors`, `report-uri`, `report-to` and `sandbox` are ignored in meta and log a
 //      console warning if present, so they are deliberately absent. Clickjacking protection is
-//      not available on Pages; it needs a host that can send headers.
+//      not available on Pages; it needs a host that can send headers. The same goes for COOP,
+//      HSTS and everything else an audit asks for here — docs/HOSTING.md lists each one, why it
+//      cannot be set, and what moving off Pages would buy.
 //   2. The meta element must come before anything it is meant to govern. It is injected at the
 //      very top of <head> by the plugin in vite.config.ts.
 //   3. A document gets one policy, and this is a single-page app: the public site and the
