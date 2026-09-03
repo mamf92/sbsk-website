@@ -2,7 +2,6 @@ import type { LoaderFunctionArgs } from 'react-router-dom';
 import { type SanityImageSource } from '@sanity/image-url';
 import { client } from '../client';
 import type { PortableTextBlock } from 'sanity';
-import type { CalendarEventParticipantTypes } from './updateEventParticipants';
 
 export interface EventSponsorTypes {
   logo?: SanityImageSource;
@@ -31,7 +30,6 @@ export interface CalendarEventTypes {
   eventSlug?: string;
   location?: string;
   links?: { label: string; url: string }[];
-  participants?: CalendarEventParticipantTypes[];
   /** Whether the event has its own page at `/arrangementer/:slug` — a content decision, not
    *  something inferred from category or from having inline content. */
   hasDetailPage?: boolean;
@@ -57,7 +55,6 @@ const EVENT_ROW_PROJECTION = `
   "eventSlug": slug.current,
   location,
   links,
-  participants,
   hasDetailPage
 `;
 
@@ -93,7 +90,6 @@ const EVENT_BY_SLUG_QUERY = `*[
   "eventSlug": slug.current,
   location,
   links,
-  participants,
   hasDetailPage,
   signupUrl,
   showSponsors,
