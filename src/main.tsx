@@ -6,6 +6,7 @@ import './index.css';
 import App from './App';
 import Home from './pages/Home';
 import { initTheme } from './utils/theme';
+import { recoverFromStaleChunks } from './utils/staleChunkReload';
 import StudioRoute from './pages/StudioRoute';
 import RouteError from './components/sections/RouteError';
 import RouteFallback from './components/sections/RouteFallback';
@@ -46,6 +47,7 @@ const BoardPortal = React.lazy(() => import('./pages/BoardPortal'));
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 
 initTheme();
+recoverFromStaleChunks();
 
 const router = createBrowserRouter(
   [
