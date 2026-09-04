@@ -26,20 +26,33 @@ describe('Dropdown', () => {
   it('renders a closed trigger naming itself and showing the current value', () => {
     renderDropdown();
 
-    const trigger = screen.getByRole('button', { name: 'Sorter arrangementer' });
+    const trigger = screen.getByRole('button', { name: /Sorter arrangementer/ });
     expect(trigger).toHaveAttribute('aria-haspopup', 'listbox');
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
     expect(trigger).toHaveTextContent('Dato (først → sist)');
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
 
+  // WCAG 2.5.3 Label in Name, and the audit Lighthouse fails the page on when it is broken
+  // (label-content-name-mismatch, #222): the name a voice user speaks is the text they can see,
+  // so the trigger's accessible name has to *contain* the visible value, not replace it with
+  // the field's name.
+  it('names the trigger with the field name and the visible value, in that order', () => {
+    renderDropdown();
+
+    const trigger = screen.getByRole('button', {
+      name: 'Sorter arrangementer Dato (først → sist)',
+    });
+    expect(trigger).not.toHaveAttribute('aria-label');
+  });
+
   it('opens the listbox on click and lists every option', async () => {
     const user = userEvent.setup();
     renderDropdown();
 
-    await user.click(screen.getByRole('button', { name: 'Sorter arrangementer' }));
+    await user.click(screen.getByRole('button', { name: /Sorter arrangementer/ }));
 
-    expect(screen.getByRole('button', { name: 'Sorter arrangementer' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: /Sorter arrangementer/ })).toHaveAttribute(
       'aria-expanded',
       'true',
     );
@@ -154,7 +167,7 @@ describe('Dropdown', () => {
       </div>,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Sorter arrangementer' }));
+    await user.click(screen.getByRole('button', { name: /Sorter arrangementer/ }));
     expect(screen.getByRole('listbox')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Outside' }));
@@ -175,7 +188,7 @@ describe('Dropdown', () => {
       </div>,
     );
 
-    const trigger = screen.getByRole('button', { name: 'Sorter arrangementer' });
+    const trigger = screen.getByRole('button', { name: /Sorter arrangementer/ });
     trigger.focus();
     await user.keyboard('{ArrowDown}');
     expect(screen.getByRole('listbox')).toBeInTheDocument();
@@ -200,6 +213,70 @@ describe('Dropdown', () => {
       'id',
       activeId,
     );
+  });
+
+  /**
+   * Stands the panel's measurement in for a real layout — jsdom reports every rect as zero, and
+   * the alignment flip is the one behaviour here that can only be decided by measuring (#223).
+   */
+  function measurePanelAt(rect: { left: number; right: number }) {
+    return vi.spyOn(HTMLUListElement.prototype, 'getBoundingClientRect').mockReturnValue({
+      ...rect,
+      width: rect.right - rect.left,
+      height: 120,
+      top: 0,
+      bottom: 120,
+      x: rect.left,
+      y: 0,
+      toJSON: () => ({}),
+    } as DOMRect);
+  }
+
+  it('right-aligns the panel by default', async () => {
+    renderDropdown();
+    await userEvent.click(screen.getByRole('button', { name: /Sorter arrangementer/ }));
+
+    expect(screen.getByRole('listbox')).toHaveClass('right-0');
+    expect(screen.getByRole('listbox')).not.toHaveClass('left-0');
+  });
+
+  it('flips to left-alignment when right-alignment would run off the left edge', async () => {
+    // The reported case: the filter row wraps, the trigger lands near the left edge, and a
+    // panel wider than that narrow trigger grows leftward off the screen.
+    const rect = measurePanelAt({ left: -42, right: 258 });
+    renderDropdown();
+
+    await userEvent.click(screen.getByRole('button', { name: /Sorter arrangementer/ }));
+    expect(screen.getByRole('listbox')).toHaveClass('left-0');
+    expect(screen.getByRole('listbox')).not.toHaveClass('right-0');
+
+    rect.mockRestore();
+  });
+
+  it('goes back to right-alignment the next time it opens', async () => {
+    // The flip belongs to one opening, not to the component: the trigger moves as the row
+    // rewraps, so a panel that had to flip once must not stay flipped afterwards.
+    const rect = measurePanelAt({ left: -42, right: 258 });
+    renderDropdown();
+    const trigger = screen.getByRole('button', { name: /Sorter arrangementer/ });
+
+    await userEvent.click(trigger);
+    expect(screen.getByRole('listbox')).toHaveClass('left-0');
+    await userEvent.click(trigger);
+
+    rect.mockRestore();
+    await userEvent.click(trigger);
+    expect(screen.getByRole('listbox')).toHaveClass('right-0');
+  });
+
+  it('leaves the panel right-aligned when it already fits', async () => {
+    const rect = measurePanelAt({ left: 120, right: 420 });
+    renderDropdown();
+
+    await userEvent.click(screen.getByRole('button', { name: /Sorter arrangementer/ }));
+    expect(screen.getByRole('listbox')).toHaveClass('right-0');
+
+    rect.mockRestore();
   });
 
   it('merges a caller-supplied className onto the wrapper instead of dropping it', () => {

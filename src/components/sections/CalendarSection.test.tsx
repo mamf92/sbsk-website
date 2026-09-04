@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import type { CalendarEventTypes } from '../../sanity/queryHelpers/events';
 import type { Profile } from '../../supabase/queryHelpers/getProfile';
+import type { EventParticipant } from '../../supabase/queryHelpers/eventParticipants';
 import CalendarSection from './CalendarSection';
 
 // The clock the whole suite reasons about. "Upcoming" and "past" are relative to it, so it has
@@ -44,8 +45,9 @@ vi.mock('../../sanity/sanityImageUrl', () => ({
 
 const addParticipantToEvent = vi.fn().mockResolvedValue(undefined);
 const removeParticipantFromEvent = vi.fn().mockResolvedValue(undefined);
+const getEventParticipants = vi.fn().mockResolvedValue({});
 
-vi.mock('../../sanity/queryHelpers/updateEventParticipants', () => ({
+vi.mock('../../supabase/queryHelpers/eventParticipants', () => ({
   createParticipantFromProfile: (user: Profile) => ({
     supabase_id: user.supabase_id,
     name: user.name ?? '',
@@ -54,7 +56,16 @@ vi.mock('../../sanity/queryHelpers/updateEventParticipants', () => ({
   }),
   addParticipantToEvent: (...args: unknown[]) => addParticipantToEvent(...args),
   removeParticipantFromEvent: (...args: unknown[]) => removeParticipantFromEvent(...args),
+  getEventParticipants: (...args: unknown[]) => getEventParticipants(...args),
 }));
+
+/** The attendees `getEventParticipants` resolves for `next-up` once a test opts in to them. */
+const NEXT_UP_PARTICIPANTS: EventParticipant[] = [
+  { supabase_id: 'a', name: 'Anne', surname: 'Berg', photo_url: '' },
+  { supabase_id: 'b', name: 'Kari', surname: 'Lund', photo_url: '' },
+  { supabase_id: 'c', name: 'Tor', surname: 'Solberg', photo_url: '' },
+  { supabase_id: 'd', name: 'Rita', surname: 'Nilsen', photo_url: '' },
+];
 
 const body = [
   {
@@ -82,12 +93,6 @@ const events: CalendarEventTypes[] = [
     eventStartTime: new Date('2026-08-12T18:00:00'),
     eventEndTime: new Date('2026-08-12T22:00:00'),
     content: body,
-    participants: [
-      { _key: 'p1', supabase_id: 'a', name: 'Anne', surname: 'Berg', photo_url: '' },
-      { _key: 'p2', supabase_id: 'b', name: 'Kari', surname: 'Lund', photo_url: '' },
-      { _key: 'p3', supabase_id: 'c', name: 'Tor', surname: 'Solberg', photo_url: '' },
-      { _key: 'p4', supabase_id: 'd', name: 'Rita', surname: 'Nilsen', photo_url: '' },
-    ],
   },
   {
     _id: 'later-august',
@@ -126,6 +131,7 @@ beforeEach(() => {
   auth.user = null;
   addParticipantToEvent.mockClear();
   removeParticipantFromEvent.mockClear();
+  getEventParticipants.mockReset().mockResolvedValue({});
 });
 
 afterEach(() => {
@@ -133,17 +139,18 @@ afterEach(() => {
 });
 
 describe('CalendarSection', () => {
-  it('highlights the next upcoming event and opens it by default', () => {
+  it('highlights the next upcoming event but leaves it closed', () => {
     renderSection();
 
     expect(screen.getByText('Neste arrangement')).toBeInTheDocument();
     // 10 August → 12 August is two days out.
     expect(screen.getByText('Om 2 dager')).toBeInTheDocument();
 
+    // Featured, not opened (#223): the divider and the countdown carry the emphasis.
     const next = card('Ukentlig spillkveld');
-    expect(within(next).getByRole('button', { name: /Skjul/ })).toHaveAttribute(
+    expect(within(next).getByRole('button', { name: /Vis mer om/ })).toHaveAttribute(
       'aria-expanded',
-      'true',
+      'false',
     );
   });
 
@@ -158,7 +165,7 @@ describe('CalendarSection', () => {
   it('hides the month dividers under a title sort, without dropping any event', async () => {
     renderSection();
 
-    await userEvent.click(screen.getByRole('button', { name: 'Sorter arrangementer' }));
+    await userEvent.click(screen.getByRole('button', { name: /Sorter arrangementer/ }));
     await userEvent.click(screen.getByRole('option', { name: 'Tittel (A–Å)' }));
 
     expect(screen.queryByText('AUGUST 2026')).not.toBeInTheDocument();
@@ -217,13 +224,14 @@ describe('CalendarSection', () => {
     expect(screen.queryByRole('img', { name: 'Anne Berg' })).not.toBeInTheDocument();
   });
 
-  it('shows the avatar stack and RSVP button to a logged-in member', () => {
+  it('shows the avatar stack and RSVP button to a logged-in member', async () => {
+    getEventParticipants.mockResolvedValue({ 'next-up': NEXT_UP_PARTICIPANTS });
     auth.isAuthenticated = true;
     auth.user = member;
     renderSection();
 
     const next = card('Ukentlig spillkveld');
-    expect(within(next).getByRole('img', { name: 'Anne Berg' })).toBeInTheDocument();
+    expect(await within(next).findByRole('img', { name: 'Anne Berg' })).toBeInTheDocument();
     // Four attendees, three shown, one folded into the counter.
     expect(within(next).getByText('+1')).toBeInTheDocument();
     expect(within(next).getByRole('button', { name: /Meld deg på/ })).toHaveTextContent('Bli med');
@@ -237,9 +245,7 @@ describe('CalendarSection', () => {
     const next = card('Ukentlig spillkveld');
     await userEvent.click(within(next).getByRole('button', { name: /Meld deg på/ }));
 
-    expect(addParticipantToEvent).toHaveBeenCalledWith(
-      expect.objectContaining({ eventId: 'next-up' }),
-    );
+    expect(addParticipantToEvent).toHaveBeenCalledWith('next-up');
     expect(within(next).getByRole('button', { name: /Meld deg av/ })).toHaveTextContent('Påmeldt!');
   });
 
@@ -280,6 +286,12 @@ describe('CalendarSection', () => {
 
   it('expands and collapses an event through the chevron', async () => {
     renderSection();
+
+    // Open the featured event first, so the single-panel rule below is actually exercised
+    // rather than passing on a list that happened to start with nothing open (#223).
+    await userEvent.click(
+      within(card('Ukentlig spillkveld')).getByRole('button', { name: /Vis mer/ }),
+    );
 
     const autumn = card('Høstturnering');
     const chevron = within(autumn).getByRole('button', { name: /Vis mer/ });

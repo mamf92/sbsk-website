@@ -18,13 +18,15 @@ import type { CalendarEventTypes } from '../../sanity/queryHelpers/events';
 import type { CalendarHeroTypes } from '../../sanity/queryHelpers/calendar-hero';
 import { components } from '../../sanity/editors/portableTextComponents';
 import { monthAbbreviation, timeRange } from '../../utils/eventDateFormat';
+import { isInternalLink, internalLinkPath } from '../../utils/internalLinks';
 import { useAuth } from '../../hooks/authContext/authContext';
 import {
   createParticipantFromProfile,
   addParticipantToEvent,
   removeParticipantFromEvent,
-  type CalendarEventParticipantTypes,
-} from '../../sanity/queryHelpers/updateEventParticipants';
+  getEventParticipants,
+  type EventParticipant,
+} from '../../supabase/queryHelpers/eventParticipants';
 
 interface CalendarSectionProps {
   calendarHero?: CalendarHeroTypes;
@@ -43,8 +45,6 @@ const FALLBACK_CALENDAR = {
   imageSourceName: 'Designed by Freepik',
   imageSourceUrl: 'www.freepik.com',
 };
-
-const INTERNAL_ORIGIN = 'https://www.mamf92.github.io/sbsk-website';
 
 // How many events past the featured one to render before "Last inn flere".
 const PAGE_SIZE = 10;
@@ -150,26 +150,41 @@ function countdown(start: Date, now: Date): string {
 /* RSVP                                                                        */
 /* -------------------------------------------------------------------------- */
 
-function participantsByEvent(events: CalendarEventTypes[]) {
-  return Object.fromEntries(events.map((event) => [event._id, event.participants ?? []]));
-}
-
 /**
  * Attendance for every event on the page, held in one place rather than per card, because the
  * "Mine kommende" filter has to see the same optimistic state the cards do.
  */
 function useRsvp(events: CalendarEventTypes[]) {
   const { isAuthenticated, user } = useAuth();
-  const [participants, setParticipants] = useState(() => participantsByEvent(events));
+  const [participants, setParticipants] = useState<Record<string, EventParticipant[]>>({});
   const [pending, setPending] = useState<Record<string, boolean>>({});
   const [errors, setErrors] = useState<Record<string, string | null>>({});
 
-  useEffect(() => {
-    setParticipants(participantsByEvent(events));
-  }, [events]);
+  // `event._id` values, joined into a string so the effect's dependency is stable across
+  // re-renders that pass an equal-but-new `events` array — an array itself would never satisfy
+  // `Object.is` and would re-fetch on every render.
+  const eventIdsKey = events.map((event) => event._id).join(',');
 
-  const attendeesOf = (eventId: string): CalendarEventParticipantTypes[] =>
-    participants[eventId] ?? [];
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setParticipants({});
+      return;
+    }
+    let cancelled = false;
+    const eventIds = eventIdsKey ? eventIdsKey.split(',') : [];
+    getEventParticipants(eventIds)
+      .then((byEvent) => {
+        if (!cancelled) setParticipants(byEvent);
+      })
+      .catch((err) => {
+        console.error('Error loading event participants:', err);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [eventIdsKey, isAuthenticated]);
+
+  const attendeesOf = (eventId: string): EventParticipant[] => participants[eventId] ?? [];
 
   const isAttending = (eventId: string) =>
     !!user && attendeesOf(eventId).some((p) => p.supabase_id === user.supabase_id);
@@ -188,14 +203,14 @@ function useRsvp(events: CalendarEventTypes[]) {
       ...current,
       [eventId]: leaving
         ? previous.filter((p) => p.supabase_id !== supabaseId)
-        : [...previous, { _key: supabaseId, ...participant }],
+        : [...previous, participant],
     }));
 
     try {
       if (leaving) {
-        await removeParticipantFromEvent({ eventId, supabaseId });
+        await removeParticipantFromEvent(eventId);
       } else {
-        await addParticipantToEvent({ eventId, participant });
+        await addParticipantToEvent(eventId);
       }
     } catch (err) {
       console.error('Error updating event participation:', err);
@@ -214,7 +229,7 @@ function useRsvp(events: CalendarEventTypes[]) {
   return { loggedIn: isAuthenticated, attendeesOf, isAttending, toggle, pending, errors };
 }
 
-function toAvatarPeople(participants: CalendarEventParticipantTypes[]): AvatarStackPerson[] {
+function toAvatarPeople(participants: EventParticipant[]): AvatarStackPerson[] {
   return participants.map((participant) => ({
     name: [participant.name, participant.surname].filter(Boolean).join(' ').trim() || 'Medlem',
     src: participant.photo_url || undefined,
@@ -333,7 +348,9 @@ function EventList({ events, failed }: { events: CalendarEventTypes[]; failed?: 
     return upcoming.length ? upcoming[0]._id : null;
   }, [events, now]);
 
-  const [expandedId, setExpandedId] = useState<string | null>(nextEventId);
+  // Closed on load, the featured event included (#223) — `nextEventId` still lifts it out of
+  // its month group and drives the countdown, it just no longer opens itself.
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const filtered = events
     .filter((event) => category === 'all' || event.category === category)
@@ -727,7 +744,7 @@ function EventRow({
                   </Button>
                 )}
                 {event.links?.map((link, index) => {
-                  const isInternal = link.url.startsWith(INTERNAL_ORIGIN);
+                  const isInternal = isInternalLink(link.url);
                   return (
                     <Button
                       key={index}
@@ -736,7 +753,7 @@ function EventRow({
                       icon="right"
                       onClick={() =>
                         isInternal
-                          ? navigate(new URL(link.url, window.location.href).pathname)
+                          ? navigate(internalLinkPath(link.url))
                           : window.open(link.url, '_blank', 'noopener,noreferrer')
                       }
                     >

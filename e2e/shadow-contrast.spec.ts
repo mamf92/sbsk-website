@@ -58,7 +58,6 @@ const EVENTS = (['spillkveld', 'turnering', 'annet'] as const).map((category, in
     location: 'Klubblokalet',
     slug: { current: `arrangement-${category}` },
     content: richText('Beskrivelse av arrangementet.'),
-    participants: [],
   };
 });
 

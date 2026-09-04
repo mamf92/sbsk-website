@@ -2,87 +2,51 @@ import { useCallback, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import AuthContext from './authContext';
 import { supabase } from '../../supabase/client';
+import { getProfile } from '../../supabase/queryHelpers/getProfile';
 import type { Profile } from '../../supabase/queryHelpers/getProfile';
 import { isBoardAdmin } from '../../supabase/queryHelpers/isBoardAdmin';
 
-const readLocalStorageValue = (key: string) => {
+// supabase-js already persists the session (and the JWT it carries) in its own storage;
+// `getSession()` below is the one source of truth for it. These are stale keys from a mirror
+// this provider used to keep alongside that — a second copy of the JWT, the full profile
+// (including a signed photo URL that expires), and a client-editable admin flag. None of it is
+// written anymore (#95); this only clears out what a browser might still be holding from before.
+function clearLegacyAuthStorage() {
   try {
-    return localStorage.getItem(key);
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userData');
+    localStorage.removeItem('isAdmin');
   } catch {
-    return null;
+    // Storage access can throw (private browsing, disabled storage) — nothing to clean up then.
   }
-};
-
-const readLocalStorageJson = <T,>(key: string): T | null => {
-  const rawValue = readLocalStorageValue(key);
-
-  if (!rawValue) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(rawValue) as T;
-  } catch {
-    return null;
-  }
-};
+}
 
 const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [token, setToken] = useState<string | null>(() => readLocalStorageValue('authToken'));
-  const [user, setUser] = useState<Profile | null>(() => readLocalStorageJson<Profile>('userData'));
-  const [isAdmin, setIsAdmin] = useState<boolean>(
-    () => readLocalStorageJson<boolean>('isAdmin') ?? false,
-  );
+  const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<Profile | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   const isAuthenticated = !!token;
-
-  const persistToken = useCallback((accessToken: string | null) => {
-    if (accessToken) {
-      localStorage.setItem('authToken', accessToken);
-      return;
-    }
-
-    localStorage.removeItem('authToken');
-  }, []);
-
-  const persistUser = useCallback((userData: Profile | null) => {
-    if (userData) {
-      localStorage.setItem('userData', JSON.stringify(userData));
-      return;
-    }
-
-    localStorage.removeItem('userData');
-  }, []);
-
-  const persistAdmin = useCallback((adminStatus: boolean) => {
-    localStorage.setItem('isAdmin', JSON.stringify(adminStatus));
-  }, []);
 
   const probeAdminStatus = useCallback(async () => {
     try {
       const adminStatus = await isBoardAdmin();
       setIsAdmin(adminStatus);
-      persistAdmin(adminStatus);
       return adminStatus;
     } catch {
       setIsAdmin(false);
-      persistAdmin(false);
       return false;
     }
-  }, [persistAdmin]);
+  }, []);
 
   const clearAuthState = useCallback(() => {
     setToken(null);
     setUser(null);
     setIsAdmin(false);
-    persistToken(null);
-    persistUser(null);
-    localStorage.removeItem('isAdmin');
-  }, [persistToken, persistUser]);
+  }, []);
 
   const login = (userData: Profile) => {
     setUser(userData);
-    persistUser(userData);
   };
 
   const refreshSession = useCallback(async () => {
@@ -93,12 +57,14 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
       return false;
     }
 
-    const nextToken = data.session.access_token ?? null;
-    setToken(nextToken);
-    persistToken(nextToken);
+    setToken(data.session.access_token ?? null);
+    // Refetched rather than trusted from a cache — `user` never survives a reload on its own,
+    // by design (#95).
+    const profile = await getProfile(data.session.user.id).catch(() => null);
+    setUser(profile);
     await probeAdminStatus();
     return true;
-  }, [clearAuthState, persistToken, probeAdminStatus]);
+  }, [clearAuthState, probeAdminStatus]);
 
   const logout = async () => {
     await supabase.auth.signOut();
@@ -106,19 +72,15 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
+    clearLegacyAuthStorage();
     void refreshSession();
 
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      const nextToken = session?.access_token ?? null;
-
-      setToken(nextToken);
-      persistToken(nextToken);
+      setToken(session?.access_token ?? null);
 
       if (!session) {
         setUser(null);
-        persistUser(null);
         setIsAdmin(false);
-        localStorage.removeItem('isAdmin');
         return;
       }
 
@@ -128,7 +90,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       data.subscription.unsubscribe();
     };
-  }, [persistToken, persistUser, probeAdminStatus, refreshSession]);
+  }, [probeAdminStatus, refreshSession]);
 
   return (
     <AuthContext.Provider

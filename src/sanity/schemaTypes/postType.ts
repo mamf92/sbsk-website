@@ -1,4 +1,5 @@
 import { defineField, defineType } from 'sanity';
+import type { Rule } from 'sanity';
 import ExternalLink from '../../assets/icons/symbols/external-link.svg?react';
 import AddLink from '../../assets/icons/symbols/add-link.svg?react';
 import { postImageFields, postImagePreview } from './postImageFields';
@@ -59,7 +60,12 @@ export const postType = defineType({
               type: 'string',
               description: 'Tekst som vises på knappen.',
             }),
-            defineField({ name: 'url', type: 'url', description: 'URL for lenken.' }),
+            defineField({
+              name: 'url',
+              type: 'url',
+              description: 'URL for lenken.',
+              validation: (rule) => rule.uri({ scheme: ['http', 'https'] }),
+            }),
           ],
         },
       ],
@@ -97,6 +103,7 @@ export const postType = defineType({
                   {
                     name: 'url',
                     type: 'url',
+                    validation: (rule: Rule) => rule.uri({ scheme: ['http', 'https'] }),
                   },
                 ],
               },
@@ -110,6 +117,8 @@ export const postType = defineType({
                   {
                     name: 'url',
                     type: 'url',
+                    validation: (rule: Rule) =>
+                      rule.uri({ scheme: ['http', 'https'], allowRelative: true }),
                   },
                 ],
               },

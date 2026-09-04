@@ -23,34 +23,38 @@ const base =
   'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ' +
   'focus-visible:outline-focus-ring ';
 
-// Resting outline is shared, but hover previews the category's own selected fill as a light
-// tint — so which card colour a chip filters to is visible before it is ever pressed, not
-// only after (#203). `neutral` ("Alle") represents no single card colour and keeps the plain
-// border-only hover it always had. The tint is light enough that hover never reads as
-// selected, and `gray-500` text stays well clear of AA over it (`--color-category-*` at 10%
-// opacity moves the background a few percent off white at most).
+// Resting outline is shared, and hover previews the category's own colour on the *border* —
+// so which card colour a chip filters to is visible before it is ever pressed (#203), without
+// painting a fill. The fill preview this used to carry (`--color-category-*` at 10%) read as a
+// washed yellow on the four orange-family categories and sat close enough to the selected fill
+// to be mistaken for it (#223). Dropped for every category rather than only those four: a row
+// where one chip tints on hover and the rest do not looks broken.
+//
+// Categories that share a border colour therefore share a hover treatment — `spillkveld` with
+// `turnering`, `arrangementer` with `annet`, `nyheter` with `spillkveldKalender`. That is the
+// honest result of them sharing a colour; the selected fills still tell all seven apart.
 const inactive = {
   neutral:
     'border-gray-neutral bg-white text-gray-500 hover:border-darkestblue ' +
     'dark:bg-transparent dark:text-white dark:hover:border-orange',
   nyheter:
-    'border-gray-neutral bg-white text-gray-500 hover:border-darkblue hover:bg-category-nyheter/10 ' +
+    'border-gray-neutral bg-white text-gray-500 hover:border-darkblue ' +
     'dark:bg-transparent dark:text-white dark:hover:border-orange',
   spillkveld:
-    'border-gray-neutral bg-white text-gray-500 hover:border-orange hover:bg-category-spillkveld/10 ' +
+    'border-gray-neutral bg-white text-gray-500 hover:border-orange ' +
     'dark:bg-transparent dark:text-white dark:hover:border-orange',
   arrangementer:
-    'border-gray-neutral bg-white text-gray-500 hover:border-darkorange hover:bg-category-arrangementer/10 ' +
+    'border-gray-neutral bg-white text-gray-500 hover:border-darkorange ' +
     'dark:bg-transparent dark:text-white dark:hover:border-orange',
   turnering:
-    'border-gray-neutral bg-white text-gray-500 hover:border-orange hover:bg-category-turnering/10 ' +
+    'border-gray-neutral bg-white text-gray-500 hover:border-orange ' +
     'dark:bg-transparent dark:text-white dark:hover:border-orange',
   annet:
-    'border-gray-neutral bg-white text-gray-500 hover:border-darkorange hover:bg-category-annet/10 ' +
+    'border-gray-neutral bg-white text-gray-500 hover:border-darkorange ' +
     'dark:bg-transparent dark:text-white dark:hover:border-orange',
   spillkveldKalender:
     'border-gray-neutral bg-white text-gray-500 hover:border-darkblue ' +
-    'hover:bg-category-spillkveld-kalender/10 dark:bg-transparent dark:text-white dark:hover:border-orange',
+    'dark:bg-transparent dark:text-white dark:hover:border-orange',
 } as const;
 
 // Each selected fill matches the header fill its category's cards use, so a filter looks

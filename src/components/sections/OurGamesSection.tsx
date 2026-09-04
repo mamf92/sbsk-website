@@ -5,13 +5,13 @@ import { Input } from '../ui/Input';
 import { Dialog } from '../ui/Dialog';
 import EmptyState from '../ui/EmptyState';
 import { GameCard, type BuyInfo } from '../ui/GameCard';
+import { HeroImage } from '../ui/HeroImage';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/authContext/authContext';
 import { urlFor } from '../../sanity/sanityImageUrl';
 import type { GameTypes } from '../../sanity/queryHelpers/games';
 import type { GamesHeroTypes } from '../../sanity/queryHelpers/games-hero';
 import { FALLBACK_GAMES } from './fallbackGames';
-import heroPlaceholderImage from '../../assets/images/hero-placeholder.jpg';
 
 interface OurGamesProps {
   gamesHero?: GamesHeroTypes | null;
@@ -51,7 +51,7 @@ const DIFFICULTIES: Array<{ value: 0 | 1 | 2 | 3; label: string }> = [
   { value: 0, label: 'Alle' },
   { value: 1, label: 'Lett' },
   { value: 2, label: 'Middels' },
-  { value: 3, label: 'Vanskelig' },
+  { value: 3, label: 'Avansert' },
 ];
 
 const PLAYER_BUCKETS: Array<{ key: string; label: string; lo?: number; hi?: number }> = [
@@ -125,31 +125,29 @@ export default function OurGamesSection({ gamesHero, games }: OurGamesProps) {
           onChange={(event) => setQuery(event.target.value)}
         />
 
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="flex flex-col gap-3">
-            <FilterRow label="Vanskelighetsgrad">
-              {DIFFICULTIES.map((d) => (
-                <Chip
-                  key={d.value}
-                  active={difficulty === d.value}
-                  onClick={() => setDifficulty(d.value)}
-                >
-                  {d.label}
-                </Chip>
-              ))}
-            </FilterRow>
-            <FilterRow label="Antall spillere">
-              {PLAYER_BUCKETS.map((b) => (
-                <Chip
-                  key={b.key}
-                  active={playerBucket === b.key}
-                  onClick={() => setPlayerBucket(b.key)}
-                >
-                  {b.label}
-                </Chip>
-              ))}
-            </FilterRow>
-          </div>
+        <div className="flex flex-col gap-4">
+          <FilterRow label="Vanskelighetsgrad">
+            {DIFFICULTIES.map((d) => (
+              <Chip
+                key={d.value}
+                active={difficulty === d.value}
+                onClick={() => setDifficulty(d.value)}
+              >
+                {d.label}
+              </Chip>
+            ))}
+          </FilterRow>
+          <FilterRow label="Antall spillere">
+            {PLAYER_BUCKETS.map((b) => (
+              <Chip
+                key={b.key}
+                active={playerBucket === b.key}
+                onClick={() => setPlayerBucket(b.key)}
+              >
+                {b.label}
+              </Chip>
+            ))}
+          </FilterRow>
         </div>
 
         {filteredGames.length === 0 ? (
@@ -194,13 +192,30 @@ export default function OurGamesSection({ gamesHero, games }: OurGamesProps) {
   );
 }
 
+/**
+ * The caption sits on its own line above its chips (#223). Inline, it ate ~82px of a 320px
+ * viewport before the first chip, which pushed both four-chip rows onto two lines each and left
+ * the filters reading as four rows of unlabelled buttons. Stacked at every width rather than
+ * only on mobile: the caption then lines up with the chips under it instead of floating beside
+ * a row whose height it does not share.
+ *
+ * `<fieldset>`/`<legend>` would be the semantic pairing, but these are `aria-pressed` buttons
+ * rather than form controls, and a legend on a non-form group announces as one anyway — so the
+ * caption is associated the way the chips are grouped: `role="group"` named by the caption's id.
+ */
 function FilterRow({ label, children }: { label: string; children: React.ReactNode }) {
+  const captionId = React.useId();
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <span className="min-w-[82px] text-xs font-bold tracking-[0.06em] text-gray-500 uppercase dark:text-gray-300">
+    <div className="flex flex-col gap-2">
+      <span
+        id={captionId}
+        className="text-xs font-bold tracking-[0.06em] text-gray-500 uppercase dark:text-gray-300"
+      >
         {label}
       </span>
-      {children}
+      <div role="group" aria-labelledby={captionId} className="flex flex-wrap items-center gap-2">
+        {children}
+      </div>
     </div>
   );
 }
@@ -211,14 +226,11 @@ function GamesHero({ gamesHero }: { gamesHero?: GamesHeroTypes | null }) {
   const subtitle =
     gamesHero?.subtitle ||
     'Sjekk ut spillene i samlingen vår. Som medlem får du rabatt hos vår samarbeidspartner Outland.';
-  const imageUrl = gamesHero?.image
-    ? urlFor(gamesHero.image).width(1440).fit('crop').url()
-    : heroPlaceholderImage;
-
   return (
     <div className="relative flex h-[calc(62vh)] flex-col items-center justify-center p-4">
       <div className="absolute inset-0">
-        <img src={imageUrl} alt="" className="h-full w-full object-cover" />
+        {/* LCP element on /våre-spill, the same way the home hero is on / (#222). */}
+        <HeroImage image={gamesHero?.image} priority />
       </div>
       <div className="absolute inset-0 flex h-[calc(62vh)] flex-col justify-center bg-white/50 p-4 dark:bg-black/50">
         <div className="max-w-content mx-auto flex w-full flex-col items-start gap-6">

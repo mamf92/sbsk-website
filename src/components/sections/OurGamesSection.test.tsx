@@ -76,7 +76,7 @@ describe('OurGamesSection', () => {
 
   it('filters by difficulty', async () => {
     renderSection();
-    await userEvent.click(screen.getByRole('button', { name: 'Vanskelig' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Avansert' }));
 
     expect(screen.getByText('Storgruppe')).toBeInTheDocument();
     expect(screen.queryByText('Tie Break')).not.toBeInTheDocument();

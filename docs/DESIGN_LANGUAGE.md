@@ -303,7 +303,17 @@ switcher measures 235px, which is what `Segmented` is for.
 now drawn by the component in both themes rather than the browser's own listbox chrome, so it
 reads as one system with `Chip` and `Segmented` instead of a visibly foreign control. Focus
 never leaves its trigger button — see the component's own doc comment for the
-`aria-activedescendant` mechanics.
+`aria-activedescendant` mechanics. Drawing the panel ourselves is also what makes it our job to
+keep it on screen: it right-aligns to its trigger and flips to left-alignment when that would
+put the labels past the left edge, which is where a wrapped filter row leaves a narrow trigger
+at 320px (#223).
+
+**Chip hover is border-only.** The unselected chip previews its category's colour on the border
+and paints no fill (#223). The 10% category tint it carried before read as a washed yellow on
+the four orange-family categories — Spillkveldrapporter, Arrangementer, Turnering, Annet — and
+sat close enough to the selected fill to be read as selected. Removed for all seven rather than
+those four, because a row where some chips tint on hover and others do not looks broken; the
+selected fills still tell every category apart.
 
 ## Who lifts
 
@@ -331,7 +341,7 @@ Lift is for things you press. It is not decoration.
   nav, sized to match `Chip` instead of `Button`. A tab is not a pressable surface any more
   than a text link is, so it never takes `lift`: the selected segment reads `text-orange` with
   its underline scaled to full width, and an unselected one previews the same underline on
-  hover, the way `Chip`'s hover now previews its category colour.
+  hover, the way `Chip`'s hover previews its category colour on the border.
 - **No:** form controls, still — a text field is not a pressable surface, you put a caret in
   it rather than press it, so `Input`, `Textarea` and `Checkbox` never move and never
   take `lift`. What changed with the Kontakt oss form (#180) is that they gained a hard offset

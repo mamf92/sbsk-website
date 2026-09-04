@@ -1,12 +1,41 @@
 <!doctype html>
-<html lang="en">
+<html lang="no">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Stavanger Brettspillklubb</title>
+    <meta
+      name="description"
+      content="Stavanger Brettspillklubb samler spilleglade folk til ukentlige brettspillkvelder. Se kalenderen, bla i spillsamlingen og bli medlem."
+    />
     <link rel="preload" href="/fonts/NotoSans-Regular.ttf" as="font" type="font/ttf" crossorigin />
     <link rel="preload" href="/fonts/OpenSans-Regular.ttf" as="font" type="font/ttf" crossorigin />
+    <!--
+      The hero photo is the LCP element on / and on /våre-spill, and this is a client-only SPA:
+      without this line the <img> does not exist until the bundle has downloaded, parsed and
+      rendered, which is what made mobile LCP 11.6s (#222). A preload is the only way to put it
+      in the initial HTML where the preload scanner can see it.
+
+      `type` gates the whole preload on AVIF support, and `imagesrcset`/`imagesizes` mirror the
+      first <source> in `HeroImage` exactly — mismatch either and the browser downloads the
+      photo twice instead of once. The base placeholder below is substituted by Vite, so these
+      URLs come out as `/` locally and as the repo path on Pages.
+
+      One index.html serves every route, so a visitor landing on, say, /kalender spends the
+      ~18KB (mobile) this fetches without using it. That is the trade for the home page, which
+      is where the overwhelming majority of visits start, getting its hero in the first round
+      trip. It was not worth making before the photo went from 1.09MB to 18KB.
+    -->
+    <link
+      rel="preload"
+      as="image"
+      type="image/avif"
+      fetchpriority="high"
+      href="%BASE_URL%images/hero/hero-1280.avif"
+      imagesrcset="%BASE_URL%images/hero/hero-640.avif 640w, %BASE_URL%images/hero/hero-960.avif 960w, %BASE_URL%images/hero/hero-1280.avif 1280w, %BASE_URL%images/hero/hero-1500.avif 1500w"
+      imagesizes="100vw"
+    />
   </head>
   <body>
     <div id="root"></div>

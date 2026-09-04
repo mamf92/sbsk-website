@@ -78,7 +78,8 @@ published in the bundle.
 
 GitHub Pages cannot set response headers, so the Content-Security-Policy is a `<meta>` element
 injected into `index.html` by a plugin in `vite.config.ts`; the policy itself is built in
-`src/security/csp.ts`. It is a single-page app, so the public site and the embedded Studio share
+`src/security/csp.ts`. `docs/HOSTING.md` is the list of everything that constraint costs —
+asset caching, COOP, clickjacking, Trusted Types — and what is accepted rather than fixable. It is a single-page app, so the public site and the embedded Studio share
 one policy. Adding a script, font, image host or backend from anywhere but our own origin means
 adding it there too, with a reason — `e2e/csp.spec.ts` fails otherwise.
 

@@ -1,4 +1,4 @@
-import { useLoaderData } from 'react-router-dom';
+import { useLoaderData, useSearchParams } from 'react-router-dom';
 import MemberPoartalSection from '../components/sections/MemberPortalSection/MemberPortalSection';
 import type { Profile } from '../supabase/queryHelpers/getProfile';
 
@@ -6,10 +6,13 @@ export default function MemberPortal() {
   const { profile } = useLoaderData() as {
     profile: Profile;
   };
+  const [searchParams] = useSearchParams();
+  const reason = searchParams.get('reason') || undefined;
+
   return (
     <>
       <div className="dark:bg-darkestblue min-h-[60vh] bg-white">
-        <MemberPoartalSection profile={profile} />
+        <MemberPoartalSection profile={profile} reason={reason} />
       </div>
     </>
   );

@@ -68,28 +68,39 @@ describe('GameCard', () => {
 
   it('announces the difficulty level for assistive tech', () => {
     render(<GameCard {...baseProps} difficulty={3} />);
-    expect(screen.getByRole('img', { name: 'Vanskelighetsgrad: Vanskelig' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Vanskelighetsgrad: Avansert' })).toBeInTheDocument();
   });
 
-  it('shows the BGG and YouTube links only when their URLs are set', () => {
+  it('shows the BGG and rules-video links only when their URLs are set', () => {
     const { rerender } = render(<GameCard {...baseProps} />);
     expect(screen.queryByRole('link', { name: /BoardGameGeek/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: /YouTube/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Se reglene' })).not.toBeInTheDocument();
 
     rerender(
       <GameCard
         {...baseProps}
         bggUrl="https://boardgamegeek.com/boardgame/266192"
-        videoUrl="https://youtube.com/watch?v=abc"
+        videoUrl="https://youtu.be/abc"
       />,
     );
     expect(screen.getByRole('link', { name: /BoardGameGeek/ })).toHaveAttribute(
       'href',
       'https://boardgamegeek.com/boardgame/266192',
     );
-    expect(screen.getByRole('link', { name: /YouTube/ })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Se reglene' })).toHaveAttribute(
       'href',
-      'https://youtube.com/watch?v=abc',
+      'https://youtu.be/abc',
     );
+  });
+
+  it('keeps each of the two secondary links usable on its own', () => {
+    // One link present must still fill the row rather than sit half-width beside a gap.
+    const { rerender } = render(<GameCard {...baseProps} bggUrl="https://bgg.test/1" />);
+    expect(screen.getByRole('link', { name: /BoardGameGeek/ })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Se reglene' })).not.toBeInTheDocument();
+
+    rerender(<GameCard {...baseProps} videoUrl="https://youtu.be/abc" />);
+    expect(screen.queryByRole('link', { name: /BoardGameGeek/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Se reglene' })).toBeInTheDocument();
   });
 });

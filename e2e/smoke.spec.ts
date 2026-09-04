@@ -193,14 +193,67 @@ test('theme toggle flips the dark class and survives a reload', async ({ page })
   const html = page.locator('html');
   const startedDark = await html.evaluate((el) => el.classList.contains('dark'));
 
+  // The accessible name leads with the visible "DM"/"LM" — WCAG 2.5.3 Label in Name, see the
+  // comment on the toggle in Header.tsx (#222).
   await page
-    .getByRole('button', { name: /Bytt til (lys|mørk) modus/ })
+    .getByRole('button', { name: /^(DM|LM) – bytt til (lys|mørk) modus$/ })
     .first()
     .click();
   await expect(html).toHaveClass(startedDark ? /^(?!.*\bdark\b).*$/ : /\bdark\b/);
 
   await page.reload();
   await expect(html).toHaveClass(startedDark ? /^(?!.*\bdark\b).*$/ : /\bdark\b/);
+});
+
+// #222. Two failure modes, one test each, both of which unit tests cannot see because both are
+// about what the *built* page asks the network for.
+
+// The hero is the LCP element, and this is a client-only SPA: the <img> does not exist until the
+// bundle has run, so `index.html` preloads it. That preload hardcodes the URLs `heroImage.ts`
+// builds, and nothing but this test connects the two — get the ladder, the extension or the base
+// path out of step and the preload silently 404s while the page still looks fine.
+test('the hero preload names a file that exists, and the page picks a modern format', async ({
+  page,
+}) => {
+  const heroResponses: string[] = [];
+  page.on('response', (response) => {
+    if (response.url().includes('/images/hero/')) {
+      heroResponses.push(`${response.status()} ${new URL(response.url()).pathname}`);
+    }
+  });
+
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Stavanger Brettspillklubb' })).toBeVisible();
+
+  const preload = page.locator('link[rel="preload"][as="image"]');
+  await expect(preload).toHaveAttribute('type', 'image/avif');
+  await expect(preload).toHaveAttribute('fetchpriority', 'high');
+
+  expect(heroResponses.length).toBeGreaterThan(0);
+  expect(heroResponses.filter((entry) => !entry.startsWith('200'))).toEqual([]);
+
+  // Whichever width the browser settles on, it has to be one of the AVIF derivatives — not the
+  // JPEG ladder the <img> carries only for a browser that cannot decode either <source>.
+  const chosen = await page
+    .locator('picture img')
+    .first()
+    .evaluate((img) => (img as HTMLImageElement).currentSrc);
+  expect(chosen).toMatch(/\/images\/hero\/hero-\d+\.avif$/);
+});
+
+// The router renders the nearest hydrate fallback while the matched route's loader runs on the
+// first paint. With none anywhere on the tree it rendered nothing and warned on every cold load
+// — in the production bundle too, which is where it was noticed.
+test('a cold load does not warn about a missing HydrateFallback', async ({ page }) => {
+  const complaints: string[] = [];
+  page.on('console', (message) => {
+    if (message.type() === 'warning' || message.type() === 'error') complaints.push(message.text());
+  });
+
+  await page.goto('/kalender');
+  await expect(page.locator('#main')).not.toBeEmpty();
+
+  expect(complaints.filter((text) => text.includes('HydrateFallback'))).toEqual([]);
 });
 
 test('the public entry bundle does not pull in the Sanity Studio', async ({ page }) => {

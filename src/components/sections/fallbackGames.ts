@@ -27,12 +27,25 @@ export interface FallbackGame {
   players: string;
   playersMin: number;
   playersMax: number;
+  /** The game's BoardGameGeek page. Every game here has one. */
+  bggUrl: string;
+  /**
+   * A rules walkthrough, Watch It Played's wherever one could be confirmed (#223). Optional
+   * because not every game in the collection has one — `GameCard` simply renders no video
+   * button when this is absent, so a gap costs nothing and can be filled from the Studio.
+   */
+  videoUrl?: string;
 }
 
 /**
  * The club's own collection, shown until the games are entered in the Studio. Same role as
  * `FALLBACK_HERO` in HomeHeroSection — real content wins the moment `games` from Sanity is
  * non-empty (see `OurGamesSection`).
+ *
+ * `bggUrl` is the canonical `/boardgame/<id>/<slug>` page; BGG redirects on the slug, so the id
+ * is the part that has to be right. `videoUrl` is a Watch It Played walkthrough where one was
+ * confirmed for that game — the channel teaches rules the same way every time, which is worth
+ * more to someone learning a game than whichever video ranks highest that week.
  */
 export const FALLBACK_GAMES: FallbackGame[] = [
   {
@@ -46,6 +59,8 @@ export const FALLBACK_GAMES: FallbackGame[] = [
     players: '1–5',
     playersMin: 1,
     playersMax: 5,
+    bggUrl: 'https://boardgamegeek.com/boardgame/266192/wingspan',
+    videoUrl: 'https://youtu.be/lgDgcLI2B0U',
   },
   {
     _id: 'fallback-azul',
@@ -58,6 +73,8 @@ export const FALLBACK_GAMES: FallbackGame[] = [
     players: '2–4',
     playersMin: 2,
     playersMax: 4,
+    bggUrl: 'https://boardgamegeek.com/boardgame/230802/azul',
+    videoUrl: 'https://youtu.be/83a0BZg7JLg',
   },
   {
     _id: 'fallback-catan',
@@ -70,6 +87,7 @@ export const FALLBACK_GAMES: FallbackGame[] = [
     players: '3–4',
     playersMin: 3,
     playersMax: 4,
+    bggUrl: 'https://boardgamegeek.com/boardgame/13/catan',
   },
   {
     _id: 'fallback-ticket-to-ride',
@@ -82,6 +100,7 @@ export const FALLBACK_GAMES: FallbackGame[] = [
     players: '2–5',
     playersMin: 2,
     playersMax: 5,
+    bggUrl: 'https://boardgamegeek.com/boardgame/9209/ticket-to-ride',
   },
   {
     _id: 'fallback-codenames',
@@ -94,6 +113,7 @@ export const FALLBACK_GAMES: FallbackGame[] = [
     players: '2–8',
     playersMin: 2,
     playersMax: 8,
+    bggUrl: 'https://boardgamegeek.com/boardgame/178900/codenames',
   },
   {
     _id: 'fallback-love-letter',
@@ -106,6 +126,7 @@ export const FALLBACK_GAMES: FallbackGame[] = [
     players: '2–4',
     playersMin: 2,
     playersMax: 4,
+    bggUrl: 'https://boardgamegeek.com/boardgame/129622/love-letter',
   },
   {
     _id: 'fallback-splendor',
@@ -118,6 +139,7 @@ export const FALLBACK_GAMES: FallbackGame[] = [
     players: '2–4',
     playersMin: 2,
     playersMax: 4,
+    bggUrl: 'https://boardgamegeek.com/boardgame/148228/splendor',
   },
   {
     _id: 'fallback-root',
@@ -130,6 +152,7 @@ export const FALLBACK_GAMES: FallbackGame[] = [
     players: '2–4',
     playersMin: 2,
     playersMax: 4,
+    bggUrl: 'https://boardgamegeek.com/boardgame/237182/root',
   },
   {
     _id: 'fallback-scythe',
@@ -142,6 +165,8 @@ export const FALLBACK_GAMES: FallbackGame[] = [
     players: '1–5',
     playersMin: 1,
     playersMax: 5,
+    bggUrl: 'https://boardgamegeek.com/boardgame/169786/scythe',
+    videoUrl: 'https://youtu.be/ffMLIL5qGQg',
   },
   {
     _id: 'fallback-terraforming-mars',
@@ -154,6 +179,8 @@ export const FALLBACK_GAMES: FallbackGame[] = [
     players: '1–5',
     playersMin: 1,
     playersMax: 5,
+    bggUrl: 'https://boardgamegeek.com/boardgame/167791/terraforming-mars',
+    videoUrl: 'https://youtu.be/n3yVpsiVwL8',
   },
   {
     _id: 'fallback-cascadia',
@@ -166,6 +193,7 @@ export const FALLBACK_GAMES: FallbackGame[] = [
     players: '1–4',
     playersMin: 1,
     playersMax: 4,
+    bggUrl: 'https://boardgamegeek.com/boardgame/295947/cascadia',
   },
   {
     _id: 'fallback-ark-nova',
@@ -178,6 +206,8 @@ export const FALLBACK_GAMES: FallbackGame[] = [
     players: '1–4',
     playersMin: 1,
     playersMax: 4,
+    bggUrl: 'https://boardgamegeek.com/boardgame/342942/ark-nova',
+    videoUrl: 'https://youtu.be/EvjY7lWoycM',
   },
   {
     _id: 'fallback-seti',
@@ -190,6 +220,8 @@ export const FALLBACK_GAMES: FallbackGame[] = [
     players: '1–4',
     playersMin: 1,
     playersMax: 4,
+    bggUrl:
+      'https://boardgamegeek.com/boardgame/418059/seti-search-for-extraterrestrial-intelligence',
   },
   {
     _id: 'fallback-sky-team',
@@ -202,6 +234,7 @@ export const FALLBACK_GAMES: FallbackGame[] = [
     players: '2',
     playersMin: 2,
     playersMax: 2,
+    bggUrl: 'https://boardgamegeek.com/boardgame/373106/sky-team',
   },
   {
     _id: 'fallback-calico',
@@ -214,6 +247,7 @@ export const FALLBACK_GAMES: FallbackGame[] = [
     players: '1–4',
     playersMin: 1,
     playersMax: 4,
+    bggUrl: 'https://boardgamegeek.com/boardgame/283155/calico',
   },
   {
     _id: 'fallback-rebirth',
@@ -226,6 +260,7 @@ export const FALLBACK_GAMES: FallbackGame[] = [
     players: '1–4',
     playersMin: 1,
     playersMax: 4,
+    bggUrl: 'https://boardgamegeek.com/boardgame/417197/rebirth',
   },
   {
     _id: 'fallback-hues-and-cues',
@@ -238,5 +273,6 @@ export const FALLBACK_GAMES: FallbackGame[] = [
     players: '3–10',
     playersMin: 3,
     playersMax: 10,
+    bggUrl: 'https://boardgamegeek.com/boardgame/302520/hues-and-cues',
   },
 ];
