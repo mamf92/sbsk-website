@@ -58,6 +58,8 @@ export default function ProfileCard({ member }: { member: Profile }) {
         </Button>
       </div>
       {showForm && (
+        // `ProfileForm` awaits this and catches a rejection itself, keeping the dialog open and
+        // showing the failure (#169) — the `.then()` below only ever runs on success.
         <ProfileForm
           profile={member}
           onSubmitProfile={(profileData) =>

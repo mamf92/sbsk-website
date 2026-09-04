@@ -18,6 +18,7 @@ import type { CalendarEventTypes } from '../../sanity/queryHelpers/events';
 import type { CalendarHeroTypes } from '../../sanity/queryHelpers/calendar-hero';
 import { components } from '../../sanity/editors/portableTextComponents';
 import { monthAbbreviation, timeRange } from '../../utils/eventDateFormat';
+import { isInternalLink, internalLinkPath } from '../../utils/internalLinks';
 import { useAuth } from '../../hooks/authContext/authContext';
 import {
   createParticipantFromProfile,
@@ -44,8 +45,6 @@ const FALLBACK_CALENDAR = {
   imageSourceName: 'Designed by Freepik',
   imageSourceUrl: 'www.freepik.com',
 };
-
-const INTERNAL_ORIGIN = 'https://www.mamf92.github.io/sbsk-website';
 
 // How many events past the featured one to render before "Last inn flere".
 const PAGE_SIZE = 10;
@@ -745,7 +744,7 @@ function EventRow({
                   </Button>
                 )}
                 {event.links?.map((link, index) => {
-                  const isInternal = link.url.startsWith(INTERNAL_ORIGIN);
+                  const isInternal = isInternalLink(link.url);
                   return (
                     <Button
                       key={index}
@@ -754,7 +753,7 @@ function EventRow({
                       icon="right"
                       onClick={() =>
                         isInternal
-                          ? navigate(new URL(link.url, window.location.href).pathname)
+                          ? navigate(internalLinkPath(link.url))
                           : window.open(link.url, '_blank', 'noopener,noreferrer')
                       }
                     >

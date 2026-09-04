@@ -107,12 +107,24 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
           />
         )}
         {sortedMembers.length > 0 && selectedSortField && (
-          <div className="flex flex-col bg-white px-2 py-4">
+          <ul className="flex flex-col bg-white px-2 py-4">
             {sortedMembers.map((member) => (
-              <div
-                className="hover:cursor-pointer hover:bg-gray-100"
+              <li
+                className="focus-visible:outline-focus-ring cursor-pointer hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2"
                 key={member.id}
+                role="button"
+                tabIndex={0}
+                aria-label={`Vis ${member.name} ${member.surname}`}
                 onClick={() => handleMemberClick(member)}
+                onKeyDown={(e) => {
+                  // Enter/Space activation, matching native button semantics (#168) — Space
+                  // also has to be prevented from scrolling the page, which the browser only
+                  // does for real `<button>`/`<a>` elements on its own.
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleMemberClick(member);
+                  }
+                }}
               >
                 <div className="flex w-full justify-between border-b border-black py-4 text-start">
                   <div className="w-[20%]">
@@ -136,12 +148,16 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
                     </p>
                   </div>
                 </div>
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
       </div>
       {showForm && (
+        // A rejection from `editMember`/`createMember` propagates up to `MemberForm`, which
+        // awaits this and keeps the dialog open with the failure shown instead of closing it
+        // regardless of the outcome (#169) — so nothing here closes the form or catches an error
+        // itself; only a successful save does, from inside `MemberForm`.
         <MemberForm
           member={selectedMember || undefined}
           onSubmitMember={async (memberData) => {
@@ -157,24 +173,19 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
                 email: memberData.email,
                 is_admin: memberData.is_admin,
               });
-              revalidator.revalidate();
-              setShowForm(false);
             } else {
-              {
-                await createMember({
-                  name: memberData.name,
-                  surname: memberData.surname,
-                  address: memberData.address,
-                  postcode: memberData.postcode,
-                  city: memberData.city,
-                  phone: memberData.phone,
-                  email: memberData.email,
-                  is_admin: memberData.is_admin,
-                });
-                revalidator.revalidate();
-                setShowForm(false);
-              }
+              await createMember({
+                name: memberData.name,
+                surname: memberData.surname,
+                address: memberData.address,
+                postcode: memberData.postcode,
+                city: memberData.city,
+                phone: memberData.phone,
+                email: memberData.email,
+                is_admin: memberData.is_admin,
+              });
             }
+            revalidator.revalidate();
           }}
           onClose={() => {
             setShowForm(false);
