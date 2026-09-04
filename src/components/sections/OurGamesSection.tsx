@@ -75,7 +75,7 @@ export default function OurGamesSection({ gamesHero, games }: OurGamesProps) {
       ? games.map((game) => ({
           ...game,
           image: game.image
-            ? urlFor(game.image).width(600).height(600).fit('crop').url()
+            ? urlFor(game.image).width(600).height(600).fit('crop').auto('format').url()
             : undefined,
         }))
       : FALLBACK_GAMES;

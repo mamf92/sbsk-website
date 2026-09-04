@@ -42,11 +42,11 @@ export default function SingleEventPage() {
       <div className="max-w-content content-gutter:px-0 mx-auto flex w-full flex-col gap-8 px-3">
         {event.image && (
           <img
-            src={urlFor(event.image).width(1440).fit('crop').url()}
+            src={urlFor(event.image).width(1440).fit('crop').auto('format').url()}
             srcSet={[
-              `${urlFor(event.image).width(400).fit('crop').url()} 400w`,
-              `${urlFor(event.image).width(800).fit('crop').url()} 800w`,
-              `${urlFor(event.image).width(1024).fit('crop').url()} 1024w`,
+              `${urlFor(event.image).width(400).fit('crop').auto('format').url()} 400w`,
+              `${urlFor(event.image).width(800).fit('crop').auto('format').url()} 800w`,
+              `${urlFor(event.image).width(1024).fit('crop').auto('format').url()} 1024w`,
             ].join(', ')}
             sizes="(max-width: 400px) 400px, (max-width: 800px) 800px, 1024px"
             alt=""
