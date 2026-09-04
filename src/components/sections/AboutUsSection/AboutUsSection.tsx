@@ -11,7 +11,7 @@ interface AboutUsSectionProps {
 
 export default function AboutUsSection({ aboutPage, boardMembers }: AboutUsSectionProps) {
   const imageUrl = aboutPage?.image
-    ? urlFor(aboutPage.image).width(1440).fit('crop').url()
+    ? urlFor(aboutPage.image).width(1440).fit('crop').auto('format').url()
     : FALLBACK_ABOUT.imageUrl;
   const imageSourceName = aboutPage?.imageSource?.imageSourceName;
   const imageSourceUrl = aboutPage?.imageSource?.imageSourceUrl;
@@ -36,7 +36,7 @@ export default function AboutUsSection({ aboutPage, boardMembers }: AboutUsSecti
           role: member.role,
           bio: member.bio,
           imageUrl: member.image
-            ? urlFor(member.image).width(400).height(400).fit('crop').url()
+            ? urlFor(member.image).width(400).height(400).fit('crop').auto('format').url()
             : undefined,
         }))
       : FALLBACK_BOARD;

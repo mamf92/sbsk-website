@@ -291,11 +291,11 @@ function CalendarHero({
       <div className="relative">
         {image ? (
           <img
-            src={urlFor(image).width(1440).fit('crop').url()}
+            src={urlFor(image).width(1440).fit('crop').auto('format').url()}
             srcSet={[
-              `${urlFor(image).width(400).fit('crop').url()} 400w`,
-              `${urlFor(image).width(800).fit('crop').url()} 800w`,
-              `${urlFor(image).width(1024).fit('crop').url()} 1024w`,
+              `${urlFor(image).width(400).fit('crop').auto('format').url()} 400w`,
+              `${urlFor(image).width(800).fit('crop').auto('format').url()} 800w`,
+              `${urlFor(image).width(1024).fit('crop').auto('format').url()} 1024w`,
             ].join(', ')}
             sizes="(max-width: 400px) 400px, (max-width: 800px) 800px, 1024px"
             alt=""
@@ -720,11 +720,11 @@ function EventRow({
 
             {event.image && (
               <img
-                src={urlFor(event.image).width(1440).fit('crop').url()}
+                src={urlFor(event.image).width(1440).fit('crop').auto('format').url()}
                 srcSet={[
-                  `${urlFor(event.image).width(400).fit('crop').url()} 400w`,
-                  `${urlFor(event.image).width(800).fit('crop').url()} 800w`,
-                  `${urlFor(event.image).width(1024).fit('crop').url()} 1024w`,
+                  `${urlFor(event.image).width(400).fit('crop').auto('format').url()} 400w`,
+                  `${urlFor(event.image).width(800).fit('crop').auto('format').url()} 800w`,
+                  `${urlFor(event.image).width(1024).fit('crop').auto('format').url()} 1024w`,
                 ].join(', ')}
                 sizes="(max-width: 400px) 400px, (max-width: 800px) 800px, 1024px"
                 alt=""

@@ -358,7 +358,7 @@ function PostCard({
       date={<PostDate publishedAt={publishedAt} />}
       title={post.title}
       subtitle={post.subtitle}
-      image={thumbnail && urlFor(thumbnail).width(320).height(320).fit('crop').url()}
+      image={thumbnail && urlFor(thumbnail).width(320).height(320).fit('crop').auto('format').url()}
       imagePosition={thumbnail && hotspotPosition(thumbnail)}
       expanded={expanded}
       onToggle={onToggle}
