@@ -10,3 +10,7 @@ test-results
 playwright-report
 blob-report
 coverage
+
+# The inline script's exact bytes are pinned by a CSP hash in the same file (see
+# githubPagesRedirect404Html.test.ts) — reformatting it silently breaks that hash.
+public/404.html
