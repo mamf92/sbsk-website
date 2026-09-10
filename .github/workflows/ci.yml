@@ -169,9 +169,10 @@ jobs:
       - uses: ./.github/actions/setup
 
       - name: Build
-        run: |
-          npm run build
-          cp dist/index.html dist/404.html
+        # public/404.html (the GitHub Pages SPA-routing fallback, #22) is copied into dist/ by
+        # Vite automatically — it must not be overwritten with a copy of index.html here, which
+        # is what used to serve every deep link with a bare 404 status instead of the redirect.
+        run: npm run build
         env:
           VITE_BASE: /${{ github.event.repository.name }}/
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}

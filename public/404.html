@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="no">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Stavanger Brettspillklubb</title>
+    <!--
+      GitHub Pages has no server-side router, so any URL that isn't a literal file — every
+      client route past the first load — falls through to this document with a 404 status
+      (see docs/HOSTING.md; deploy.yml builds this from a Vite public/ asset rather than a
+      copy of index.html, which is what this file replaced).
+
+      Serving index.html's own bytes at a 404 status used to "work" in the sense that the
+      SPA still booted and rendered the right route, but the response staying a real 404 is
+      exactly what a full-page navigation triggered by the browser back/forward button is
+      least forgiving about — a stale or intermediary cache is free to serve a generic error
+      for a 404 response but not for a 200 one, and there is no `Cache-Control` header we can
+      set on Pages to stop it (#22). The fix is the standard github pages SPA trick instead:
+      never let the browser see a 404 for a route the app can actually render. This document
+      redirects (client-side, 200 status at the far end) to the real index.html with the
+      attempted path packed into a `?/`-prefixed query string; `restoreGithubPagesRoute` in
+      `src/main.tsx` unpacks it with `history.replaceState` before the router reads the
+      location, so `createBrowserRouter` sees the real path, not the placeholder.
+
+      This is a separate static document from index.html, so it does not inherit the CSP
+      built in src/security/csp.ts — that policy's `script-src 'self'` would block an inline
+      script like this one outright. A hash source scoped to just this script is tighter than
+      turning on `unsafe-inline` for a page that renders nothing and touches no user data.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'sha256-2DD3ifwSLBp5i76SUMXsP0m2JtSSGsUIJOw5YX9JDb4='; base-uri 'none'"
+    />
+  </head>
+  <body>
+    <script>
+      // Single Page Apps for GitHub Pages, MIT — https://github.com/rafgraph/spa-github-pages
+      // pathSegmentsToKeep=1: this site is always served at <user>.github.io/sbsk-website/.
+      var pathSegmentsToKeep = 1;
+      var l = window.location;
+      l.replace(
+        l.protocol +
+          '//' +
+          l.hostname +
+          (l.port ? ':' + l.port : '') +
+          l.pathname
+            .split('/')
+            .slice(0, 1 + pathSegmentsToKeep)
+            .join('/') +
+          '/?/' +
+          l.pathname
+            .slice(1)
+            .split('/')
+            .slice(pathSegmentsToKeep)
+            .join('/')
+            .replace(/&/g, '~and~') +
+          (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+          l.hash,
+      );
+    </script>
+  </body>
+</html>
