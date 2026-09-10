@@ -11,6 +11,17 @@ import { decodeGithubPagesRedirect } from './githubPagesRedirect';
 // enforce by *blocking* the script: the one thing the fix depends on doing something. This test
 // recomputes the hash from the file on disk so that mismatch fails CI instead of shipping quietly.
 
+// public/404.html is hand-authored and always lowercase, but CodeQL's "bad HTML filtering
+// regexp" check flags a `<script>` matcher that isn't case-insensitive regardless — the `i`
+// flag costs nothing here and clears the finding.
+const SCRIPT_TAG = /<script>([\s\S]*?)<\/script>/i;
+
+function extractScript(html: string): string {
+  const script = html.match(SCRIPT_TAG)?.[1];
+  if (!script) throw new Error('no <script> found in public/404.html');
+  return script;
+}
+
 describe('public/404.html', () => {
   const html = readFileSync(resolve(__dirname, '../../public/404.html'), 'utf8');
 
@@ -20,10 +31,8 @@ describe('public/404.html', () => {
   });
 
   it('CSP script-src hash matches the actual inline script', () => {
-    const script = html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
-    expect(script).toBeTruthy();
-
-    const actualHash = `sha256-${createHash('sha256').update(script!, 'utf8').digest('base64')}`;
+    const script = extractScript(html);
+    const actualHash = `sha256-${createHash('sha256').update(script, 'utf8').digest('base64')}`;
     const declaredHash = html.match(/script-src 'sha256-[^']+'/)?.[0];
 
     expect(declaredHash).toBe(`script-src '${actualHash}'`);
@@ -34,9 +43,7 @@ describe('public/404.html', () => {
   // the real, shipped bytes against a stubbed `window.location`, so this pins actual behaviour
   // rather than a reimplementation that could drift from what ships.
   function runRedirectScript(pathname: string, search = '', hash = ''): string {
-    const script = html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
-    if (!script) throw new Error('no <script> found in public/404.html');
-
+    const script = extractScript(html);
     let redirectedTo: string | undefined;
     runInNewContext(script, {
       window: {
