@@ -14,7 +14,26 @@ empty commit to kick CI, merging or approving beyond what those rules already al
 
 Call the merge tool with method `merge` (a real merge commit) — never squash or rebase.
 `git log` on `main` is exclusively "Merge pull request #N" commits from PRs and Dependabot;
-squashing would break that pattern. Delete the head branch after a successful merge.
+squashing would break that pattern. There is no branch-delete tool in the granted permission
+set, so don't try to delete the head branch yourself after merging — rely on the repo's
+"Automatically delete head branches" setting (Settings → General → Pull Requests) instead; ask
+the maintainer to turn it on if stale `claude/*` branches are piling up.
+
+## Wrapping up a PR
+
+Whether it merges or closes, call `mcp__Claude_Code_Remote__unsubscribe_pr_activity` for it
+once you're done — the subscription from opening the PR does not clean itself up, and a stale
+watch on a closed PR is just noise.
+
+## Security-sensitive changes need a human, not just self-review
+
+The self-review pass below is you, the same agent, checking your own diff — it shares whatever
+blind spot produced the diff, and CI does not exercise real Supabase RLS policies or auth
+behavior. If a PR touches `src/supabase/`, an RLS policy, an auth guard/loader, or anything
+under the member or board portal, do not self-merge on green CI alone: leave the PR for the
+maintainer's explicit review, or at minimum flag the specific security-relevant lines in a PR
+comment and wait for a human response before merging, even though the ruleset does not require
+it.
 
 ## What "green" means here
 

@@ -31,12 +31,14 @@ discarded. Keep them. They are the handoff protocol, not bureaucracy.
 4. **Agent** runs an automated review pass over its own diff (`/code-review high`) and fixes
    what it finds, then watches CI on the subscription — no re-invocation needed.
 5. **Agent** merges once every required check is green and the review pass is resolved, then
-   deletes the branch. See `.claude/skills/steward/SKILL.md` for the exact merge conventions.
-   Merging to `main` deploys to GitHub Pages automatically.
+   unsubscribes from the PR's activity. See `.claude/skills/steward/SKILL.md` for the exact
+   merge conventions. Merging to `main` deploys to GitHub Pages automatically.
 
 You stay in step 1: writing the issue. Spot-check merged PRs and their diffs afterward rather
 than gating each one — the branch ruleset requires zero approvals on purpose, so a session can
-carry a PR all the way to `main` unattended. Steps 2 through 5 should need nothing from you.
+carry a PR all the way to `main` unattended. Steps 2 through 5 should need nothing from you,
+**except** a PR touching Supabase, RLS, auth, or the member/board portal: the steward skill
+holds those for your explicit review rather than self-merging on green CI.
 
 This works the same whether the session runs on claude.ai/code or as `claude` in a local
 checkout — both read the same `.claude/settings.json` and `.claude/skills/steward/`. A local
