@@ -5,12 +5,18 @@ export type EventScheduleCardTone = 'orange' | 'blue';
 
 // Fixed brand fills, not tied to light/dark mode — same choice CalendarSection's category
 // cards make. `orange` mirrors the `turnering` category styling; `blue` mirrors `spillkveld`.
+//
+// Each tone declares which hard shadow its fill can carry, because the add-to-calendar button
+// lifts onto it — see the pairing table in docs/DESIGN_LANGUAGE.md. Without this the button cast
+// the page default: darkestblue on `bg-darkblue` (1.24:1) in light mode, white on the orange
+// fill (2.18:1) in dark. The tone sits on the card root rather than the button, since the root
+// is the fill being cast onto and is not itself a lifting element.
 const TONE_STYLES: Record<EventScheduleCardTone, { surface: string; accent: string }> = {
   orange: {
-    surface: 'bg-category-turnering text-darkestblue',
+    surface: 'bg-category-turnering surface-light text-darkestblue',
     accent: 'bg-darkorange text-darkestblue',
   },
-  blue: { surface: 'bg-darkblue text-white', accent: 'bg-darkestblue text-white' },
+  blue: { surface: 'bg-darkblue surface-dark text-white', accent: 'bg-darkestblue text-white' },
 };
 
 interface EventScheduleCardProps {

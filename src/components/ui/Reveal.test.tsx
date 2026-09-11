@@ -34,6 +34,11 @@ function scroll(event: 'scroll' | 'resize' = 'scroll') {
 }
 
 beforeEach(() => {
+  // Run any frame the previous test scheduled and never flushed. The throttle flag lives in
+  // module state inside `Reveal.tsx`, so a frame left in flight would make `schedule()` a no-op
+  // for every test after it — the sweep would simply stop happening, silently.
+  flushFrame();
+
   window.innerHeight = 1000;
   frames = [];
   vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => frames.push(cb));
@@ -150,12 +155,62 @@ describe('Reveal', () => {
       expect(item().style.transitionDelay).toBe('');
     });
 
-    it('drops the delay once revealed, so nothing is left waiting on it', () => {
+    /**
+     * The delay has to survive the reveal, and this is the case that pinned the opposite.
+     * `transition-delay` is taken from the *after-change* style, so clearing it in the same
+     * commit that flips `data-revealed` means every item transitions with 0s — the stagger this
+     * component documents never played once.
+     */
+    it('keeps the delay once revealed, or there is no stagger at all', () => {
       placeAt(200);
       render(<Reveal index={3}>innhold</Reveal>);
 
-      expect(item().style.transitionDelay).toBe('');
+      expect(item()).toHaveAttribute('data-revealed', 'true');
+      expect(item()).toHaveStyle({ transitionDelay: 'calc(var(--duration-instant) * 3)' });
     });
+
+    it('keeps it across the transition from hidden to revealed too', () => {
+      const rect = placeAt(2000);
+      render(<Reveal index={2}>innhold</Reveal>);
+      expect(item()).toHaveStyle({ transitionDelay: 'calc(var(--duration-instant) * 2)' });
+
+      rect.mockReturnValue({ top: 100 } as DOMRect);
+      scroll();
+
+      expect(item()).toHaveAttribute('data-revealed', 'true');
+      expect(item()).toHaveStyle({ transitionDelay: 'calc(var(--duration-instant) * 2)' });
+    });
+
+    it('gives neighbours different delays, which is the whole point', () => {
+      placeAt(200);
+      render(
+        <>
+          <Reveal index={1}>først</Reveal>
+          <Reveal index={2}>så</Reveal>
+        </>,
+      );
+
+      expect(screen.getByText('først').style.transitionDelay).not.toBe(
+        screen.getByText('så').style.transitionDelay,
+      );
+    });
+  });
+
+  /**
+   * A list that filters or re-sorts reorders its items rather than remounting them — same key,
+   * same instance — so the registration effect never re-runs and no scroll fires. A card that
+   * was below the fold and is now on screen would sit at `opacity: 0` as an empty grid cell.
+   */
+  it('reveals when a re-render brings it into view without a scroll', () => {
+    const rect = placeAt(2000);
+    const { rerender } = render(<Reveal index={0}>innhold</Reveal>);
+    expect(item()).toHaveAttribute('data-revealed', 'false');
+
+    rect.mockReturnValue({ top: 100 } as DOMRect);
+    rerender(<Reveal index={0}>innhold</Reveal>);
+    flushFrame();
+
+    expect(item()).toHaveAttribute('data-revealed', 'true');
   });
 
   it('carries the class the stylesheet keys off, and the caller own classes', () => {

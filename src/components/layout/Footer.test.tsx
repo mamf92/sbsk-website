@@ -51,6 +51,29 @@ describe('Footer — motion preference toggle', () => {
     expect(document.documentElement).not.toHaveClass('reduce-motion');
   });
 
+  // `aria-pressed` alone is invisible: nothing in `buttonClasses` styles it, and only
+  // `lift-chip` reads it. A setting control that looks identical in both states is a setting
+  // control that only assistive tech can read.
+  it('looks different when pressed, not only to a screen reader', async () => {
+    const user = userEvent.setup();
+    renderFooter();
+    const off = toggle().className;
+
+    await user.click(toggle());
+
+    expect(toggle().className).not.toBe(off);
+  });
+
+  it('keeps its label across the state change', async () => {
+    const user = userEvent.setup();
+    renderFooter();
+
+    await user.click(toggle());
+
+    // A control that renames itself reads as a different control.
+    expect(toggle()).toHaveTextContent('Reduser animasjoner');
+  });
+
   it('shows as pressed when the preference was already reduced', () => {
     localStorage.setItem('motion-preference', 'reduced');
     renderFooter();

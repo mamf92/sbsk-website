@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { act } from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MotionProvider } from './MotionProvider';
@@ -71,6 +72,67 @@ describe('MotionProvider', () => {
 
     expect(screen.getByTestId('motion')).toHaveTextContent('reduced');
     expect(document.documentElement).toHaveClass('reduce-motion');
+  });
+
+  /**
+   * The desync this provider was restructured to fix. The subscription used to live in
+   * `initMotion` and wrote the class directly, so after an OS change the provider's state was
+   * stale: the toggle showed the wrong `aria-pressed`, and its next click rewrote the class to
+   * the value it already had — a visual no-op the visitor had to click through twice.
+   */
+  describe('following the OS mid-session', () => {
+    type Listener = (event: MediaQueryListEvent) => void;
+
+    function mockSystemMotion(reduce: boolean) {
+      const listeners: Listener[] = [];
+      window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+        matches: reduce,
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn((_: string, listener: Listener) => listeners.push(listener)),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })) as unknown as typeof window.matchMedia;
+
+      return (matches: boolean) =>
+        act(() => listeners.forEach((l) => l({ matches } as MediaQueryListEvent)));
+    }
+
+    it('moves the class and the reported state together', () => {
+      const emit = mockSystemMotion(false);
+      renderProbe();
+
+      emit(true);
+
+      expect(document.documentElement).toHaveClass('reduce-motion');
+      expect(screen.getByTestId('reduced')).toHaveTextContent('true');
+    });
+
+    it('leaves one click to turn it back off, not two', async () => {
+      const user = userEvent.setup();
+      const emit = mockSystemMotion(false);
+      renderProbe();
+      emit(true);
+
+      await user.click(screen.getByRole('button', { name: 'toggle' }));
+
+      expect(document.documentElement).not.toHaveClass('reduce-motion');
+      expect(screen.getByTestId('motion')).toHaveTextContent('full');
+    });
+
+    it('stops following once the visitor has chosen', async () => {
+      const user = userEvent.setup();
+      const emit = mockSystemMotion(false);
+      renderProbe();
+
+      await user.click(screen.getByRole('button', { name: 'toggle' }));
+      emit(false);
+
+      expect(screen.getByTestId('motion')).toHaveTextContent('reduced');
+      expect(document.documentElement).toHaveClass('reduce-motion');
+    });
   });
 
   it('refuses to be used without a provider, rather than silently reporting full motion', () => {

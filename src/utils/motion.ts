@@ -64,31 +64,36 @@ export function getInitialMotion(): MotionPreference {
   return getStoredMotion() ?? getSystemMotion();
 }
 
+/** Whether the visitor has made an explicit choice, as opposed to following their OS. */
+export function hasStoredMotion(): boolean {
+  return getStoredMotion() !== null;
+}
+
+/**
+ * Subscribe to the OS setting. `MotionProvider` owns this rather than `initMotion` owning it:
+ * a listener that wrote the class directly would leave the provider's state stale, so after an
+ * OS change mid-session the toggle would report the wrong `aria-pressed` and its next click
+ * would be a visual no-op — rewriting the class to the value it already had, so the visitor had
+ * to click twice.
+ *
+ * Returns its own unsubscribe. Safe in a browser with no `matchMedia`, where it is a no-op.
+ */
+export function subscribeToSystemMotion(onChange: (preference: MotionPreference) => void) {
+  const media = window.matchMedia?.(QUERY);
+  if (!media) return () => {};
+
+  const handleChange = (event: MediaQueryListEvent) => onChange(event.matches ? 'reduced' : 'full');
+  media.addEventListener('change', handleChange);
+  return () => media.removeEventListener('change', handleChange);
+}
+
 /**
  * Called from `src/main.tsx` before the router is built, next to `initTheme()` — nothing has
  * painted at that point, so the class is in place before any transition could run.
  *
- * The subscription is the part `theme.ts` has no equivalent of, and it is deliberate on two
- * counts. Storage is written *only* by an explicit toggle, so "follow the system" survives as a
- * real state rather than being frozen into storage on first load the way `ThemeProvider` freezes
- * the theme; and while it survives, a visitor who turns reduced motion on in their OS mid-session
- * gets it here without a reload. Once they have chosen for themselves, their choice stands and
- * the listener stops deciding anything.
- *
- * Returns its own unsubscribe so a caller can own the listener's lifetime; at module scope in
- * `main.tsx` it is simply never called, which is correct — the subscription lives as long as the
- * document does.
+ * Seeding is all it does. Keeping up with the OS afterwards belongs to `MotionProvider`, which
+ * is the thing that also has to stay in step with it; see `subscribeToSystemMotion`.
  */
-export function initMotion(): () => void {
+export function initMotion() {
   applyMotion(getInitialMotion());
-
-  const media = window.matchMedia?.(QUERY);
-  if (!media) return () => {};
-
-  const handleChange = (event: MediaQueryListEvent) => {
-    if (getStoredMotion()) return;
-    applyMotion(event.matches ? 'reduced' : 'full');
-  };
-  media.addEventListener('change', handleChange);
-  return () => media.removeEventListener('change', handleChange);
 }

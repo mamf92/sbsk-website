@@ -107,17 +107,26 @@ export default function Footer() {
               `darkestblue` is a fill this surface can actually carry, at the 4.99:1 the
               foreground table already records.
 
-              `aria-pressed` rather than a checkbox: this is a control that stays down, and
-              `Button variant="toggle"` is the system's existing shape for exactly that. It is
-              only ever a *preference* — the site already follows `prefers-reduced-motion` on
-              its own, so this is for visitors whose OS is not set, and for anyone who wants
+              `aria-pressed` rather than a checkbox: this is a control that stays down. Nothing
+              in `buttonClasses` styles that attribute, though — only `lift-chip` reads it — so
+              the pressed state needs a visible treatment of its own or it exists for assistive
+              tech and for nobody else, on the one control whose whole job is to show a setting.
+              It borrows `lift-chip`'s idea rather than inventing one: a control that is already
+              down rests on `--shadow-1` instead of flat. The footer is `surface-dark`, so that
+              shadow is white on `darkestblue` in both themes. The icon carries the same state a
+              second way; the label never changes, since a control that renames itself reads as
+              a different control.
+
+              It is only ever a *preference* — the site already follows `prefers-reduced-motion`
+              on its own, so this is for visitors whose OS is not set, and for anyone who wants
               the opposite of what it says. */}
           <div className="flex flex-col items-center gap-4 border-t pt-6">
             <Button
               variant="secondary"
               size="sm"
-              icon="motion"
+              icon={reduced ? 'block' : 'motion'}
               aria-pressed={reduced}
+              className={reduced ? 'shadow-1' : ''}
               onClick={toggleReducedMotion}
             >
               Reduser animasjoner

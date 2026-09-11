@@ -3,9 +3,11 @@ import {
   applyMotion,
   getInitialMotion,
   getSystemMotion,
+  hasStoredMotion,
   initMotion,
   motionIsReduced,
   storeMotion,
+  subscribeToSystemMotion,
 } from './motion';
 
 const STORAGE_KEY = 'motion-preference';
@@ -110,34 +112,65 @@ describe('initMotion', () => {
     initMotion();
     expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
   });
+});
 
-  it('follows a mid-session OS change while nothing is stored', () => {
+/**
+ * The subscription lives here rather than inside `initMotion` because `MotionProvider` has to
+ * hear about an OS change too — a listener that wrote the class on its own would leave the
+ * toggle reporting a state the page no longer had, and its next click would be a no-op.
+ */
+describe('subscribeToSystemMotion', () => {
+  it('reports an OS change', () => {
     const media = mockSystemMotion(false);
-    initMotion();
-    expect(document.documentElement).not.toHaveClass('reduce-motion');
+    const seen: string[] = [];
+    subscribeToSystemMotion((preference) => seen.push(preference));
 
     media.emit(true);
-    expect(document.documentElement).toHaveClass('reduce-motion');
+    media.emit(false);
+
+    expect(seen).toEqual(['reduced', 'full']);
   });
 
-  it('stops following the OS once the visitor has chosen for themselves', () => {
+  it('unsubscribes when asked', () => {
     const media = mockSystemMotion(false);
-    initMotion();
-    storeMotion('full');
-
-    media.emit(true);
-    expect(document.documentElement).not.toHaveClass('reduce-motion');
-  });
-
-  it('unsubscribes when asked, and survives a browser with no matchMedia', () => {
-    const media = mockSystemMotion(false);
-    const stop = initMotion();
+    const stop = subscribeToSystemMotion(() => {});
     expect(media.listenerCount).toBe(1);
-    stop();
-    expect(media.listenerCount).toBe(0);
 
+    stop();
+
+    expect(media.listenerCount).toBe(0);
+  });
+
+  it('is a no-op in a browser with no matchMedia', () => {
     window.matchMedia = undefined as unknown as typeof window.matchMedia;
-    expect(() => initMotion()()).not.toThrow();
+    expect(() => subscribeToSystemMotion(() => {})()).not.toThrow();
+  });
+
+  it("does not touch the class itself — that is the provider's job", () => {
+    const media = mockSystemMotion(false);
+    subscribeToSystemMotion(() => {});
+
+    media.emit(true);
+
+    expect(document.documentElement).not.toHaveClass('reduce-motion');
+  });
+});
+
+describe('hasStoredMotion', () => {
+  it('is false while the visitor is still following their OS', () => {
+    mockSystemMotion(true);
+    initMotion();
+    expect(hasStoredMotion()).toBe(false);
+  });
+
+  it('is true once they have chosen', () => {
+    storeMotion('full');
+    expect(hasStoredMotion()).toBe(true);
+  });
+
+  it('ignores a corrupt stored value', () => {
+    localStorage.setItem(STORAGE_KEY, 'sideways');
+    expect(hasStoredMotion()).toBe(false);
   });
 });
 

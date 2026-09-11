@@ -78,11 +78,24 @@ function schedule() {
   frame = requestAnimationFrame(sweep);
 }
 
+/**
+ * Scrolling is not the only way an item arrives. The page reflowing under it counts too — an
+ * image above it finishing loading, a web font landing, a filter removing the rows in front of
+ * it — and none of those fire a scroll. Observing the document element catches every one of
+ * them that changes the page's height.
+ */
+let reflow: ResizeObserver | null = null;
+
 function startListening() {
   if (listening) return;
   listening = true;
   window.addEventListener('scroll', schedule, { passive: true });
   window.addEventListener('resize', schedule, { passive: true });
+
+  if (typeof ResizeObserver === 'function') {
+    reflow ??= new ResizeObserver(schedule);
+    reflow.observe(document.documentElement);
+  }
 }
 
 function stopListening() {
@@ -90,6 +103,7 @@ function stopListening() {
   listening = false;
   window.removeEventListener('scroll', schedule);
   window.removeEventListener('resize', schedule);
+  reflow?.disconnect();
   if (frame) {
     cancelAnimationFrame(frame);
     frame = 0;
@@ -121,12 +135,28 @@ export function Reveal({ className = '', index = 0, children, ...props }: Reveal
     };
   }, []);
 
+  /**
+   * Deliberately has no dependency array. A list that filters or re-sorts *reorders* its items
+   * rather than remounting them — same key, same component instance — so the effect above never
+   * runs again and no scroll fires, and a card that was below the fold and is now on screen
+   * would sit at `opacity: 0` as an empty grid cell. Re-checking on every render is what
+   * corresponds to "the list changed". The sweep is rAF-throttled and returns immediately once
+   * nothing is pending, so a settled page pays a `Set.size` check.
+   */
+  React.useLayoutEffect(() => {
+    if (!shown) schedule();
+  });
+
   return (
     <div
       ref={ref}
       data-revealed={shown ? 'true' : 'false'}
+      // The delay has to survive the reveal. `transition-delay` is taken from the *after-change*
+      // style, so clearing it in the same commit that flips `data-revealed` means every item
+      // transitions with 0s and the stagger never plays at all — which is exactly what this
+      // component shipped doing.
       style={
-        shown || index <= 0
+        index <= 0
           ? undefined
           : {
               transitionDelay: `calc(var(--duration-instant) * ${Math.min(index, MAX_STAGGERED)})`,
