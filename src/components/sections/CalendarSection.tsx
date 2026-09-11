@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { PortableText, toPlainText } from '@portabletext/react';
+import { Reveal } from '../ui/Reveal';
 import { Button } from '../ui/Buttons';
 import { Chip, type ChipCategory } from '../ui/Chip';
 import { Input } from '../ui/Input';
@@ -316,7 +317,7 @@ function CalendarHero({
           </div>
         )}
       </div>
-      <div className="bg-darkblue flex flex-col items-start gap-2 p-4 text-white sm:p-6">
+      <div className="bg-darkblue surface-dark flex flex-col items-start gap-2 p-4 text-white sm:p-6">
         <h1 className="font-heading text-h1 tracking-heading font-bold">{resolvedTitle}</h1>
         <p className="font-body">{resolvedSubtitle}</p>
       </div>
@@ -496,28 +497,30 @@ function EventList({ events, failed }: { events: CalendarEventTypes[]; failed?: 
       )}
 
       {sort === 'title-asc'
-        ? visible.map((event) => (
-            <EventRow
-              key={event._id}
-              event={event}
-              rsvp={rsvp}
-              expanded={expandedId === event._id}
-              onToggle={() => setExpandedId(expandedId === event._id ? null : event._id)}
-            />
+        ? visible.map((event, index) => (
+            <Reveal key={event._id} index={index}>
+              <EventRow
+                event={event}
+                rsvp={rsvp}
+                expanded={expandedId === event._id}
+                onToggle={() => setExpandedId(expandedId === event._id ? null : event._id)}
+              />
+            </Reveal>
           ))
         : groups.map((group) => (
             <div key={group.key} className="flex flex-col gap-3">
               <Divider>
                 <span>{group.label}</span>
               </Divider>
-              {group.items.map((event) => (
-                <EventRow
-                  key={event._id}
-                  event={event}
-                  rsvp={rsvp}
-                  expanded={expandedId === event._id}
-                  onToggle={() => setExpandedId(expandedId === event._id ? null : event._id)}
-                />
+              {group.items.map((event, index) => (
+                <Reveal key={event._id} index={index}>
+                  <EventRow
+                    event={event}
+                    rsvp={rsvp}
+                    expanded={expandedId === event._id}
+                    onToggle={() => setExpandedId(expandedId === event._id ? null : event._id)}
+                  />
+                </Reveal>
               ))}
             </div>
           ))}

@@ -620,6 +620,49 @@
   }
 }
 
+/* The scroll reveal (`src/components/ui/Reveal.tsx`). The one piece of motion here that a
+   pointer did not ask for, so it is built out of what the language already says rather than
+   out of anything new: an item is held at the card hover offset on `--shadow-3` and settles
+   flat, which is the gesture a card already makes when you stop hovering it. No scale, no
+   blur, no soft shadow — the same rules as everything else.
+
+   The shadow is why `surface-dark`/`surface-light` on a panel is load-bearing rather than
+   cosmetic once a reveal lands inside it: the offset is painted onto the fill behind it for
+   280ms, and a `darkblue` panel that declares no tone casts the default darkestblue at 1.24:1.
+   `e2e/shadow-contrast.spec.ts` cannot catch this the way it catches lifts, because it reads
+   resting style and this shadow only exists mid-transition — so the tone declaration is the
+   guard.
+
+   Opacity is not the "soft gradient sliding under a surface" the loading section rules out:
+   nothing is sliding and nothing is a gradient, the element is simply not painted yet. */
+.sbsk-reveal {
+  opacity: 0;
+  transform: var(--lift-card-hover);
+  box-shadow: var(--shadow-3);
+  transition:
+    opacity var(--duration-slow) var(--ease-out),
+    transform var(--duration-slow) var(--ease-out),
+    box-shadow var(--duration-slow) var(--ease-out);
+}
+
+.sbsk-reveal[data-revealed='true'] {
+  opacity: 1;
+  transform: none;
+  box-shadow: none;
+}
+
+/* The finished state outright, not a shorter version of the journey — and stated as its own
+   rule rather than `transition: none` so it holds for an element that was already revealed.
+   `transition-delay` is cleared because the stagger is set inline and would otherwise survive
+   into a state that has nothing left to delay. */
+.reduce-motion .sbsk-reveal {
+  opacity: 1;
+  transform: none;
+  box-shadow: none;
+  transition: none;
+  transition-delay: 0s;
+}
+
 /* The shadow colour is a property of the *surface*, not of the theme.
 
    `lift` and friends paint a solid offset rectangle behind the element, onto whatever fill is
