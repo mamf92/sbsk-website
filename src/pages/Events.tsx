@@ -1,5 +1,6 @@
 import { Link, useLoaderData } from 'react-router-dom';
 import type { CalendarEventTypes } from '../sanity/queryHelpers/events';
+import { linkClassesInherit } from '../components/ui/Link';
 
 export default function Events() {
   const { events } = useLoaderData() as { events: CalendarEventTypes[] };
@@ -27,8 +28,16 @@ export default function Events() {
           );
 
           return (
-            <li className={detailPath ? 'hover:underline' : ''} key={event._id}>
-              {detailPath ? <Link to={detailPath}>{body}</Link> : body}
+            <li key={event._id}>
+              {detailPath ? (
+                // The hover used to sit on the `<li>`, so the underline appeared when the
+                // pointer was over the padding rather than over the link.
+                <Link to={detailPath} className={linkClassesInherit}>
+                  {body}
+                </Link>
+              ) : (
+                body
+              )}
             </li>
           );
         })}

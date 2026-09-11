@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import type { HomeHeroTypes } from '../../sanity/queryHelpers/home-hero';
 import { urlFor } from '../../sanity/sanityImageUrl';
 import { HeroImage } from '../ui/HeroImage';
+import { Link } from '../ui/Link';
 
 const FALLBACK_HERO = {
   title: 'Stavanger Brettspillklubb',
@@ -92,32 +93,35 @@ export default function HomeHero({
               </h2>
               <div className="flex w-full flex-col items-start justify-between gap-2 self-baseline rounded-none p-4 sm:flex-row md:gap-0 dark:bg-white/50">
                 {sponsors.map((sponsor, index) => (
-                  <a
+                  <Link
                     key={index}
                     href={sponsor.websiteUrl}
                     target="_blank"
                     rel="noopener noreferrer"
+                    variant="inherit"
+                    aria-label={`${sponsor.name} (åpnes i ny fane)`}
                   >
                     <img
                       src={urlFor(sponsor.logoImage).url()}
                       alt={sponsor.name}
                       className="h-14 w-auto lg:h-20"
                     />
-                  </a>
+                  </Link>
                 ))}
               </div>
             </div>
           )}
           {resolvedImageSource && resolvedImageSourceUrl && (
             <div className="absolute right-4 bottom-2 flex flex-col lg:bottom-6">
-              <a
+              <Link
                 href={resolvedImageSourceUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                variant="inherit"
                 className="text-darkestblue text-sm underline dark:text-white"
               >
                 {resolvedImageSource}
-              </a>
+              </Link>
             </div>
           )}
         </div>

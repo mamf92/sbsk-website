@@ -6,6 +6,7 @@ import { components } from '../sanity/editors/portableTextComponents';
 import { Button } from '../components/ui/Buttons';
 import { EventScheduleCard, type EventScheduleCardTone } from '../components/ui/EventScheduleCard';
 import { monthAbbreviation, timeRange } from '../utils/eventDateFormat';
+import { Link } from '../components/ui/Link';
 
 /** "23." for a single day, "23.–26." for a range — the date block's big number. */
 function dayLabel(start: Date, end: Date): string {
@@ -80,14 +81,15 @@ export default function SingleEventPage() {
                 return (
                   <div key={index} className="flex flex-col items-center gap-2">
                     {sponsor.link ? (
-                      <a
+                      <Link
                         href={sponsor.link}
                         target="_blank"
                         rel="noopener noreferrer"
+                        variant="inherit"
                         aria-label={sponsor.altText}
                       >
                         {logo}
-                      </a>
+                      </Link>
                     ) : (
                       logo
                     )}

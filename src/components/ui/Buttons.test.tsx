@@ -141,6 +141,25 @@ describe('Button', () => {
     });
   });
 
+  // The variant used to be cosmetic only: a grey, `cursor-not-allowed` button that was still
+  // clickable and focusable unless the caller also passed the attribute. Both the
+  // `not-disabled:hover:` suppression and `lift`'s own `:disabled` guard read that attribute,
+  // so the look and the behaviour could drift apart in silence.
+  it('disables itself, so the look and the behaviour cannot drift apart', async () => {
+    const onClick = vi.fn();
+    render(
+      <Button variant="disabled" onClick={onClick}>
+        x
+      </Button>,
+    );
+
+    const button = screen.getByRole('button', { name: 'x' });
+    expect(button).toBeDisabled();
+
+    await userEvent.click(button);
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
   it('disables itself while loading, so a form cannot be submitted twice', async () => {
     const onClick = vi.fn();
     render(

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Link } from './Link';
 import { Button } from './Buttons';
 import { Dialog } from './Dialog';
 import { clampAspect, cropUrl, hotspotPosition } from '../../utils/sanityImage';
@@ -109,14 +110,15 @@ export const Carousel = React.forwardRef<HTMLElement, CarouselProps>(
 
     const credit =
       current.imageSourceName && current.imageSourceUrl ? (
-        <a
+        <Link
           href={current.imageSourceUrl}
           target="_blank"
           rel="noopener noreferrer"
+          variant="inherit"
           className="underline"
         >
           Foto: {current.imageSourceName}
-        </a>
+        </Link>
       ) : null;
 
     const imageLabel = current.alt

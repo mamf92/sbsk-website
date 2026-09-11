@@ -31,7 +31,8 @@ type DropdownProps<T extends string> = Omit<React.HTMLAttributes<HTMLDivElement>
 const trigger =
   'inline-flex cursor-pointer items-center justify-between gap-2 whitespace-nowrap ' +
   'rounded-none border border-gray-neutral bg-white px-4 py-2 font-body text-xs font-bold ' +
-  'text-gray-500 hover:border-darkestblue focus-visible:outline focus-visible:outline-2 ' +
+  'text-gray-500 hover:border-darkestblue transition-colors duration-(--duration-fast) ' +
+  'ease-standard focus-visible:outline focus-visible:outline-2 ' +
   'focus-visible:outline-offset-2 focus-visible:outline-focus-ring ' +
   'dark:bg-transparent dark:text-white dark:hover:border-orange';
 
@@ -232,6 +233,7 @@ export function Dropdown<T extends string>({
           aria-hidden="true"
           className={
             'h-3.5 w-3.5 fill-current transition-transform duration-(--duration-base) ease-out ' +
+            'motion-reduce:transition-none ' +
             (open ? 'rotate-180' : 'rotate-0')
           }
         />

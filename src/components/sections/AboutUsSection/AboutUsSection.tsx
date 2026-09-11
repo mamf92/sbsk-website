@@ -2,6 +2,8 @@ import type { AboutPageTypes } from '../../../sanity/queryHelpers/about-page';
 import type { BoardMemberTypes } from '../../../sanity/queryHelpers/board-members';
 import { urlFor } from '../../../sanity/sanityImageUrl';
 import { BoardMemberCard } from './BoardMemberCard';
+import { Reveal } from '../../ui/Reveal';
+import { Link } from '../../ui/Link';
 import { FALLBACK_ABOUT, FALLBACK_BOARD } from './fallbackAbout';
 
 interface AboutUsSectionProps {
@@ -47,20 +49,21 @@ export default function AboutUsSection({ aboutPage, boardMembers }: AboutUsSecti
         <img src={imageUrl} alt="" className="h-full w-full object-cover" />
         {imageSourceName && imageSourceUrl ? (
           <div className="relative">
-            <a
+            <Link
               href={imageSourceUrl}
               target="_blank"
               rel="noopener noreferrer"
+              variant="inherit"
               className="absolute right-4 bottom-2 text-sm text-white underline"
             >
               {imageSourceName}
-            </a>
+            </Link>
           </div>
         ) : null}
       </div>
 
       <div className="max-w-content w-full px-2 py-8 sm:px-0">
-        <div className="bg-darkblue flex w-full flex-col gap-4 p-4 text-white sm:p-8">
+        <div className="bg-darkblue surface-dark flex w-full flex-col gap-4 p-4 text-white sm:p-8">
           <h1 className="font-heading text-h1 font-bold">{clubTitle}</h1>
           <p className="font-body font-bold">{clubIntro}</p>
           {clubBody.map((paragraph, index) => (
@@ -72,20 +75,21 @@ export default function AboutUsSection({ aboutPage, boardMembers }: AboutUsSecti
       </div>
 
       <div className="max-w-content w-full px-2 pb-8 sm:px-0">
-        <div className="bg-darkblue flex w-full flex-col gap-6 p-4 text-white sm:p-8">
+        <div className="bg-darkblue surface-dark flex w-full flex-col gap-6 p-4 text-white sm:p-8">
           <div className="flex flex-col gap-4">
             <h2 className="font-heading text-h2 font-bold">{boardTitle}</h2>
             <p className="font-body font-bold">{boardIntro}</p>
           </div>
           <div className="grid grid-cols-[repeat(auto-fill,minmax(290px,1fr))] items-stretch gap-5">
-            {members.map((member) => (
-              <BoardMemberCard
-                key={member._id}
-                name={member.name}
-                role={member.role}
-                bio={member.bio}
-                imageUrl={member.imageUrl}
-              />
+            {members.map((member, index) => (
+              <Reveal key={member._id} index={index} className="flex">
+                <BoardMemberCard
+                  name={member.name}
+                  role={member.role}
+                  bio={member.bio}
+                  imageUrl={member.imageUrl}
+                />
+              </Reveal>
             ))}
           </div>
         </div>

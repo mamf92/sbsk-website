@@ -2,6 +2,22 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Reduced motion is a *preference*, not only an OS setting, so the condition it reads has to
+   be something a toggle can write: `src/utils/motion.ts` puts `.reduce-motion` on `<html>` the
+   same way `theme.ts` puts `.dark` there, seeding it from the OS query on first load.
+   Redefining Tailwind's own `motion-reduce` rather than inventing a second name keeps the
+   `motion-reduce:` classes already in `Card.tsx` working untouched, and means every future one
+   reads the preference for free.
+
+   Dropping the media query entirely — rather than OR-ing it with the class — is what makes the
+   toggle authoritative in *both* directions: a visitor whose OS asks for less motion but who
+   explicitly turns it back on would otherwise still be suppressed by the query. That is only
+   safe because this is a client-rendered SPA: nothing paints before `initMotion()` has run, so
+   there is no window in which the OS preference goes unhonoured. `motion-safe` is redefined as
+   the exact negation so the pair cannot drift apart. */
+@custom-variant motion-reduce (&:where(.reduce-motion, .reduce-motion *));
+@custom-variant motion-safe (&:not(:where(.reduce-motion, .reduce-motion *)));
+
 @font-face {
   font-family: 'Noto Sans';
   src: url('/fonts/NotoSans-Regular.ttf') format('truetype');
@@ -323,11 +339,9 @@
 }
 
 /* The label still says what is happening, so dropping the loop costs nothing. */
-@media (prefers-reduced-motion: reduce) {
-  .sbsk-load-pip {
-    animation: none;
-    opacity: 0.55;
-  }
+.reduce-motion .sbsk-load-pip {
+  animation: none;
+  opacity: 0.55;
 }
 
 /* Dice — shared interactive die used in the header logo and the error page.
@@ -405,17 +419,15 @@
   animation: sbsk-err-tumble 5s ease-in-out infinite;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .sbsk-dice:hover svg,
-  .sbsk-dice.rolling:hover svg {
-    transform: none;
-  }
-  .sbsk-dice.rolling svg {
-    animation-duration: 0.25s;
-  }
-  .sbsk-err-die {
-    animation: none;
-  }
+.reduce-motion .sbsk-dice:hover svg,
+.reduce-motion .sbsk-dice.rolling:hover svg {
+  transform: none;
+}
+.reduce-motion .sbsk-dice.rolling svg {
+  animation-duration: 0.25s;
+}
+.reduce-motion .sbsk-err-die {
+  animation: none;
 }
 
 /* Rich text inside an expanded `Card`. The Portable Text components in
@@ -502,7 +514,7 @@
   }
 
   /* Keep the shadow — it is not motion — but drop the travel. */
-  @media (prefers-reduced-motion: reduce) {
+  @variant motion-reduce {
     transition:
       box-shadow var(--transition-fast),
       background-color var(--transition-fast),
@@ -546,7 +558,7 @@
   }
 
   /* Keep the shadow — it is not motion — but drop the travel. */
-  @media (prefers-reduced-motion: reduce) {
+  @variant motion-reduce {
     transition: box-shadow var(--transition-fast);
 
     &:hover {
@@ -593,7 +605,8 @@
     box-shadow: none;
   }
 
-  @media (prefers-reduced-motion: reduce) {
+  /* Keep the shadow — it is not motion — but drop the travel. */
+  @variant motion-reduce {
     transition:
       box-shadow var(--transition-fast),
       background-color var(--transition-fast),
@@ -605,6 +618,49 @@
       transform: none;
     }
   }
+}
+
+/* The scroll reveal (`src/components/ui/Reveal.tsx`). The one piece of motion here that a
+   pointer did not ask for, so it is built out of what the language already says rather than
+   out of anything new: an item is held at the card hover offset on `--shadow-3` and settles
+   flat, which is the gesture a card already makes when you stop hovering it. No scale, no
+   blur, no soft shadow — the same rules as everything else.
+
+   The shadow is why `surface-dark`/`surface-light` on a panel is load-bearing rather than
+   cosmetic once a reveal lands inside it: the offset is painted onto the fill behind it for
+   280ms, and a `darkblue` panel that declares no tone casts the default darkestblue at 1.24:1.
+   `e2e/shadow-contrast.spec.ts` cannot catch this the way it catches lifts, because it reads
+   resting style and this shadow only exists mid-transition — so the tone declaration is the
+   guard.
+
+   Opacity is not the "soft gradient sliding under a surface" the loading section rules out:
+   nothing is sliding and nothing is a gradient, the element is simply not painted yet. */
+.sbsk-reveal {
+  opacity: 0;
+  transform: var(--lift-card-hover);
+  box-shadow: var(--shadow-3);
+  transition:
+    opacity var(--duration-slow) var(--ease-out),
+    transform var(--duration-slow) var(--ease-out),
+    box-shadow var(--duration-slow) var(--ease-out);
+}
+
+.sbsk-reveal[data-revealed='true'] {
+  opacity: 1;
+  transform: none;
+  box-shadow: none;
+}
+
+/* The finished state outright, not a shorter version of the journey — and stated as its own
+   rule rather than `transition: none` so it holds for an element that was already revealed.
+   `transition-delay` is cleared because the stagger is set inline and would otherwise survive
+   into a state that has nothing left to delay. */
+.reduce-motion .sbsk-reveal {
+  opacity: 1;
+  transform: none;
+  box-shadow: none;
+  transition: none;
+  transition-delay: 0s;
 }
 
 /* The shadow colour is a property of the *surface*, not of the theme.

@@ -6,6 +6,7 @@ import { Textarea } from '../ui/Textarea';
 import { createContactMessage } from '../../supabase/queryHelpers/createContactMessage';
 import { contactSchema, type ContactValues } from '../../schemas/contact';
 import { useAutofillSync } from '../../hooks/useAutofillSync';
+import { Link } from '../ui/Link';
 
 type FieldName = keyof ContactValues;
 
@@ -158,18 +159,19 @@ export default function ContactSection() {
           </p>
           <p className="font-body">
             Du kan også nå oss på{' '}
-            <a href="mailto:hei@sbsk.no" className="underline">
+            <Link href="mailto:hei@sbsk.no" variant="inherit" className="underline">
               hei@sbsk.no
-            </a>
+            </Link>
             , eller i{' '}
-            <a
+            <Link
               href="https://www.facebook.com/groups/1699569943629396"
               target="_blank"
               rel="noreferrer"
+              variant="inherit"
               className="underline"
             >
               Facebook-gruppa vår
-            </a>
+            </Link>
             .
           </p>
         </div>

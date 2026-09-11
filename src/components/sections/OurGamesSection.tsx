@@ -4,6 +4,7 @@ import { Chip } from '../ui/Chip';
 import { Input } from '../ui/Input';
 import { Dialog } from '../ui/Dialog';
 import EmptyState from '../ui/EmptyState';
+import { Reveal } from '../ui/Reveal';
 import { GameCard, type BuyInfo } from '../ui/GameCard';
 import { HeroImage } from '../ui/HeroImage';
 import { useNavigate } from 'react-router-dom';
@@ -163,25 +164,26 @@ export default function OurGamesSection({ gamesHero, games }: OurGamesProps) {
           />
         ) : (
           <div className="grid grid-cols-[repeat(auto-fill,minmax(290px,1fr))] items-stretch gap-5">
-            {filteredGames.map((game) => (
-              <GameCard
-                key={game._id}
-                title={game.title}
-                genre={game.genre}
-                description={game.description}
-                image={game.image}
-                difficulty={game.difficulty}
-                time={game.time}
-                players={game.players}
-                buyUrl={game.buyUrl || SPONSOR.url}
-                bggUrl={game.bggUrl}
-                videoUrl={game.videoUrl}
-                sponsor={SPONSOR.name}
-                discountPercent={SPONSOR.discountPercent}
-                discountCode={SPONSOR.discountCode}
-                member={isAuthenticated}
-                onBuy={handleBuy}
-              />
+            {filteredGames.map((game, index) => (
+              <Reveal key={game._id} index={index} className="flex">
+                <GameCard
+                  title={game.title}
+                  genre={game.genre}
+                  description={game.description}
+                  image={game.image}
+                  difficulty={game.difficulty}
+                  time={game.time}
+                  players={game.players}
+                  buyUrl={game.buyUrl || SPONSOR.url}
+                  bggUrl={game.bggUrl}
+                  videoUrl={game.videoUrl}
+                  sponsor={SPONSOR.name}
+                  discountPercent={SPONSOR.discountPercent}
+                  discountCode={SPONSOR.discountCode}
+                  member={isAuthenticated}
+                  onBuy={handleBuy}
+                />
+              </Reveal>
             ))}
           </div>
         )}

@@ -160,6 +160,21 @@ describe('every class name in src/ compiles to CSS', () => {
     const design = await loadDesignSystem();
 
     expect(design.candidatesToCss(['lift', 'lift-chip', 'lift-card'])).not.toContain(null);
+    // `motion-reduce` is redefined in `index.css` as a class-driven variant so a visitor's own
+    // preference can reach it. Pin that it still compiles *and* that it compiles to the class
+    // rather than the media query — a stray `@media` here would mean the footer toggle silently
+    // stops working for every `motion-reduce:` class in the tree.
+    const motionReduce = design.candidatesToCss(['motion-reduce:transition-none'])[0];
+    expect(motionReduce).toContain('.reduce-motion');
+    expect(motionReduce).not.toContain('@media');
+
+    // `.sbsk-reveal` and `.reduce-motion` are hand-written in `index.css` rather than Tailwind
+    // utilities, so the sweep above allows them only because it harvests class names out of the
+    // stylesheet. Pin that they are still actually there — a rename would otherwise make the
+    // sweep quietly stop checking the classes that use them.
+    const handWritten = handWrittenClasses();
+    expect(handWritten.has('sbsk-reveal')).toBe(true);
+    expect(handWritten.has('reduce-motion')).toBe(true);
     expect(design.candidatesToCss(['bg-darkestblue', 'text-h1', 'xs:text-base'])).not.toContain(
       null,
     );
@@ -248,5 +263,60 @@ describe('page containers come from the container tokens', () => {
     expect(isRawPageWidth('max-w-[90vw]')).toBe(true);
     // Component-sized, not a container: the footer wordmark's 49px box.
     expect(isRawPageWidth('max-w-12.25')).toBe(false);
+  });
+});
+
+/**
+ * `lift`, `lift-card` and `lift-chip` each own `transition` outright — they declare transform,
+ * box-shadow *and* the colour swap on one declaration. The last `transition-property` to land in
+ * the cascade wins, so an element carrying a lift utility and a `transition-*` utility silently
+ * drops half of whatever it was supposed to do, with nothing on screen to say so.
+ *
+ * `docs/DESIGN_LANGUAGE.md` says "A test on each component pins it", and five components did
+ * have one — but `GameCard`, `CalendarSection` and `AvatarStack` never got theirs, which is
+ * exactly the kind of gap a per-component convention leaves. One sweep over every class list in
+ * `src/` covers all of them and every component added later for free.
+ *
+ * What it cannot see: a caller passing `className="transition-colors"` into a component that
+ * adds the lift itself. The two strings live in different files and only meet at runtime. That
+ * case is still on review.
+ */
+const LIFT = /^lift(-card|-chip)?$/;
+const TRANSITION = /^transition(-|$|\[)/;
+
+describe('a lift utility never shares an element with a transition utility', () => {
+  it('has no class list carrying both', () => {
+    const both: string[] = [];
+
+    for (const file of sourceFiles(SRC)) {
+      for (const literal of stringLiterals(file)) {
+        const tokens = literal.split(/\s+/).filter(Boolean);
+        // Strip any variant prefix: `motion-reduce:transition-none` is a lift's *own* reduced
+        // branch expressed as a utility, not a competing resting transition.
+        const utilities = tokens.map((token) => token.slice(token.lastIndexOf(':') + 1));
+
+        const lift = utilities.find((utility) => LIFT.test(utility));
+        const transition = tokens.find(
+          (token, i) => !token.includes(':') && TRANSITION.test(utilities[i]),
+        );
+        if (lift && transition) {
+          both.push(`${relative(REPO_ROOT, file)}: ${lift} + ${transition}`);
+        }
+      }
+    }
+
+    expect(both).toEqual([]);
+  });
+
+  it('knows what it is looking for, so the check is not vacuous', () => {
+    const tokens = (value: string) => value.split(/\s+/).filter(Boolean);
+    const utilities = (value: string) =>
+      tokens(value).map((token) => token.slice(token.lastIndexOf(':') + 1));
+
+    expect(utilities('lift-card bg-white').some((u) => LIFT.test(u))).toBe(true);
+    expect(utilities('transition-[grid-template-rows]').some((u) => TRANSITION.test(u))).toBe(true);
+    expect(utilities('transition-colors').some((u) => TRANSITION.test(u))).toBe(true);
+    // Not a lift: a caller's own class that merely starts with the same letters.
+    expect(utilities('lifted-panel').some((u) => LIFT.test(u))).toBe(false);
   });
 });

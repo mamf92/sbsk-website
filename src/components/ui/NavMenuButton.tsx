@@ -14,9 +14,12 @@ const base =
 
 // 2px bar, 5px gap: the outer bars sit exactly 7px off centre, so that is how far they
 // travel to meet in the middle before rotating.
-const bar = 'block h-0.5 w-6 bg-current transition-transform duration-(--duration-base) ease-out';
+const bar =
+  'block h-0.5 w-6 bg-current transition-transform duration-(--duration-base) ease-out ' +
+  'motion-reduce:transition-none';
 const middleBar =
-  'block h-0.5 w-6 bg-current transition-opacity duration-(--duration-fast) ease-standard';
+  'block h-0.5 w-6 bg-current transition-opacity duration-(--duration-fast) ease-standard ' +
+  'motion-reduce:transition-none';
 
 export const NavMenuButton = React.forwardRef<HTMLButtonElement, NavMenuButtonProps>(
   ({ className = '', open = false, ...props }, ref) => (

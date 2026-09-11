@@ -1,10 +1,13 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { SocialIcon } from 'react-social-icons';
 import { DiceLogo } from '../ui/DiceLogo';
-import { navLinkClassesBody } from '../ui/Link';
+import { Link, navLinkClassesBody } from '../ui/Link';
+import { Button } from '../ui/Buttons';
+import { useMotion } from '../../hooks/motion/MotionContext';
 
 export default function Footer() {
   const navigate = useNavigate();
+  const { reduced, toggleReducedMotion } = useMotion();
 
   return (
     <footer className="bg-darkblue surface-dark font-body max-xs:p-4 flex w-full flex-col p-8 text-white">
@@ -26,9 +29,9 @@ export default function Footer() {
               </div>
               <div>
                 <p>Kontakt oss:</p>
-                <a href="mailto:hei@sbsk.no" className="underline">
+                <Link href="mailto:hei@sbsk.no" variant="inherit" className="underline">
                   hei@sbsk.no
-                </a>
+                </Link>
               </div>
             </div>
             <div className="flex flex-1 flex-row">
@@ -63,14 +66,15 @@ export default function Footer() {
                     Våre partnere
                   </NavLink>
                 </h2>
-                <a
+                <Link
                   href="https://www.outland.no/"
                   target="_blank"
                   rel="noopener noreferrer"
+                  variant="inherit"
                   className="underline"
                 >
                   Outland.no
-                </a>
+                </Link>
                 <NavLink to="/våre-spill" className={navLinkClassesBody}>
                   Kjøp spill med rabatt
                 </NavLink>
@@ -89,7 +93,44 @@ export default function Footer() {
               />
             </div>
           </div>
-          <div className="border-t pt-6">
+          {/* The motion preference lives here rather than beside the theme toggle in the
+              header for two reasons. The header's right cluster already carries three controls
+              at 320px, and — the deciding one — WCAG 2.5.3 forces a control there into a
+              two-letter abbreviation the accessible name then has to start with, which is what
+              `Header.tsx`'s LM/DM comment is about. A footer control can say what it does, so
+              its visible label and its accessible name are simply the same string.
+
+              `secondary` rather than `toggle`: the footer's inner panel is `darkestblue` in
+              both themes, and `toggle`'s own fill is `darkestblue` in light mode — the button
+              vanished into the panel and read as a line of text. `outline` has the mirror
+              problem here, since its hover fill is the panel's colour too. `darkorange` on
+              `darkestblue` is a fill this surface can actually carry, at the 4.99:1 the
+              foreground table already records.
+
+              `aria-pressed` rather than a checkbox: this is a control that stays down. Nothing
+              in `buttonClasses` styles that attribute, though — only `lift-chip` reads it — so
+              the pressed state needs a visible treatment of its own or it exists for assistive
+              tech and for nobody else, on the one control whose whole job is to show a setting.
+              It borrows `lift-chip`'s idea rather than inventing one: a control that is already
+              down rests on `--shadow-1` instead of flat. The footer is `surface-dark`, so that
+              shadow is white on `darkestblue` in both themes. The icon carries the same state a
+              second way; the label never changes, since a control that renames itself reads as
+              a different control.
+
+              It is only ever a *preference* — the site already follows `prefers-reduced-motion`
+              on its own, so this is for visitors whose OS is not set, and for anyone who wants
+              the opposite of what it says. */}
+          <div className="flex flex-col items-center gap-4 border-t pt-6">
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={reduced ? 'block' : 'motion'}
+              aria-pressed={reduced}
+              className={reduced ? 'shadow-1' : ''}
+              onClick={toggleReducedMotion}
+            >
+              Reduser animasjoner
+            </Button>
             <p className="text-center text-sm">
               &copy; 2026 Stavanger Brettspillklubb. All rights reserved.
             </p>

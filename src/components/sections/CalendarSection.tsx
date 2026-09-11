@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { PortableText, toPlainText } from '@portabletext/react';
+import { Reveal } from '../ui/Reveal';
+// Aliased: this module already imports React Router's `Link` for in-app navigation.
+import { Link as ExternalTextLink } from '../ui/Link';
 import { Button } from '../ui/Buttons';
 import { Chip, type ChipCategory } from '../ui/Chip';
 import { Input } from '../ui/Input';
@@ -305,18 +308,19 @@ function CalendarHero({
         )}
         {resolvedImageSource && resolvedImageSourceUrl && (
           <div className="absolute right-4 bottom-2 flex flex-col">
-            <a
+            <ExternalTextLink
               href={resolvedImageSourceUrl}
               target="_blank"
               rel="noopener noreferrer"
+              variant="inherit"
               className="bg-darkestblue/50 text-xs text-white underline sm:text-sm"
             >
               {resolvedImageSource}
-            </a>
+            </ExternalTextLink>
           </div>
         )}
       </div>
-      <div className="bg-darkblue flex flex-col items-start gap-2 p-4 text-white sm:p-6">
+      <div className="bg-darkblue surface-dark flex flex-col items-start gap-2 p-4 text-white sm:p-6">
         <h1 className="font-heading text-h1 tracking-heading font-bold">{resolvedTitle}</h1>
         <p className="font-body">{resolvedSubtitle}</p>
       </div>
@@ -496,28 +500,30 @@ function EventList({ events, failed }: { events: CalendarEventTypes[]; failed?: 
       )}
 
       {sort === 'title-asc'
-        ? visible.map((event) => (
-            <EventRow
-              key={event._id}
-              event={event}
-              rsvp={rsvp}
-              expanded={expandedId === event._id}
-              onToggle={() => setExpandedId(expandedId === event._id ? null : event._id)}
-            />
+        ? visible.map((event, index) => (
+            <Reveal key={event._id} index={index}>
+              <EventRow
+                event={event}
+                rsvp={rsvp}
+                expanded={expandedId === event._id}
+                onToggle={() => setExpandedId(expandedId === event._id ? null : event._id)}
+              />
+            </Reveal>
           ))
         : groups.map((group) => (
             <div key={group.key} className="flex flex-col gap-3">
               <Divider>
                 <span>{group.label}</span>
               </Divider>
-              {group.items.map((event) => (
-                <EventRow
-                  key={event._id}
-                  event={event}
-                  rsvp={rsvp}
-                  expanded={expandedId === event._id}
-                  onToggle={() => setExpandedId(expandedId === event._id ? null : event._id)}
-                />
+              {group.items.map((event, index) => (
+                <Reveal key={event._id} index={index}>
+                  <EventRow
+                    event={event}
+                    rsvp={rsvp}
+                    expanded={expandedId === event._id}
+                    onToggle={() => setExpandedId(expandedId === event._id ? null : event._id)}
+                  />
+                </Reveal>
               ))}
             </div>
           ))}
@@ -674,6 +680,7 @@ function EventRow({
               <ExpandIcon
                 className={[
                   'h-5 w-5 fill-current transition-transform duration-(--duration-base) ease-out',
+                  'motion-reduce:transition-none',
                   expanded ? 'rotate-180' : 'rotate-0',
                 ].join(' ')}
               />
@@ -702,67 +709,88 @@ function EventRow({
       )}
 
       {expandable && (
-        <div id={panelId} hidden={!expanded}>
-          <div
-            className={[
-              'flex flex-col gap-4 border-t border-black p-4 sm:p-6 dark:border-white',
-              styles.accent,
-            ].join(' ')}
-          >
-            {/* Same rich-text rhythm the news cards use — `.sbsk-rt` (src/index.css) owns the
+        // `grid-template-rows: 0fr → 1fr` and `inert`, the same panel `Card` opens — see its
+        // comment for why this beats a max-height. Before this the two card stacks looked
+        // identical and behaved differently: a news card eased open, a calendar card blinked.
+        // `inert` rather than `hidden`: 0fr leaves the panel's links in the tab order, which is
+        // exactly the trap `hidden` was covering for.
+        <div
+          id={panelId}
+          inert={!expanded}
+          className={[
+            'grid transition-[grid-template-rows] duration-(--duration-slow) ease-out',
+            'motion-reduce:transition-none',
+            expanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+          ].join(' ')}
+        >
+          <div className="overflow-hidden">
+            <div
+              className={[
+                'flex flex-col gap-4 border-t border-black p-4 sm:p-6 dark:border-white',
+                styles.accent,
+              ].join(' ')}
+            >
+              {/* Same rich-text rhythm the news cards use — `.sbsk-rt` (src/index.css) owns the
                 spacing *between* blocks; the Portable Text components own the type scale. */}
-            {event.content && (
-              <div className="sbsk-rt">
-                <PortableText value={event.content} components={components} />
-              </div>
-            )}
+              {event.content && (
+                <div className="sbsk-rt">
+                  <PortableText value={event.content} components={components} />
+                </div>
+              )}
 
-            {event.image && (
-              <img
-                src={urlFor(event.image).width(1440).fit('crop').auto('format').url()}
-                srcSet={[
-                  `${urlFor(event.image).width(400).fit('crop').auto('format').url()} 400w`,
-                  `${urlFor(event.image).width(800).fit('crop').auto('format').url()} 800w`,
-                  `${urlFor(event.image).width(1024).fit('crop').auto('format').url()} 1024w`,
-                ].join(', ')}
-                sizes="(max-width: 400px) 400px, (max-width: 800px) 800px, 1024px"
-                alt=""
-                className="h-84 w-full border border-black object-cover lg:h-100 dark:border-white"
-              />
-            )}
+              {event.image && (
+                <img
+                  src={urlFor(event.image).width(1440).fit('crop').auto('format').url()}
+                  srcSet={[
+                    `${urlFor(event.image).width(400).fit('crop').auto('format').url()} 400w`,
+                    `${urlFor(event.image).width(800).fit('crop').auto('format').url()} 800w`,
+                    `${urlFor(event.image).width(1024).fit('crop').auto('format').url()} 1024w`,
+                  ].join(', ')}
+                  sizes="(max-width: 400px) 400px, (max-width: 800px) 800px, 1024px"
+                  // `hidden` used to keep this out of the network entirely; a clipped 0fr row
+                  // does not, so the deferral has to be explicit now. Same pair `SanityImage`
+                  // sets for the images inside a news card's panel, which has always opened
+                  // this way.
+                  loading="lazy"
+                  decoding="async"
+                  alt=""
+                  className="h-84 w-full border border-black object-cover lg:h-100 dark:border-white"
+                />
+              )}
 
-            {(event.links?.length || detailPath) && (
-              <div className="flex flex-row flex-wrap gap-2">
-                {detailPath && (
-                  <Button
-                    variant={styles.accentButtonVariant}
-                    size="sm"
-                    icon="right"
-                    onClick={() => navigate(detailPath)}
-                  >
-                    Se arrangementet
-                  </Button>
-                )}
-                {event.links?.map((link, index) => {
-                  const isInternal = isInternalLink(link.url);
-                  return (
+              {(event.links?.length || detailPath) && (
+                <div className="flex flex-row flex-wrap gap-2">
+                  {detailPath && (
                     <Button
-                      key={index}
                       variant={styles.accentButtonVariant}
                       size="sm"
                       icon="right"
-                      onClick={() =>
-                        isInternal
-                          ? navigate(internalLinkPath(link.url))
-                          : window.open(link.url, '_blank', 'noopener,noreferrer')
-                      }
+                      onClick={() => navigate(detailPath)}
                     >
-                      {link.label}
+                      Se arrangementet
                     </Button>
-                  );
-                })}
-              </div>
-            )}
+                  )}
+                  {event.links?.map((link, index) => {
+                    const isInternal = isInternalLink(link.url);
+                    return (
+                      <Button
+                        key={index}
+                        variant={styles.accentButtonVariant}
+                        size="sm"
+                        icon="right"
+                        onClick={() =>
+                          isInternal
+                            ? navigate(internalLinkPath(link.url))
+                            : window.open(link.url, '_blank', 'noopener,noreferrer')
+                        }
+                      >
+                        {link.label}
+                      </Button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

@@ -57,6 +57,20 @@ const EVENTS = (['spillkveld', 'turnering', 'annet'] as const).map((category, in
     eventEndTime: new Date(start.getTime() + 3 * 3_600_000).toISOString(),
     location: 'Klubblokalet',
     slug: { current: `arrangement-${category}` },
+    eventSlug: `arrangement-${category}`,
+    hasDetailPage: true,
+    // `SingleEventPage` renders one `EventScheduleCard` for the event and one per schedule
+    // entry, and each carries the add-to-calendar button that lifts. Without an entry here the
+    // detail route would measure only half of what it exists to cover.
+    schedule: [
+      {
+        _key: 'entry-1',
+        label: 'Oppstart',
+        startTime: start.toISOString(),
+        endTime: new Date(start.getTime() + 3_600_000).toISOString(),
+        location: 'Klubblokalet',
+      },
+    ],
     content: richText('Beskrivelse av arrangementet.'),
   };
 });
@@ -81,6 +95,14 @@ async function stubSanity(page: Page) {
     );
 
     if (query.includes('_type == "post"')) return fulfil(route, POSTS);
+    // The by-slug detail query is a `[0]` projection, so it wants the event itself rather than
+    // the list — handing it the array renders a broken page that measures nothing.
+    if (query.includes('slug.current == $slug')) {
+      const slug = decodeURIComponent(
+        new URL(route.request().url()).searchParams.get('$slug') ?? '',
+      ).replaceAll('"', '');
+      return fulfil(route, EVENTS.find((event) => event.slug.current === slug) ?? EVENTS[0]);
+    }
     if (query.includes('_type == "event"')) return fulfil(route, EVENTS);
     if (query.includes('homeHero') || query.includes('postsHero') || query.includes('calendarHero'))
       return fulfil(route, null);
@@ -233,7 +255,20 @@ async function measureLiftingElements(page: Page): Promise<Measurement[]> {
 // shares a fill with anything already covered above. An empty games query still measures these:
 // `OurGamesSection` renders its bundled fallback collection whenever Sanity has none, so this
 // needs no fixture of its own.
-const ROUTES = ['/', '/kalender', '/login', '/arrangementer', '/våre-spill'];
+//
+// The two event detail routes are `EventScheduleCard`, whose add-to-calendar button lifts onto
+// a fill neither list page has: `spillkveld` takes the `blue` tone and every other category the
+// `orange` one, so both are needed. This route was missing when that button gained its lift, and
+// its absence is exactly why the resulting 1.24:1 shipped unnoticed.
+const ROUTES = [
+  '/',
+  '/kalender',
+  '/login',
+  '/arrangementer',
+  '/våre-spill',
+  '/arrangementer/arrangement-spillkveld',
+  '/arrangementer/arrangement-turnering',
+];
 
 for (const theme of ['light', 'dark'] as const) {
   for (const route of ROUTES) {

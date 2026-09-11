@@ -5,12 +5,18 @@ export type EventScheduleCardTone = 'orange' | 'blue';
 
 // Fixed brand fills, not tied to light/dark mode — same choice CalendarSection's category
 // cards make. `orange` mirrors the `turnering` category styling; `blue` mirrors `spillkveld`.
+//
+// Each tone declares which hard shadow its fill can carry, because the add-to-calendar button
+// lifts onto it — see the pairing table in docs/DESIGN_LANGUAGE.md. Without this the button cast
+// the page default: darkestblue on `bg-darkblue` (1.24:1) in light mode, white on the orange
+// fill (2.18:1) in dark. The tone sits on the card root rather than the button, since the root
+// is the fill being cast onto and is not itself a lifting element.
 const TONE_STYLES: Record<EventScheduleCardTone, { surface: string; accent: string }> = {
   orange: {
-    surface: 'bg-category-turnering text-darkestblue',
+    surface: 'bg-category-turnering surface-light text-darkestblue',
     accent: 'bg-darkorange text-darkestblue',
   },
-  blue: { surface: 'bg-darkblue text-white', accent: 'bg-darkestblue text-white' },
+  blue: { surface: 'bg-darkblue surface-dark text-white', accent: 'bg-darkestblue text-white' },
 };
 
 interface EventScheduleCardProps {
@@ -72,7 +78,10 @@ export function EventScheduleCard({
         type="button"
         onClick={() => downloadIcs(ics, `${title}.ics`)}
         aria-label={`Legg til ${title} i kalenderen`}
-        className="focus-visible:outline-focus-ring flex w-14 flex-none items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        // `lift`, like every other pressable surface — this was the one interactive control in
+        // the system that did not respond to the pointer at all. It owns the transition outright,
+        // so no `transition-*` utility may join it here.
+        className="lift focus-visible:outline-focus-ring flex w-14 flex-none cursor-pointer items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
       >
         <CalendarAddIcon className="h-5 w-5 fill-current" />
       </button>

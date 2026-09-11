@@ -205,6 +205,63 @@ test('theme toggle flips the dark class and survives a reload', async ({ page })
   await expect(html).toHaveClass(startedDark ? /^(?!.*\bdark\b).*$/ : /\bdark\b/);
 });
 
+test('the motion toggle flips the reduce-motion class and survives a reload', async ({ page }) => {
+  await page.goto('/');
+
+  const html = page.locator('html');
+  const toggle = page.getByRole('button', { name: 'Reduser animasjoner' });
+
+  await expect(html).not.toHaveClass(/\breduce-motion\b/);
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+
+  await toggle.click();
+  await expect(html).toHaveClass(/\breduce-motion\b/);
+
+  await page.reload();
+  await expect(html).toHaveClass(/\breduce-motion\b/);
+  await expect(page.getByRole('button', { name: 'Reduser animasjoner' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+});
+
+test('the site follows prefers-reduced-motion until the visitor decides otherwise', async ({
+  page,
+}) => {
+  // The condition in the stylesheet is the class, not the media query, so this is the test that
+  // the OS preference still reaches it — `initMotion()` seeds the class before anything paints.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+
+  const html = page.locator('html');
+  await expect(html).toHaveClass(/\breduce-motion\b/);
+
+  // And the case a media query could not express: an explicit choice wins in both directions.
+  await page.getByRole('button', { name: 'Reduser animasjoner' }).click();
+  await expect(html).not.toHaveClass(/\breduce-motion\b/);
+
+  await page.reload();
+  await expect(html).not.toHaveClass(/\breduce-motion\b/);
+});
+
+test('reduced motion keeps the shadow and drops only the travel', async ({ page }) => {
+  // The documented behaviour, and the reason the reduced branch is not `transition: none` —
+  // "a shadow is not motion" (docs/DESIGN_LANGUAGE.md).
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+
+  const lifting = page.locator('.lift').first();
+  await lifting.hover();
+
+  const { transform, boxShadow } = await lifting.evaluate((el) => {
+    const style = getComputedStyle(el);
+    return { transform: style.transform, boxShadow: style.boxShadow };
+  });
+
+  expect(transform === 'none' || transform === 'matrix(1, 0, 0, 1, 0, 0)').toBe(true);
+  expect(boxShadow).not.toBe('none');
+});
+
 // #222. Two failure modes, one test each, both of which unit tests cannot see because both are
 // about what the *built* page asks the network for.
 
@@ -212,6 +269,45 @@ test('theme toggle flips the dark class and survives a reload', async ({ page })
 // bundle has run, so `index.html` preloads it. That preload hardcodes the URLs `heroImage.ts`
 // builds, and nothing but this test connects the two — get the ladder, the extension or the base
 // path out of step and the preload silently 404s while the page still looks fine.
+/**
+ * The scroll reveal starts items at `opacity: 0`, so anything that fails to reveal is content
+ * the visitor simply never sees. The first build used an IntersectionObserver and had exactly
+ * that bug: an observer reports threshold crossings, so an item that goes from below the fold
+ * to above it inside one frame never reports anything. One Cmd+End on this grid left twelve of
+ * seventeen cards blank for the rest of the session.
+ *
+ * This is the assertion that has to hold no matter how the reveal is implemented: after
+ * scrolling, nothing is invisible.
+ */
+test('a single jump to the bottom leaves no revealed content invisible', async ({ page }) => {
+  await page.goto('/våre-spill');
+  await expect(page.locator('.sbsk-reveal').first()).toBeAttached();
+
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+
+  await expect
+    .poll(() =>
+      page
+        .locator('.sbsk-reveal')
+        .evaluateAll((els) => els.filter((el) => getComputedStyle(el).opacity === '0').length),
+    )
+    .toBe(0);
+});
+
+test('reduced motion shows revealed content straight away, with no reveal to wait for', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/våre-spill');
+
+  const first = page.locator('.sbsk-reveal').first();
+  await expect(first).toBeAttached();
+
+  // Not a shortened transition — the finished state, before any scroll at all.
+  await expect.poll(() => first.evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
+  expect(await first.evaluate((el) => getComputedStyle(el).transitionDuration)).toBe('0s');
+});
+
 test('the hero preload names a file that exists, and the page picks a modern format', async ({
   page,
 }) => {

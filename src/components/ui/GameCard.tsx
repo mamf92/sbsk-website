@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { buttonClasses } from './buttonClasses';
 import Signal from '../../assets/icons/symbols/signal.svg?react';
 import Clock from '../../assets/icons/symbols/clock.svg?react';
 import Players from '../../assets/icons/symbols/players.svg?react';
@@ -76,7 +77,14 @@ export function GameCard({
   }
 
   return (
-    <article className="dark:bg-darkblue lift-card text-darkestblue flex w-full flex-col border border-black bg-white dark:border-white dark:text-white">
+    // No `lift-card`: nothing on this article is pressable — the three calls-to-action inside
+    // are, and each lifts on its own. "Lift is for things you press. It is not decoration."
+    // (docs/DESIGN_LANGUAGE.md). It carried one anyway, which also meant hovering a button
+    // travelled the card 3px and the button 2px on two different clocks.
+    //
+    // `surface-*` is legal here now that it does not lift: the buttons cast onto this fill, and
+    // it is white in light mode and darkblue in dark, so the tone has to flip with the theme.
+    <article className="dark:bg-darkblue surface-light dark:surface-dark text-darkestblue flex w-full flex-col border border-black bg-white dark:border-white dark:text-white">
       <div className="bg-darkblue relative aspect-square overflow-hidden border-b border-black dark:border-white">
         {image ? (
           <img src={image} alt="" className="h-full w-full object-cover" />
@@ -147,7 +155,11 @@ export function GameCard({
             target="_blank"
             rel="noopener noreferrer"
             onClick={handleBuy}
-            className="bg-orange border-orange not-disabled:hover:bg-darkorange not-disabled:hover:border-darkorange lift font-heading text-darkestblue flex h-11 w-full items-center justify-center gap-2 border text-base font-bold tracking-[0.02em]"
+            className={buttonClasses({
+              variant: 'primary',
+              size: 'md',
+              className: 'border-orange w-full border font-bold tracking-[0.02em]',
+            })}
           >
             {member && <Tag aria-hidden="true" className="h-[15px] w-[15px]" />}
             {buyLabel}
@@ -180,7 +192,11 @@ export function GameCard({
                   rel="noopener noreferrer"
                   title="Se på BoardGameGeek"
                   aria-label="Se på BoardGameGeek"
-                  className="border-darkestblue not-disabled:hover:bg-darkestblue dark:not-disabled:hover:text-darkestblue lift flex h-11 min-w-11 flex-1 items-center justify-center border not-disabled:hover:text-white dark:border-white dark:not-disabled:hover:bg-white"
+                  className={buttonClasses({
+                    variant: 'outline',
+                    size: 'md',
+                    className: 'min-w-11 flex-1',
+                  })}
                 >
                   <BoardGameGeek aria-hidden="true" className="h-5 w-auto fill-current" />
                 </a>
@@ -191,7 +207,11 @@ export function GameCard({
                   target="_blank"
                   rel="noopener noreferrer"
                   title="Se reglene forklart på video"
-                  className="border-darkestblue not-disabled:hover:bg-darkestblue dark:not-disabled:hover:text-darkestblue lift flex h-11 min-w-11 flex-1 items-center justify-center gap-2 border text-xs font-bold not-disabled:hover:text-white dark:border-white dark:not-disabled:hover:bg-white"
+                  className={buttonClasses({
+                    variant: 'outline',
+                    size: 'md',
+                    className: 'min-w-11 flex-1 text-xs font-bold',
+                  })}
                 >
                   <YouTube aria-hidden="true" className="h-[18px] w-auto fill-current" />
                   Se reglene
