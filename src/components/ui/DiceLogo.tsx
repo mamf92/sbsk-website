@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { motionIsReduced } from '../../utils/motion';
 
 export interface DiceLogoHandle {
   roll: () => void;
@@ -46,19 +47,11 @@ export const DiceLogo = React.forwardRef<DiceLogoHandle, DiceLogoProps>(
     });
     const [rolling, setRolling] = React.useState(false);
     const timers = React.useRef<number[]>([]);
-    const reducedMotion = React.useRef(false);
-
-    React.useEffect(() => {
-      const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-      reducedMotion.current = media.matches;
-      const handleChange = (e: MediaQueryListEvent) => {
-        reducedMotion.current = e.matches;
-      };
-      media.addEventListener('change', handleChange);
-      return () => media.removeEventListener('change', handleChange);
-    }, []);
     const roll = React.useCallback(() => {
-      if (rolling || reducedMotion.current) return;
+      // Read at roll time, not render time — the same shape as the `matchMedia` ref this
+      // replaced, but reading the shared preference so the footer toggle reaches the die too.
+      // A hook would be wrong here: see `motionIsReduced`.
+      if (rolling || motionIsReduced()) return;
       setRolling(true);
       const iv = window.setInterval(
         () => setFace(1 + Math.floor(Math.random() * 6)),

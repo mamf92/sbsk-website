@@ -2,6 +2,22 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Reduced motion is a *preference*, not only an OS setting, so the condition it reads has to
+   be something a toggle can write: `src/utils/motion.ts` puts `.reduce-motion` on `<html>` the
+   same way `theme.ts` puts `.dark` there, seeding it from the OS query on first load.
+   Redefining Tailwind's own `motion-reduce` rather than inventing a second name keeps the
+   `motion-reduce:` classes already in `Card.tsx` working untouched, and means every future one
+   reads the preference for free.
+
+   Dropping the media query entirely — rather than OR-ing it with the class — is what makes the
+   toggle authoritative in *both* directions: a visitor whose OS asks for less motion but who
+   explicitly turns it back on would otherwise still be suppressed by the query. That is only
+   safe because this is a client-rendered SPA: nothing paints before `initMotion()` has run, so
+   there is no window in which the OS preference goes unhonoured. `motion-safe` is redefined as
+   the exact negation so the pair cannot drift apart. */
+@custom-variant motion-reduce (&:where(.reduce-motion, .reduce-motion *));
+@custom-variant motion-safe (&:not(:where(.reduce-motion, .reduce-motion *)));
+
 @font-face {
   font-family: 'Noto Sans';
   src: url('/fonts/NotoSans-Regular.ttf') format('truetype');
@@ -323,11 +339,9 @@
 }
 
 /* The label still says what is happening, so dropping the loop costs nothing. */
-@media (prefers-reduced-motion: reduce) {
-  .sbsk-load-pip {
-    animation: none;
-    opacity: 0.55;
-  }
+.reduce-motion .sbsk-load-pip {
+  animation: none;
+  opacity: 0.55;
 }
 
 /* Dice — shared interactive die used in the header logo and the error page.
@@ -405,17 +419,15 @@
   animation: sbsk-err-tumble 5s ease-in-out infinite;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .sbsk-dice:hover svg,
-  .sbsk-dice.rolling:hover svg {
-    transform: none;
-  }
-  .sbsk-dice.rolling svg {
-    animation-duration: 0.25s;
-  }
-  .sbsk-err-die {
-    animation: none;
-  }
+.reduce-motion .sbsk-dice:hover svg,
+.reduce-motion .sbsk-dice.rolling:hover svg {
+  transform: none;
+}
+.reduce-motion .sbsk-dice.rolling svg {
+  animation-duration: 0.25s;
+}
+.reduce-motion .sbsk-err-die {
+  animation: none;
 }
 
 /* Rich text inside an expanded `Card`. The Portable Text components in
@@ -502,7 +514,7 @@
   }
 
   /* Keep the shadow — it is not motion — but drop the travel. */
-  @media (prefers-reduced-motion: reduce) {
+  @variant motion-reduce {
     transition:
       box-shadow var(--transition-fast),
       background-color var(--transition-fast),
@@ -546,7 +558,7 @@
   }
 
   /* Keep the shadow — it is not motion — but drop the travel. */
-  @media (prefers-reduced-motion: reduce) {
+  @variant motion-reduce {
     transition: box-shadow var(--transition-fast);
 
     &:hover {
@@ -593,7 +605,8 @@
     box-shadow: none;
   }
 
-  @media (prefers-reduced-motion: reduce) {
+  /* Keep the shadow — it is not motion — but drop the travel. */
+  @variant motion-reduce {
     transition:
       box-shadow var(--transition-fast),
       background-color var(--transition-fast),

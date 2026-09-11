@@ -40,7 +40,7 @@ if (typeof HTMLDialogElement !== 'undefined' && !HTMLDialogElement.prototype.sho
 
 beforeEach(() => {
   localStorage.clear();
-  document.documentElement.classList.remove('dark');
+  document.documentElement.classList.remove('dark', 'reduce-motion');
 });
 
 afterEach(() => {

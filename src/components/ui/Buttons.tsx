@@ -10,6 +10,7 @@ import block from '../../assets/icons/symbols/block.svg?react';
 import AscIcon from '../../assets/icons/symbols/asc.svg?react';
 import DescIcon from '../../assets/icons/symbols/desc.svg?react';
 import Add from '../../assets/icons/symbols/add.svg?react';
+import Motion from '../../assets/icons/symbols/motion.svg?react';
 import { LoadingPips } from './LoadingIndicator';
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -34,6 +35,7 @@ type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
     | 'asc'
     | 'desc'
     | 'add'
+    | 'motion'
     | 'none';
 };
 
@@ -114,6 +116,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       asc: AscIcon,
       desc: DescIcon,
       add: Add,
+      motion: Motion,
       none: null,
     };
 

@@ -2,10 +2,12 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import AuthProvider from './hooks/authContext/authProvider';
+import { MotionProvider } from './hooks/motion/MotionProvider';
 import './index.css';
 import App from './App';
 import Home from './pages/Home';
 import { initTheme } from './utils/theme';
+import { initMotion } from './utils/motion';
 import { recoverFromStaleChunks } from './utils/staleChunkReload';
 import { restoreGithubPagesRoute } from './utils/githubPagesRedirect';
 import StudioRoute from './pages/StudioRoute';
@@ -52,6 +54,7 @@ const NotFound = React.lazy(() => import('./pages/NotFound'));
 restoreGithubPagesRoute();
 
 initTheme();
+initMotion();
 recoverFromStaleChunks();
 
 const router = createBrowserRouter(
@@ -118,7 +121,11 @@ const router = createBrowserRouter(
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <AuthProvider>
-      <RouterProvider router={router} />
+      {/* Above the router, not inside `App`: the shell's `errorElement` replaces `<App />`
+          entirely, and the error page it renders reads this preference. See MotionProvider. */}
+      <MotionProvider>
+        <RouterProvider router={router} />
+      </MotionProvider>
     </AuthProvider>
   </React.StrictMode>,
 );

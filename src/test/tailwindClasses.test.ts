@@ -160,6 +160,13 @@ describe('every class name in src/ compiles to CSS', () => {
     const design = await loadDesignSystem();
 
     expect(design.candidatesToCss(['lift', 'lift-chip', 'lift-card'])).not.toContain(null);
+    // `motion-reduce` is redefined in `index.css` as a class-driven variant so a visitor's own
+    // preference can reach it. Pin that it still compiles *and* that it compiles to the class
+    // rather than the media query — a stray `@media` here would mean the footer toggle silently
+    // stops working for every `motion-reduce:` class in the tree.
+    const motionReduce = design.candidatesToCss(['motion-reduce:transition-none'])[0];
+    expect(motionReduce).toContain('.reduce-motion');
+    expect(motionReduce).not.toContain('@media');
     expect(design.candidatesToCss(['bg-darkestblue', 'text-h1', 'xs:text-base'])).not.toContain(
       null,
     );

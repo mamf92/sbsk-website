@@ -2,9 +2,12 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { SocialIcon } from 'react-social-icons';
 import { DiceLogo } from '../ui/DiceLogo';
 import { navLinkClassesBody } from '../ui/Link';
+import { Button } from '../ui/Buttons';
+import { useMotion } from '../../hooks/motion/MotionContext';
 
 export default function Footer() {
   const navigate = useNavigate();
+  const { reduced, toggleReducedMotion } = useMotion();
 
   return (
     <footer className="bg-darkblue surface-dark font-body max-xs:p-4 flex w-full flex-col p-8 text-white">
@@ -89,7 +92,28 @@ export default function Footer() {
               />
             </div>
           </div>
-          <div className="border-t pt-6">
+          {/* The motion preference lives here rather than beside the theme toggle in the
+              header for two reasons. The header's right cluster already carries three controls
+              at 320px, and — the deciding one — WCAG 2.5.3 forces a control there into a
+              two-letter abbreviation the accessible name then has to start with, which is what
+              `Header.tsx`'s LM/DM comment is about. A footer control can say what it does, so
+              its visible label and its accessible name are simply the same string.
+
+              `aria-pressed` rather than a checkbox: this is a control that stays down, and
+              `Button variant="toggle"` is the system's existing shape for exactly that. It is
+              only ever a *preference* — the site already follows `prefers-reduced-motion` on
+              its own, so this is for visitors whose OS is not set, and for anyone who wants
+              the opposite of what it says. */}
+          <div className="flex flex-col items-center gap-4 border-t pt-6">
+            <Button
+              variant="toggle"
+              size="sm"
+              icon="motion"
+              aria-pressed={reduced}
+              onClick={toggleReducedMotion}
+            >
+              Reduser animasjoner
+            </Button>
             <p className="text-center text-sm">
               &copy; 2026 Stavanger Brettspillklubb. All rights reserved.
             </p>
