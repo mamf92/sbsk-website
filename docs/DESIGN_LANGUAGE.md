@@ -34,21 +34,23 @@ no longer means motionless: surfaces you can press now respond.
 All of it lives in the `@theme` block of `src/index.css`. Add to it rather than hardcoding a
 value in a class.
 
-| Token                      | Value                                          | Purpose                    |
-| -------------------------- | ---------------------------------------------- | -------------------------- |
-| `--duration-fast`          | `120ms`                                        | Colour swaps               |
-| `--duration-base`          | `180ms`                                        | Travel                     |
-| `--ease-standard`          | `cubic-bezier(0.2, 0, 0, 1)`                   | Colour curve               |
-| `--ease-out`               | `cubic-bezier(0.16, 1, 0.3, 1)`                | Travel curve               |
-| `--transition-fast`        | `var(--duration-fast) var(--ease-standard)`    | Colour, as a fragment      |
-| `--transition-snappy`      | `var(--duration-base) var(--ease-out)`         | Travel, as a fragment      |
-| `--hard-shadow-color`      | `darkestblue`; `white` in dark mode            | The offset shadow's colour |
-| `--shadow-1` / `-2` / `-3` | `2px` / `4px` / `6px` hard offset              | Press / hover / raised     |
-| `--lift-hover`             | `translate(-2px, -2px)`                        | Hover offset               |
-| `--lift-card-hover`        | `translate(-3px, -3px)`                        | Hover offset, cards        |
-| `--lift-press`             | `translate(1px, 1px)`                          | Press offset               |
-| `--shadow-overlay`         | `0 12px 32px -8px` on `--overlay-shadow-color` | The modal panel's shadow   |
-| `--color-overlay-scrim`    | `white/0.7`; `darkblue/0.7` in dark mode       | The modal scrim            |
+| Token                      | Value                                          | Purpose                       |
+| -------------------------- | ---------------------------------------------- | ----------------------------- |
+| `--duration-fast`          | `120ms`                                        | Colour swaps                  |
+| `--duration-base`          | `180ms`                                        | Travel                        |
+| `--ease-standard`          | `cubic-bezier(0.2, 0, 0, 1)`                   | Colour curve                  |
+| `--ease-out`               | `cubic-bezier(0.16, 1, 0.3, 1)`                | Travel curve                  |
+| `--transition-fast`        | `var(--duration-fast) var(--ease-standard)`    | Colour, as a fragment         |
+| `--transition-snappy`      | `var(--duration-base) var(--ease-out)`         | Travel, as a fragment         |
+| `--hard-shadow-color`      | `darkestblue`; `white` in dark mode            | The offset shadow's colour    |
+| `--shadow-1` / `-2` / `-3` | `2px` / `4px` / `6px` hard offset              | Press / hover / raised        |
+| `--lift-hover`             | `translate(-2px, -2px)`                        | Hover offset                  |
+| `--lift-card-hover`        | `translate(-3px, -3px)`                        | Hover offset, cards           |
+| `--lift-press`             | `translate(1px, 1px)`                          | Press offset                  |
+| `--shadow-overlay`         | `0 12px 32px -8px` on `--overlay-shadow-color` | The modal panel's shadow      |
+| `--duration-slow`          | `280ms`                                        | Panels, the scroll reveal     |
+| `--duration-instant`       | `80ms`                                         | The reveal's per-item stagger |
+| `--color-overlay-scrim`    | `white/0.7`; `darkblue/0.7` in dark mode       | The modal scrim               |
 
 The full set — the whole duration and easing scale, the accent and overlay shadows, the
 category colours, the disabled and focus states, and the exact heading type scale — is in
@@ -201,6 +203,19 @@ Measured across the brand palette:
 | `gray-500` on `white` (Chip inactive)                | 7.00:1  | AA                     |
 | `white` on `darkorange`                              | 3.33:1  | fails AA for body text |
 
+`Button` has a sixth variant, **`outline`**: no fill, a hairline in `border-current`, inverting
+on hover. It exists because `GameCard`'s BoardGameGeek and video links hand-rolled exactly this
+twice. `border-current` rather than an explicit `border-darkestblue dark:border-white` — the
+two are identical on every fill this sits on today, and the token cannot drift out of step with
+the text beside it.
+
+**`variant="disabled"` sets the `disabled` attribute.** It used to be cosmetic only, so the
+grey, `cursor-not-allowed` button stayed clickable and focusable unless the caller also passed
+the attribute — and both the `not-disabled:hover:` suppression and `lift`'s own `:disabled`
+guard read that attribute, so the look and the behaviour could drift apart in silence. The one
+caller already passed both, so nothing moved; what changed is that the next one cannot get it
+wrong.
+
 `Button` `variant="primary"` is `bg-orange text-darkestblue`, hovering to `bg-darkorange` — the
 same fill hovers into itself, so both states need one foreground that clears AA on each, and
 `darkestblue` is the only one of the two blues that does (#203).
@@ -271,13 +286,22 @@ Each owns the hover offset, the press offset, the shadows, and the colour transi
 single `transition` declaration. That last part matters: an element takes one of these
 **instead of** `transition-colors` or `transition`, never both, because the last
 `transition-property` to land in the cascade wins outright and would silently drop the other
-half. A test on each component pins it.
+half.
+
+**One sweep in `src/test/tailwindClasses.test.ts` pins this now, not a test per component.**
+The per-component convention is what this document used to describe, and it left exactly the
+gap a convention leaves: `GameCard`, `CalendarSection` and `AvatarStack` all carried a lift
+utility and none of the three ever got its test. The sweep reads every class list in `src/`, so
+it covers them and every component added later for free. It still cannot see a caller passing
+`className="transition-colors"` into a component that adds the lift itself — those two strings
+live in different files and only meet at runtime. That case is on review.
 
 `lift-chip` additionally reads `aria-pressed`: a selected chip is already "down", so it still
 presses but never lifts.
 
-The three `lift-*` utilities honour `prefers-reduced-motion: reduce`, where they keep the
-shadow — a shadow is not motion — and drop the travel.
+The three `lift-*` utilities honour reduced motion, where they keep the shadow — a shadow is
+not motion — and drop the travel. What "reduced motion" means here is a preference the visitor
+can set, not only an OS setting: see **Reduced motion** below.
 
 ### Which single-choice control
 
@@ -319,7 +343,15 @@ selected fills still tell every category apart.
 
 Lift is for things you press. It is not decoration.
 
-- **Yes:** `Button` (every variant except `disabled`) and `NavMenuButton`, via `lift`.
+- **Yes:** `Button` (every variant except `disabled`) and `NavMenuButton`, via `lift`. A
+  button-shaped element that is _not_ a `<button>` — `GameCard`'s three calls-to-action are
+  anchors, because they navigate — composes `buttonClasses()` from
+  `src/components/ui/buttonClasses.ts` rather than rebuilding the look. All three used to
+  rebuild it, and all three carried `lift` with no focus ring at all: the affordance a
+  keyboard user depends on was the one that went missing. The recipe lives beside the
+  component for the same reason `fieldClasses.ts` does.
+- **Yes:** `EventScheduleCard`'s .ics download button. It was the one interactive control in
+  the system that did not respond to the pointer at all.
 - **Yes:** `Chip`, via the shallower `lift-chip`.
 - **No:** the `disabled` Button variant — nothing there is pressable, so it keeps the bare
   colour transition and never moves. `lift` itself also neutralises `:disabled`, since
@@ -327,6 +359,31 @@ Lift is for things you press. It is not decoration.
 - **No:** text links. `Link` underlines on hover and that is the whole interaction. Header
   nav is the one elaboration: `navLinkClasses` wipes an orange rule in from the left, and
   keeps it drawn on the current route via `aria-current="page"`.
+
+  **Every text link goes through the primitive.** It used to be dead code — only its
+  `navLinkClasses` string exports were imported anywhere — while thirteen links across the app
+  hand-rolled `underline` instead, and not one of them drew a focus ring. Photo credits,
+  mailtos, sponsor logos, the auth-panel links and rich-text links all fell back to whatever
+  the browser happened to draw.
+
+  They share one variant rather than gaining six. **`variant="inherit"` names no colour** and
+  borrows the one its surface has already settled on: a caption strip inherits white inside a
+  `nyheter` panel and `darkestblue` everywhere else, the auth panels are white on `darkblue`,
+  and each of those pairings is already checked against its own fill. Naming a colour here
+  would be right on one fill and wrong on the next — and it is why this variant adds no row to
+  the contrast table below. It introduces no pairing that was not already there.
+
+  `linkClassesInherit` is the same treatment as a class string, for links that must be React
+  Router's `Link` rather than an `<a>` — the same reasoning as `navLinkClasses`, and spelled
+  out rather than composed for the same reason `navLinkClassesBody` is. `Link.test.tsx` pins
+  that the two stay in step, which is the cost of writing it twice.
+
+- **No:** `GameCard`'s root. It carried `lift-card` and nothing on it is pressable — no
+  `onClick`, no `href`, no toggle. The three actions _inside_ it are, and each lifts on its
+  own, so hovering one used to travel the card 3px and the button 2px on two different clocks.
+  Removing it is also what lets the article declare its own `surface-*`: it is white in light
+  mode and `darkblue` in dark, so the shadow its buttons cast has to flip with the theme, and
+  a tone on a lifting element would have repointed the wrong shadow.
 - **Yes:** a pressable card, via `lift-card`. Settled by the news-cards rebuild (#88) and
   adopted unchanged by the calendar (#87), which needed the same answer. A card **rests
   flat**, exactly like a button — a 1px border and no shadow. What scales with the larger
@@ -348,6 +405,79 @@ Lift is for things you press. It is not decoration.
   shadow of their own: see "Field state" below. The distinction that keeps both statements
   true is _lift is motion, a field's shadow is state_ — a lift is transform-plus-shadow on
   press, a field's shadow is colour-only and permanent for as long as the state holds.
+
+## Reduced motion
+
+Reduced motion is a **preference a visitor can set**, not only what their OS reports. The
+toggle is in the footer, labelled "Reduser animasjoner".
+
+The condition every reduced branch reads is the `.reduce-motion` class on `<html>`, put there
+by `src/utils/motion.ts` exactly the way `theme.ts` puts `.dark` there. `src/index.css`
+redefines Tailwind's own `motion-reduce` variant to match that class rather than the media
+query:
+
+```css
+@custom-variant motion-reduce (&:where(.reduce-motion, .reduce-motion *));
+@custom-variant motion-safe (&:not(:where(.reduce-motion, .reduce-motion *)));
+```
+
+Three things about this are deliberate.
+
+- **The media query is gone, not OR'd with the class.** OR-ing would make the toggle work in
+  one direction only: a visitor whose OS asks for less motion, but who explicitly turns it back
+  on, would still be suppressed by the query. Dropping it is what makes an explicit choice
+  authoritative both ways. It is safe here only because this is a client-rendered SPA —
+  `initMotion()` runs in `main.tsx` before the router is built, so nothing paints before the
+  class is in place and there is no window in which the OS preference goes unhonoured. On a
+  server-rendered site this would be the wrong trade.
+- **Redefining `motion-reduce` rather than minting a second name.** The three
+  `motion-reduce:` classes already in `Card.tsx` kept working untouched, and every one written
+  since reads the preference for free. `motion-safe` is redefined as the exact negation so the
+  pair cannot drift apart.
+- **A system-derived preference is never persisted.** `ThemeProvider` writes storage on mount,
+  which destroys "follow the system" the first time the app runs; this does not, so the
+  preference keeps following the OS — including a change made mid-session — until the visitor
+  actually chooses. Once they have, their choice stands and the subscription stops deciding.
+
+`DiceLogo` reads the class directly through `motionIsReduced()` rather than a hook. Primitives
+under `src/components/ui/` are context-free, and the die renders on the shell error screen,
+where depending on a provider would let one failure take out the page that exists to report
+failures.
+
+**What reduced motion drops, and what it keeps.** It drops travel: transforms, the lift's
+offset, the chevrons, the burger's bars, the underline wipes, the panels opening. It keeps
+colour swaps and shadows — "a shadow is not motion" is the rule the `lift-*` utilities were
+already built on, and it holds everywhere. A reduced branch is therefore almost never
+`transition: none` on its own; it states the resting result.
+
+## The scroll reveal
+
+`src/components/ui/Reveal.tsx` is the one piece of motion here that a pointer did not ask for,
+which is why it is assembled entirely out of what the language already says. An item arrives
+held at `--lift-card-hover` on `--shadow-3` and settles flat — the same gesture a card makes
+when you stop hovering it, played on arrival. No scale, no blur, no soft shadow.
+
+Three rules keep it from being decoration:
+
+- **It fires once.** The observer disconnects on first intersection. Content that re-animates
+  every time it scrolls past is what makes a page feel restless rather than alive.
+- **The stagger caps at six.** `index` delays each item by `--duration-instant`; past the sixth
+  every item shares the last delay, so a forty-post feed does not take three seconds to arrive.
+- **Reduced motion gets the finished state, not a faster version of it.** Stated as its own
+  rule rather than `transition: none`, so it holds for an element that was already revealed.
+
+It also renders finished when `IntersectionObserver` is missing. Failing open matters more than
+the effect — the alternative is content that is permanently invisible.
+
+**The shadow is why a panel's `surface-*` is load-bearing wherever a reveal lands in one.** The
+offset is painted onto the fill behind it for 280ms, and a `darkblue` panel that declares no
+tone casts the default `darkestblue` at 1.24:1. `e2e/shadow-contrast.spec.ts` cannot catch this
+the way it catches lifts: it reads resting computed style, and this shadow exists only
+mid-transition. The tone declaration is the guard, which is what `PostsSection`,
+`CalendarSection` and `AboutUsSection`'s panels gained when the reveal arrived.
+
+Opacity here is not the "soft gradient sliding under a surface" that **Loading, empty, error**
+rules out. Nothing slides and nothing is a gradient; the element is simply not painted yet.
 
 ## Field state
 
@@ -540,7 +670,10 @@ form-controls port (#86) corrected:
   looking pressed.
 - **The token, not the colour.** `--color-focus-ring` exists for this. It resolves to orange
   today, so reading it changes nothing on screen — it changes what happens when the brand
-  moves.
+  moves. `Button` and the header wordmark were the last two reading `outline-orange` directly;
+  the wordmark also carried a one-off `outline-offset-3`, where the system has exactly three
+  offsets: `2` normally, `4` on nav links to clear the underline wipe, and `-2` inset on
+  elements flush to a container edge.
 
 **Text fields are the one exception.** `Input`, `Textarea` and `Checkbox` used to draw this
 outline _and_ `fieldStateShadow()`'s hard offset shadow on the same `focus-visible:` trigger —
