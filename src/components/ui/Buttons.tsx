@@ -12,6 +12,8 @@ import DescIcon from '../../assets/icons/symbols/desc.svg?react';
 import Add from '../../assets/icons/symbols/add.svg?react';
 import Motion from '../../assets/icons/symbols/motion.svg?react';
 import { LoadingPips } from './LoadingIndicator';
+import { buttonClasses } from './buttonClasses';
+import type { ButtonSize, ButtonVariant } from './buttonClasses';
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   /**
@@ -21,8 +23,8 @@ type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
    * stayed live while it said "Logging in...", submitting a registration twice was reachable.
    */
   loading?: boolean;
-  variant?: 'primary' | 'secondary' | 'tertiary' | 'toggle' | 'disabled';
-  size?: 'xs' | 'sm' | 'md' | 'lg';
+  variant?: ButtonVariant;
+  size?: ButtonSize;
   icon?:
     | 'left'
     | 'right'
@@ -38,57 +40,6 @@ type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
     | 'motion'
     | 'none';
 };
-
-// No size here: each entry in `sizes` owns its font size, so a base size would leak into `xs`.
-// The brand stays flat — sharp corners, no blur, no soft elevation, no scale — but it is not
-// static: the button lifts up-left onto a hard offset shadow on hover and settles on press.
-// Motion lives in `motion` below rather than here, because `disabled` opts out of it.
-const base =
-  'inline-flex whitespace-nowrap items-center justify-center font-heading rounded-none ' +
-  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange ';
-
-// `not-disabled:hover:` rather than `hover:`, because `:hover` still matches a disabled
-// element. Any variant can carry the attribute — a `loading` button always does — and without
-// this a button that cannot be clicked still lights up under the pointer. `lift` already
-// neutralises the travel and the shadow for the same reason; this is the colour half.
-const variants = {
-  // `darkestblue`, not `darkblue`: the hover fill is `darkorange`, and darkblue-on-darkorange
-  // measures 4.01:1 — below AA for body text. darkestblue clears both fills (7.64:1 resting,
-  // 4.99:1 on hover). See "Foreground on fill" in docs/DESIGN_LANGUAGE.md.
-  primary: 'bg-orange text-darkestblue not-disabled:hover:bg-darkorange',
-  secondary: 'bg-darkorange text-darkestblue not-disabled:hover:bg-orange',
-  tertiary: 'bg-darkblue text-white not-disabled:hover:bg-darkestblue',
-  disabled: 'bg-gray-300 text-gray-500 cursor-not-allowed',
-  // No `surface-light` override for the dark-mode fill here, unlike the orange/darkorange
-  // fills in `Card.tsx`: those panels are self-contained, so their own fill is what the
-  // offset shadow lands on. This button always sits on the header, which is `surface-dark`
-  // (white shadow) regardless of theme — the header's navy is what the shadow lands on, not
-  // the button's own fill — so the toggle inherits that rather than setting its own.
-  toggle:
-    'bg-darkestblue text-white not-disabled:hover:bg-darkblue ' +
-    'dark:bg-orange dark:text-darkblue dark:not-disabled:hover:bg-darkorange',
-} as const;
-
-// `lift` (src/index.css) carries the hover/press micro-action *and* the colour swap on one
-// transition-property. `disabled` is the exception: nothing there is pressable, so it keeps
-// the bare colour transition and never moves.
-const motion = {
-  primary: 'lift',
-  secondary: 'lift',
-  tertiary: 'lift',
-  toggle: 'lift',
-  // `--duration-*` is not a Tailwind utility namespace, so this reads the var directly
-  // rather than via a `duration-fast` class, which would not compile.
-  disabled: 'transition-colors duration-(--duration-fast) ease-standard',
-} as const;
-
-// height · padding-x · font-size/weight, per the design library scale.
-const sizes = {
-  xs: 'h-8 px-2 text-xs gap-1',
-  sm: 'h-9 px-3 text-xs font-bold gap-2',
-  md: 'h-11 px-4 text-base gap-2',
-  lg: 'h-12 px-6 text-base font-bold gap-2',
-} as const;
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
@@ -130,18 +81,13 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         ref={ref}
-        disabled={disabled || loading}
+        disabled={disabled || loading || variant === 'disabled'}
         aria-busy={loading || undefined}
-        className={[
-          base,
-          variants[variant],
-          motion[variant],
-          sizes[size],
-          loading ? 'cursor-wait' : '',
-          className,
-        ]
-          .filter(Boolean)
-          .join(' ')}
+        className={buttonClasses({
+          variant,
+          size,
+          className: [loading ? 'cursor-wait' : '', className].filter(Boolean).join(' '),
+        })}
         {...props}
       >
         {icon === 'left'
