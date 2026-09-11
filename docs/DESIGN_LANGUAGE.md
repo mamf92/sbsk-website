@@ -459,15 +459,30 @@ when you stop hovering it, played on arrival. No scale, no blur, no soft shadow.
 
 Three rules keep it from being decoration:
 
-- **It fires once.** The observer disconnects on first intersection. Content that re-animates
-  every time it scrolls past is what makes a page feel restless rather than alive.
+- **It reveals once.** Content that re-animates every time it scrolls past is what makes a page
+  feel restless rather than alive.
 - **The stagger caps at six.** `index` delays each item by `--duration-instant`; past the sixth
   every item shares the last delay, so a forty-post feed does not take three seconds to arrive.
 - **Reduced motion gets the finished state, not a faster version of it.** Stated as its own
   rule rather than `transition: none`, so it holds for an element that was already revealed.
 
-It also renders finished when `IntersectionObserver` is missing. Failing open matters more than
-the effect — the alternative is content that is permanently invisible.
+**It is a scroll sweep, not an `IntersectionObserver`, and that is the whole point.** The
+obvious build — observe each element, reveal on first intersection, disconnect — has a failure
+mode that is unacceptable for something starting at `opacity: 0`, and it is not hypothetical:
+it shipped in the first version of this component and was caught on `/våre-spill`. An observer
+reports _threshold crossings_, so an element that goes from below the fold to above it inside a
+single frame — Cmd+End, a scrollbar drag, an anchor jump — never reports a crossing at all. It
+sits at ratio 0 throughout, no callback fires, and that item stays invisible for the rest of the
+session. One jump to the bottom of the seventeen-card grid left twelve cards blank.
+
+A sweep asks where things _are_, not when they crossed, so it has no such gap. The cost is a
+rect read per pending item per animation frame while scrolling — nothing at these counts — and
+it stops entirely once the last item has been revealed, because the listeners detach themselves.
+Correctness is worth more here than the observer's efficiency. Anything already on screen at
+mount is revealed without waiting for a scroll that may never come.
+
+`e2e/smoke.spec.ts` pins the assertion that has to hold however this is built: after scrolling,
+nothing is invisible.
 
 **The shadow is why a panel's `surface-*` is load-bearing wherever a reveal lands in one.** The
 offset is painted onto the fill behind it for 280ms, and a `darkblue` panel that declares no

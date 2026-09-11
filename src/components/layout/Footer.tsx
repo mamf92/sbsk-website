@@ -100,6 +100,13 @@ export default function Footer() {
               `Header.tsx`'s LM/DM comment is about. A footer control can say what it does, so
               its visible label and its accessible name are simply the same string.
 
+              `secondary` rather than `toggle`: the footer's inner panel is `darkestblue` in
+              both themes, and `toggle`'s own fill is `darkestblue` in light mode — the button
+              vanished into the panel and read as a line of text. `outline` has the mirror
+              problem here, since its hover fill is the panel's colour too. `darkorange` on
+              `darkestblue` is a fill this surface can actually carry, at the 4.99:1 the
+              foreground table already records.
+
               `aria-pressed` rather than a checkbox: this is a control that stays down, and
               `Button variant="toggle"` is the system's existing shape for exactly that. It is
               only ever a *preference* — the site already follows `prefers-reduced-motion` on
@@ -107,7 +114,7 @@ export default function Footer() {
               the opposite of what it says. */}
           <div className="flex flex-col items-center gap-4 border-t pt-6">
             <Button
-              variant="toggle"
+              variant="secondary"
               size="sm"
               icon="motion"
               aria-pressed={reduced}

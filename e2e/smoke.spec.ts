@@ -269,6 +269,45 @@ test('reduced motion keeps the shadow and drops only the travel', async ({ page 
 // bundle has run, so `index.html` preloads it. That preload hardcodes the URLs `heroImage.ts`
 // builds, and nothing but this test connects the two — get the ladder, the extension or the base
 // path out of step and the preload silently 404s while the page still looks fine.
+/**
+ * The scroll reveal starts items at `opacity: 0`, so anything that fails to reveal is content
+ * the visitor simply never sees. The first build used an IntersectionObserver and had exactly
+ * that bug: an observer reports threshold crossings, so an item that goes from below the fold
+ * to above it inside one frame never reports anything. One Cmd+End on this grid left twelve of
+ * seventeen cards blank for the rest of the session.
+ *
+ * This is the assertion that has to hold no matter how the reveal is implemented: after
+ * scrolling, nothing is invisible.
+ */
+test('a single jump to the bottom leaves no revealed content invisible', async ({ page }) => {
+  await page.goto('/våre-spill');
+  await expect(page.locator('.sbsk-reveal').first()).toBeAttached();
+
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+
+  await expect
+    .poll(() =>
+      page
+        .locator('.sbsk-reveal')
+        .evaluateAll((els) => els.filter((el) => getComputedStyle(el).opacity === '0').length),
+    )
+    .toBe(0);
+});
+
+test('reduced motion shows revealed content straight away, with no reveal to wait for', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/våre-spill');
+
+  const first = page.locator('.sbsk-reveal').first();
+  await expect(first).toBeAttached();
+
+  // Not a shortened transition — the finished state, before any scroll at all.
+  await expect.poll(() => first.evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
+  expect(await first.evaluate((el) => getComputedStyle(el).transitionDuration)).toBe('0s');
+});
+
 test('the hero preload names a file that exists, and the page picks a modern format', async ({
   page,
 }) => {
