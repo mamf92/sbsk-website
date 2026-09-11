@@ -1,6 +1,8 @@
 import { type PortableTextComponents } from '@portabletext/react';
 import { Link } from 'react-router-dom';
 import { PostImageComponent } from './postsImageComponent';
+// Aliased: this module already imports React Router's `Link` for internal routes.
+import { Link as ExternalTextLink, linkClassesInherit } from '../../components/ui/Link';
 
 // Sanity's Studio-side `rule.uri()` validation (eventType.ts, postType.ts) does not reach
 // documents written directly against the Content Lake API, so a `javascript:` URL is only
@@ -80,15 +82,25 @@ export const components: PortableTextComponents = {
     link: ({ value, children }) => {
       if (!isSafeExternalUrl(value?.url)) return <>{children}</>;
       return (
-        <a href={value.url} target="_blank" rel="noopener noreferrer" className="underline">
+        <ExternalTextLink
+          href={value.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          variant="inherit"
+          className="underline"
+        >
           {children}
-        </a>
+        </ExternalTextLink>
       );
     },
     internalLink: ({ value, children }) => {
       const path = typeof value?.url === 'string' ? resolveKnownRoute(value.url) : null;
       if (!path) return <>{children}</>;
-      return <Link to={path}>{children}</Link>;
+      return (
+        <Link to={path} className={linkClassesInherit}>
+          {children}
+        </Link>
+      );
     },
   },
 };

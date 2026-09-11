@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 type LinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement> & {
-  variant?: 'default' | 'muted';
+  variant?: 'default' | 'muted' | 'inherit';
 };
 
 // Text links are the one interactive surface that does *not* lift. They underline, and that
@@ -14,6 +14,20 @@ const base =
 const variants = {
   default: 'text-darkblue hover:text-darkorange dark:text-orange dark:hover:text-yellow',
   muted: 'text-gray-neutral hover:text-darkblue dark:hover:text-orange',
+  /**
+   * No colour of its own — it borrows the one the surface has already settled on, and the
+   * underline is the whole interaction.
+   *
+   * This is what a photo credit, a link inside a `darkblue` panel, or a link in rich text
+   * needs, and the reason there is no fourth, fifth and sixth variant here instead. Those
+   * surfaces have already had their foreground contrast-checked against their own fill — a
+   * caption strip inherits white inside a `nyheter` panel and `darkestblue` everywhere else,
+   * and the auth panels are white-on-darkblue — so borrowing that foreground is correct in
+   * every theme by construction, where naming a colour here would be right on one fill and
+   * wrong on the next. It is also why this variant adds no row to the contrast table: it
+   * introduces no pairing that was not already there.
+   */
+  inherit: 'text-current',
 } as const;
 
 export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(
@@ -25,6 +39,19 @@ export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(
 );
 
 Link.displayName = 'Link';
+
+/**
+ * The `inherit` treatment as a class string, for the links that have to be React Router's
+ * `Link` rather than an `<a>` — same reasoning as `navLinkClasses` below.
+ *
+ * Spelled out rather than composed from `base` for the same reason `navLinkClassesBody` is:
+ * this file keeps whole strings, not layered partials. `Link.test.tsx` pins that the two stay
+ * in step, which is the cost of writing it twice.
+ */
+export const linkClassesInherit =
+  'font-body underline-offset-2 transition-colors duration-(--duration-fast) ease-standard ' +
+  'hover:underline focus-visible:outline focus-visible:outline-2 ' +
+  'focus-visible:outline-offset-2 focus-visible:outline-focus-ring text-current';
 
 /**
  * The header/footer navigation link treatment: an orange rule that wipes in from the left on

@@ -3,6 +3,7 @@ import type { BoardMemberTypes } from '../../../sanity/queryHelpers/board-member
 import { urlFor } from '../../../sanity/sanityImageUrl';
 import { BoardMemberCard } from './BoardMemberCard';
 import { Reveal } from '../../ui/Reveal';
+import { Link } from '../../ui/Link';
 import { FALLBACK_ABOUT, FALLBACK_BOARD } from './fallbackAbout';
 
 interface AboutUsSectionProps {
@@ -48,14 +49,15 @@ export default function AboutUsSection({ aboutPage, boardMembers }: AboutUsSecti
         <img src={imageUrl} alt="" className="h-full w-full object-cover" />
         {imageSourceName && imageSourceUrl ? (
           <div className="relative">
-            <a
+            <Link
               href={imageSourceUrl}
               target="_blank"
               rel="noopener noreferrer"
+              variant="inherit"
               className="absolute right-4 bottom-2 text-sm text-white underline"
             >
               {imageSourceName}
-            </a>
+            </Link>
           </div>
         ) : null}
       </div>

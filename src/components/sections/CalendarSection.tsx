@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { PortableText, toPlainText } from '@portabletext/react';
 import { Reveal } from '../ui/Reveal';
+// Aliased: this module already imports React Router's `Link` for in-app navigation.
+import { Link as ExternalTextLink } from '../ui/Link';
 import { Button } from '../ui/Buttons';
 import { Chip, type ChipCategory } from '../ui/Chip';
 import { Input } from '../ui/Input';
@@ -306,14 +308,15 @@ function CalendarHero({
         )}
         {resolvedImageSource && resolvedImageSourceUrl && (
           <div className="absolute right-4 bottom-2 flex flex-col">
-            <a
+            <ExternalTextLink
               href={resolvedImageSourceUrl}
               target="_blank"
               rel="noopener noreferrer"
+              variant="inherit"
               className="bg-darkestblue/50 text-xs text-white underline sm:text-sm"
             >
               {resolvedImageSource}
-            </a>
+            </ExternalTextLink>
           </div>
         )}
       </div>

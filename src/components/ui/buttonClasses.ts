@@ -70,6 +70,11 @@ const motion = {
 } as const;
 
 // height · padding-x · font-size/weight, per the design library scale.
+//
+// The weights look like they alternate — `sm` and `lg` bold, `xs` and `md` not — and they are
+// not. It is a 2×2: two type sizes, and within each the larger of the pair is the emphatic one.
+// `xs`/`sm` are both `text-xs`, `md`/`lg` both `text-base`. Reading it as an alternation and
+// "fixing" it would put every mid-size button on the page into bold.
 const sizes = {
   xs: 'h-8 px-2 text-xs gap-1',
   sm: 'h-9 px-3 text-xs font-bold gap-2',

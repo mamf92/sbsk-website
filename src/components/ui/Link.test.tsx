@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { Link, navLinkClasses } from './Link';
+import { Link, linkClassesInherit, navLinkClasses } from './Link';
 
 describe('Link', () => {
   it('renders its children as an accessible link', () => {
@@ -99,5 +99,50 @@ describe('navLinkClasses', () => {
 
   it('is positioned so the absolute rule has something to anchor to', () => {
     expect(navLinkClasses.split(/\s+/)).toContain('relative');
+  });
+});
+
+describe('Link — the inherit variant', () => {
+  // Why there is no fourth, fifth and sixth colour variant: these surfaces have already had
+  // their foreground checked against their own fill, so borrowing it is correct in every theme
+  // by construction, where naming a colour here would be right on one fill and wrong on the next.
+  it('names no colour of its own', () => {
+    render(
+      <Link href="#" variant="inherit">
+        Foto: Ola
+      </Link>,
+    );
+
+    const link = screen.getByRole('link', { name: 'Foto: Ola' });
+    expect(link).toHaveClass('text-current');
+    expect(link.className).not.toMatch(/\btext-(darkblue|orange|gray-neutral|white)\b/);
+  });
+
+  it('still draws the focus ring, which is the whole reason these links moved here', () => {
+    render(
+      <Link href="#" variant="inherit">
+        Foto: Ola
+      </Link>,
+    );
+
+    expect(screen.getByRole('link', { name: 'Foto: Ola' })).toHaveClass(
+      'focus-visible:outline-focus-ring',
+    );
+  });
+});
+
+describe('linkClassesInherit', () => {
+  // It is spelled out rather than composed from `base`, matching how `navLinkClassesBody` is
+  // written. This is the cost of writing it twice, paid here.
+  it('matches what the inherit variant renders', () => {
+    render(
+      <Link href="#" variant="inherit">
+        Foto: Ola
+      </Link>,
+    );
+    const rendered = screen.getByRole('link', { name: 'Foto: Ola' }).className;
+
+    const tokens = (value: string) => new Set(value.split(/\s+/).filter(Boolean));
+    expect(tokens(linkClassesInherit)).toEqual(tokens(rendered));
   });
 });

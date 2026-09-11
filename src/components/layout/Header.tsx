@@ -75,7 +75,7 @@ export default function Header() {
           <NavLink
             to="/"
             end
-            className="font-heading tracking-heading focus-visible:outline-orange text-h4 font-bold text-white no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3"
+            className="font-heading tracking-heading focus-visible:outline-focus-ring text-h4 font-bold text-white no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           >
             SBSK
           </NavLink>

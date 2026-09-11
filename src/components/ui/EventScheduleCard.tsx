@@ -72,7 +72,10 @@ export function EventScheduleCard({
         type="button"
         onClick={() => downloadIcs(ics, `${title}.ics`)}
         aria-label={`Legg til ${title} i kalenderen`}
-        className="focus-visible:outline-focus-ring flex w-14 flex-none items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        // `lift`, like every other pressable surface — this was the one interactive control in
+        // the system that did not respond to the pointer at all. It owns the transition outright,
+        // so no `transition-*` utility may join it here.
+        className="lift focus-visible:outline-focus-ring flex w-14 flex-none cursor-pointer items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
       >
         <CalendarAddIcon className="h-5 w-5 fill-current" />
       </button>

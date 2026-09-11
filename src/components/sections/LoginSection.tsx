@@ -5,6 +5,7 @@ import { Input } from '../ui/Input';
 import { Alert } from '../ui/Alert';
 import { useAuthActions } from '../../hooks/useAuthActions';
 import { useAutofillSync } from '../../hooks/useAutofillSync';
+import { linkClassesInherit } from '../ui/Link';
 
 export default function LoginSection({ reason }: { reason?: string }) {
   const navigate = useNavigate();
@@ -64,7 +65,7 @@ export default function LoginSection({ reason }: { reason?: string }) {
             Ingen konto enda? Er du medlem i klubben kan du lage din egen medlemsprofil ved å klikke
             på lenken under.
           </p>
-          <Link to="/lag-medlemsprofil" className="text-white underline">
+          <Link to="/lag-medlemsprofil" className={`${linkClassesInherit} text-white underline`}>
             Registrere deg her!
           </Link>
         </div>

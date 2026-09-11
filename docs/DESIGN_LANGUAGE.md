@@ -45,7 +45,7 @@ value in a class.
 | `--hard-shadow-color`      | `darkestblue`; `white` in dark mode            | The offset shadow's colour |
 | `--shadow-1` / `-2` / `-3` | `2px` / `4px` / `6px` hard offset              | Press / hover / raised     |
 | `--lift-hover`             | `translate(-2px, -2px)`                        | Hover offset               |
-| `--lift-hover-card`        | `translate(-3px, -3px)`                        | Hover offset, cards        |
+| `--lift-card-hover`        | `translate(-3px, -3px)`                        | Hover offset, cards        |
 | `--lift-press`             | `translate(1px, 1px)`                          | Press offset               |
 | `--shadow-overlay`         | `0 12px 32px -8px` on `--overlay-shadow-color` | The modal panel's shadow   |
 | `--color-overlay-scrim`    | `white/0.7`; `darkblue/0.7` in dark mode       | The modal scrim            |

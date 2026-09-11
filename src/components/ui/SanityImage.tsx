@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Link } from './Link';
 import { clampAspect, cropUrl, MAX_IMAGE_HEIGHT } from '../../utils/sanityImage';
 import type { SanityImageSource } from '@sanity/asset-utils';
 
@@ -34,14 +35,15 @@ export const SanityImage = React.forwardRef<HTMLElement, SanityImageProps>(
 
     const credit =
       value.imageSourceName && value.imageSourceUrl ? (
-        <a
+        <Link
           href={value.imageSourceUrl}
           target="_blank"
           rel="noopener noreferrer"
+          variant="inherit"
           className="underline"
         >
           Foto: {value.imageSourceName}
-        </a>
+        </Link>
       ) : null;
 
     return (

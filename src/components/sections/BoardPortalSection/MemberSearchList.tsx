@@ -110,7 +110,7 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
           <ul className="flex flex-col bg-white px-2 py-4">
             {sortedMembers.map((member) => (
               <li
-                className="focus-visible:outline-focus-ring cursor-pointer hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2"
+                className="focus-visible:outline-focus-ring ease-standard cursor-pointer transition-colors duration-(--duration-fast) hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2"
                 key={member.id}
                 role="button"
                 tabIndex={0}

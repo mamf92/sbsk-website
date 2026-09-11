@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { SocialIcon } from 'react-social-icons';
 import { DiceLogo } from '../ui/DiceLogo';
-import { navLinkClassesBody } from '../ui/Link';
+import { Link, navLinkClassesBody } from '../ui/Link';
 import { Button } from '../ui/Buttons';
 import { useMotion } from '../../hooks/motion/MotionContext';
 
@@ -29,9 +29,9 @@ export default function Footer() {
               </div>
               <div>
                 <p>Kontakt oss:</p>
-                <a href="mailto:hei@sbsk.no" className="underline">
+                <Link href="mailto:hei@sbsk.no" variant="inherit" className="underline">
                   hei@sbsk.no
-                </a>
+                </Link>
               </div>
             </div>
             <div className="flex flex-1 flex-row">
@@ -66,14 +66,15 @@ export default function Footer() {
                     Våre partnere
                   </NavLink>
                 </h2>
-                <a
+                <Link
                   href="https://www.outland.no/"
                   target="_blank"
                   rel="noopener noreferrer"
+                  variant="inherit"
                   className="underline"
                 >
                   Outland.no
-                </a>
+                </Link>
                 <NavLink to="/våre-spill" className={navLinkClassesBody}>
                   Kjøp spill med rabatt
                 </NavLink>

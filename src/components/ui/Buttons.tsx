@@ -92,12 +92,12 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {icon === 'left'
           ? (affordance ??
-            (Icon ? <Icon className="h-3 min-h-3 w-5 min-w-2 fill-current" /> : null))
+            (Icon ? <Icon className="h-3 min-h-3 w-3 min-w-3 fill-current" /> : null))
           : null}
         {children}
         {icon !== 'left'
           ? (affordance ??
-            (Icon ? <Icon className="h-5 min-h-2 w-3 min-w-3 fill-current" /> : null))
+            (Icon ? <Icon className="h-3 min-h-3 w-3 min-w-3 fill-current" /> : null))
           : null}
       </button>
     );
