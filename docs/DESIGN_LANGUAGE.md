@@ -439,6 +439,19 @@ Three things about this are deliberate.
   preference keeps following the OS — including a change made mid-session — until the visitor
   actually chooses. Once they have, their choice stands and the subscription stops deciding.
 
+**`MotionProvider` owns both halves — the class and the OS subscription.** They cannot be
+split: a listener that wrote the class on its own would leave the provider's state stale, so
+after an OS change mid-session the toggle reported the wrong `aria-pressed` and its next click
+was a visual no-op, rewriting the class to the value it already had. `initMotion()` seeds the
+class before first paint and does nothing else.
+
+**The toggle needs a visible pressed state.** Nothing in `buttonClasses` styles `aria-pressed` —
+only `lift-chip` reads it — so a setting control carrying only that attribute looks identical in
+both states to everyone but a screen reader. It borrows `lift-chip`'s idea rather than inventing
+one: already down means resting on `--shadow-1` instead of flat, with the icon carrying the same
+state a second way. The label never changes; a control that renames itself reads as a different
+control.
+
 `DiceLogo` reads the class directly through `motionIsReduced()` rather than a hook. Primitives
 under `src/components/ui/` are context-free, and the die renders on the shell error screen,
 where depending on a provider would let one failure take out the page that exists to report
@@ -461,6 +474,10 @@ Three rules keep it from being decoration:
 
 - **It reveals once.** Content that re-animates every time it scrolls past is what makes a page
   feel restless rather than alive.
+- **The stagger has to survive the reveal.** `transition-delay` is taken from the _after-change_
+  style, so clearing the delay in the same commit that flips `data-revealed` means every item
+  transitions with `0s` and the stagger never plays at all. That is what this shipped doing,
+  with a test pinning it as the intended behaviour.
 - **The stagger caps at six.** `index` delays each item by `--duration-instant`; past the sixth
   every item shares the last delay, so a forty-post feed does not take three seconds to arrive.
 - **Reduced motion gets the finished state, not a faster version of it.** Stated as its own
@@ -475,7 +492,11 @@ single frame — Cmd+End, a scrollbar drag, an anchor jump — never reports a c
 sits at ratio 0 throughout, no callback fires, and that item stays invisible for the rest of the
 session. One jump to the bottom of the seventeen-card grid left twelve cards blank.
 
-A sweep asks where things _are_, not when they crossed, so it has no such gap. The cost is a
+A sweep asks where things _are_, not when they crossed, so it has no such gap. It runs on
+scroll, on resize, on a `ResizeObserver` watching the document element — an image or a font
+landing above an item moves it with no scroll at all — and on every render, because a list that
+filters or re-sorts _reorders_ its items rather than remounting them: same key, same instance, so
+the registration effect never re-runs and nothing else would fire. The cost is a
 rect read per pending item per animation frame while scrolling — nothing at these counts — and
 it stops entirely once the last item has been revealed, because the listeners detach themselves.
 Correctness is worth more here than the observer's efficiency. Anything already on screen at
