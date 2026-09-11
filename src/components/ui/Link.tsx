@@ -40,6 +40,7 @@ export const navLinkClasses =
   'after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left ' +
   'after:scale-x-0 after:bg-orange after:transition-transform ' +
   'after:duration-(--duration-base) after:ease-out hover:after:scale-x-100 ' +
+  'motion-reduce:after:transition-none ' +
   'aria-[current=page]:text-orange aria-[current=page]:after:scale-x-100 ' +
   'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 ' +
   'focus-visible:outline-focus-ring';
@@ -59,6 +60,7 @@ export const navLinkClassesBody =
   'after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left ' +
   'after:scale-x-0 after:bg-orange after:transition-transform ' +
   'after:duration-(--duration-base) after:ease-out hover:after:scale-x-100 ' +
+  'motion-reduce:after:transition-none ' +
   'aria-[current=page]:text-orange aria-[current=page]:after:scale-x-100 ' +
   'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 ' +
   'focus-visible:outline-focus-ring';

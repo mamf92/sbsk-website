@@ -17,6 +17,7 @@ const mobileNavLink =
   'after:absolute after:left-6 after:right-6 after:bottom-[9px] after:h-0.5 after:origin-left ' +
   'after:scale-x-0 after:bg-orange after:transition-transform ' +
   'after:duration-(--duration-base) after:ease-out hover:after:scale-x-100 ' +
+  'motion-reduce:after:transition-none ' +
   'aria-[current=page]:text-orange aria-[current=page]:after:scale-x-100 ' +
   'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 ' +
   'focus-visible:outline-focus-ring';
@@ -186,73 +187,81 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile nav — collapses via max-height. `inert` is what actually removes the closed
-          panel's links from the tab order; max-height alone leaves them focusable. */}
+      {/* Mobile nav — collapses on `grid-template-rows: 0fr → 1fr`, the same technique and the
+          same clock `Card`'s panel uses, and for the reason its comment gives: the max-height
+          version this replaced silently clipped anything taller than its magic number. 460px
+          was one nav item from doing exactly that — the authenticated button row alone puts it
+          within ~60px — and the number had no way to know.
+
+          `inert` is still what removes the closed panel's links from the tab order; a 0fr row
+          leaves them focusable on its own. */}
       <nav
         inert={!isMobileMenuOpen}
-        className={`bg-darkestblue flex flex-col overflow-hidden transition-[max-height] duration-(--duration-slow) ease-out lg:hidden ${
-          isMobileMenuOpen ? 'max-h-[460px]' : 'max-h-0'
+        className={`bg-darkestblue grid transition-[grid-template-rows] duration-(--duration-slow) ease-out motion-reduce:transition-none lg:hidden ${
+          isMobileMenuOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
         }`}
         aria-label="Mobilmeny"
       >
-        {memberPortalEnabled && isAuthenticated && (
-          <div className="flex gap-2 border-t border-white/12 px-6 py-[15px]">
-            {isAdmin && (
+        <div className="flex flex-col overflow-hidden">
+          {memberPortalEnabled && isAuthenticated && (
+            <div className="flex gap-2 border-t border-white/12 px-6 py-[15px]">
+              {isAdmin && (
+                <Button
+                  variant="primary"
+                  size="xs"
+                  icon="right"
+                  onClick={() => {
+                    closeMobileMenu();
+                    navigate('/styreportal');
+                  }}
+                >
+                  Styreportal
+                </Button>
+              )}
               <Button
                 variant="primary"
                 size="xs"
                 icon="right"
                 onClick={() => {
                   closeMobileMenu();
-                  navigate('/styreportal');
+                  navigate('/medlemsportal');
                 }}
               >
-                Styreportal
+                Profil
               </Button>
-            )}
-            <Button
-              variant="primary"
-              size="xs"
-              icon="right"
-              onClick={() => {
-                closeMobileMenu();
-                navigate('/medlemsportal');
-              }}
-            >
-              Profil
-            </Button>
-            <Button
-              variant="secondary"
-              size="xs"
-              icon="right"
-              onClick={() => {
-                logout();
-                closeMobileMenu();
-                navigate('/');
-              }}
-            >
-              Logg ut
-            </Button>
-          </div>
-        )}
-        <NavLink to="/" end className={mobileNavLink} onClick={closeMobileMenu}>
-          Hjem
-        </NavLink>
-        <NavLink to="/kalender" className={mobileNavLink} onClick={closeMobileMenu}>
-          Kalender
-        </NavLink>
-        <NavLink to="/board-game-masters" className={mobileNavLink} onClick={closeMobileMenu}>
-          Board Game Masters
-        </NavLink>
-        <NavLink to="/våre-spill" className={mobileNavLink} onClick={closeMobileMenu}>
-          Våre spill
-        </NavLink>
-        <NavLink to="/om-oss" className={mobileNavLink} onClick={closeMobileMenu}>
-          Om oss
-        </NavLink>
-        <NavLink to="/kontakt-oss" className={mobileNavLink} onClick={closeMobileMenu}>
-          Kontakt oss
-        </NavLink>
+              <Button
+                variant="secondary"
+                size="xs"
+                icon="right"
+                onClick={() => {
+                  logout();
+                  closeMobileMenu();
+                  navigate('/');
+                }}
+              >
+                Logg ut
+              </Button>
+            </div>
+          )}
+          <NavLink to="/" end className={mobileNavLink} onClick={closeMobileMenu}>
+            Hjem
+          </NavLink>
+          <NavLink to="/kalender" className={mobileNavLink} onClick={closeMobileMenu}>
+            Kalender
+          </NavLink>
+          <NavLink to="/board-game-masters" className={mobileNavLink} onClick={closeMobileMenu}>
+            Board Game Masters
+          </NavLink>
+          <NavLink to="/våre-spill" className={mobileNavLink} onClick={closeMobileMenu}>
+            Våre spill
+          </NavLink>
+          <NavLink to="/om-oss" className={mobileNavLink} onClick={closeMobileMenu}>
+            Om oss
+          </NavLink>
+          <NavLink to="/kontakt-oss" className={mobileNavLink} onClick={closeMobileMenu}>
+            Kontakt oss
+          </NavLink>
+        </div>
       </nav>
     </header>
   );

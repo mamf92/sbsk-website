@@ -674,6 +674,7 @@ function EventRow({
               <ExpandIcon
                 className={[
                   'h-5 w-5 fill-current transition-transform duration-(--duration-base) ease-out',
+                  'motion-reduce:transition-none',
                   expanded ? 'rotate-180' : 'rotate-0',
                 ].join(' ')}
               />
@@ -702,67 +703,88 @@ function EventRow({
       )}
 
       {expandable && (
-        <div id={panelId} hidden={!expanded}>
-          <div
-            className={[
-              'flex flex-col gap-4 border-t border-black p-4 sm:p-6 dark:border-white',
-              styles.accent,
-            ].join(' ')}
-          >
-            {/* Same rich-text rhythm the news cards use — `.sbsk-rt` (src/index.css) owns the
+        // `grid-template-rows: 0fr → 1fr` and `inert`, the same panel `Card` opens — see its
+        // comment for why this beats a max-height. Before this the two card stacks looked
+        // identical and behaved differently: a news card eased open, a calendar card blinked.
+        // `inert` rather than `hidden`: 0fr leaves the panel's links in the tab order, which is
+        // exactly the trap `hidden` was covering for.
+        <div
+          id={panelId}
+          inert={!expanded}
+          className={[
+            'grid transition-[grid-template-rows] duration-(--duration-slow) ease-out',
+            'motion-reduce:transition-none',
+            expanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+          ].join(' ')}
+        >
+          <div className="overflow-hidden">
+            <div
+              className={[
+                'flex flex-col gap-4 border-t border-black p-4 sm:p-6 dark:border-white',
+                styles.accent,
+              ].join(' ')}
+            >
+              {/* Same rich-text rhythm the news cards use — `.sbsk-rt` (src/index.css) owns the
                 spacing *between* blocks; the Portable Text components own the type scale. */}
-            {event.content && (
-              <div className="sbsk-rt">
-                <PortableText value={event.content} components={components} />
-              </div>
-            )}
+              {event.content && (
+                <div className="sbsk-rt">
+                  <PortableText value={event.content} components={components} />
+                </div>
+              )}
 
-            {event.image && (
-              <img
-                src={urlFor(event.image).width(1440).fit('crop').auto('format').url()}
-                srcSet={[
-                  `${urlFor(event.image).width(400).fit('crop').auto('format').url()} 400w`,
-                  `${urlFor(event.image).width(800).fit('crop').auto('format').url()} 800w`,
-                  `${urlFor(event.image).width(1024).fit('crop').auto('format').url()} 1024w`,
-                ].join(', ')}
-                sizes="(max-width: 400px) 400px, (max-width: 800px) 800px, 1024px"
-                alt=""
-                className="h-84 w-full border border-black object-cover lg:h-100 dark:border-white"
-              />
-            )}
+              {event.image && (
+                <img
+                  src={urlFor(event.image).width(1440).fit('crop').auto('format').url()}
+                  srcSet={[
+                    `${urlFor(event.image).width(400).fit('crop').auto('format').url()} 400w`,
+                    `${urlFor(event.image).width(800).fit('crop').auto('format').url()} 800w`,
+                    `${urlFor(event.image).width(1024).fit('crop').auto('format').url()} 1024w`,
+                  ].join(', ')}
+                  sizes="(max-width: 400px) 400px, (max-width: 800px) 800px, 1024px"
+                  // `hidden` used to keep this out of the network entirely; a clipped 0fr row
+                  // does not, so the deferral has to be explicit now. Same pair `SanityImage`
+                  // sets for the images inside a news card's panel, which has always opened
+                  // this way.
+                  loading="lazy"
+                  decoding="async"
+                  alt=""
+                  className="h-84 w-full border border-black object-cover lg:h-100 dark:border-white"
+                />
+              )}
 
-            {(event.links?.length || detailPath) && (
-              <div className="flex flex-row flex-wrap gap-2">
-                {detailPath && (
-                  <Button
-                    variant={styles.accentButtonVariant}
-                    size="sm"
-                    icon="right"
-                    onClick={() => navigate(detailPath)}
-                  >
-                    Se arrangementet
-                  </Button>
-                )}
-                {event.links?.map((link, index) => {
-                  const isInternal = isInternalLink(link.url);
-                  return (
+              {(event.links?.length || detailPath) && (
+                <div className="flex flex-row flex-wrap gap-2">
+                  {detailPath && (
                     <Button
-                      key={index}
                       variant={styles.accentButtonVariant}
                       size="sm"
                       icon="right"
-                      onClick={() =>
-                        isInternal
-                          ? navigate(internalLinkPath(link.url))
-                          : window.open(link.url, '_blank', 'noopener,noreferrer')
-                      }
+                      onClick={() => navigate(detailPath)}
                     >
-                      {link.label}
+                      Se arrangementet
                     </Button>
-                  );
-                })}
-              </div>
-            )}
+                  )}
+                  {event.links?.map((link, index) => {
+                    const isInternal = isInternalLink(link.url);
+                    return (
+                      <Button
+                        key={index}
+                        variant={styles.accentButtonVariant}
+                        size="sm"
+                        icon="right"
+                        onClick={() =>
+                          isInternal
+                            ? navigate(internalLinkPath(link.url))
+                            : window.open(link.url, '_blank', 'noopener,noreferrer')
+                        }
+                      >
+                        {link.label}
+                      </Button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

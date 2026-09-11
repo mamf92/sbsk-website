@@ -232,6 +232,7 @@ export function Dropdown<T extends string>({
           aria-hidden="true"
           className={
             'h-3.5 w-3.5 fill-current transition-transform duration-(--duration-base) ease-out ' +
+            'motion-reduce:transition-none ' +
             (open ? 'rotate-180' : 'rotate-0')
           }
         />
