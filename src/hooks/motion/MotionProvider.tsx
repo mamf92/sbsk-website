@@ -12,10 +12,11 @@ import {
 import type { MotionPreference } from '../../utils/motion';
 
 /**
- * Mounted in `src/main.tsx` around `RouterProvider` rather than inside `App`, unlike
- * `ThemeProvider`. The shell's own `errorElement` renders *instead of* `<App />`, and the error
- * page renders a `DiceLogo` — which reads this preference — so a provider inside `App` would
- * make `useMotion()` throw on exactly the screen that has the least margin for a second failure.
+ * Mounted in `src/main.tsx` around `RouterProvider` rather than inside `App`, like
+ * `ThemeProvider` (see #248). The shell's own `errorElement` renders *instead of* `<App />`, and
+ * the error page renders a `DiceLogo` — which reads this preference — so a provider inside `App`
+ * would make `useMotion()` throw on exactly the screen that has the least margin for a second
+ * failure.
  *
  * `initMotion()` in `main.tsx` seeds the class before anything paints; from mount onwards this
  * provider owns it, including keeping up with the OS. Both halves have to live in one place: a
