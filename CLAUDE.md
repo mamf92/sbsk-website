@@ -24,7 +24,9 @@ targets a route byte-identical. Code identifiers, comments and commit messages a
 ## Layout
 
 - `src/main.tsx` — `createBrowserRouter`, all routes, `basename` from `VITE_BASE`.
-- `src/App.tsx` — shell: skip link, `Header`, `<Outlet />`, `Footer`, wrapped in `ThemeProvider`.
+- `src/App.tsx` — shell: skip link, `Header`, `<Outlet />`, `Footer`. `ThemeProvider` and
+  `MotionProvider` wrap `RouterProvider` in `src/main.tsx` instead, above the shell's own
+  `errorElement`, so `useTheme()`/`useMotion()` stay usable on the error and 404 routes.
 - `src/pages/*` — one default-exported component per route.
 - `src/components/layout/*` — Header, Footer.
 - `src/components/sections/*` — page-level composed sections.
