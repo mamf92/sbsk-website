@@ -434,10 +434,11 @@ Three things about this are deliberate.
   `motion-reduce:` classes already in `Card.tsx` kept working untouched, and every one written
   since reads the preference for free. `motion-safe` is redefined as the exact negation so the
   pair cannot drift apart.
-- **A system-derived preference is never persisted.** `ThemeProvider` writes storage on mount,
-  which destroys "follow the system" the first time the app runs; this does not, so the
-  preference keeps following the OS — including a change made mid-session — until the visitor
-  actually chooses. Once they have, their choice stands and the subscription stops deciding.
+- **A system-derived preference is never persisted.** Storage is written only from an explicit
+  toggle, never from the apply effect, so the preference keeps following the OS — including a
+  change made mid-session — until the visitor actually chooses. Once they have, their choice
+  stands and the subscription stops deciding. `ThemeProvider` (`src/hooks/theme/ThemeProvider.tsx`)
+  is built the same way, on top of `src/utils/theme.ts`.
 
 **`MotionProvider` owns both halves — the class and the OS subscription.** They cannot be
 split: a listener that wrote the class on its own would leave the provider's state stale, so
