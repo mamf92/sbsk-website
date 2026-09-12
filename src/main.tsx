@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import AuthProvider from './hooks/authContext/authProvider';
 import { MotionProvider } from './hooks/motion/MotionProvider';
+import { ThemeProvider } from './hooks/theme/ThemeProvider';
 import './index.css';
 import App from './App';
 import Home from './pages/Home';
@@ -122,9 +123,12 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <AuthProvider>
       {/* Above the router, not inside `App`: the shell's `errorElement` replaces `<App />`
-          entirely, and the error page it renders reads this preference. See MotionProvider. */}
+          entirely, and the error page it renders reads this preference. See MotionProvider
+          and ThemeProvider. */}
       <MotionProvider>
-        <RouterProvider router={router} />
+        <ThemeProvider>
+          <RouterProvider router={router} />
+        </ThemeProvider>
       </MotionProvider>
     </AuthProvider>
   </React.StrictMode>,

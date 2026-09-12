@@ -1,8 +1,7 @@
 import { createContext, useContext } from 'react';
+import type { Theme } from '../../utils/theme';
 
-type Theme = 'light' | 'dark';
-
-interface ThemeContextType {
+export interface ThemeContextType {
   theme: Theme;
   isDarkMode: boolean;
   setTheme: (theme: Theme) => void;
