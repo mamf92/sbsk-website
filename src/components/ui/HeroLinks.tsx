@@ -26,6 +26,8 @@ export interface HeroLink {
  */
 const MAX_LINKS = 3;
 
+const isWebUrl = (url: string) => /^https?:\/\//i.test(url);
+
 export function HeroLinks({
   links,
   fallback,
@@ -38,10 +40,13 @@ export function HeroLinks({
 }) {
   const navigate = useNavigate();
 
-  // The schema caps this at three, but the schema is advice: a document saved before the rule
-  // existed, or through the API, can still carry more. The row is the last thing standing
-  // between that and a hero pushed off its own image.
-  const resolved = (links && links.length > 0 ? links : fallback).slice(0, MAX_LINKS);
+  // Schema rules are advice, not a guarantee: a document saved before a rule existed, or
+  // written through the API, can carry more than three rows or a row with only half of it
+  // filled in. Both matter here. An over-long row pushes the hero off its own image, and a
+  // row with no `url` would reach `isInternalLink` as `undefined` during render — which is
+  // not a broken button but a `TypeError` that takes the whole page to the error boundary.
+  const authored = (links ?? []).filter((link) => link?.label && link?.url);
+  const resolved = (authored.length > 0 ? authored : fallback).slice(0, MAX_LINKS);
   if (resolved.length === 0) return null;
 
   return (
@@ -62,8 +67,9 @@ export function HeroLinks({
           <a
             key={index}
             href={link.url}
-            target="_blank"
-            rel="noopener noreferrer"
+            // A new tab is right for another website and wrong for `mailto:`/`tel:`, which the
+            // schema also allows: the handler opens elsewhere and the blank tab is left behind.
+            {...(isWebUrl(link.url) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
             className={buttonClasses({ variant: 'primary', size: 'lg', className: 'flex-none' })}
           >
             {link.label}

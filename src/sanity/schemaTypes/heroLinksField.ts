@@ -32,15 +32,19 @@ export const heroLinksField = defineField({
           name: 'label',
           type: 'string',
           description: 'Tekst som vises på knappen.',
+          validation: (rule) => rule.required().error('Knappen må ha en tekst'),
         }),
         defineField({
           title: 'Lenke',
           name: 'url',
           type: 'url',
           description:
-            'Sti til en side på nettstedet, for eksempel /kalender, eller full adresse til et annet nettsted. Eksterne lenker åpnes i ny fane.',
+            'Sti til en side på nettstedet, for eksempel /kalender, eller full adresse til et annet nettsted. Lenker til andre nettsteder åpnes i ny fane.',
           validation: (rule) =>
-            rule.uri({ allowRelative: true, scheme: ['http', 'https', 'mailto', 'tel'] }),
+            rule
+              .required()
+              .error('Knappen må ha en lenke')
+              .uri({ allowRelative: true, scheme: ['http', 'https', 'mailto', 'tel'] }),
         }),
       ],
       preview: { select: { title: 'label', subtitle: 'url' } },
