@@ -15,6 +15,10 @@ export default defineConfig({
       // The portal is hidden in production (#213); tests keep it on so the gated routes and
       // components stay covered.
       VITE_ENABLE_MEMBER_PORTAL: 'true',
+      // Same deal for the Kontakt oss form (#254): hidden in production, on here so the form
+      // and its validation stay covered. `ContactSection.test.tsx` mocks the flag off to
+      // cover the email-only state the site actually ships.
+      VITE_ENABLE_CONTACT_FORM: 'true',
     },
     setupFiles: ['./src/test/setup.ts'],
     // Setting `exclude` replaces vitest's defaults rather than extending them,
