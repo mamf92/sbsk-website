@@ -277,6 +277,37 @@ function CompactHeading({ title, subtitle }: CalendarHeroTypes = {}) {
   );
 }
 
+/**
+ * The hero photo is decoration; the event list is what the page is for. Left to itself the
+ * image took whatever height its own aspect ratio implied at the container's width, so a
+ * 1024x600 screen got a viewport of photo and nothing else — the title band and the list both
+ * sat below the fold, which reads as a finished page and stops people scrolling (#252).
+ *
+ * Two constraints, because either alone still breaks. `aspect-2/1` stops the editor's upload
+ * from deciding the height — a 4:3 photo would otherwise draw ~750px tall at 1024 wide — and
+ * it reserves the box before the image lands, so there is no layout shift. `max-h-[40svh]`
+ * then keeps the hero off a short screen's fold: at 600px tall it clamps the image to 240px,
+ * leaving the navy band and the top of the list visible. `svh` rather than `vh` so a mobile
+ * toolbar cannot overflow it. Below ~820px wide the aspect ratio is the binding constraint,
+ * which is the height the hero already had there — this only changes wide or short viewports.
+ */
+const HERO_WIDTHS = [400, 800, 1024] as const;
+
+/**
+ * Asking the CDN for the display aspect rather than width alone is what makes the hotspot
+ * mean anything: `fit('crop')` only has a shape to crop to once both dimensions are given.
+ * Matching 2:1 here and in the CSS box also keeps `object-cover` from cropping a second time
+ * on top of Sanity's crop.
+ */
+function heroCrop(image: NonNullable<CalendarHeroTypes['image']>, width: number) {
+  return urlFor(image)
+    .width(width)
+    .height(Math.round(width / 2))
+    .fit('crop')
+    .auto('format')
+    .url();
+}
+
 function CalendarHero({
   title,
   subtitle,
@@ -290,21 +321,23 @@ function CalendarHero({
   const resolvedImageSourceUrl = imageSourceUrl || FALLBACK_CALENDAR.imageSourceUrl;
   return (
     <div className="max-w-content content-gutter:px-0 flex w-full flex-col px-3">
-      <div className="relative">
+      <div className="relative aspect-2/1 max-h-[40svh]">
         {image ? (
           <img
-            src={urlFor(image).width(1440).fit('crop').auto('format').url()}
-            srcSet={[
-              `${urlFor(image).width(400).fit('crop').auto('format').url()} 400w`,
-              `${urlFor(image).width(800).fit('crop').auto('format').url()} 800w`,
-              `${urlFor(image).width(1024).fit('crop').auto('format').url()} 1024w`,
-            ].join(', ')}
+            src={heroCrop(image, 1440)}
+            srcSet={HERO_WIDTHS.map((width) => `${heroCrop(image, width)} ${width}w`).join(', ')}
             sizes="(max-width: 400px) 400px, (max-width: 800px) 800px, 1024px"
             alt=""
             className="h-full w-full object-cover"
           />
         ) : (
-          <img src={FALLBACK_CALENDAR.imageUrl} alt="" className="h-full w-full object-cover" />
+          <img
+            src={FALLBACK_CALENDAR.imageUrl}
+            width={1024}
+            height={500}
+            alt=""
+            className="h-full w-full object-cover"
+          />
         )}
         {resolvedImageSource && resolvedImageSourceUrl && (
           <div className="absolute right-4 bottom-2 flex flex-col">

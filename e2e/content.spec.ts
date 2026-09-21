@@ -6,6 +6,7 @@ import {
   PAST_EVENT,
   ABOUT_PAGE,
   BOARD_MEMBER,
+  CALENDAR_HERO,
   stubSanityWithContent,
 } from './fixtures/sanity';
 
@@ -237,4 +238,35 @@ test('an unreachable feed says so rather than claiming there are no posts', asyn
   await expect(page.getByText('Kunne ikke laste innlegg')).toBeVisible();
   // "Ingen innlegg" would be a lie, and one that reads as "this club has gone quiet".
   await expect(page.getByText('Ingen innlegg', { exact: true })).toHaveCount(0);
+});
+
+// #252. The hero image had no height of its own, so it drew at whatever aspect ratio the
+// uploaded photo had, scaled to the container width — at 1024x600 that was the entire viewport,
+// and the calendar the page exists for sat below the fold behind what reads as a finished page.
+// This is the exact size round 1 of user testing reported, and the one the old code failed.
+test('the calendar hero leaves the list above the fold on a short, wide screen', async ({
+  page,
+}) => {
+  const height = 600;
+  await page.setViewportSize({ width: 1024, height });
+  await page.goto('/kalender');
+
+  const title = page.getByRole('heading', { level: 1, name: CALENDAR_HERO.title });
+  await expect(title).toBeVisible();
+
+  const titleBox = await title.boundingBox();
+  expect(titleBox).not.toBeNull();
+  // Nothing has scrolled, so a page coordinate is a viewport coordinate.
+  expect(titleBox!.y + titleBox!.height).toBeLessThan(height);
+
+  // And a slice of the calendar itself below it, which is what actually cues the scroll: a
+  // hero that stops cleanly at the fold reads as a finished page. The search box is the top of
+  // the list's own controls — the first event card still needs a scroll at this height, which
+  // is the trade for not shrinking the hero on every larger screen to suit this one.
+  const search = page.getByPlaceholder('Søk etter arrangementer…');
+  const searchBox = await search.boundingBox();
+  expect(searchBox).not.toBeNull();
+  expect(searchBox!.y).toBeLessThan(height);
+
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
 });
