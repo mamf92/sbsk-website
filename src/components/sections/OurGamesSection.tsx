@@ -7,7 +7,7 @@ import EmptyState from '../ui/EmptyState';
 import { Reveal } from '../ui/Reveal';
 import { GameCard, type BuyInfo } from '../ui/GameCard';
 import { HeroImage } from '../ui/HeroImage';
-import { useNavigate } from 'react-router-dom';
+import { HeroLinks, type HeroLink } from '../ui/HeroLinks';
 import { useAuth } from '../../hooks/authContext/authContext';
 import { urlFor } from '../../sanity/sanityImageUrl';
 import type { GameTypes } from '../../sanity/queryHelpers/games';
@@ -47,6 +47,10 @@ const SPONSOR = {
   discountPercent: 15,
   discountCode: 'SBSK15',
 };
+
+// What the hero points at when the Studio has none set. Same shape as the editable field, so
+// turning the default into a real edit is a copy of these two values (#255).
+const GAMES_HERO_LINKS: HeroLink[] = [{ label: 'Bli medlem', url: '/bli-medlem' }];
 
 const DIFFICULTIES: Array<{ value: 0 | 1 | 2 | 3; label: string }> = [
   { value: 0, label: 'Alle' },
@@ -223,7 +227,6 @@ function FilterRow({ label, children }: { label: string; children: React.ReactNo
 }
 
 function GamesHero({ gamesHero }: { gamesHero?: GamesHeroTypes | null }) {
-  const navigate = useNavigate();
   const title = gamesHero?.title || 'Våre spill';
   const subtitle =
     gamesHero?.subtitle ||
@@ -244,15 +247,7 @@ function GamesHero({ gamesHero }: { gamesHero?: GamesHeroTypes | null }) {
               {subtitle}
             </p>
           </div>
-          <Button
-            variant="primary"
-            size="lg"
-            icon="right"
-            onClick={() => navigate('/bli-medlem')}
-            className="flex-none"
-          >
-            Bli medlem
-          </Button>
+          <HeroLinks links={gamesHero?.links} fallback={GAMES_HERO_LINKS} />
         </div>
       </div>
     </div>
