@@ -1,8 +1,7 @@
-import { Button } from '../ui/Buttons';
-import { useNavigate } from 'react-router-dom';
 import type { HomeHeroTypes } from '../../sanity/queryHelpers/home-hero';
 import { urlFor } from '../../sanity/sanityImageUrl';
 import { HeroImage } from '../ui/HeroImage';
+import { HeroLinks, type HeroLink } from '../ui/HeroLinks';
 import { Link } from '../ui/Link';
 
 const FALLBACK_HERO = {
@@ -13,6 +12,11 @@ const FALLBACK_HERO = {
   imageSourceUrl: 'www.freepik.com',
 };
 
+const HOME_HERO_LINKS: HeroLink[] = [
+  { label: 'Se kalender', url: '/kalender' },
+  { label: 'Bli medlem', url: '/bli-medlem' },
+];
+
 export default function HomeHero({
   title,
   subtitle,
@@ -21,10 +25,8 @@ export default function HomeHero({
   links,
   sponsors,
 }: HomeHeroTypes = {}) {
-  const navigate = useNavigate();
   const resolvedTitle = title || FALLBACK_HERO.title;
   const resolvedSubtitle = subtitle || FALLBACK_HERO.subtitle;
-  const hasCustomLinks = links && links.length > 0;
   const resolvedImageSource = imageSource?.imageSourceName || FALLBACK_HERO.imageSourceName;
   const resolvedImageSourceUrl = imageSource?.imageSourceUrl || FALLBACK_HERO.imageSourceUrl;
   const sponsorsExist = sponsors && sponsors.length > 0;
@@ -49,41 +51,11 @@ export default function HomeHero({
               {resolvedSubtitle}
             </p>
           </div>
-          {hasCustomLinks && (
-            <div className="mt-8 flex flex-row flex-wrap gap-4">
-              {links.map((link, index) => (
-                <Button
-                  key={index}
-                  onClick={() => navigate(link.url)}
-                  variant="primary"
-                  size="lg"
-                  icon="right"
-                >
-                  {link.label}
-                </Button>
-              ))}
-            </div>
-          )}
-          {!hasCustomLinks && (
-            <div className="mt-8 flex flex-row flex-wrap gap-4">
-              <Button
-                onClick={() => navigate('/kalender')}
-                variant="primary"
-                size="lg"
-                icon="right"
-              >
-                Se kalender
-              </Button>
-              <Button
-                onClick={() => navigate('/bli-medlem')}
-                variant="primary"
-                size="lg"
-                icon="right"
-              >
-                Bli medlem
-              </Button>
-            </div>
-          )}
+          {/* `navigate(link.url)` used to take the editor's value verbatim, which only worked
+              for a bare path — a full URL copied from the address bar, which is what an editor
+              is most likely to paste, went to the router and landed on the 404 page.
+              `HeroLinks` resolves both, and sends anything genuinely off-site out as a link. */}
+          <HeroLinks links={links} fallback={HOME_HERO_LINKS} className="mt-8" />
         </div>
         <div className="flex w-full flex-col pb-2 lg:w-[calc(80%)]">
           {sponsorsExist && (

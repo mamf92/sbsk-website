@@ -1,12 +1,14 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { SocialIcon } from 'react-social-icons';
 import { DiceLogo } from '../ui/DiceLogo';
 import { Link, navLinkClassesBody } from '../ui/Link';
 import { Button } from '../ui/Buttons';
 import { useMotion } from '../../hooks/motion/MotionContext';
+import { useGoHome } from '../../hooks/useGoHome';
+import { CLUB_EMAIL, CLUB_EMAIL_HREF } from '../../utils/contact';
 
 export default function Footer() {
-  const navigate = useNavigate();
+  const { goHome, handleHomeLinkClick } = useGoHome();
   const { reduced, toggleReducedMotion } = useMotion();
 
   return (
@@ -19,18 +21,30 @@ export default function Footer() {
                 {/* The dice used to be a <button> wrapped in a <NavLink>, which is invalid
                     nesting and put two interactive targets on the exact same 48px box — the
                     reason Lighthouse failed target-size (WCAG 2.5.8) here (#222). One control
-                    now, navigating on click the way the header's dice already does. */}
+                    now, navigating on click the way the header's dice already does.
+
+                    The wordmark beside it is its own link rather than part of that control, so
+                    the two targets stay separate and #222 does not come back — but it is a
+                    link now, because it was plain text while the header's "SBSK" next to the
+                    same dice was clickable (#253). */}
                 <div className="flex max-w-12.25 min-w-12.25">
-                  <DiceLogo size={48} onClick={() => navigate('/')} />
+                  <DiceLogo size={48} onClick={goHome} />
                 </div>
                 <div>
-                  <p className="font-heading text-h2 font-bold">Stavanger Brettspillklubb</p>
+                  <NavLink
+                    to="/"
+                    end
+                    onClick={handleHomeLinkClick}
+                    className="font-heading text-h2 focus-visible:outline-focus-ring font-bold text-white no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                  >
+                    Stavanger Brettspillklubb
+                  </NavLink>
                 </div>
               </div>
               <div>
                 <p>Kontakt oss:</p>
-                <Link href="mailto:hei@sbsk.no" variant="inherit" className="underline">
-                  hei@sbsk.no
+                <Link href={CLUB_EMAIL_HREF} variant="inherit" className="underline">
+                  {CLUB_EMAIL}
                 </Link>
               </div>
             </div>

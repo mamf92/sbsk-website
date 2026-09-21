@@ -51,6 +51,9 @@ export default defineConfig({
       // The portal is hidden in production (#213); the smoke suite keeps it on so
       // portal.spec.ts, dialog.spec.ts and the login/register coverage below stay exercised.
       VITE_ENABLE_MEMBER_PORTAL: 'true',
+      // The Kontakt oss form is hidden in production (#254); the smoke suite keeps it on so
+      // its send-and-succeed path stays exercised.
+      VITE_ENABLE_CONTACT_FORM: 'true',
     },
   },
 });

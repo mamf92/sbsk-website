@@ -145,10 +145,9 @@ test('kontakt-oss sends a message and shows the success notice', async ({ page }
 
   await expect(page.getByRole('heading', { level: 1, name: 'Kontakt oss!' })).toBeVisible();
   // Scoped to #main: the footer carries the same mailto link on every page.
-  await expect(page.locator('#main').getByRole('link', { name: 'hei@sbsk.no' })).toHaveAttribute(
-    'href',
-    'mailto:hei@sbsk.no',
-  );
+  await expect(
+    page.locator('#main').getByRole('link', { name: 'sbsklubb@hotmail.com' }),
+  ).toHaveAttribute('href', 'mailto:sbsklubb@hotmail.com');
 
   // Send stays disabled until every field is valid (#203), so an empty form is caught by
   // blurring a required field rather than by a submit attempt.

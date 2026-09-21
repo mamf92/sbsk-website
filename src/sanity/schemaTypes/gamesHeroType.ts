@@ -1,4 +1,5 @@
 import { defineField, defineType } from 'sanity';
+import { heroLinksField } from './heroLinksField';
 
 export const gamesHeroType = defineType({
   name: 'gamesHero',
@@ -44,5 +45,6 @@ export const gamesHeroType = defineType({
         },
       ],
     }),
+    heroLinksField,
   ],
 });

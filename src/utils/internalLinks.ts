@@ -16,8 +16,12 @@ const SITE_ORIGIN = 'https://mamf92.github.io/sbsk-website';
 // `<Link to>`.
 const ROUTER_BASE = (import.meta.env.VITE_BASE || '/').replace(/\/+$/, '');
 
+// A root-relative path counts too, now that hero links let an editor type `/kalender` rather
+// than pasting the deployed URL (#255). `//evil.com` is excluded deliberately: it also starts
+// with a slash but is protocol-relative, so treating it as internal would hand an off-site
+// destination to `navigate()`.
 export function isInternalLink(url: string): boolean {
-  return url.startsWith(SITE_ORIGIN);
+  return url.startsWith(SITE_ORIGIN) || (url.startsWith('/') && !url.startsWith('//'));
 }
 
 /** `url` resolved to a basename-relative path, safe to pass to `useNavigate()`. Only meaningful

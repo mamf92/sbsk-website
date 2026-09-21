@@ -6,11 +6,12 @@ export interface GamesHeroTypes {
   subtitle?: string;
   image?: SanityImageSource;
   imageSource?: { imageSourceName?: string; imageSourceUrl?: string };
+  links?: { label: string; url: string }[];
 }
 
 const GAMES_HERO_QUERY = `*[
   _type == "gamesHero"
-]{_id, title, subtitle, image, imageSource{imageSourceName, imageSourceUrl}}[0]`;
+]{_id, title, subtitle, image, imageSource{imageSourceName, imageSourceUrl}, links}[0]`;
 
 export async function gamesHeroLoader() {
   return { gamesHero: await client.fetch<GamesHeroTypes | null>(GAMES_HERO_QUERY) };

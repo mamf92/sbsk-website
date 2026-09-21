@@ -179,6 +179,9 @@ jobs:
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
           # No member/board portal on MVP launch (#213) — Studio is the only sign-in this round.
           VITE_ENABLE_MEMBER_PORTAL: 'false'
+          # Nothing reads the messages the Kontakt oss form writes yet (#254) — the page
+          # publishes the club's address instead until #133 or portal access lands.
+          VITE_ENABLE_CONTACT_FORM: 'false'
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0

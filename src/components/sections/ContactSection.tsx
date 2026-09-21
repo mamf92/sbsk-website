@@ -7,6 +7,8 @@ import { createContactMessage } from '../../supabase/queryHelpers/createContactM
 import { contactSchema, type ContactValues } from '../../schemas/contact';
 import { useAutofillSync } from '../../hooks/useAutofillSync';
 import { Link } from '../ui/Link';
+import { contactFormEnabled } from '../../utils/featureFlags';
+import { CLUB_EMAIL, CLUB_EMAIL_HREF } from '../../utils/contact';
 
 type FieldName = keyof ContactValues;
 
@@ -157,12 +159,15 @@ export default function ContactSection() {
             Ta kontakt hvis du ønsker å bli medlem, har spørsmål, tilbakemeldinger eller andre ting
             du ønsker å ta opp med klubben. Vi svarer så fort vi kan og vanligvis i løpet av en uke.
           </p>
+          {/* "også" only makes sense next to a form. With the form gated off these are not an
+              alternative to anything — they are the way to reach the club — so the sentence
+              says that instead of reading like a page with something missing. */}
           <p className="font-body">
-            Du kan også nå oss på{' '}
-            <Link href="mailto:hei@sbsk.no" variant="inherit" className="underline">
-              hei@sbsk.no
+            {contactFormEnabled ? 'Du kan også nå oss på ' : 'Send oss en e-post på '}
+            <Link href={CLUB_EMAIL_HREF} variant="inherit" className="underline">
+              {CLUB_EMAIL}
             </Link>
-            , eller i{' '}
+            , eller{contactFormEnabled ? ' i ' : ' ta kontakt i '}
             <Link
               href="https://www.facebook.com/groups/1699569943629396"
               target="_blank"
@@ -176,118 +181,123 @@ export default function ContactSection() {
           </p>
         </div>
 
-        <form ref={formRef} noValidate onSubmit={handleSubmit} className="flex flex-col gap-5">
-          {/* Honeypot (#202): zero-size and `opacity-0`, not `display:none`, so a bot that
-              checks computed style still finds it fillable. `tabIndex={-1}` and `aria-hidden`
-              keep it out of the tab order and the accessibility tree for real visitors. */}
-          <div className="h-0 w-0 overflow-hidden opacity-0">
-            <label htmlFor="website" aria-hidden="true">
-              Nettside
-            </label>
-            <input
-              id="website"
-              name="website"
-              type="text"
-              tabIndex={-1}
-              autoComplete="off"
-              aria-hidden="true"
-              value={honeypot}
-              onChange={(e) => setHoneypot(e.target.value)}
-            />
-          </div>
+        {/* Gated off until the board can actually read what is sent (#254). The form, its
+            validation, its honeypot and its table are all untouched — only whether it
+            renders. See `contactFormEnabled`. */}
+        {contactFormEnabled && (
+          <form ref={formRef} noValidate onSubmit={handleSubmit} className="flex flex-col gap-5">
+            {/* Honeypot (#202): zero-size and `opacity-0`, not `display:none`, so a bot that
+                checks computed style still finds it fillable. `tabIndex={-1}` and `aria-hidden`
+                keep it out of the tab order and the accessibility tree for real visitors. */}
+            <div className="h-0 w-0 overflow-hidden opacity-0">
+              <label htmlFor="website" aria-hidden="true">
+                Nettside
+              </label>
+              <input
+                id="website"
+                name="website"
+                type="text"
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+              />
+            </div>
 
-          {/* Label and field are siblings, not label-wraps-field: `FieldError` sits in this
-              div too, and nesting it inside the `<label>` would fold its text into the
-              field's accessible name the moment an error appears — "Navn Navn er påkrevd" on
-              every future tab-in. `aria-describedby` is the association that is meant to
-              carry the message instead.
+            {/* Label and field are siblings, not label-wraps-field: `FieldError` sits in this
+                div too, and nesting it inside the `<label>` would fold its text into the
+                field's accessible name the moment an error appears — "Navn Navn er påkrevd" on
+                every future tab-in. `aria-describedby` is the association that is meant to
+                carry the message instead.
 
-              `gap-2`, not the `gap-1` the label/field pair used to share: `fieldStateShadow`'s
-              hard offset shadow reaches 4px below the field, which touched `FieldError`'s text
-              directly at `gap-1`. */}
-          <div className="flex w-full flex-col gap-2">
-            <label htmlFor="name" className="font-body text-white">
-              Navn
-            </label>
-            <Input
-              id="name"
-              name="name"
-              autoComplete="name"
-              placeholder="Ditt navn"
-              value={values.name}
-              onChange={handleChange('name')}
-              onBlur={handleBlur('name')}
-              invalid={!!errors.name}
-              valid={validFields.name}
-              disabled={loading}
-              aria-describedby={errors.name ? 'name-error' : undefined}
-            />
-            {errors.name && <FieldError id="name-error">{errors.name}</FieldError>}
-          </div>
+                `gap-2`, not the `gap-1` the label/field pair used to share: `fieldStateShadow`'s
+                hard offset shadow reaches 4px below the field, which touched `FieldError`'s text
+                directly at `gap-1`. */}
+            <div className="flex w-full flex-col gap-2">
+              <label htmlFor="name" className="font-body text-white">
+                Navn
+              </label>
+              <Input
+                id="name"
+                name="name"
+                autoComplete="name"
+                placeholder="Ditt navn"
+                value={values.name}
+                onChange={handleChange('name')}
+                onBlur={handleBlur('name')}
+                invalid={!!errors.name}
+                valid={validFields.name}
+                disabled={loading}
+                aria-describedby={errors.name ? 'name-error' : undefined}
+              />
+              {errors.name && <FieldError id="name-error">{errors.name}</FieldError>}
+            </div>
 
-          <div className="flex w-full flex-col gap-2">
-            <label htmlFor="email" className="font-body text-white">
-              E-post
-            </label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              placeholder="deg@epost.no"
-              value={values.email}
-              onChange={handleChange('email')}
-              onBlur={handleBlur('email')}
-              invalid={!!errors.email}
-              valid={validFields.email}
-              disabled={loading}
-              aria-describedby={errors.email ? 'email-error' : undefined}
-            />
-            {errors.email && <FieldError id="email-error">{errors.email}</FieldError>}
-          </div>
+            <div className="flex w-full flex-col gap-2">
+              <label htmlFor="email" className="font-body text-white">
+                E-post
+              </label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                placeholder="deg@epost.no"
+                value={values.email}
+                onChange={handleChange('email')}
+                onBlur={handleBlur('email')}
+                invalid={!!errors.email}
+                valid={validFields.email}
+                disabled={loading}
+                aria-describedby={errors.email ? 'email-error' : undefined}
+              />
+              {errors.email && <FieldError id="email-error">{errors.email}</FieldError>}
+            </div>
 
-          <div className="flex w-full flex-col gap-2">
-            <label htmlFor="message" className="font-body text-white">
-              Melding
-            </label>
-            <Textarea
-              id="message"
-              name="message"
-              placeholder="Skriv din melding her..."
-              value={values.message}
-              onChange={handleChange('message')}
-              onBlur={handleBlur('message')}
-              invalid={!!errors.message}
-              valid={validFields.message}
-              disabled={loading}
-              aria-describedby={errors.message ? 'message-error' : undefined}
-            />
-            {errors.message && <FieldError id="message-error">{errors.message}</FieldError>}
-          </div>
+            <div className="flex w-full flex-col gap-2">
+              <label htmlFor="message" className="font-body text-white">
+                Melding
+              </label>
+              <Textarea
+                id="message"
+                name="message"
+                placeholder="Skriv din melding her..."
+                value={values.message}
+                onChange={handleChange('message')}
+                onBlur={handleBlur('message')}
+                invalid={!!errors.message}
+                valid={validFields.message}
+                disabled={loading}
+                aria-describedby={errors.message ? 'message-error' : undefined}
+              />
+              {errors.message && <FieldError id="message-error">{errors.message}</FieldError>}
+            </div>
 
-          {apiError && <Alert>{apiError}</Alert>}
-          {success && <Alert tone="success">{SUCCESS_MESSAGE}</Alert>}
+            {apiError && <Alert>{apiError}</Alert>}
+            {success && <Alert tone="success">{SUCCESS_MESSAGE}</Alert>}
 
-          {/* `variant="disabled"` is cosmetic only — `Buttons.tsx` still needs the `disabled`
-              attribute below to actually stop the submit, but without the variant the button
-              stayed orange and looked live while every click did nothing. `isValid` covers
-              both: it never goes false while `loading` (the values it was computed from are
-              already known-valid at that point), so the button never flips grey mid-submit. */}
-          <Button
-            type="submit"
-            variant={isValid ? 'primary' : 'disabled'}
-            size="md"
-            icon="right"
-            loading={loading}
-            disabled={!isValid}
-          >
-            Send melding
-          </Button>
+            {/* `variant="disabled"` is cosmetic only — `Buttons.tsx` still needs the `disabled`
+                attribute below to actually stop the submit, but without the variant the button
+                stayed orange and looked live while every click did nothing. `isValid` covers
+                both: it never goes false while `loading` (the values it was computed from are
+                already known-valid at that point), so the button never flips grey mid-submit. */}
+            <Button
+              type="submit"
+              variant={isValid ? 'primary' : 'disabled'}
+              size="md"
+              icon="right"
+              loading={loading}
+              disabled={!isValid}
+            >
+              Send melding
+            </Button>
 
-          <p className="font-body text-sm text-white/80">
-            Meldingen din lagres slik at klubben kan svare deg.
-          </p>
-        </form>
+            <p className="font-body text-sm text-white/80">
+              Meldingen din lagres slik at klubben kan svare deg.
+            </p>
+          </form>
+        )}
       </div>
     </div>
   );

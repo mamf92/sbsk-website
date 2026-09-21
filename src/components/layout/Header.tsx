@@ -6,6 +6,7 @@ import { navLinkClasses } from '../ui/Link';
 import { useTheme } from '../../hooks/theme/ThemeContext';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../hooks/authContext/authContext';
+import { useGoHome } from '../../hooks/useGoHome';
 import { memberPortalEnabled } from '../../utils/featureFlags';
 
 const desktopNavLink = `${navLinkClasses} text-sm`;
@@ -25,6 +26,7 @@ const mobileNavLink =
 export default function Header() {
   const { isDarkMode, toggleDarkMode } = useTheme();
   const navigate = useNavigate();
+  const { goHome, handleHomeLinkClick } = useGoHome();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -69,12 +71,14 @@ export default function Header() {
   return (
     <header className="bg-darkblue surface-dark font-heading relative z-1100 w-full text-white">
       <div className="max-w-shell mx-auto flex items-center justify-between gap-5 px-6 py-3.5">
-        {/* Logo group — dice + wordmark, both navigate home */}
+        {/* Logo group — dice + wordmark, both navigate home. Clicking either while already on
+            home scrolls back to the top instead of re-navigating; see `useGoHome`. */}
         <div className="flex items-center gap-2.5">
-          <DiceLogo size={40} onClick={() => navigate('/')} />
+          <DiceLogo size={40} onClick={goHome} />
           <NavLink
             to="/"
             end
+            onClick={handleHomeLinkClick}
             className="font-heading tracking-heading focus-visible:outline-focus-ring text-h4 font-bold text-white no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           >
             SBSK

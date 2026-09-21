@@ -34,9 +34,9 @@ describe('ContactSection', () => {
     render(<ContactSection />);
 
     expect(screen.getByRole('heading', { level: 1, name: 'Kontakt oss!' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'hei@sbsk.no' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'sbsklubb@hotmail.com' })).toHaveAttribute(
       'href',
-      'mailto:hei@sbsk.no',
+      'mailto:sbsklubb@hotmail.com',
     );
     expect(screen.getByRole('link', { name: 'Facebook-gruppa vår' })).toHaveAttribute(
       'href',
@@ -230,5 +230,45 @@ describe('ContactSection', () => {
     // The form resets to empty on success, so Send goes back to disabled — now because
     // there is nothing valid to send, not because a request is in flight.
     expect(fields().submit).toBeDisabled();
+  });
+});
+
+/**
+ * The state the site actually ships (#254). `vitest.config.ts` turns the flag on for every
+ * other test in this file so the form stays covered; this block is the other half — that with
+ * it off, the page is an intentional "email us" page and not a page with a hole in it.
+ *
+ * The flag is a module-level constant read at import time, so the mock has to be in place
+ * before the component module is loaded — hence the dynamic import rather than the static one
+ * at the top of the file.
+ */
+describe('ContactSection — form gated off', () => {
+  it('shows the club address and no form at all', async () => {
+    vi.resetModules();
+    vi.doMock('../../utils/featureFlags', () => ({
+      memberPortalEnabled: false,
+      contactFormEnabled: false,
+    }));
+
+    const { default: GatedContactSection } = await import('./ContactSection');
+    render(<GatedContactSection />);
+
+    expect(screen.getByRole('heading', { level: 1, name: 'Kontakt oss!' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'sbsklubb@hotmail.com' })).toHaveAttribute(
+      'href',
+      'mailto:sbsklubb@hotmail.com',
+    );
+    expect(screen.getByRole('link', { name: 'Facebook-gruppa vår' })).toBeInTheDocument();
+
+    // No form, and so no way for a visitor to type something that reaches nobody.
+    expect(document.querySelector('form')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Send melding' })).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('Ditt navn')).not.toBeInTheDocument();
+
+    // The intro reads as a destination rather than an afterthought to a missing form.
+    expect(screen.getByText(/Send oss en e-post på/)).toBeInTheDocument();
+
+    vi.doUnmock('../../utils/featureFlags');
+    vi.resetModules();
   });
 });

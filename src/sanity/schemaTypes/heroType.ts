@@ -1,4 +1,5 @@
 import { defineField, defineType } from 'sanity';
+import { heroLinksField } from './heroLinksField';
 
 export const homeHeroType = defineType({
   name: 'homeHero',
@@ -45,25 +46,7 @@ export const homeHeroType = defineType({
         },
       ],
     }),
-    defineField({
-      title: 'Lenker',
-      name: 'links',
-      type: 'array',
-      description: 'Lenker som vises i hero-seksjonen som knapper. Valgfritt.',
-      of: [
-        {
-          type: 'object',
-          fields: [
-            defineField({
-              name: 'label',
-              type: 'string',
-              description: 'Tekst som vises på knappen.',
-            }),
-            defineField({ name: 'url', type: 'url', description: 'URL for lenken.' }),
-          ],
-        },
-      ],
-    }),
+    heroLinksField,
     defineField({
       title: 'Sponsorer',
       name: 'sponsors',
