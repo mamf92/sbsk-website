@@ -10,6 +10,10 @@ assignees: ''
 
 What is not working and how/when does it happen?
 
+## Acceptance criteria
+
+- [ ] What must be true for this to count as fixed?
+
 <!-- AI triage — not a section for humans to fill in. Priority, difficulty and Vibe Code fit
      are GitHub labels, applied during triage, not text written into the body:
        Priority: priority:p0 blocker/security · priority:p1 high · priority:p2 medium ·

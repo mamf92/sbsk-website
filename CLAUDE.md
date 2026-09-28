@@ -105,3 +105,7 @@ edits: the schema type, a query helper in `src/sanity/queryHelpers/`, and the lo
   package being hoisted into `node_modules`.
 - Branch per change, PR into `main` using `.github/pull_request_template.md`. Merging to `main`
   deploys, so never push there directly.
+- Issues must match what merged. Before starting an issue, check a merged PR hasn't already
+  delivered it (close it with the evidence if so). In a PR, `Closes #n` only when the issue is
+  done, a follow-up issue for what is left, `Refs #n` for groundwork, never "Addresses". Full
+  rule: "Issue bookkeeping" in `.claude/skills/steward/SKILL.md`.

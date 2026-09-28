@@ -25,12 +25,56 @@ Whether it merges or closes, call `mcp__Claude_Code_Remote__unsubscribe_pr_activ
 once you're done — the subscription from opening the PR does not clean itself up, and a stale
 watch on a closed PR is just noise.
 
+## Issue bookkeeping
+
+Issues are the backlog the next session plans from, so a PR is not finished until the issues it
+touches say what actually merged. Drift has happened here before: #230 fully delivered #82,
+#168 and #169 but said "Addresses", and all three stayed open for weeks.
+
+An issue is **done** when the PR that delivers it merges into the default branch — or into
+`main`, for a hotfix. That is the moment to close it, whichever branch deploys afterwards.
+
+**Before starting work on an issue**, check it is still open and not already delivered:
+`search_pull_requests` for `#<n>` among merged PRs, and read the code the acceptance criteria
+name. If it is already done, close it (`state_reason: completed`) with a comment naming the PR,
+commit or file/line that delivered it, instead of redoing the work.
+
+**When opening the PR** — and again before merging if the diff has changed since — read each
+issue's acceptance criteria against the diff and tick the boxes the PR satisfies by editing the
+issue body. A bug issue without a checklist is judged on its Description: is the described
+behaviour gone? Then decide per issue, and do the issue-side step _now_, not after merge — a
+maintainer may be the one who merges:
+
+| What the PR delivers                        | In the PR body | On the issue, before merge                                                                                                                                 |
+| ------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Every criterion                             | `Closes #<n>`  | Nothing more                                                                                                                                               |
+| The core outcome, but some criteria are not | `Closes #<n>`  | Open a follow-up issue holding only the unmet criteria, linking back; attach it to the same parent epic if there is one; comment on the original naming it |
+| Groundwork only — the outcome isn't there   | `Refs #<n>`    | Comment saying what landed and what is left; it stays open                                                                                                 |
+
+Only `Closes`, `Fixes` or `Resolves` claim an issue. Never write "Addresses", "Part of" or
+"Fixes part of" — they close nothing and say nothing about what is left. Anything unrelated
+found mid-task gets its own new issue, listed under **Follow-ups** in the PR body.
+
+**After merging**, re-read only the issues the PR _claims_ with `Closes`/`Fixes`/`Resolves`.
+Leave `Refs` issues, follow-ups and anything merely mentioned in the prose alone — those are
+meant to stay open. A claimed issue that is still open (the keyword doesn't fire on a
+non-default base, such as a hotfix into `main`, or the parser missed it) gets closed by you
+with `state_reason: completed` and a comment linking the PR. If a maintainer merged a PR you
+opened, run this step at your next check-in or wake on it.
+
+**Whenever you close an issue**, by any of the paths above or by keyword, check its parent. If
+that was the parent's last open sub-issue, tick the parent's checklist and close it too.
+
+Every issue write carries evidence: a PR, commit or file/line. Do not close an issue on the
+strength of a PR title alone.
+
 ## Security-sensitive changes need a human, not just self-review
 
 The self-review pass below is you, the same agent, checking your own diff — it shares whatever
 blind spot produced the diff, and CI does not exercise real Supabase RLS policies or auth
-behavior. If a PR touches `src/supabase/`, an RLS policy, an auth guard/loader, or anything
-under the member or board portal, do not self-merge on green CI alone: leave the PR for the
+behavior. If a PR touches `src/supabase/`, an RLS policy, an auth guard/loader, anything
+under the member or board portal, or the agents' own rules — the `permissions` block of
+`.claude/settings.json`, `.claude/skills/`, `.claude/hooks/` — do not self-merge on green CI alone: leave the PR for the
 maintainer's explicit review, or at minimum flag the specific security-relevant lines in a PR
 comment and wait for a human response before merging, even though the ruleset does not require
 it.
@@ -69,5 +113,6 @@ not, it needs an actual dependency bump or a newly documented exception — not 
 ## After merging
 
 Merging to `main` deploys to GitHub Pages immediately via the `deploy` job in `ci.yml` — there
-is no separate deploy approval step to wait for. Once the merge call succeeds, note it in your
-reply; there is nothing further to do.
+is no separate deploy approval step to wait for. Once the merge call succeeds, run the
+after-merge step of **Issue bookkeeping** above, then note the merge and any issues you closed
+or opened in your reply.
