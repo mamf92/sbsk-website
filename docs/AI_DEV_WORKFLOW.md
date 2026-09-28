@@ -25,22 +25,25 @@ discarded. Keep them. They are the handoff protocol, not bureaucracy.
 
 1. **You (PO)** open an issue describing the outcome. Use the templates in
    `.github/ISSUE_TEMPLATE/`. Focus on intent and acceptance criteria, not implementation.
-2. **Agent** picks it up: branches, implements, runs the full gate, opens a PR that says
-   `Closes #<n>`, and subscribes to that PR's GitHub activity.
+2. **Agent** picks it up: checks it isn't already delivered, branches, implements, runs the
+   full gate, and opens a PR that says `Closes #<n>` (or `Refs #<n>` for groundwork only). In
+   the same step it ticks the acceptance criteria the diff meets and moves any it doesn't
+   into a follow-up issue — see "Keeping issues honest" below. Then it subscribes to the
+   PR's GitHub activity.
 3. **CI** runs lint, typecheck, unit tests, build and the Playwright smoke suite.
 4. **Agent** runs an automated review pass over its own diff (`/code-review high`) and fixes
    what it finds, then watches CI on the subscription — no re-invocation needed.
-5. **Agent** merges once every required check is green and the review pass is resolved, then
-   unsubscribes from the PR's activity. See `.claude/skills/steward/SKILL.md` for the exact
-   merge conventions. Merging to `main` deploys to GitHub Pages automatically.
-6. **Agent** brings the issues up to date: ticks the acceptance criteria the PR met, closes what
-   is done, and moves anything left into a follow-up issue. See "Keeping issues honest" below.
+5. **Agent** merges once every required check is green and the review pass is resolved, closes
+   any claimed issue the merge left open, then unsubscribes from the PR's activity. See
+   `.claude/skills/steward/SKILL.md` for the exact merge conventions. Merging to `main`
+   deploys to GitHub Pages automatically.
 
 You stay in step 1: writing the issue. Spot-check merged PRs and their diffs afterward rather
 than gating each one — the branch ruleset requires zero approvals on purpose, so a session can
 carry a PR all the way to `main` unattended. Steps 2 through 5 should need nothing from you,
-**except** a PR touching Supabase, RLS, auth, or the member/board portal: the steward skill
-holds those for your explicit review rather than self-merging on green CI.
+**except** a PR touching Supabase, RLS, auth, the member/board portal, or the agents' own
+permissions, skills and hooks under `.claude/`: the steward skill holds those for your
+explicit review rather than self-merging on green CI.
 
 This works the same whether the session runs on claude.ai/code or as `claude` in a local
 checkout — both read the same `.claude/settings.json` and `.claude/skills/steward/`. A local
@@ -57,13 +60,14 @@ So an agent treats issue state as part of finishing a PR, not an afterthought:
 
 - **Before starting**, it checks the issue isn't already delivered, and closes it with the
   evidence if it is.
-- **Before merging**, it ticks the acceptance criteria the diff meets. All met → `Closes #n`.
-  Core outcome met, some criteria not → `Closes #n` plus a new follow-up issue holding only
-  what's left. Groundwork only → `Refs #n`, and the issue stays open with a progress comment.
-- **After merging**, it re-reads each linked issue and closes any still open. Closing keywords
-  only fire on PRs into the default branch, so this step is what keeps issues right on any
-  other base.
-- **Epics** close when their last sub-issue does.
+- **When opening the PR**, it ticks the acceptance criteria the diff meets. All met →
+  `Closes #n`. Core outcome met, some criteria not → `Closes #n` plus a new follow-up issue
+  holding only what's left. Groundwork only → `Refs #n`, and the issue stays open with a
+  progress comment. This happens before merge, so it holds even when you merge by hand.
+- **After merging**, it closes any issue the PR claimed with `Closes` that is still open.
+  Closing keywords only fire on PRs into the default branch, so this matters for hotfixes and
+  any other non-default base. `Refs` issues and follow-ups are left open on purpose.
+- **Epics** close when their last sub-issue does, however that sub-issue got closed.
 
 The exact rules live in `.claude/skills/steward/SKILL.md` under "Issue bookkeeping".
 
