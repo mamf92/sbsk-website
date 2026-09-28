@@ -25,6 +25,39 @@ Whether it merges or closes, call `mcp__Claude_Code_Remote__unsubscribe_pr_activ
 once you're done — the subscription from opening the PR does not clean itself up, and a stale
 watch on a closed PR is just noise.
 
+## Issue bookkeeping
+
+Issues are the backlog the next session plans from, so a PR is not finished until the issues it
+touches say what actually shipped. Drift has happened here before: #230 fully delivered #82,
+#168 and #169 but said "Addresses", and all three stayed open for weeks.
+
+**Before starting work on an issue**, check it is still open and not already delivered —
+search merged PRs for `#<n>`, and read the code the acceptance criteria name. If it is already
+done, close it (`state_reason: completed`) with a comment naming the PR, commit or file/line
+that delivered it, instead of redoing the work.
+
+**Before merging**, read each linked issue's acceptance criteria against the diff, and tick the
+boxes the PR satisfies by editing the issue body. Then decide per issue:
+
+| What the PR delivers                        | In the PR body | On the issue                                                                                                                                                          |
+| ------------------------------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Every criterion                             | `Closes #<n>`  | Nothing more — the keyword closes it                                                                                                                                  |
+| The core outcome, but some criteria are not | `Closes #<n>`  | Open a follow-up issue holding only the unmet criteria, linking back; attach it to the same parent epic if there is one; comment on the original naming the follow-up |
+| Groundwork only — the outcome isn't there   | `Refs #<n>`    | Leave it open, with a comment saying what landed and what is left                                                                                                     |
+
+Never write "Addresses", "Part of" or "Fixes part of" — they close nothing and say nothing
+about what is left. Anything unrelated found mid-task gets its own new issue, listed under
+**Follow-ups** in the PR body.
+
+**After merging**, re-read every issue the PR names. Closing keywords only fire on PRs into
+the repository's default branch, so any that are still open — a PR into a non-default branch,
+or a keyword the parser missed — close them yourself with `state_reason: completed` and a
+comment linking the PR. If the issue has a parent and that was its last open sub-issue, tick
+the parent's checklist and close it too.
+
+Every issue write carries evidence: a PR, commit or file/line. Do not close an issue on the
+strength of a PR title alone.
+
 ## Security-sensitive changes need a human, not just self-review
 
 The self-review pass below is you, the same agent, checking your own diff — it shares whatever
@@ -69,5 +102,6 @@ not, it needs an actual dependency bump or a newly documented exception — not 
 ## After merging
 
 Merging to `main` deploys to GitHub Pages immediately via the `deploy` job in `ci.yml` — there
-is no separate deploy approval step to wait for. Once the merge call succeeds, note it in your
-reply; there is nothing further to do.
+is no separate deploy approval step to wait for. Once the merge call succeeds, run the
+after-merge step of **Issue bookkeeping** above, then note the merge and any issues you closed
+or opened in your reply.

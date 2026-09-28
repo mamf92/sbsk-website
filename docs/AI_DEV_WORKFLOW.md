@@ -33,6 +33,8 @@ discarded. Keep them. They are the handoff protocol, not bureaucracy.
 5. **Agent** merges once every required check is green and the review pass is resolved, then
    unsubscribes from the PR's activity. See `.claude/skills/steward/SKILL.md` for the exact
    merge conventions. Merging to `main` deploys to GitHub Pages automatically.
+6. **Agent** brings the issues up to date: ticks the acceptance criteria the PR met, closes what
+   is done, and moves anything left into a follow-up issue. See "Keeping issues honest" below.
 
 You stay in step 1: writing the issue. Spot-check merged PRs and their diffs afterward rather
 than gating each one — the branch ruleset requires zero approvals on purpose, so a session can
@@ -44,6 +46,26 @@ This works the same whether the session runs on claude.ai/code or as `claude` in
 checkout — both read the same `.claude/settings.json` and `.claude/skills/steward/`. A local
 session additionally needs your own `git`/GitHub credentials to have push and merge rights on
 this repo, since it authenticates as you rather than through the workspace's GitHub App.
+
+## Keeping issues honest
+
+An issue that stays open after its work shipped is worse than no issue: the next session
+either redoes the work or has to rediscover that it is done. That has happened here — #230
+fully fixed #82, #168 and #169 but wrote "Addresses", and all three stayed open for weeks.
+
+So an agent treats issue state as part of finishing a PR, not an afterthought:
+
+- **Before starting**, it checks the issue isn't already delivered, and closes it with the
+  evidence if it is.
+- **Before merging**, it ticks the acceptance criteria the diff meets. All met → `Closes #n`.
+  Core outcome met, some criteria not → `Closes #n` plus a new follow-up issue holding only
+  what's left. Groundwork only → `Refs #n`, and the issue stays open with a progress comment.
+- **After merging**, it re-reads each linked issue and closes any still open. Closing keywords
+  only fire on PRs into the default branch, so this step is what keeps issues right on any
+  other base.
+- **Epics** close when their last sub-issue does.
+
+The exact rules live in `.claude/skills/steward/SKILL.md` under "Issue bookkeeping".
 
 ## Writing a good issue for an agent
 

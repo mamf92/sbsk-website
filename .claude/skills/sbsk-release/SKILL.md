@@ -71,10 +71,25 @@ Use `.github/pull_request_template.md`. It is short:
 Closes #<issue-number>
 
 What was changed and why?
+
+## Follow-ups
+
+- #<issue-number> — what was left out and why
 ```
 
 Fill in the real issue number so the issue closes on merge. Write the "what and why" as prose
 a reviewer can act on: what changed, why this approach, anything deliberately left out.
+
+Pick the keyword by what the PR actually delivers, not by what it touched:
+
+- `Closes #<n>` — every acceptance criterion is met, or the core outcome is and the rest has
+  been moved into a follow-up issue.
+- `Refs #<n>` — groundwork only; the issue stays open with a comment saying what is left.
+- Never "Addresses" or "Part of" — they close nothing and hide what is left.
+
+List any follow-up issue you opened under **Follow-ups**. The steward skill
+(`.claude/skills/steward/SKILL.md`, "Issue bookkeeping") holds the full rule, including
+ticking the issue's checkboxes and closing anything still open after merge.
 
 Open it as ready for review, not a draft. Do not merge it yourself — that decision is the
 maintainer's, because merging deploys.
