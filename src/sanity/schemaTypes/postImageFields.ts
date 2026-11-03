@@ -10,8 +10,8 @@ export const postImageFields = [
     name: 'alt',
     type: 'string',
     description:
-      'Beskriv hva bildet viser, for lesere som bruker skjermleser. Vises ikke på siden.',
-    validation: (rule) => rule.required(),
+      'Beskriv hva bildet viser, for lesere som bruker skjermleser. Vises ikke på siden. ' +
+      'Valgfritt, men anbefalt.',
   }),
   defineField({
     title: 'Bildetekst',
