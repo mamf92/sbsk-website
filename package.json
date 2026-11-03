@@ -62,7 +62,7 @@
     "adm-zip": "^0.6.0",
     "brace-expansion@1": "^1.1.18",
     "brace-expansion@5": "^5.0.9",
-    "dompurify": "^3.4.13",
+    "dompurify": "^3.4.17",
     "json-2-csv": "^5.5.11",
     "ws": "^8.21.2"
   },
