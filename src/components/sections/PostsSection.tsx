@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { toPlainText } from '@portabletext/react';
 import type { PortableTextBlock } from '@portabletext/types';
 import { Button } from '../ui/Buttons';
@@ -57,6 +57,16 @@ type SortOption = (typeof sortOptions)[number]['value'];
 /** Two rows of three on a wide screen. */
 const PAGE_SIZE = 6;
 
+function parseCategory(value: string | null): 'all' | PostCategory {
+  return CATEGORY_FILTERS.some((filter) => filter.value === value && value !== 'all')
+    ? (value as PostCategory)
+    : 'all';
+}
+
+function parseSort(value: string | null): SortOption {
+  return sortOptions.find((option) => option.value === value)?.value ?? 'date-desc';
+}
+
 export default function Posts({ postsHero, posts, failed = false }: PostsProps) {
   return (
     <section className="max-w-content content-gutter:px-0 mx-auto flex w-full flex-col gap-6 px-4 py-10">
@@ -79,10 +89,28 @@ function PostsHeading({ title, subtitle }: PostsHeroTypes = {}) {
 }
 
 function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [category, setCategory] = useState<'all' | PostCategory>('all');
-  const [sortBy, setSortBy] = useState<SortOption>('date-desc');
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  // The filters live in the URL, not in component state, so opening a post and pressing Back
+  // returns to the same search, category, sort and number of cards, and a filtered feed can be
+  // shared as a link. `replace` keeps typing from filling the history with one entry per key.
+  const [params, setParams] = useSearchParams();
+  const searchTerm = params.get('sok') ?? '';
+  const category = parseCategory(params.get('kategori'));
+  const sortBy = parseSort(params.get('sorter'));
+  const visibleCount = Math.max(PAGE_SIZE, Number(params.get('vis')) || PAGE_SIZE);
+
+  function update(changes: Record<string, string | null>) {
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        for (const [key, value] of Object.entries(changes)) {
+          if (value === null || value === '') next.delete(key);
+          else next.set(key, value);
+        }
+        return next;
+      },
+      { replace: true, preventScrollReset: true },
+    );
+  }
 
   if (posts.length === 0) {
     // "There are no posts" and "we could not reach Sanity" look identical from here, and only
@@ -127,10 +155,7 @@ function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) 
   const isFiltered = query !== '' || category !== 'all' || sortBy !== 'date-desc';
 
   function reset() {
-    setSearchTerm('');
-    setCategory('all');
-    setSortBy('date-desc');
-    setVisibleCount(PAGE_SIZE);
+    update({ sok: null, kategori: null, sorter: null, vis: null });
   }
 
   return (
@@ -141,10 +166,7 @@ function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) 
         aria-label="Søk etter innlegg"
         placeholder="Søk etter innlegg…"
         value={searchTerm}
-        onChange={(event) => {
-          setSearchTerm(event.target.value);
-          setVisibleCount(PAGE_SIZE);
-        }}
+        onChange={(event) => update({ sok: event.target.value, vis: null })}
       />
       <div className="flex w-full flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
@@ -152,10 +174,9 @@ function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) 
             <Chip
               key={filter.value}
               active={category === filter.value}
-              onClick={() => {
-                setCategory(filter.value);
-                setVisibleCount(PAGE_SIZE);
-              }}
+              onClick={() =>
+                update({ kategori: filter.value === 'all' ? null : filter.value, vis: null })
+              }
             >
               {filter.label}
             </Chip>
@@ -167,7 +188,7 @@ function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) 
           className="w-full sm:w-56"
           options={sortOptions}
           value={sortBy}
-          onChange={setSortBy}
+          onChange={(value) => update({ sorter: value === 'date-desc' ? null : value })}
         />
       </div>
 
@@ -209,7 +230,7 @@ function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) 
         <Button
           variant="secondary"
           className="self-center"
-          onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
+          onClick={() => update({ vis: String(visibleCount + PAGE_SIZE) })}
         >
           Vis flere innlegg
         </Button>

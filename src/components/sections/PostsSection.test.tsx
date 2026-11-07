@@ -142,4 +142,42 @@ describe('PostsSection', () => {
     renderList([]);
     expect(screen.getByRole('heading', { name: 'Ingen innlegg' })).toBeInTheDocument();
   });
+
+  it('reads its filters from the URL, so Back from a post returns to the same view', () => {
+    render(
+      <MemoryRouter initialEntries={['/?kategori=spillkveldrapporter&sok=midterste']}>
+        <Posts posts={posts} />
+      </MemoryRouter>,
+    );
+    expect(cardTitles()).toEqual(['Midterste innlegg']);
+    expect(screen.getByRole('searchbox')).toHaveValue('midterste');
+    expect(screen.getByRole('button', { name: 'Spillkveldrapporter' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+  });
+
+  it('keeps every card it had shown when the URL says so', () => {
+    const many = Array.from({ length: 8 }, (_, i) => ({
+      ...posts[0],
+      _id: `p${i}`,
+      title: `Innlegg ${i}`,
+    }));
+    render(
+      <MemoryRouter initialEntries={['/?vis=12']}>
+        <Posts posts={many} />
+      </MemoryRouter>,
+    );
+    expect(cardTitles()).toHaveLength(8);
+  });
+
+  it('ignores a category or sort in the URL that it does not know', () => {
+    render(
+      <MemoryRouter initialEntries={['/?kategori=tull&sorter=tull']}>
+        <Posts posts={posts} />
+      </MemoryRouter>,
+    );
+    expect(cardTitles()).toHaveLength(3);
+    expect(screen.getByRole('combobox')).toHaveValue('date-desc');
+  });
 });

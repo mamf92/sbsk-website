@@ -85,6 +85,21 @@ test('a post card opens the post on its own page', async ({ page }) => {
   expect(errors, `page threw: ${errors.join(', ')}`).toEqual([]);
 });
 
+test('Back from a post returns to the same filtered feed', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Nyheter' }).click();
+  await page.getByRole('link', { name: 'Høstprogrammet er klart' }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+
+  await page.goBack();
+
+  await expect(page.getByRole('button', { name: 'Nyheter' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await expect(page.getByRole('heading', { name: 'Fullt hus på siste spillkveld' })).toHaveCount(0);
+});
+
 test('a post id that does not resolve renders the 404 page inside the shell', async ({ page }) => {
   await page.goto('/innlegg/finnes-ikke');
   await expect(page.getByRole('heading', { name: 'Denne siden mangler i esken' })).toBeVisible();
