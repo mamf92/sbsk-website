@@ -1,17 +1,16 @@
 import { defineField } from 'sanity';
 
 // Shared by the inline `content` image and the `carousel` field on `postType.ts`, so the two
-// can't drift apart. `alignment` is deliberately not here — it only means something for an
-// image sitting inline in running text; a carousel image's layout is decided by the carousel
-// itself.
+// can't drift apart. Layout is never an editor choice: an inline image fills the text column,
+// and a carousel image's layout is decided by the carousel itself.
 export const postImageFields = [
   defineField({
     title: 'Alt-tekst',
     name: 'alt',
     type: 'string',
     description:
-      'Beskriv hva bildet viser, for lesere som bruker skjermleser. Vises ikke på siden. ' +
-      'Valgfritt, men anbefalt.',
+      'Beskriv hva bildet viser, for lesere som bruker skjermleser. Vises ikke på siden.',
+    validation: (rule) => rule.required().error('Skriv en alt-tekst som beskriver bildet.'),
   }),
   defineField({
     title: 'Bildetekst',

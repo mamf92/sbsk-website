@@ -125,38 +125,18 @@ export const postType = defineType({
             ],
           },
         },
-        // Drop a photo where it belongs in the text, then choose how it sits: beside the text
-        // (it floats, and the paragraph wraps around it — Sanity's own recommended shape for
-        // this, see the `alignment` field below) or alone at full width. Size and crop are still
-        // decided by the site, not the editor — the hotspot is the one framing choice an editor
-        // is actually equipped to make.
+        // Drop a photo where it belongs in the text. It always fills the text column: no
+        // floating beside the paragraph, so there is no layout choice for the editor to make and
+        // nothing for the text to squeeze around on a narrow screen. Size and crop are decided by
+        // the site; the hotspot is the one framing choice an editor is actually equipped to make.
         {
           name: 'image',
           title: 'Bilde',
           type: 'image',
           options: { hotspot: true },
           description:
-            'Bildet vises der du plasserer det i teksten. Dra i sirkelen under «Hotspot» for å peke ut det viktigste i bildet – da blir det med uansett hvordan bildet beskjæres.',
-          fields: [
-            ...postImageFields,
-            defineField({
-              title: 'Plassering',
-              name: 'alignment',
-              type: 'string',
-              description:
-                'Høyre/venstre: bildet flyter til siden og teksten renner rundt det, fra ' +
-                'nettbrettbredde og oppover. Full bredde: bildet står alene, uten tekst ved siden.',
-              options: {
-                list: [
-                  { title: 'Høyre', value: 'høyre' },
-                  { title: 'Venstre', value: 'venstre' },
-                  { title: 'Full bredde', value: 'full' },
-                ],
-                layout: 'radio',
-              },
-              initialValue: 'høyre',
-            }),
-          ],
+            'Bildet vises der du plasserer det i teksten, i full bredde. Dra i sirkelen under «Hotspot» for å peke ut det viktigste i bildet – da blir det med uansett hvordan bildet beskjæres.',
+          fields: postImageFields,
           preview: postImagePreview,
         },
       ],
