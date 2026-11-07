@@ -131,8 +131,7 @@ export const richTextBlock = {
             name: 'url',
             type: 'url',
             description: 'Hele adressen, f.eks. https://www.spond.com/…',
-            validation: (rule: Rule) =>
-              rule.required().uri({ scheme: ['http', 'https', 'mailto', 'tel'] }),
+            validation: (rule: Rule) => rule.required().uri({ scheme: ['http', 'https'] }),
           },
         ],
       },
