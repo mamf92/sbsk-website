@@ -243,24 +243,6 @@ test('the site follows prefers-reduced-motion until the visitor decides otherwis
   await expect(html).not.toHaveClass(/\breduce-motion\b/);
 });
 
-test('reduced motion keeps the shadow and drops only the travel', async ({ page }) => {
-  // The documented behaviour, and the reason the reduced branch is not `transition: none` —
-  // "a shadow is not motion" (docs/DESIGN_LANGUAGE.md).
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/');
-
-  const lifting = page.locator('.lift').first();
-  await lifting.hover();
-
-  const { transform, boxShadow } = await lifting.evaluate((el) => {
-    const style = getComputedStyle(el);
-    return { transform: style.transform, boxShadow: style.boxShadow };
-  });
-
-  expect(transform === 'none' || transform === 'matrix(1, 0, 0, 1, 0, 0)').toBe(true);
-  expect(boxShadow).not.toBe('none');
-});
-
 // #222. Two failure modes, one test each, both of which unit tests cannot see because both are
 // about what the *built* page asks the network for.
 

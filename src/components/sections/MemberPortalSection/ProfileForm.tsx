@@ -212,7 +212,7 @@ export default function ProfileForm({ profile, onSubmitProfile, onClose }: Profi
           <Button
             onClick={onClose}
             type="button"
-            variant="tertiary"
+            variant="secondary"
             size="md"
             className="border border-white/50"
           >

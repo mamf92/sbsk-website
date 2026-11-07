@@ -14,6 +14,8 @@ const SITE_ORIGIN = 'https://mamf92.github.io/sbsk-website';
 // basename double-applies it and the route fails to match, landing on the 404 page (#22).
 // Mirrors `ROUTER_BASE` in portableTextComponents.tsx, which strips the same prefix for
 // `<Link to>`.
+const SITE_PATH = new URL(SITE_ORIGIN).pathname.replace(/\/+$/, '');
+
 const ROUTER_BASE = (import.meta.env.VITE_BASE || '/').replace(/\/+$/, '');
 
 // A root-relative path counts too, now that hero links let an editor type `/kalender` rather
@@ -30,6 +32,13 @@ export function internalLinkPath(url: string): string {
   const path = new URL(url, window.location.href).pathname;
   if (ROUTER_BASE && path.startsWith(ROUTER_BASE)) {
     return path.slice(ROUTER_BASE.length) || '/';
+  }
+  // An absolute link to the live site, as editors paste it from the address bar, names a route
+  // under the live site's own path. On any other basename (the redesign preview at
+  // /sbsk-website/redesign/, or `/` locally) that path still has to lose the live prefix, or
+  // navigate() lands on "/sbsk-website/kalender" under the preview's basename and matches nothing.
+  if (url.startsWith(SITE_ORIGIN) && path.startsWith(SITE_PATH)) {
+    return path.slice(SITE_PATH.length) || '/';
   }
   return path;
 }

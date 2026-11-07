@@ -23,7 +23,7 @@ export default function PortalHeader({ boardmember }: { boardmember: Profile }) 
         </p>
       </div>
       <div className="flex w-full flex-col items-start gap-4">
-        <Button onClick={() => navigate('/studio')} variant="primary" size="lg" icon="right">
+        <Button onClick={() => navigate('/studio')} variant="primary" size="md" icon="right">
           Gå til innholdsredigering
         </Button>
       </div>

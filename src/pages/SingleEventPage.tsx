@@ -94,7 +94,7 @@ export default function SingleEventPage() {
                       logo
                     )}
                     {sponsor.ctaLabel && ctaTarget && (
-                      <Button variant="tertiary" size="xs" onClick={() => openExternal(ctaTarget)}>
+                      <Button variant="secondary" size="sm" onClick={() => openExternal(ctaTarget)}>
                         {sponsor.ctaLabel}
                       </Button>
                     )}
@@ -109,7 +109,7 @@ export default function SingleEventPage() {
           <div className="flex justify-center">
             <Button
               variant="primary"
-              size="lg"
+              size="md"
               icon="right"
               onClick={() => openExternal(signupUrl)}
             >

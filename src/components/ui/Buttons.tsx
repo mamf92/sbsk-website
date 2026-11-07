@@ -11,35 +11,52 @@ import AscIcon from '../../assets/icons/symbols/asc.svg?react';
 import DescIcon from '../../assets/icons/symbols/desc.svg?react';
 import Add from '../../assets/icons/symbols/add.svg?react';
 import Motion from '../../assets/icons/symbols/motion.svg?react';
-import { LoadingPips } from './LoadingIndicator';
 import { buttonClasses } from './buttonClasses';
 import type { ButtonSize, ButtonVariant } from './buttonClasses';
 
+const icons = {
+  left: arrowLeft,
+  right: arrowRight,
+  down: arrowDown,
+  expand: expand,
+  sun: sun,
+  moon: moon,
+  backspace: backspace,
+  block: block,
+  asc: AscIcon,
+  desc: DescIcon,
+  add: Add,
+  motion: Motion,
+} as const;
+
+export type ButtonIcon = keyof typeof icons | 'none';
+
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  /**
-   * A request is in flight. The button disables itself and swaps its icon for the stepping
-   * pips, keeping the label — and so the width — exactly where it was. Swapping the *label*
-   * instead is what `LoginSection` and `RegisterSection` used to do, and because the button
-   * stayed live while it said "Logging in...", submitting a registration twice was reachable.
-   */
-  loading?: boolean;
   variant?: ButtonVariant;
   size?: ButtonSize;
-  icon?:
-    | 'left'
-    | 'right'
-    | 'down'
-    | 'expand'
-    | 'sun'
-    | 'moon'
-    | 'backspace'
-    | 'block'
-    | 'asc'
-    | 'desc'
-    | 'add'
-    | 'motion'
-    | 'none';
+  /** An icon from the shared set. `left` sits before the label; every other icon after it. */
+  icon?: ButtonIcon;
+  /**
+   * A request is in flight: the button disables itself, announces `aria-busy`, and shows a
+   * spinner in the icon slot. The label stays, so the button keeps its width and its name.
+   */
+  loading?: boolean;
 };
+
+/** The small ring shown while a button is busy. Decorative: `aria-busy` carries the state. */
+export function Spinner({ className = '' }: { className?: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      data-testid="button-spinner"
+      className={[
+        'inline-block size-4 shrink-0 animate-spin rounded-full border-2 border-current',
+        'border-r-transparent motion-reduce:[animation-duration:2.4s]',
+        className,
+      ].join(' ')}
+    />
+  );
+}
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
@@ -49,56 +66,30 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       size = 'md',
       icon = 'none',
       loading = false,
-      children,
       disabled,
+      children,
       ...props
     },
     ref,
   ) => {
-    const symbolIcon = {
-      left: arrowLeft,
-      right: arrowRight,
-      down: arrowDown,
-      expand: expand,
-      sun: sun,
-      moon: moon,
-      backspace: backspace,
-      block: block,
-      asc: AscIcon,
-      desc: DescIcon,
-      add: Add,
-      motion: Motion,
-      none: null,
-    };
-
-    const Icon = symbolIcon[icon];
-    // The pips take the icon's slot on whichever side the icon was going to be, so the button
-    // keeps its layout and its width. `lift` already neutralises `:disabled`, so nothing moves.
+    const Icon = icon === 'none' ? null : icons[icon];
     const affordance = loading ? (
-      <LoadingPips size={size === 'xs' || size === 'sm' ? 'sm' : 'md'} />
+      <Spinner />
+    ) : Icon ? (
+      <Icon aria-hidden="true" className="size-4 shrink-0 fill-current" />
     ) : null;
 
     return (
       <button
         ref={ref}
-        disabled={disabled || loading || variant === 'disabled'}
+        disabled={disabled || loading}
         aria-busy={loading || undefined}
-        className={buttonClasses({
-          variant,
-          size,
-          className: [loading ? 'cursor-wait' : '', className].filter(Boolean).join(' '),
-        })}
+        className={buttonClasses({ variant, size, className })}
         {...props}
       >
-        {icon === 'left'
-          ? (affordance ??
-            (Icon ? <Icon className="h-3 min-h-3 w-3 min-w-3 fill-current" /> : null))
-          : null}
+        {icon === 'left' ? affordance : null}
         {children}
-        {icon !== 'left'
-          ? (affordance ??
-            (Icon ? <Icon className="h-3 min-h-3 w-3 min-w-3 fill-current" /> : null))
-          : null}
+        {icon !== 'left' ? affordance : null}
       </button>
     );
   },
