@@ -44,10 +44,13 @@ live in the `@theme` block of `src/index.css`: colours (`bg-darkblue`, `text-ora
 
 Add a new token to `@theme` rather than hardcoding a hex value in a class.
 
-Motion tokens live there too (`--duration-base`, `--transition-snappy`, `--shadow-1`/`-2`,
-`--lift-hover`, `--lift-press`). Do not assemble them by hand — apply the `lift` utility,
-which owns the brand's hover/press micro-interaction. An element takes `lift` _instead of_
-`transition-colors`/`transition`, never both. See `docs/DESIGN_LANGUAGE.md`.
+**Redesign 2026 (the `redesign` branch):** rebuilt components style themselves from the semantic
+roles (`bg-page`, `bg-surface`, `bg-surface-muted`, `text-fg`, `text-fg-muted`, `text-heading`,
+`text-link`, `border-border`, `bg-primary`, `outline-focus`, `shadow-card`, …), not the flat brand
+names. Square corners, soft `shadow-card` on cards only, hover is colour only, and there is no
+`lift`. A subtree on a permanently dark fill (header, footer) takes the `on-dark` utility. See
+`docs/DESIGN_LANGUAGE.md`. The old `lift*`, `surface-*` and hard-shadow tokens remain only until
+their last consumer is rebuilt.
 
 Dark mode is class-based via a custom variant: `@custom-variant dark (&:where(.dark, .dark *))`.
 The `dark` class goes on `<html>`; `src/utils/theme.ts` owns reading, applying and persisting it.
@@ -56,8 +59,8 @@ Style dark states with `dark:` and never toggle the class outside `theme.ts`.
 ## Components
 
 Use `Button` from `src/components/ui/Buttons.tsx` rather than a raw `<button>`. It takes
-`variant` (`primary` | `secondary` | `tertiary` | `toggle` | `disabled`), `size`
-(`xs` | `sm` | `md` | `lg`) and `icon` — pass an existing icon key (`'right'`, `'moon'`, …)
+`variant` (`primary` | `secondary` | `ghost` | `danger`), `size` (`md` | `sm`), `loading`
+and `icon` — pass an existing icon key (`'right'`, `'moon'`, …)
 instead of adding a new prop or an inline `<svg>`. To add an icon, drop the SVG in
 `src/assets/icons/` and extend the icon map.
 

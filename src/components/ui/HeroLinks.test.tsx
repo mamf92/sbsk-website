@@ -127,7 +127,7 @@ describe('HeroLinks', () => {
     renderLinks([{ label: 'Outland', url: 'https://www.outland.no/' }]);
     // The bug `buttonClasses` exists to prevent: hand-rebuilt anchors that drop the focus ring.
     expect(screen.getByRole('link', { name: /Outland/ }).className).toContain(
-      'focus-visible:outline-focus-ring',
+      'focus-visible:outline-focus',
     );
   });
 });

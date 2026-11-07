@@ -57,7 +57,7 @@ export function HeroLinks({
             key={index}
             onClick={() => navigate(internalLinkPath(link.url))}
             variant="primary"
-            size="lg"
+            size="md"
             icon="right"
             className="flex-none"
           >
@@ -70,7 +70,7 @@ export function HeroLinks({
             // A new tab is right for another website and wrong for `mailto:`/`tel:`, which the
             // schema also allows: the handler opens elsewhere and the blank tab is left behind.
             {...(isWebUrl(link.url) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-            className={buttonClasses({ variant: 'primary', size: 'lg', className: 'flex-none' })}
+            className={buttonClasses({ variant: 'primary', size: 'md', className: 'flex-none' })}
           >
             {link.label}
             <ArrowRight aria-hidden="true" className="h-3 min-h-3 w-3 min-w-3 fill-current" />

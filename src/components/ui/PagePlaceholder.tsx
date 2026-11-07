@@ -80,7 +80,7 @@ export function PagePlaceholder({
               key={action.to}
               onClick={() => navigate(action.to)}
               variant="primary"
-              size="lg"
+              size="md"
               icon="right"
             >
               {action.label}

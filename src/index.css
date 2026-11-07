@@ -117,14 +117,15 @@
   --font-heading: 'Noto Sans', sans-serif;
   --font-body: 'Open Sans', sans-serif;
 
-  --text-h1: 2rem;
+  /* Redesign 2026 scale: a clearer step between levels (36/28/22/18). */
+  --text-h1: 2.25rem;
   --text-h1--line-height: 2.75rem;
   --text-h2: 1.75rem;
-  --text-h2--line-height: 2.375rem;
-  --text-h3: 1.25rem;
-  --text-h3--line-height: 1.6875rem;
-  --text-h4: 1rem;
-  --text-h4--line-height: 1.375rem;
+  --text-h2--line-height: 2.25rem;
+  --text-h3: 1.375rem;
+  --text-h3--line-height: 1.875rem;
+  --text-h4: 1.125rem;
+  --text-h4--line-height: 1.625rem;
 
   /* A statement heading on a page that is nothing but the statement — the 404 today, and the
      only fluid step in the system. #144 deliberately did not add a display step to the heading
@@ -147,7 +148,8 @@
   --text-daymark: 4.125rem;
   --text-daymark--line-height: 0.78;
 
-  --tracking-heading: 0.05em;
+  /* Redesign 2026: headings no longer letter-space. */
+  --tracking-heading: 0;
 
   /* ---------------------------------------------------------------------
      Layout. Three container widths, and the only three a page section should
@@ -258,12 +260,108 @@
      touching the screen edge at precisely the width #184 named as a checkpoint. This variant
      only kicks in once the viewport is genuinely wider than the container, never equal to it. */
   --breakpoint-content-gutter: 64.0625rem; /* 1025 */
+
+  /* =====================================================================
+     Redesign 2026 — semantic tokens. See docs/DESIGN_LANGUAGE.md.
+
+     Every new and rebuilt component styles itself from these roles, never from the flat brand
+     names above. Each role is defined here with its light value and redefined in the `.dark`
+     block below, so a component writes `bg-surface text-fg` once and both themes follow. The
+     flat names and the motion/hard-shadow tokens above stay only until their last consumer is
+     rebuilt, then go.
+     ===================================================================== */
+
+  /* Surfaces */
+  --color-page: #ffffff;
+  --color-surface: #ffffff;
+  /* Field fill, tag and alert tints, skeleton blocks, hover wash on ghost buttons. */
+  --color-surface-muted: #eef2f7;
+  --color-header: #002f5f;
+  --color-footer: #031f3b;
+
+  /* Text. All pairs below hold 4.5:1 on page, surface and surface-muted in their theme. */
+  --color-fg: #10233a;
+  --color-fg-muted: #5b6676; /* 5.18:1 on surface-muted */
+  --color-heading: #002f5f;
+  --color-link: #1f4e85; /* 8.44:1 on white */
+  --color-link-hover: #002f5f;
+
+  /* Lines. `border` separates surfaces; `border-strong` is a control's own edge (a field's
+     underline) and must clear WCAG 1.4.11's 3:1 against the fill it sits on. */
+  --color-border: #d8dde4;
+  --color-border-strong: #6b7686; /* 4.10:1 on surface-muted, 4.60:1 on white */
+
+  /* Actions. Orange is the *one* main action on a screen; everything else is navy or quieter. */
+  --color-primary: #f29d35;
+  --color-primary-hover: #e08a22;
+  --color-on-primary: #10233a; /* 7.29:1 on primary, 5.91:1 on primary-hover */
+  --color-secondary: #002f5f;
+  --color-on-secondary: #ffffff;
+  --color-danger: #b5251f;
+  --color-danger-hover: #8f1c17;
+  --color-on-danger: #ffffff;
+
+  /* Status. `*-text` is for words on the page; `*-bg` is an alert's tinted fill. */
+  --color-danger-text: #b5251f;
+  --color-success-text: #007124;
+  --color-info-bg: #e6edf5;
+  --color-success-bg: #e3f2e8;
+  --color-danger-bg: #fbe7e6;
+
+  /* Category tags — small tinted labels, never full card fills. */
+  --color-tag-blue-bg: #e6edf5;
+  --color-tag-blue-fg: #002f5f;
+  --color-tag-orange-bg: #fdf0de;
+  --color-tag-orange-fg: #7a4300;
+
+  /* Focus. Navy on the light theme (orange measures 2.18:1 on white, under 1.4.11's 3:1),
+     orange on the dark theme (7.73:1 on the dark page). Always an outline with a 2px offset,
+     so it reads on every fill including the orange button. */
+  --color-focus: #002f5f;
+
+  /* Depth. Soft and quiet, cards only; dialogs take `overlay`. Colours stay behind a var so
+     Tailwind keeps them live instead of inlining one theme's value at build time. */
+  --shadow-card: var(--sbsk-shadow-card);
+  --shadow-overlay-soft: var(--sbsk-shadow-overlay);
+}
+
+:root {
+  --sbsk-shadow-card: 0 1px 2px rgb(3 31 59 / 0.1), 0 2px 8px rgb(3 31 59 / 0.06);
+  --sbsk-shadow-overlay: 0 12px 32px -8px rgb(3 31 59 / 0.35);
 }
 
 /* Theme-dependent token values. Unlayered, so these beat the `:root` values
    Tailwind emits for `@theme` into the theme layer. `src/utils/theme.ts` owns
    putting `.dark` on <html>; nothing else should touch it. */
 .dark {
+  /* Redesign 2026 semantic roles — dark values. */
+  --color-page: #0b1e33;
+  --color-surface: #132a45;
+  --color-surface-muted: #1a3352;
+  --color-header: #031f3b;
+  --color-footer: #031f3b;
+  --color-fg: #e8eef5;
+  --color-fg-muted: #a3b1c2;
+  --color-heading: #e8eef5;
+  --color-link: #7fb0e6;
+  --color-link-hover: #cfe0f3;
+  --color-border: #24405f;
+  --color-border-strong: #7f95b2;
+  --color-secondary: #e8eef5;
+  --color-on-secondary: #0b1e33;
+  --color-danger-text: #ff8a80;
+  --color-success-text: #7fd6a0;
+  --color-info-bg: #1d3a5c;
+  --color-success-bg: #123824;
+  --color-danger-bg: #4a1714;
+  --color-tag-blue-bg: #1d3a5c;
+  --color-tag-blue-fg: #cfe0f3;
+  --color-tag-orange-bg: #5c3a14;
+  --color-tag-orange-fg: #fde3c2;
+  --color-focus: #f29d35;
+  --sbsk-shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 2px 8px rgb(0 0 0 / 0.3);
+  --sbsk-shadow-overlay: 0 12px 32px -8px rgb(0 0 0 / 0.6);
+
   /* White, not brand black. `--color-black` was here so shadows would show against a dark
      page and it never worked: brand black is #0d0d0d, the dark page is `darkestblue` #031f3b,
      and the two are 1.17:1 apart — every lift shadow in dark mode was invisible. This is the
@@ -694,4 +792,20 @@
 
 @utility surface-light {
   --hard-shadow-color: var(--color-darkestblue);
+}
+
+/* Redesign 2026: a subtree that always paints a dark fill (the navy header and footer, in both
+   themes) re-points the roles its children read, so a `secondary` or `ghost` Button, a link or a
+   focus ring placed on it stays legible without a variant of its own. */
+@utility on-dark {
+  --color-fg: #ffffff;
+  --color-fg-muted: #c5d0dc;
+  --color-heading: #ffffff;
+  --color-link: #ffffff;
+  --color-link-hover: #f29d35;
+  --color-secondary: #ffffff;
+  --color-on-secondary: #002f5f;
+  --color-surface-muted: rgb(255 255 255 / 0.12);
+  --color-border: rgb(255 255 255 / 0.2);
+  --color-focus: #f29d35;
 }

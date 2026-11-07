@@ -119,15 +119,14 @@ describe('ContactSection', () => {
     expect(name).not.toHaveAttribute('aria-invalid');
   });
 
-  it('paints Send grey while disabled and orange once every field is valid', async () => {
+  it('keeps Send disabled until every field is valid', async () => {
     const user = userEvent.setup();
     render(<ContactSection />);
 
-    expect(fields().submit.className).toMatch(/bg-gray-300/);
+    expect(fields().submit).toBeDisabled();
 
     await fillValid(user);
-    expect(fields().submit.className).toMatch(/bg-orange\b/);
-    expect(fields().submit.className).not.toMatch(/bg-gray-300/);
+    expect(fields().submit).toBeEnabled();
   });
 
   it('marks a field valid once it is blurred and passes, not before', async () => {

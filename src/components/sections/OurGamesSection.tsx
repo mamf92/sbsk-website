@@ -161,7 +161,7 @@ export default function OurGamesSection({ gamesHero, games }: OurGamesProps) {
             title="Ingen spill matcher søket"
             body="Prøv et annet søkeord eller nullstill filtrene."
             action={
-              <Button variant="primary" size="lg" icon="backspace" onClick={clearFilters}>
+              <Button variant="primary" size="md" icon="backspace" onClick={clearFilters}>
                 Fjern filtre
               </Button>
             }
@@ -266,7 +266,7 @@ function BuyConfirmDialog({ info, onClose }: { info: BuyInfo | null; onClose: ()
       <div className="flex flex-wrap gap-2">
         <Button
           variant="primary"
-          size="lg"
+          size="md"
           icon="right"
           onClick={() => {
             window.open(info.buyUrl, '_blank', 'noopener');
@@ -275,7 +275,7 @@ function BuyConfirmDialog({ info, onClose }: { info: BuyInfo | null; onClose: ()
         >
           Fortsett til {info.sponsor}
         </Button>
-        <Button variant="tertiary" size="lg" onClick={onClose}>
+        <Button variant="secondary" size="md" onClick={onClose}>
           Lukk
         </Button>
       </div>

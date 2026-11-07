@@ -132,7 +132,7 @@ export const Carousel = React.forwardRef<HTMLElement, CarouselProps>(
         <span className="absolute top-1/2 left-2 -translate-y-1/2">
           <Button
             type="button"
-            variant="tertiary"
+            variant="secondary"
             size="sm"
             icon="left"
             aria-label="Forrige bilde"
@@ -142,7 +142,7 @@ export const Carousel = React.forwardRef<HTMLElement, CarouselProps>(
         <span className="absolute top-1/2 right-2 -translate-y-1/2">
           <Button
             type="button"
-            variant="tertiary"
+            variant="secondary"
             size="sm"
             icon="right"
             aria-label="Neste bilde"
@@ -258,7 +258,7 @@ export const Carousel = React.forwardRef<HTMLElement, CarouselProps>(
             size="full"
             title={label}
             headerEnd={
-              <Button type="button" variant="tertiary" size="sm" onClick={closeLightbox}>
+              <Button type="button" variant="secondary" size="sm" onClick={closeLightbox}>
                 Lukk
               </Button>
             }
