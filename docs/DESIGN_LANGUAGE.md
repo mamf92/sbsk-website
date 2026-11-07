@@ -29,10 +29,9 @@ something used to be the way it was. The twelve decisions behind this one were m
 ## Tokens
 
 All tokens live in the `@theme` block of `src/index.css`. Rebuilt components use the
-**semantic roles** below, never the flat brand names (`bg-darkblue`, `text-orange`). Each role has
+**semantic roles** below, never raw colours (the old flat brand names `darkblue`, `orange` and friends were removed). Each role has
 a light value in `@theme` and a dark value in the `.dark` block, so `bg-surface text-fg` is written
-once and works in both themes. The flat names and the old motion and hard-shadow tokens remain only
-until their last consumer is rebuilt.
+once and works in both themes.
 
 | Role                                 | Light                             | Dark                  | Use                                       |
 | ------------------------------------ | --------------------------------- | --------------------- | ----------------------------------------- |

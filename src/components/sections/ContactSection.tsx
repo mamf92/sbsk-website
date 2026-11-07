@@ -153,7 +153,7 @@ export default function ContactSection() {
 
   return (
     <div className="border-border bg-surface text-fg shadow-card max-w-form my-4 flex w-full items-center justify-center border px-4">
-      <div className="flex w-full flex-col gap-8 py-16 md:py-24">
+      <div className="flex w-full flex-col gap-8 py-12 md:py-16">
         <div className="flex flex-col gap-4">
           <h1 className="font-heading text-heading text-h1 tracking-heading font-bold">
             Kontakt oss!

@@ -88,8 +88,14 @@ test('a post card opens the post on its own page', async ({ page }) => {
 test('Back from a post returns to the same filtered feed', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Nyheter' }).click();
+  await expect(page).toHaveURL(/kategori=nyheter/);
   await page.getByRole('link', { name: 'Høstprogrammet er klart' }).click();
-  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  // Named, and with the URL: the home page has an h1 of its own, so a bare h1 check could pass
+  // before the post had opened, and Back would then leave the site.
+  await expect(page).toHaveURL(/\/innlegg\//);
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Høstprogrammet er klart' }),
+  ).toBeVisible();
 
   await page.goBack();
 

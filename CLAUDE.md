@@ -39,18 +39,17 @@ Adding a route means touching `src/main.tsx`, a page in `src/pages/`, and usuall
 ## Styling — Tailwind v4
 
 There is no `tailwind.config.js`, and adding one will not do what you expect. Theme tokens
-live in the `@theme` block of `src/index.css`: colours (`bg-darkblue`, `text-orange`,
-`--color-placeholder`), the `xs` breakpoint, and `font-heading` / `font-body`.
+live in the `@theme` block of `src/index.css`: the semantic colour roles, the container widths,
+the `xs` breakpoint, and `font-heading` / `font-body`.
 
 Add a new token to `@theme` rather than hardcoding a hex value in a class.
 
-**Redesign 2026 (the `redesign` branch):** rebuilt components style themselves from the semantic
-roles (`bg-page`, `bg-surface`, `bg-surface-muted`, `text-fg`, `text-fg-muted`, `text-heading`,
-`text-link`, `border-border`, `bg-primary`, `outline-focus`, `shadow-card`, …), not the flat brand
-names. Square corners, soft `shadow-card` on cards only, hover is colour only, and there is no
-`lift`. A subtree on a permanently dark fill (header, footer) takes the `on-dark` utility. See
-`docs/DESIGN_LANGUAGE.md`. The old `lift*`, `surface-*` and hard-shadow tokens remain only until
-their last consumer is rebuilt.
+**Redesign 2026:** components style themselves from the semantic roles (`bg-page`, `bg-surface`,
+`bg-surface-muted`, `text-fg`, `text-fg-muted`, `text-heading`, `text-link`, `border-border`,
+`bg-primary`, `outline-focus`, `shadow-card`, …). The flat brand names (`darkblue`, `orange`, …)
+are gone. Square corners, soft `shadow-card` on cards only, hover is colour only. A subtree on a
+permanently dark fill (header, footer, portal headers) takes `on-dark`; `surface-dark` and
+`surface-light` do the same for other fixed fills. See `docs/DESIGN_LANGUAGE.md`.
 
 Dark mode is class-based via a custom variant: `@custom-variant dark (&:where(.dark, .dark *))`.
 The `dark` class goes on `<html>`; `src/utils/theme.ts` owns reading, applying and persisting it.

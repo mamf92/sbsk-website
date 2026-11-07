@@ -90,7 +90,7 @@ for (const { route, heading } of placeholderRoutes) {
     await expect(page.locator('h1')).toHaveCount(1);
     await expect(page.getByRole('heading', { level: 1, name: heading })).toBeVisible();
     // The point of the component: a live route a visitor lands on always offers somewhere useful.
-    await expect(page.getByRole('button', { name: /Se kalender/ })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Se kalender/ })).toBeVisible();
   });
 }
 

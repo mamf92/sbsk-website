@@ -49,7 +49,7 @@ export default function LoginSection({ reason }: { reason?: string }) {
 
   return (
     <div className="border-border bg-surface text-fg shadow-card max-w-form my-4 flex w-full items-center justify-center border px-4">
-      <div className="flex w-full flex-col gap-8 py-24">
+      <div className="flex w-full flex-col gap-8 py-12 md:py-16">
         <div className="flex flex-col items-center gap-4">
           <h1 className="font-heading text-heading text-h1 text-center font-bold">
             Velkommen tilbake!
