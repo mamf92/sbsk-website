@@ -27,7 +27,12 @@ const GAMES_QUERY = `*[
   image,
   difficulty,
   time,
-  players,
+  // Derived rather than typed in a third time: editors fill in the lowest and highest player
+  // counts, which the filter needs anyway, and the card shows them as "2–4" (or "2" when equal).
+  "players": select(
+    playersMin == playersMax => string(playersMin),
+    string(playersMin) + "–" + string(playersMax)
+  ),
   playersMin,
   playersMax,
   buyUrl,

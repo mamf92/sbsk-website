@@ -9,7 +9,7 @@ const FALLBACK_HERO = {
   subtitle:
     'Bli med på ukentlige brettspillkvelder og prøv ut ny og kjente spill sammen med andre spilleglade folk.',
   imageSourceName: 'Designed by Freepik',
-  imageSourceUrl: 'www.freepik.com',
+  imageSourceUrl: 'https://www.freepik.com',
 };
 
 const HOME_HERO_LINKS: HeroLink[] = [
@@ -27,8 +27,9 @@ export default function HomeHero({
 }: HomeHeroTypes = {}) {
   const resolvedTitle = title || FALLBACK_HERO.title;
   const resolvedSubtitle = subtitle || FALLBACK_HERO.subtitle;
-  const resolvedImageSource = imageSource?.imageSourceName || FALLBACK_HERO.imageSourceName;
-  const resolvedImageSourceUrl = imageSource?.imageSourceUrl || FALLBACK_HERO.imageSourceUrl;
+  // The Freepik credit belongs to the bundled fallback photo only, never to an editor's image.
+  const resolvedImageSource = image ? imageSource?.imageSourceName : FALLBACK_HERO.imageSourceName;
+  const resolvedImageSourceUrl = image ? imageSource?.imageSourceUrl : FALLBACK_HERO.imageSourceUrl;
   const sponsorsExist = sponsors && sponsors.length > 0;
 
   return (

@@ -10,7 +10,6 @@ export interface PostTypes {
   _id: string;
   title: string;
   subtitle?: string;
-  slug: { current: string };
   publishedAt: string;
   category: 'nyheter' | 'spillkveldrapporter' | 'arrangementer';
   links?: { label: string; url: string }[];
@@ -25,9 +24,8 @@ export interface PostTypes {
 // framing on the floor.
 const POSTS_QUERY = `*[
   _type == "post"
-  && defined(slug.current)
 ]|order(publishedAt desc)[0...12]{
-  _id, title, subtitle, slug, publishedAt, category, links,
+  _id, title, subtitle, publishedAt, category, links,
   content[]{
     ...,
     _type == "image" => {
