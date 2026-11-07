@@ -65,11 +65,12 @@ describe('NavMenuButton', () => {
     expect(ref.current).toBeInstanceOf(HTMLButtonElement);
   });
 
-  it('carries lift and never a competing transition utility', () => {
+  it('is a 44px target that changes only colour on hover', () => {
     render(<NavMenuButton />);
     const classes = screen.getByRole('button').className.split(/\s+/);
 
-    expect(classes).toContain('lift');
-    expect(classes.filter((name) => /^transition(-|$)/.test(name))).toHaveLength(0);
+    expect(classes).toContain('size-11');
+    expect(classes).toContain('hover:bg-surface-muted');
+    expect(classes).not.toContain('lift');
   });
 });

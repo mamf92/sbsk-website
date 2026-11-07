@@ -39,14 +39,29 @@ function renderHeader() {
   );
 }
 
-// WCAG 2.5.3 Label in Name, the same rule `Dropdown` is held to: someone driving the page by
-// voice says the text they can see. A name of only "Bytt til mørk modus" gave "click DM" nothing
-// to match, and Lighthouse failed the page on it (label-content-name-mismatch, #222).
-describe('Header — theme toggle name', () => {
-  it('names the theme toggle with the visible abbreviation it shows', () => {
+describe('Header — layout (decision 6)', () => {
+  it('names the icon-only theme toggle by what it does', () => {
     renderHeader();
-    const toggle = screen.getByRole('button', { name: /^DM\b/ });
-    expect(toggle).toHaveTextContent('DM');
+    expect(screen.getByRole('button', { name: 'Bytt til mørkt tema' })).toBeInTheDocument();
+  });
+
+  it('carries the four main links and nothing else in the main nav', () => {
+    renderHeader();
+    const nav = screen.getByRole('navigation', { name: 'Hovedmeny' });
+    const labels = Array.from(nav.querySelectorAll('a')).map((a) => a.textContent);
+    expect(labels).toEqual(['Kalender', 'Våre spill', 'Om oss', 'Kontakt oss']);
+  });
+
+  it('makes Bli medlem the one orange action', () => {
+    renderHeader();
+    const join = screen.getByRole('link', { name: 'Bli medlem' });
+    expect(join).toHaveAttribute('href', '/bli-medlem');
+    expect(join).toHaveClass('bg-primary');
+  });
+
+  it('paints the bar navy and re-points the roles for everything inside it', () => {
+    const { container } = renderHeader();
+    expect(container.querySelector('header')).toHaveClass('bg-header', 'on-dark');
   });
 });
 
