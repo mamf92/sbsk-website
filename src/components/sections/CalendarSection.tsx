@@ -10,6 +10,9 @@ import { Input } from '../ui/Input';
 import { Segmented } from '../ui/Segmented';
 import { Dropdown } from '../ui/Dropdown';
 import { Divider } from '../ui/Divider';
+import AlertCircleIcon from '../../assets/icons/symbols/alert-circle.svg?react';
+import InfoIcon from '../../assets/icons/symbols/info.svg?react';
+import SearchIcon from '../../assets/icons/symbols/search.svg?react';
 import EmptyState from '../ui/EmptyState';
 import { AvatarStack, type AvatarStackPerson } from '../ui/AvatarStack';
 import { groupByMonth } from '../../utils/groupByMonth';
@@ -442,11 +445,13 @@ function EventList({ events, failed }: { events: CalendarEventTypes[]; failed?: 
         {/* An unreachable backend must not be reported as an empty programme — see PostsSection. */}
         {failed ? (
           <EmptyState
+            icon={AlertCircleIcon}
             title="Kunne ikke laste arrangementer"
             body="Vi fikk ikke kontakt med innholdstjenesten. Prøv å laste siden på nytt om et øyeblikk."
           />
         ) : (
           <EmptyState
+            icon={InfoIcon}
             title="Ingen arrangementer"
             body="Det ser ikke ut til å være noen kommende arrangementer for øyeblikket. Vennligst sjekk igjen senere."
           />
@@ -564,8 +569,8 @@ function EventList({ events, failed }: { events: CalendarEventTypes[]; failed?: 
 
       {sorted.length === 0 && (
         <EmptyState
+          icon={SearchIcon}
           variant="inline"
-          className="text-darkestblue dark:text-white"
           title={
             onlyMine && rsvp.loggedIn ? 'Ingen påmeldinger' : 'Ingen arrangementer matcher søket'
           }

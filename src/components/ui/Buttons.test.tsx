@@ -105,7 +105,7 @@ describe('Button', () => {
       </Button>,
     );
     expect(screen.getByRole('button')).toHaveTextContent('Send');
-    expect(screen.getByTestId('button-spinner')).toBeInTheDocument();
+    expect(screen.getByTestId('spinner')).toBeInTheDocument();
     expect(container.querySelector('svg')).toBeNull();
   });
 

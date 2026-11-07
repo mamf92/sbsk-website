@@ -6,6 +6,8 @@ import { Chip, type ChipCategory } from '../ui/Chip';
 import { Dropdown } from '../ui/Dropdown';
 import { Divider } from '../ui/Divider';
 import { Input } from '../ui/Input';
+import AlertCircleIcon from '../../assets/icons/symbols/alert-circle.svg?react';
+import InfoIcon from '../../assets/icons/symbols/info.svg?react';
 import EmptyState from '../ui/EmptyState';
 import { groupByMonth } from '../../utils/groupByMonth';
 import { useState } from 'react';
@@ -190,11 +192,13 @@ function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) 
             gone quiet. */}
         {failed ? (
           <EmptyState
+            icon={AlertCircleIcon}
             title="Kunne ikke laste innlegg"
             body="Vi fikk ikke kontakt med innholdstjenesten. Prøv å laste siden på nytt om et øyeblikk."
           />
         ) : (
           <EmptyState
+            icon={InfoIcon}
             title="Ingen innlegg"
             body="Det ser ikke ut til å være noen innlegg for øyeblikket. Vennligst sjekk igjen senere."
           />

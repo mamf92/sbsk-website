@@ -4,28 +4,19 @@ type LinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement> & {
   variant?: 'default' | 'muted' | 'inherit';
 };
 
-// Text links are the one interactive surface that does *not* lift. They underline, and that
-// is the whole interaction — see docs/DESIGN_LANGUAGE.md.
+// Text links are blue and always underlined, so they read as links without a hover. Hover
+// darkens the colour and thickens the underline; nothing moves. See docs/DESIGN_LANGUAGE.md.
 const base =
-  'font-body underline-offset-2 transition-colors duration-(--duration-fast) ease-standard ' +
-  'hover:underline focus-visible:outline focus-visible:outline-2 ' +
-  'focus-visible:outline-offset-2 focus-visible:outline-focus-ring ';
+  'font-body underline underline-offset-2 transition-colors duration-150 ' +
+  'motion-reduce:transition-none hover:decoration-2 ' +
+  'focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-focus ';
 
 const variants = {
-  default: 'text-darkblue hover:text-darkorange dark:text-orange dark:hover:text-yellow',
-  muted: 'text-gray-neutral hover:text-darkblue dark:hover:text-orange',
+  default: 'text-link hover:text-link-hover',
+  muted: 'text-fg-muted hover:text-fg',
   /**
-   * No colour of its own — it borrows the one the surface has already settled on, and the
-   * underline is the whole interaction.
-   *
-   * This is what a photo credit, a link inside a `darkblue` panel, or a link in rich text
-   * needs, and the reason there is no fourth, fifth and sixth variant here instead. Those
-   * surfaces have already had their foreground contrast-checked against their own fill — a
-   * caption strip inherits white inside a `nyheter` panel and `darkestblue` everywhere else,
-   * and the auth panels are white-on-darkblue — so borrowing that foreground is correct in
-   * every theme by construction, where naming a colour here would be right on one fill and
-   * wrong on the next. It is also why this variant adds no row to the contrast table: it
-   * introduces no pairing that was not already there.
+   * No colour of its own: it borrows the text colour of the surface it sits on. For photo
+   * credits, links inside rich text, and links on a fixed panel whose ink is already checked.
    */
   inherit: 'text-current',
 } as const;
@@ -40,54 +31,24 @@ export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(
 
 Link.displayName = 'Link';
 
-/**
- * The `inherit` treatment as a class string, for the links that have to be React Router's
- * `Link` rather than an `<a>` — same reasoning as `navLinkClasses` below.
- *
- * Spelled out rather than composed from `base` for the same reason `navLinkClassesBody` is:
- * this file keeps whole strings, not layered partials. `Link.test.tsx` pins that the two stay
- * in step, which is the cost of writing it twice.
- */
-export const linkClassesInherit =
-  'font-body underline-offset-2 transition-colors duration-(--duration-fast) ease-standard ' +
-  'hover:underline focus-visible:outline focus-visible:outline-2 ' +
-  'focus-visible:outline-offset-2 focus-visible:outline-focus-ring text-current';
+/** The `inherit` treatment as a class string, for React Router `Link`s. */
+export const linkClassesInherit = base + variants.inherit;
 
 /**
- * The header/footer navigation link treatment: an orange rule that wipes in from the left on
- * hover and stays put on the current page.
+ * Navigation links in the header and footer: no underline in place (their position says they
+ * are links), a 2px bar under the current page, and a colour-only hover. The bar is orange on
+ * the current page and the text colour on hover.
  *
- * Exported as a class string rather than a component because these links are React Router
- * `NavLink`s — they need router behaviour, not an `<a>`. `NavLink` sets `aria-current="page"`
- * on the active route, which is what drives the persistent state here.
+ * A class string rather than a component because these are React Router `NavLink`s, which set
+ * `aria-current="page"` on the active route, and that attribute is what draws the bar.
  */
-export const navLinkClasses =
-  'relative inline-block px-0.5 py-1.5 font-heading no-underline ' +
-  'transition-colors duration-(--duration-fast) ease-standard ' +
-  'after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left ' +
-  'after:scale-x-0 after:bg-orange after:transition-transform ' +
-  'after:duration-(--duration-base) after:ease-out hover:after:scale-x-100 ' +
-  'motion-reduce:after:transition-none ' +
-  'aria-[current=page]:text-orange aria-[current=page]:after:scale-x-100 ' +
-  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 ' +
-  'focus-visible:outline-focus-ring';
+const navBase =
+  'inline-flex min-h-11 items-center border-b-2 border-transparent px-1 no-underline ' +
+  'transition-colors duration-150 motion-reduce:transition-none ' +
+  'hover:border-current aria-[current=page]:border-primary ' +
+  'focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-focus';
 
-/**
- * `navLinkClasses`, with `font-body` in place of `font-heading` — `Footer` is deliberately
- * body-font, unlike `Header`'s desktop nav which composes `navLinkClasses` as-is. A second whole
- * string rather than a `${navLinkClasses} font-body` composition at the call site: two `font-*`
- * utilities on one element are decided by emit order in the generated stylesheet, not by which
- * one a template literal happens to list last (the same reason `Dialog`'s size variants are a
- * lookup map of whole strings rather than layered partials) — this way exactly one `font-*`
- * utility ever appears in the string a caller uses.
- */
-export const navLinkClassesBody =
-  'relative inline-block px-0.5 py-1.5 font-body no-underline ' +
-  'transition-colors duration-(--duration-fast) ease-standard ' +
-  'after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left ' +
-  'after:scale-x-0 after:bg-orange after:transition-transform ' +
-  'after:duration-(--duration-base) after:ease-out hover:after:scale-x-100 ' +
-  'motion-reduce:after:transition-none ' +
-  'aria-[current=page]:text-orange aria-[current=page]:after:scale-x-100 ' +
-  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 ' +
-  'focus-visible:outline-focus-ring';
+export const navLinkClasses = `${navBase} font-heading font-semibold`;
+
+/** `navLinkClasses` in the body font, for the footer's link columns. */
+export const navLinkClassesBody = `${navBase} font-body`;

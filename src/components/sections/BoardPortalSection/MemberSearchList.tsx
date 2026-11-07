@@ -4,6 +4,8 @@ import { editMember } from '../../../supabase/queryHelpers/editMember';
 import { type Member } from '../../../supabase/queryHelpers/getMember';
 import { Button } from '../../ui/Buttons';
 import { Input } from '../../ui/Input';
+import InfoIcon from '../../../assets/icons/symbols/info.svg?react';
+import SearchIcon from '../../../assets/icons/symbols/search.svg?react';
 import EmptyState from '../../ui/EmptyState';
 import { LoadingIndicator } from '../../ui/LoadingIndicator';
 import { useMemberSearch } from '../../../hooks/useMemberSearch';
@@ -90,18 +92,18 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
         {loading && <LoadingIndicator label="Laster medlemmer…" className="px-4 py-6 text-white" />}
         {members.length === 0 && (
           <EmptyState
+            icon={InfoIcon}
             variant="inline"
             headingLevel={3}
-            className="text-white"
             title="Ingen medlemmer"
             body="Det finnes ingen medlemmer i databasen."
           />
         )}
         {filteredMembers.length === 0 && searchTerm !== '' && (
           <EmptyState
+            icon={SearchIcon}
             variant="inline"
             headingLevel={3}
-            className="text-white"
             title="Ingen treff"
             body="Ingen medlemmer matcher ditt søk."
           />

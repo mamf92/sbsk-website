@@ -3,11 +3,13 @@ import * as React from 'react';
 type EmptyStateProps = Omit<React.HTMLAttributes<HTMLElement>, 'title'> & {
   title?: string;
   body?: React.ReactNode;
-  /** Usually a `Button` — "Fjern filtre", "Legg til medlem". */
+  /** A decorative icon above the title, e.g. the search glyph for "no matches". */
+  icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  /** The next step, usually a `Button`: "Nullstill filtre", "Legg til medlem". */
   action?: React.ReactNode;
   /**
-   * `page` is the whole-screen "there is nothing here at all" case; `inline` is the one that
-   * sits inside a list that has content but no matches. Same shape, different scale.
+   * `page` is the whole-screen "there is nothing here at all" case; `inline` sits inside a
+   * list that has content but no matches. Same shape, different scale.
    */
   variant?: 'page' | 'inline';
   /** A section that already has an `h2` above the list wants `3` here. */
@@ -16,7 +18,7 @@ type EmptyStateProps = Omit<React.HTMLAttributes<HTMLElement>, 'title'> & {
 
 const variants = {
   page: 'items-start px-5 py-8 text-left',
-  inline: 'items-center px-4 py-6 text-center',
+  inline: 'items-center px-4 py-8 text-center',
 } as const;
 
 const titleSizes = {
@@ -25,16 +27,13 @@ const titleSizes = {
 } as const;
 
 /**
- * Heading, body, optional action — the shape `PostsSection` already had and the other three
- * empty screens did not. `MemberSearchList` in particular rendered two bare `<p>` tags.
- *
- * Deliberately colour-neutral: it inherits from whatever surface it lands on, because it
- * lands on the white page in `PostsSection` and on a `darkblue` panel in the board portal.
- * `ErrorState` is this same shape at full-page scale with the brand's 404 furniture attached.
+ * Icon, plain sentence, next step. Colours come from the roles, so it reads on the page and,
+ * through `surface-dark`, on a navy panel alike.
  */
 export default function EmptyState({
   title,
   body,
+  icon: Icon,
   action,
   variant = 'page',
   headingLevel = 2,
@@ -48,12 +47,15 @@ export default function EmptyState({
       className={['flex w-full flex-col gap-2', variants[variant], className].join(' ')}
       {...props}
     >
+      {Icon ? (
+        <Icon aria-hidden="true" className="text-fg-muted mb-1 size-8 shrink-0 fill-current" />
+      ) : null}
       {title ? (
-        <Heading className={['font-heading font-bold', titleSizes[variant]].join(' ')}>
+        <Heading className={['font-heading text-heading font-bold', titleSizes[variant]].join(' ')}>
           {title}
         </Heading>
       ) : null}
-      {body ? <p className="font-body max-w-[60ch] text-base">{body}</p> : null}
+      {body ? <p className="font-body text-fg-muted max-w-[60ch] text-base">{body}</p> : null}
       {action ? <div className="mt-2">{action}</div> : null}
     </div>
   );
