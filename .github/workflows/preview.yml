@@ -37,20 +37,28 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}redesign/
 
     steps:
-      # The live half of the upload replaces production, so it must be a `main` commit that
-      # passed CI, not whatever `main` happens to point at: a newer commit may still be running,
-      # or have failed, and the deploy job in ci.yml would never have shipped it.
-      - name: Find the newest main commit that passed CI
+      # The live half of the upload replaces production, so it must be the `main` commit that is
+      # live now: the newest one whose `Deploy to GitHub Pages` job in ci.yml succeeded. Not the
+      # tip of `main` (its CI may still be running or have failed), and not the newest fully green
+      # run either: the deploy job deliberately does not wait for `audit`, so a run can be red
+      # overall while its commit is what production serves.
+      - name: Find the main commit that is live
         id: live
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          sha=$(gh run list -R "$GITHUB_REPOSITORY" --workflow CI --branch main --event push \
-            --status success --limit 1 --json headSha -q '.[0].headSha')
+          sha=""
+          for id in $(gh run list -R "$GITHUB_REPOSITORY" --workflow CI --branch main --event push \
+            --status completed --limit 30 --json databaseId -q '.[].databaseId'); do
+            deployed=$(gh run view "$id" -R "$GITHUB_REPOSITORY" --json jobs,headSha \
+              -q 'select(any(.jobs[]; .name == "Deploy to GitHub Pages" and .conclusion == "success")) | .headSha')
+            if [ -n "$deployed" ]; then sha="$deployed"; break; fi
+          done
           if [ -z "$sha" ]; then
-            echo "::error::No successful CI run on main to deploy as the live site."
+            echo "::error::No recent main CI run deployed to Pages; refusing to guess what is live."
             exit 1
           fi
+          echo "Live commit: $sha"
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
