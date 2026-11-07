@@ -73,7 +73,7 @@ export default function LoginSection({ reason }: { reason?: string }) {
         <div className="w-full px-8 pt-8">
           <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-5">
             <label className="flex w-full flex-col gap-1">
-              <span className="font-body text-white">E-post</span>
+              <span className="font-body text-fg text-sm font-semibold">E-post</span>
               <Input
                 type="email"
                 id="email"
@@ -86,7 +86,7 @@ export default function LoginSection({ reason }: { reason?: string }) {
               />
             </label>
             <label className="flex w-full flex-col gap-1">
-              <span className="font-body text-white">Passord</span>
+              <span className="font-body text-fg text-sm font-semibold">Passord</span>
               <Input
                 type="password"
                 id="password"

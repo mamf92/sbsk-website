@@ -1,3 +1,4 @@
+import { Label } from '../../ui/Label';
 import type { Member } from '../../../supabase/queryHelpers/getMember';
 import { Button } from '../../ui/Buttons';
 import { Checkbox } from '../../ui/Checkbox';
@@ -143,13 +144,9 @@ export default function MemberForm({ member, onSubmitMember, onClose }: MemberFo
         <div className="flex w-full flex-col gap-2">
           {fields.map((field) => (
             <div key={field.id} className="flex w-full flex-col gap-1">
-              <label
-                key={field.name}
-                htmlFor={field.id}
-                className="font-body flex w-full flex-col gap-1 text-white max-sm:sr-only"
-              >
+              <Label htmlFor={field.id} optional={!field.required}>
                 {field.label}
-              </label>
+              </Label>
               <Input
                 type="text"
                 id={field.id}
@@ -164,7 +161,7 @@ export default function MemberForm({ member, onSubmitMember, onClose }: MemberFo
           ))}
           <label htmlFor="is_admin" className="flex w-full items-center gap-2 pt-2">
             <Checkbox id="is_admin" name="is_admin" defaultChecked={member?.is_admin ?? false} />
-            <span className="font-body text-white">Administrator</span>
+            <span className="font-body text-fg">Administrator</span>
           </label>
         </div>
         {submitError && <Alert>{submitError}</Alert>}

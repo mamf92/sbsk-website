@@ -2,8 +2,8 @@ import { Button } from '../ui/Buttons';
 import { Reveal } from '../ui/Reveal';
 import { Card, type CardCategory } from '../ui/Card';
 import { Carousel } from '../ui/Carousel';
-import { Chip, type ChipCategory } from '../ui/Chip';
-import { Dropdown } from '../ui/Dropdown';
+import { Chip } from '../ui/Chip';
+import { Select } from '../ui/Select';
 import { Divider } from '../ui/Divider';
 import { Input } from '../ui/Input';
 import AlertCircleIcon from '../../assets/icons/symbols/alert-circle.svg?react';
@@ -56,16 +56,7 @@ const categories: Array<'all' | PostCategory> = [
   'arrangementer',
 ];
 
-// 'all' has no category colour of its own — it takes the neutral fill. A spillkveld*rapport*
-// is a write-up of a spillkveld, so it inherits that category's colour.
-const chipCategories: Record<'all' | PostCategory, ChipCategory> = {
-  all: 'neutral',
-  nyheter: 'nyheter',
-  spillkveldrapporter: 'spillkveld',
-  arrangementer: 'arrangementer',
-};
-
-// Same reasoning, against the Card's own palette rather than the Chip's.
+// A spillkveld*rapport* is a write-up of a spillkveld, so its card takes that category's colour.
 const cardCategories: Record<PostCategory, CardCategory> = {
   nyheter: 'nyheter',
   spillkveldrapporter: 'spillkveld',
@@ -221,7 +212,7 @@ function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) 
           {categories.map((category) => (
             <Chip
               key={category}
-              category={chipCategories[category]}
+              className="capitalize"
               active={selectedCategory === category}
               onClick={() => setSelectedCategory(category)}
             >
@@ -229,8 +220,10 @@ function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) 
             </Chip>
           ))}
         </div>
-        <Dropdown
-          label="Sorter innlegg"
+        <Select
+          label="Sorter etter"
+          labelHidden
+          className="w-full sm:w-56"
           options={sortOptions}
           value={sortBy}
           onChange={setSelectedSort}

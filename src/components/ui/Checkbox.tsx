@@ -1,11 +1,4 @@
 import * as React from 'react';
-import Check from '../../assets/icons/symbols/check.svg?react';
-import {
-  fieldBorder,
-  fieldBorderInvalid,
-  fieldStateShadow,
-  fieldStateTransition,
-} from './fieldClasses';
 
 type CheckboxProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> & {
   /** See `Input`. */
@@ -13,46 +6,30 @@ type CheckboxProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> &
 };
 
 /**
- * The control only — the label stays with the caller, the way the native element expects.
- *
- * `appearance-none` plus an overlaid glyph rather than the native tick, because the string
- * this replaces carried `text-darkblue` on a native checkbox, which paints nothing: a native
- * checkbox reads `accent-color`, not `color`. The brand tick was never actually rendering.
+ * The native checkbox, tinted with `accent-color`, so it looks and behaves exactly like every
+ * other checkbox the visitor has used. The label stays with the caller, the way the native
+ * element expects. `accent-secondary` is navy on light and near-white on dark, and the browser
+ * picks a contrasting tick for either.
  */
 export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(function Checkbox(
   { className = '', invalid = false, ...props },
   ref,
 ) {
   return (
-    <span className="relative inline-flex shrink-0 items-center justify-center">
-      <input
-        ref={ref}
-        type="checkbox"
-        aria-invalid={invalid || undefined}
-        className={[
-          // `focus-visible:outline-none` — see `fieldClasses.ts`'s `fieldSurface` comment.
-          // `Checkbox` doesn't read `fieldSurface` (no font/placeholder to inherit from it),
-          // so it needs its own copy of the same suppression to avoid the same doubled-up
-          // native ring plus offset shadow.
-          'peer size-4 appearance-none rounded-none bg-white focus-visible:outline-none',
-          invalid ? fieldBorderInvalid : fieldBorder,
-          fieldStateShadow({ invalid }),
-          fieldStateTransition,
-          // Orange in both themes, not the theme's own text colour. A `darkblue` fill is
-          // what the string this replaces implied, and every checkbox in the app sits on a
-          // `darkblue` panel — the checked box would have disappeared into it.
-          'checked:border-orange checked:bg-orange',
-          'disabled:bg-disabled-bg disabled:cursor-not-allowed disabled:border-transparent disabled:shadow-none',
-          className,
-        ]
-          .filter(Boolean)
-          .join(' ')}
-        {...props}
-      />
-      <Check
-        aria-hidden="true"
-        className="text-darkblue pointer-events-none absolute hidden size-3 peer-checked:block"
-      />
-    </span>
+    <input
+      ref={ref}
+      type="checkbox"
+      aria-invalid={invalid || undefined}
+      className={[
+        'accent-secondary size-5 shrink-0 cursor-pointer rounded-none',
+        'focus-visible:outline-focus focus-visible:outline-3 focus-visible:outline-offset-2',
+        'disabled:cursor-not-allowed',
+        invalid ? 'outline-danger-text outline-2' : '',
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      {...props}
+    />
   );
 });

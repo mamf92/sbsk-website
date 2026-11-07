@@ -136,10 +136,10 @@ describe('ContactSection', () => {
     const { name } = fields();
     await user.type(name, 'Ola');
     expect(name).not.toHaveAttribute('aria-invalid');
-    expect(name.className).not.toMatch(/shadow-success/);
+    expect(name.className).not.toMatch(/border-success-text/);
 
     await user.tab();
-    expect(name.className).toMatch(/shadow-success/);
+    expect(name.className).toMatch(/border-success-text/);
   });
 
   it('sends the trimmed values and shows the success notice on a valid submit', async () => {

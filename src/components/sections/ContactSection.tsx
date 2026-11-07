@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { Alert, FieldError } from '../ui/Alert';
+import { Label } from '../ui/Label';
 import { Button } from '../ui/Buttons';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
@@ -205,19 +206,11 @@ export default function ContactSection() {
               />
             </div>
 
-            {/* Label and field are siblings, not label-wraps-field: `FieldError` sits in this
-                div too, and nesting it inside the `<label>` would fold its text into the
-                field's accessible name the moment an error appears — "Navn Navn er påkrevd" on
-                every future tab-in. `aria-describedby` is the association that is meant to
-                carry the message instead.
-
-                `gap-2`, not the `gap-1` the label/field pair used to share: `fieldStateShadow`'s
-                hard offset shadow reaches 4px below the field, which touched `FieldError`'s text
-                directly at `gap-1`. */}
+            {/* Label and field are siblings, not label-wraps-field, so a FieldError in the
+                same div is not folded into the field's accessible name. `aria-describedby`
+                carries the message instead. */}
             <div className="flex w-full flex-col gap-2">
-              <label htmlFor="name" className="font-body text-white">
-                Navn
-              </label>
+              <Label htmlFor="name">Navn</Label>
               <Input
                 id="name"
                 name="name"
@@ -235,9 +228,7 @@ export default function ContactSection() {
             </div>
 
             <div className="flex w-full flex-col gap-2">
-              <label htmlFor="email" className="font-body text-white">
-                E-post
-              </label>
+              <Label htmlFor="email">E-post</Label>
               <Input
                 id="email"
                 name="email"
@@ -256,9 +247,7 @@ export default function ContactSection() {
             </div>
 
             <div className="flex w-full flex-col gap-2">
-              <label htmlFor="message" className="font-body text-white">
-                Melding
-              </label>
+              <Label htmlFor="message">Melding</Label>
               <Textarea
                 id="message"
                 name="message"

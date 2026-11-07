@@ -2,64 +2,39 @@ import * as React from 'react';
 import AlertCircle from '../../assets/icons/symbols/alert-circle.svg?react';
 import Check from '../../assets/icons/symbols/check.svg?react';
 import SearchIcon from '../../assets/icons/symbols/search.svg?react';
-import {
-  fieldBorder,
-  fieldBorderInvalid,
-  fieldBorderValid,
-  fieldDisabled,
-  fieldPadding,
-  fieldPaddingWithIcon,
-  fieldStateShadow,
-  fieldStateTransition,
-  fieldSurface,
-} from './fieldClasses';
+import { fieldBase, fieldDisabled, fieldLineFor, fieldPaddingWithIcon } from './fieldClasses';
 
 type InputProps = React.InputHTMLAttributes<HTMLInputElement> & {
   /**
-   * The field-level error treatment: a red hairline, a red hard-offset shadow, the alert
-   * glyph, and `aria-invalid` so assistive tech hears about it. The *message* is not this
-   * component's job — pair it with `FieldError` and wire the two together with
-   * `aria-describedby`.
+   * The error state: a red bottom line, the alert glyph and `aria-invalid`. The message is
+   * `FieldError`'s job; wire the two together with `aria-describedby`.
    */
   invalid?: boolean;
-  /**
-   * The field-level success treatment: a green hairline, a green hard-offset shadow, and a
-   * check glyph. `invalid` outranks it — a field says one thing at a time. Nothing sets this
-   * on a first pass at typing; it is for a caller to confirm a field once it has been visited
-   * and clears, not to praise every keystroke.
-   */
+  /** A green line and a check, for a caller confirming a visited field. `invalid` wins. */
   valid?: boolean;
   /** A trailing affordance. `invalid`, then `valid`, outrank it. */
   icon?: 'search' | 'none';
 };
 
-const icons = {
-  search: SearchIcon,
-  none: null,
-} as const;
+const glyph = 'pointer-events-none absolute right-3 size-5';
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(function Input(
   { className = '', invalid = false, valid = false, icon = 'none', ...props },
   ref,
 ) {
-  const Icon = icons[icon];
-  const affordance = invalid || valid || Boolean(Icon);
+  const affordance = invalid || valid || icon !== 'none';
 
   return (
-    // The wrapper exists for the trailing glyph, which has to be positioned against the box.
-    // It takes the full width so a caller's flex column lays the field out unchanged.
+    // The wrapper positions the trailing glyph against the box, at full width so a caller's
+    // flex column lays the field out unchanged.
     <div className="relative flex w-full items-center">
       <input
         ref={ref}
         aria-invalid={invalid || undefined}
         className={[
-          'w-full rounded-none',
-          fieldSurface,
-          invalid ? fieldBorderInvalid : valid ? fieldBorderValid : fieldBorder,
-          fieldStateShadow({ invalid, valid }),
-          fieldStateTransition,
+          fieldBase,
+          fieldLineFor({ invalid, valid }),
           fieldDisabled,
-          fieldPadding,
           affordance ? fieldPaddingWithIcon : '',
           className,
         ]
@@ -68,20 +43,11 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(function Inp
         {...props}
       />
       {invalid ? (
-        <AlertCircle
-          aria-hidden="true"
-          className="text-error pointer-events-none absolute right-3 size-5"
-        />
+        <AlertCircle aria-hidden="true" className={`${glyph} text-danger-text`} />
       ) : valid ? (
-        <Check
-          aria-hidden="true"
-          className="text-success pointer-events-none absolute right-3 size-5"
-        />
-      ) : Icon ? (
-        <Icon
-          aria-hidden="true"
-          className="pointer-events-none absolute right-3 size-5 text-gray-500"
-        />
+        <Check aria-hidden="true" className={`${glyph} text-success-text`} />
+      ) : icon === 'search' ? (
+        <SearchIcon aria-hidden="true" className={`${glyph} text-fg-muted`} />
       ) : null}
     </div>
   );
