@@ -67,3 +67,14 @@ In rough order of what it buys:
    and with it actual clickjacking protection.
 3. `Cross-Origin-Opener-Policy: same-origin`.
 4. Only then, and only with the audit it needs, Trusted Types.
+
+## The redesign preview
+
+A repository gets exactly one Pages site, and every deploy replaces all of it. The UI refresh
+lives on the long-lived `redesign` branch and is previewed at `/sbsk-website/redesign/`, so the
+live build and the preview are built and uploaded together by `.github/actions/build-site` —
+from the `deploy` job on a push to `main`, and from `.github/workflows/preview.yml` when CI goes
+green on a push to `redesign`. The preview carries `noindex` and the same feature flags as the
+live site. Pages only ever serves the root `404.html`, which sends `/sbsk-website/redesign/*`
+deep links to the preview's own `index.html`. Delete the `redesign` branch and the next deploy
+drops the preview.
