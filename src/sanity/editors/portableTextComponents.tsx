@@ -61,9 +61,8 @@ export const components: PortableTextComponents = {
   },
   block: {
     normal: ({ children }) => <p className="font-body text-base">{children}</p>,
-    // `clear-both`: a heading has to start its own line below a pending float rather than
-    // squeeze beside it — whichever side an editor floated an inline image to (`postsImageComponent.tsx`),
-    // and below the carousel's own left float (`PostsSection.tsx`) once a post has one.
+    // `clear-both`: a heading has to start its own line below the carousel's left float
+    // (`PostsSection.tsx`) rather than squeeze beside it.
     h2: ({ children }) => (
       <h2 className="font-heading clear-both text-2xl font-bold">{children}</h2>
     ),

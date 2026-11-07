@@ -4,12 +4,7 @@ import type { SanityImageValue } from '../../components/ui/SanityImage';
 
 export type PostImage = SanityImageValue & { _type: 'image' };
 
-// `alignment` only means something for a photo sitting inline in running text — a carousel
-// image's layout is decided by the carousel itself, so `PostImage` alone (no alignment) is what
-// `carousel` uses.
-type InlinePostImage = PostImage & { alignment?: 'høyre' | 'venstre' | 'full' };
-
-type PostContent = PortableTextBlock | InlinePostImage;
+type PostContent = PortableTextBlock | PostImage;
 
 export interface PostTypes {
   _id: string;

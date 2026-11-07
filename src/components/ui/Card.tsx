@@ -252,8 +252,7 @@ export const Card = React.forwardRef<HTMLElement, CardProps>(
               <div
                 className={`${panels[category]} flex flex-col gap-4 border-t border-black p-4 dark:border-white`}
               >
-                {/* `flow-root`: a floated inline image or carousel (see `postsImageComponent.tsx`
-                    and `PostsSection.tsx`) must not be able to poke out past this panel's tinted
+                {/* `flow-root`: a floated carousel (see `PostsSection.tsx`) must not be able to poke out past this panel's tinted
                     fill and the card's own border. That containment happens to hold today because
                     this div is a flex item of the row above it, but that's invisible and would
                     silently break the day this layout changes — one class of cheap insurance. */}
