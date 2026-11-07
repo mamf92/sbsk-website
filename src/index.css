@@ -786,12 +786,37 @@
    container that paints the fill, never on the lifting element itself: a `Card` casts its own
    shadow onto the page behind it, while the header and panel *inside* it are the surfaces its
    buttons cast onto. */
+/* Redesign 2026: a fixed fill also fixes the roles its children read, in both themes, so a
+   Button, link or focus ring inside it stays legible whatever the page theme is. `surface-dark`
+   carries the same roles as `on-dark`; `surface-light` is for fixed light and orange fills. */
 @utility surface-dark {
   --hard-shadow-color: var(--color-white);
+  --color-fg: #ffffff;
+  --color-fg-muted: #c5d0dc;
+  --color-heading: #ffffff;
+  --color-link: #ffffff;
+  --color-link-hover: #f29d35;
+  --color-secondary: #ffffff;
+  --color-on-secondary: #002f5f;
+  --color-surface-muted: rgb(255 255 255 / 0.12);
+  --color-border: rgb(255 255 255 / 0.2);
+  --color-focus: #f29d35;
 }
 
 @utility surface-light {
+  /* #10233a, not navy: it is the only ink that clears 4.5:1 on darkorange (4.76:1) as well
+     as on orange (7.29:1) and white. */
   --hard-shadow-color: var(--color-darkestblue);
+  --color-fg: #10233a;
+  --color-fg-muted: #10233a;
+  --color-heading: #10233a;
+  --color-link: #10233a;
+  --color-link-hover: #031f3b;
+  --color-secondary: #10233a;
+  --color-on-secondary: #ffffff;
+  --color-surface-muted: rgb(0 47 95 / 0.1);
+  --color-border: rgb(0 47 95 / 0.25);
+  --color-focus: #10233a;
 }
 
 /* Redesign 2026: a subtree that always paints a dark fill (the navy header and footer, in both
