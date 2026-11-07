@@ -8,7 +8,7 @@ import type { ReactNode } from 'react';
  */
 export function Divider({ children }: { children: ReactNode }) {
   return (
-    <div className="font-heading text-darkestblue tracking-heading flex items-baseline justify-between gap-3 border-b border-current pb-1.5 text-xs font-bold uppercase opacity-70 dark:text-white">
+    <div className="font-heading text-fg-muted border-border flex items-baseline justify-between gap-3 border-b pb-1.5 text-sm font-semibold">
       {children}
     </div>
   );

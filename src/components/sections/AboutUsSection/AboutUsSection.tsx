@@ -53,7 +53,7 @@ export default function AboutUsSection({ aboutPage, boardMembers }: AboutUsSecti
               target="_blank"
               rel="noopener noreferrer"
               variant="inherit"
-              className="absolute right-4 bottom-2 text-sm text-white underline"
+              className="bg-footer/70 absolute right-4 bottom-2 px-1 text-sm text-white underline"
             >
               {imageSourceName}
             </Link>
@@ -62,9 +62,9 @@ export default function AboutUsSection({ aboutPage, boardMembers }: AboutUsSecti
       </div>
 
       <div className="max-w-content w-full px-2 py-8 sm:px-0">
-        <div className="bg-darkblue surface-dark flex w-full flex-col gap-4 p-4 text-white sm:p-8">
-          <h1 className="font-heading text-h1 font-bold">{clubTitle}</h1>
-          <p className="font-body font-bold">{clubIntro}</p>
+        <div className="flex w-full max-w-[70ch] flex-col gap-4 py-4">
+          <h1 className="font-heading text-heading text-h1 font-bold">{clubTitle}</h1>
+          <p className="font-body text-fg text-lg">{clubIntro}</p>
           {clubBody.map((paragraph, index) => (
             <p key={index} className="font-body">
               {paragraph}
@@ -74,10 +74,10 @@ export default function AboutUsSection({ aboutPage, boardMembers }: AboutUsSecti
       </div>
 
       <div className="max-w-content w-full px-2 pb-8 sm:px-0">
-        <div className="bg-darkblue surface-dark flex w-full flex-col gap-6 p-4 text-white sm:p-8">
+        <div className="flex w-full flex-col gap-6 py-4">
           <div className="flex flex-col gap-4">
-            <h2 className="font-heading text-h2 font-bold">{boardTitle}</h2>
-            <p className="font-body font-bold">{boardIntro}</p>
+            <h2 className="font-heading text-heading text-h2 font-bold">{boardTitle}</h2>
+            <p className="font-body text-fg-muted max-w-[70ch]">{boardIntro}</p>
           </div>
           <div className="grid grid-cols-[repeat(auto-fill,minmax(290px,1fr))] items-stretch gap-5">
             {members.map((member) => (

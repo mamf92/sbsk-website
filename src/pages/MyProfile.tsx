@@ -1,9 +1,7 @@
 export default function MyProfile() {
   return (
-    <div className="dark:bg-darkestblue min-h-[60vh] bg-white">
-      <div className="text-darkestblue font-heading text-h1 font-bold dark:text-white">
-        Min profil
-      </div>
+    <div className="bg-page text-fg min-h-[60vh]">
+      <div className="text-heading font-heading text-h1 font-bold">Min profil</div>
     </div>
   );
 }

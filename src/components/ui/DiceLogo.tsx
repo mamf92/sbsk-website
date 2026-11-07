@@ -101,7 +101,7 @@ export const DiceLogo = React.forwardRef<DiceLogoHandle, DiceLogoProps>(
         {...props}
       >
         <svg viewBox="0 0 180 180" style={{ height: size, width: size }} aria-hidden="true">
-          <rect x="4" y="4" width="172" height="172" rx="30" fill="var(--color-orange)" />
+          <rect x="4" y="4" width="172" height="172" rx="30" fill="var(--color-brand-orange)" />
           {PIPS[face].map(([cx, cy], i) => (
             <circle key={i} cx={cx} cy={cy} r="16" fill="#fff" />
           ))}

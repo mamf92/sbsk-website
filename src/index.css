@@ -26,78 +26,10 @@
 }
 
 @theme {
-  /* ---------------------------------------------------------------------
-     Brand palette — the flat names the whole codebase already uses.
-     `tokens/colors.css` in the design library is the source of these values.
-     --------------------------------------------------------------------- */
-  --color-darkestblue: #031f3b;
-  --color-darkblue: #002f5f;
-  --color-yellow: #e1b631;
-  --color-orange: #f29d35;
-  --color-darkorange: #cb7925;
-  --color-darkestorange: #b75f04;
-  --color-placeholder: #727a88;
-  /* The library's own name for the same grey. Both resolve to one value. */
-  --color-gray-neutral: #727a88;
-
-  /* Brand neutrals. These intentionally override Tailwind's defaults so that
-     utilities like `bg-gray-300` resolve to the brand grey rather than Tailwind's.
-     Brand black is #0d0d0d, not #000 — the library pins it, and the card borders
-     that use `border-black` are meant to be that value. */
-  --color-white: #ffffff;
-  --color-black: #0d0d0d;
-  --color-gray-100: #f5f5fe;
-  --color-gray-300: #d9d9d9;
-  --color-gray-500: #595959;
-
-  /* ---------------------------------------------------------------------
-     Semantic colours. Deliberately partial: the library defines a full
-     semantic tier (`--surface-brand`, `--accent-primary`, …) but most of it is
-     a 1:1 alias of a flat name above, and this repo's convention is to use the
-     flat name in the class. Only the tokens that carry information the flat
-     name cannot — a category mapping, a state, or a value that flips with the
-     theme — are aliased here.
-     --------------------------------------------------------------------- */
-
-  /* Content category coding. Cards, chips and calendar entries colour by these.
-     A chip is a filter for a stack of cards, so its selected fill has to be the fill of the
-     cards it filters to — these must stay in step with the `headers` map in
-     `src/components/ui/Card.tsx`, which needs a second, darker tone per category for the
-     expanded panel and so cannot be driven from these single-value tokens. */
-  --color-category-nyheter: var(--color-darkblue);
-  /* Orange, not darkblue. A spillkveld card is orange; while this was darkblue the
-     spillkveld chip was pixel-identical to the nyheter one, so the two filters were
-     indistinguishable once selected. */
-  --color-category-spillkveld: var(--color-orange);
-  --color-category-arrangementer: var(--color-darkorange);
-  --color-category-turnering: var(--color-orange);
-  --color-category-annet: var(--color-darkorange);
-  /* The calendar's own spillkveld cards stay navy (`CATEGORY_STYLES` in `CalendarSection.tsx`)
-     rather than following `--color-category-spillkveld` above — that token was repointed to
-     orange for the news feed (#88) and the calendar deliberately kept its own tone. The
-     calendar's spillkveld chip needs this second alias so it can match its own cards instead
-     of the feed's (#203). */
-  --color-category-spillkveld-kalender: var(--color-darkblue);
-
-  /* States. */
-  --color-disabled-bg: var(--color-gray-300);
-  --color-disabled-text: var(--color-gray-500);
-  --color-focus-ring: var(--color-orange);
-  /* The library wires `--field-error-outline` to a variable it never defines;
-     this is the red-error-700 value from its Figma token dump, made concrete so
-     the forms work has something real to bind to. */
-  --color-error: #b5251f;
-  /* The library's green-success-700, `--color-error`'s sibling. 6.20:1 on white — see the
-     field-state note on `--shadow-success-2` below for why it is never asked to sit on
-     `darkblue` alone. */
-  --color-success: #007124;
-
-  /* Flips with the theme — see the `.dark` block below. */
-  --color-hero-scrim: rgb(255 255 255 / 0.55);
-  /* The modal scrim. Paints on `::backdrop`, which no utility can reach, so it is consumed
-     by the `.sbsk-dialog::backdrop` rule below rather than as a `bg-*` class. */
-  --color-toggle-bg: var(--color-darkestblue);
-  --color-toggle-text: var(--color-white);
+  /* Brand constants, used where a colour must not follow the theme (the die's face). The
+     semantic roles further down are what components style from. */
+  --color-brand-orange: #f29d35;
+  --color-brand-navy: #002f5f;
 
   /* ---------------------------------------------------------------------
      Typography. The library pins an exact scale that Tailwind's default sizes
@@ -162,9 +94,8 @@
   --container-form: 37.5rem; /* 600 */
 
   /* ---------------------------------------------------------------------
-     Motion. The brand is still flat — sharp corners, no blur, no scale — but not
-     static: a pressable surface lifts up and left onto a hard offset shadow. See
-     the `lift` utility below, which is the only thing that should assemble these.
+     Motion. Colour transitions only (redesign 2026); nothing on the site moves on hover
+     except the die. These name the durations and curves that remain.
      --------------------------------------------------------------------- */
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -177,70 +108,10 @@
   --duration-slow: 280ms;
   --duration-slower: 440ms;
 
-  /* Composed pairs. `fast` is the colour swap, `snappy` is the travel — they are
-     different durations *and* different curves, so a lift and its colour change
-     are deliberately not in lockstep. */
+  /* Composed pairs. `snappy` is the die's hover travel. */
   --transition-fast: var(--duration-fast) var(--ease-standard);
   --transition-base: var(--duration-base) var(--ease-standard);
   --transition-snappy: var(--duration-base) var(--ease-out);
-
-  /* Elevation is hard offset only — no blur, no spread — except `shadow-overlay`,
-     which is the single soft shadow in the system and belongs to modals/drawers.
-     The colour is deliberately NOT `--color-shadow`: that name is inside Tailwind's
-     `--shadow-*` namespace and would mint a broken `shadow-color` utility. */
-  /* Both shadow colours stay behind a var on purpose. Tailwind resolves a literal colour
-     inside a `--shadow-*` token at build time and inlines it, which would silently kill the
-     `.dark` override below; an unresolvable `var()` is kept as-is and flips at runtime.
-     That same indirection is what lets `surface-dark` / `surface-light` re-point the colour
-     per subtree — see those utilities at the bottom of this file. This value is the light
-     page background's shadow; it is a *default*, not the only value. */
-  --hard-shadow-color: var(--color-darkestblue);
-  --overlay-shadow-color: rgb(3 31 59 / 0.35);
-  --shadow-1: 2px 2px 0 var(--hard-shadow-color);
-  --shadow-2: 4px 4px 0 var(--hard-shadow-color);
-  --shadow-3: 6px 6px 0 var(--hard-shadow-color);
-
-  /* The accent pair is the library's, and is deliberately not what `surface-dark` uses: an
-     orange shadow under a `variant="primary"` button is orange-on-orange, so the button reads
-     as a smeared parallelogram rather than a lifted rectangle. Kept for a deliberate accent
-     shadow on a non-orange element; not part of the lift utilities. */
-  --shadow-accent-1: 2px 2px 0 var(--color-orange);
-  --shadow-accent-2: 4px 4px 0 var(--color-orange);
-  /* Field state, painted as the brand's hard offset rather than a coloured border alone —
-     `Input`/`Textarea` land these via `fieldStateShadow()` in `fieldClasses.ts`. Deliberately
-     not built on `--hard-shadow-color`: that token is a *surface* property that
-     `surface-dark`/`-light` re-point per panel, where a field's state colour must not move —
-     a red field means the same thing on the white page and on a `darkblue` panel. Both are
-     literal colours, not `var()`, which is normally the mistake `docs/DESIGN_LANGUAGE.md`
-     warns kills the `.dark` override — harmless here because the field fill is white in both
-     themes, so neither colour has one. Never the only signal: `--color-error` measures 2.01:1
-     on `darkblue`, which is why `Input`'s red hairline, its `AlertCircle` glyph and
-     `aria-invalid` all still carry the state on their own. */
-  --shadow-error-2: 4px 4px 0 var(--color-error);
-  --shadow-success-2: 4px 4px 0 var(--color-success);
-  /* A field's resting focus indicator, same family as the pair above and painted for the same
-     reason: `fieldSurface` used to draw this state as `focus-visible:outline` *and*
-     `fieldStateShadow()` drew the shadow, so a focused field carried both at once (#210). The
-     shadow now carries the state alone, which means it has to clear WCAG 1.4.11's 3:1 on
-     every fill a field sits on rather than just on `darkblue`. `--color-orange` does not:
-
-       colour          white  gray-100  darkblue  darkestblue
-       orange          2.18   2.01      6.14      7.64
-       darkorange      3.33   3.07      4.01      4.99
-       darkestorange   4.51   4.16      2.96 ✗    3.68
-
-     `darkorange` is the only one of the three that passes on all four, so the field focus
-     state is the one place in the system that shows `darkorange` instead of `orange` —
-     `--color-focus-ring` (still orange) is unchanged and still used everywhere the outline
-     survives (`Button`, `Chip`, `Link`, `NavMenuButton`, `Card`, `Checkbox`). */
-  --shadow-focus-2: 4px 4px 0 var(--color-darkorange);
-  --shadow-overlay: 0 12px 32px -8px var(--overlay-shadow-color);
-
-  --lift-hover: translate(-2px, -2px);
-  --lift-press: translate(1px, 1px);
-  /* A content card is a much bigger target than a button, so the same 2px travel reads as
-     a jitter on it rather than a lift. The library's card moves 3px onto `--shadow-3`. */
-  --lift-card-hover: translate(-3px, -3px);
 
   --breakpoint-xs: 25rem;
 
@@ -353,17 +224,6 @@
   --color-focus: #f29d35;
   --sbsk-shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 2px 8px rgb(0 0 0 / 0.3);
   --sbsk-shadow-overlay: 0 12px 32px -8px rgb(0 0 0 / 0.6);
-
-  /* White, not brand black. `--color-black` was here so shadows would show against a dark
-     page and it never worked: brand black is #0d0d0d, the dark page is `darkestblue` #031f3b,
-     and the two are 1.17:1 apart — every lift shadow in dark mode was invisible. This is the
-     dark page background's shadow, and like the light one above it is only the default; a
-     surface inside the page that paints a light fill takes `surface-light`. */
-  --hard-shadow-color: var(--color-white);
-  --color-hero-scrim: rgb(3 31 59 / 0.55);
-  --color-toggle-bg: var(--color-orange);
-  --color-toggle-text: var(--color-darkblue);
-  --overlay-shadow-color: rgb(0 0 0 / 0.6);
 }
 
 /* The modal scrim on the native `<dialog>`'s `::backdrop`, which no utility on the dialog can
@@ -395,7 +255,7 @@
   transform: translateY(0) rotate(0);
 }
 .sbsk-dice:focus-visible {
-  outline: 2px solid var(--color-orange);
+  outline: 3px solid var(--color-focus);
   outline-offset: 3px;
 }
 .sbsk-dice.rolling {
@@ -500,184 +360,14 @@
     display: block;
     width: 100%;
     height: auto;
-    border: 1px solid var(--color-black);
+    border: 1px solid var(--color-border);
   }
 }
 
-/* The "solid lift" micro-interaction, and the one place it is defined.
-   Rest is flat — no shadow, no offset. Hover lifts up-left onto the deeper hard shadow;
-   press settles back down onto the shallow one.
-
-   Colour and travel run on different clocks, matching the library's `Button.jsx`: the
-   colour swap is `--transition-fast` (120ms, ease-standard) so it reads as instant, while
-   the travel is `--transition-snappy` (180ms, ease-out) so it decelerates into place.
-
-   `lift` owns the colour transition as well, which means an element takes `lift` *instead
-   of* `transition-colors`, never both — the last `transition-property` in the cascade wins
-   outright and would silently drop the other half. A test pins this. */
-@utility lift {
-  transition:
-    transform var(--transition-snappy),
-    box-shadow var(--transition-snappy),
-    background-color var(--transition-fast),
-    border-color var(--transition-fast),
-    color var(--transition-fast);
-
-  &:hover {
-    transform: var(--lift-hover);
-    box-shadow: var(--shadow-2);
-  }
-
-  &:active {
-    transform: var(--lift-press);
-    box-shadow: var(--shadow-1);
-  }
-
-  /* `:hover` still matches a disabled element, so a `variant="primary"` button carrying the
-     `disabled` attribute would otherwise lift under the pointer. Last rule wins at equal
-     specificity, so this has to stay below `:hover` and `:active`. */
-  &:disabled {
-    transform: none;
-    box-shadow: none;
-  }
-
-  /* Keep the shadow — it is not motion — but drop the travel. */
-  @variant motion-reduce {
-    transition:
-      box-shadow var(--transition-fast),
-      background-color var(--transition-fast),
-      border-color var(--transition-fast),
-      color var(--transition-fast);
-
-    &:hover,
-    &:active {
-      transform: none;
-    }
-  }
-}
-
-/* The content card's deeper cousin, and the answer to "do cards lift?" — they do, but not on
-   `lift`'s clock. A card is a wide target, so it travels 3px onto `--shadow-3` where a button
-   travels 2px onto `--shadow-2`.
-
-   A card also has a state a button does not: open. An expanded card rests on `--shadow-2`
-   with no offset, which keeps the open item reading as raised out of the stack even when the
-   pointer is elsewhere. There is no press state — the card settles by expanding, and a
-   downward nudge under the finger fights the panel opening beneath it.
-
-   `data-expanded` rather than `:has(…[aria-expanded='true'])` because the shadow belongs to
-   the card and the ARIA state belongs to the header button inside it; reading across would
-   make the two impossible to reorder. Same mutual-exclusion rule as `lift`: this owns
-   `transition` outright, so never pair it with a `transition-*` utility on the same element. */
-@utility lift-card {
-  transition:
-    transform var(--transition-snappy),
-    box-shadow var(--transition-snappy);
-
-  &[data-expanded='true'] {
-    box-shadow: var(--shadow-2);
-  }
-
-  /* Below the expanded rule on purpose — equal specificity, last one wins, so hovering an
-     already-open card still lifts it the rest of the way. */
-  &:hover {
-    transform: var(--lift-card-hover);
-    box-shadow: var(--shadow-3);
-  }
-
-  /* Keep the shadow — it is not motion — but drop the travel. */
-  @variant motion-reduce {
-    transition: box-shadow var(--transition-fast);
-
-    &:hover {
-      transform: none;
-    }
-  }
-}
-
-/* The chip's shallower cousin. A chip is a smaller, lighter target than a button, so it
-   lifts onto `--shadow-1` rather than `--shadow-2` and presses onto no shadow at all.
-   It also reads `aria-pressed`: a selected chip is already "down", so it still presses but
-   never lifts. Same mutual-exclusion rule as `lift` — never pair it with `transition-*`. */
-@utility lift-chip {
-  transition:
-    transform var(--transition-snappy),
-    box-shadow var(--transition-snappy),
-    background-color var(--transition-fast),
-    border-color var(--transition-fast),
-    color var(--transition-fast);
-
-  &:hover {
-    transform: var(--lift-hover);
-    box-shadow: var(--shadow-1);
-  }
-
-  &[aria-pressed='true']:hover {
-    transform: none;
-    box-shadow: none;
-  }
-
-  /* `:active:active` is (0,3,0), matching the `aria-pressed`/`:hover` rule above rather than
-     losing to it at (0,2,0) — you always hover while pressing with a mouse, so a plain
-     `:active` never won and a selected chip stayed flat when held down. Doubling `:active`
-     rather than gating on `[aria-pressed]` keeps the press feedback for chips that render no
-     such attribute (e.g. the AvatarStack counter). Below the `:hover` rules on purpose — equal
-     specificity now, last one wins. */
-  &:active:active {
-    transform: var(--lift-press);
-    box-shadow: none;
-  }
-
-  &:disabled {
-    transform: none;
-    box-shadow: none;
-  }
-
-  /* Keep the shadow — it is not motion — but drop the travel. */
-  @variant motion-reduce {
-    transition:
-      box-shadow var(--transition-fast),
-      background-color var(--transition-fast),
-      border-color var(--transition-fast),
-      color var(--transition-fast);
-
-    &:hover,
-    &:active {
-      transform: none;
-    }
-  }
-}
-
-/* The shadow colour is a property of the *surface*, not of the theme.
-
-   `lift` and friends paint a solid offset rectangle behind the element, onto whatever fill is
-   behind it. Two global values keyed off `.dark` cannot cover that: a `darkblue` panel exists
-   in light mode and an `orange` one exists in dark mode, and a shadow that contrasts with the
-   page background does not necessarily contrast with either. Measured against the brand
-   palette (WCAG 1.4.11 wants 3:1 for a non-text visual):
-
-   | fill                        | darkestblue shadow | white shadow |
-   | --------------------------- | ------------------ | ------------ |
-   | `darkestblue` / `darkblue`  | 1.00 / 1.24        | 16.63 /13.36 |
-   | `orange`                    | 7.64               | 2.18         |
-   | `darkorange`                | 4.99               | 3.33         |
-   | `white` / `gray-100` / `-300` | 16.63 / 15.34 / 11.78 | 1.00 / 1.08 / 1.41 |
-
-   So there are exactly two usable shadow colours and the fill decides which. These two
-   utilities declare that: put one on the element that paints the fill, and every lifting
-   descendant picks it up through the cascade with no per-component work.
-
-   `surface-light` covers `orange` and `darkorange` as well as the true light fills — the name
-   is about which shadow the fill can carry, and orange can only carry the dark one. Note that
-   the utility affects the element it sits on as well as its subtree, so it belongs on the
-   container that paints the fill, never on the lifting element itself: a `Card` casts its own
-   shadow onto the page behind it, while the header and panel *inside* it are the surfaces its
-   buttons cast onto. */
 /* Redesign 2026: a fixed fill also fixes the roles its children read, in both themes, so a
    Button, link or focus ring inside it stays legible whatever the page theme is. `surface-dark`
    carries the same roles as `on-dark`; `surface-light` is for fixed light and orange fills. */
 @utility surface-dark {
-  --hard-shadow-color: var(--color-white);
   --color-fg: #ffffff;
   --color-fg-muted: #c5d0dc;
   --color-heading: #ffffff;
@@ -701,7 +391,6 @@
 @utility surface-light {
   /* #10233a, not navy: it is the only ink that clears 4.5:1 on darkorange (4.76:1) as well
      as on orange (7.29:1) and white. */
-  --hard-shadow-color: var(--color-darkestblue);
   --color-fg: #10233a;
   --color-fg-muted: #10233a;
   --color-heading: #10233a;

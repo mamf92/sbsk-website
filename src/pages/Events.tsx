@@ -5,14 +5,12 @@ import { linkClassesInherit } from '../components/ui/linkClasses';
 export default function Events() {
   const { events } = useLoaderData() as { events: CalendarEventTypes[] };
   return (
-    <div className="dark:bg-darkestblue min-h-[60vh] bg-white dark:text-white">
+    <div className="bg-page text-fg min-h-[60vh]">
       {/* An <h1>, not a <div>: this route has content, so it is not one of #147's placeholders,
           but it had the same missing document heading. #136 fixed the orange-on-white: orange
           only clears AA on the darkestblue fill dark mode uses here, so light mode takes
           darkestblue instead, matching the pairing HomeHeroSection's <h1> already uses. */}
-      <h1 className="text-darkestblue dark:text-orange font-heading text-h1 font-bold">
-        Arrangementer
-      </h1>
+      <h1 className="text-heading font-heading text-h1 font-bold">Arrangementer</h1>
       <ul className="flex flex-col gap-y-4">
         {events.map((event) => {
           // Only events flagged with `hasDetailPage` in Sanity have a page to link to — that

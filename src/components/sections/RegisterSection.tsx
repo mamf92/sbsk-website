@@ -4,7 +4,7 @@ import { Button } from '../ui/Buttons';
 import { Input } from '../ui/Input';
 import { Alert } from '../ui/Alert';
 import { useAuthActions } from '../../hooks/useAuthActions';
-import { linkClassesInherit } from '../ui/linkClasses';
+import { linkClasses } from '../ui/linkClasses';
 
 export default function RegisterSection() {
   const navigate = useNavigate();
@@ -43,15 +43,17 @@ export default function RegisterSection() {
   };
 
   return (
-    <div className="bg-darkblue surface-dark max-w-form my-4 flex w-full items-center justify-center px-4">
-      <div className="flex w-full flex-col gap-8 py-24">
+    <div className="border-border bg-surface text-fg shadow-card max-w-form my-4 flex w-full items-center justify-center border px-4">
+      <div className="flex w-full flex-col gap-8 py-12 md:py-16">
         <div className="flex flex-col items-center gap-4">
-          <h1 className="font-heading text-h1 text-center text-white">Lag medlemsprofil</h1>
-          <p className="font-body w-full text-center text-white">
+          <h1 className="font-heading text-heading text-h1 text-center font-bold">
+            Lag medlemsprofil
+          </h1>
+          <p className="font-body w-full text-center">
             Er du medlem i klubben kan du lage din egen medlemsprofil for å melde deg på
             arrangementer, se medlemsfordeler og på sikt mye mer!
           </p>
-          <Link to="/login" className={`${linkClassesInherit} text-white underline`}>
+          <Link to="/login" className={linkClasses()}>
             Har du allerede en profil kan du logge inn her!
           </Link>
         </div>

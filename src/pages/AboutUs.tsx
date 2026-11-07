@@ -10,7 +10,7 @@ export default function AboutUs() {
   };
 
   return (
-    <div className="dark:bg-darkestblue min-h-[60vh] bg-white dark:text-white">
+    <div className="bg-page text-fg min-h-[60vh]">
       <AboutUsSection aboutPage={aboutPage} boardMembers={boardMembers} />
     </div>
   );

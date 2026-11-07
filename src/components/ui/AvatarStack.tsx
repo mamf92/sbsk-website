@@ -28,8 +28,8 @@ const overlapMargin = {
 } as const;
 
 const counterBase =
-  'inline-flex flex-none items-center justify-center rounded-none border border-black ' +
-  'bg-darkblue font-heading font-bold text-white select-none ';
+  'inline-flex flex-none items-center justify-center rounded-none border border-border ' +
+  'bg-secondary font-heading font-bold text-on-secondary select-none ';
 
 const counterSizes = {
   xs: 'h-6 min-w-6 px-1 text-xs',
@@ -68,7 +68,7 @@ export const AvatarStack = React.forwardRef<HTMLDivElement, AvatarStackProps>(
               aria-label={`Vis ${extra} deltakere til`}
               className={[
                 counterClasses,
-                'lift-chip focus-visible:outline-focus-ring cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+                'hover:bg-link-hover focus-visible:outline-focus cursor-pointer transition-colors duration-150 focus-visible:outline-3 focus-visible:outline-offset-2 motion-reduce:transition-none',
               ].join(' ')}
             >
               +{extra}

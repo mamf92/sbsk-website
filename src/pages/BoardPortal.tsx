@@ -10,7 +10,7 @@ export default function BoardPortal() {
   };
   return (
     <>
-      <div className="dark:bg-darkestblue min-h-[60vh] bg-white">
+      <div className="bg-page text-fg min-h-[60vh]">
         <BoardPoartalSection member={profile} members={members} />
       </div>
     </>

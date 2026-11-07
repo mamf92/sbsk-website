@@ -214,10 +214,7 @@ function FilterRow({ label, children }: { label: string; children: React.ReactNo
   const captionId = React.useId();
   return (
     <div className="flex flex-col gap-2">
-      <span
-        id={captionId}
-        className="text-xs font-bold tracking-[0.06em] text-gray-500 uppercase dark:text-gray-300"
-      >
+      <span id={captionId} className="text-fg-muted text-xs font-bold tracking-[0.06em] uppercase">
         {label}
       </span>
       <div role="group" aria-labelledby={captionId} className="flex flex-wrap items-center gap-2">
@@ -238,15 +235,11 @@ function GamesHero({ gamesHero }: { gamesHero?: GamesHeroTypes | null }) {
         {/* LCP element on /våre-spill, the same way the home hero is on / (#222). */}
         <HeroImage image={gamesHero?.image} priority />
       </div>
-      <div className="absolute inset-0 flex h-[calc(62vh)] flex-col justify-center bg-white/50 p-4 dark:bg-black/50">
+      <div className="bg-page/70 text-fg absolute inset-0 flex h-[calc(62vh)] flex-col justify-center p-4">
         <div className="max-w-content mx-auto flex w-full flex-col items-start gap-6">
           <div className="max-w-form flex flex-col items-start gap-3">
-            <h1 className="text-darkestblue font-heading text-h1 text-left font-bold dark:text-white">
-              {title}
-            </h1>
-            <p className="text-darkestblue text-left text-lg font-normal dark:text-white">
-              {subtitle}
-            </p>
+            <h1 className="font-heading text-heading text-h1 text-left font-bold">{title}</h1>
+            <p className="text-fg text-left text-lg font-normal">{subtitle}</p>
           </div>
           <HeroLinks links={gamesHero?.links} fallback={GAMES_HERO_LINKS} />
         </div>

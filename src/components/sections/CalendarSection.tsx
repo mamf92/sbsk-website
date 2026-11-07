@@ -9,6 +9,7 @@ import { Input } from '../ui/Input';
 import { Tabs } from '../ui/Tabs';
 import { Select } from '../ui/Select';
 import { Divider } from '../ui/Divider';
+import { Tag, type TagTone } from '../ui/Tag';
 import AlertCircleIcon from '../../assets/icons/symbols/alert-circle.svg?react';
 import InfoIcon from '../../assets/icons/symbols/info.svg?react';
 import SearchIcon from '../../assets/icons/symbols/search.svg?react';
@@ -56,51 +57,23 @@ const PAGE_SIZE = 10;
 
 type Category = CalendarEventTypes['category'];
 
-// Category theming: spillkveld = blue, turnering = orange, annet = dark orange. `accent` is the
-// shade-different companion fill, used by both the date block and the open panel.
+// Category colour lives in two small places only, never as the card's fill (decision 4): the
+// date block's tint and the `Tag` beside the time. Spillkveld stays blue and turnering orange so
+// the list still scans by kind of night; `annet` takes the neutral field tint with a blue tag.
 //
-// These are spelled out as whole class strings on purpose. Tailwind scans source text, so an
-// assembled `bg-${category}` never reaches the stylesheet — which is exactly why the previous
-// version of this file rendered its cards unstyled.
-//
-// `surfaceTone` is the `surface-*` utility matching the `surface` fill, kept separate because
-// `surface` lands on the card root — the element that carries `lift-card` — and a `surface-*`
-// there would repoint the card's own shadow onto the page instead of its children's onto the
-// card. It goes on the header row inside, which is what the RSVP button actually casts onto.
-// `accent` only ever fills non-lifting elements, so it carries its tone inline.
-//
-// `surfaceButtonVariant`/`accentButtonVariant` name which `Button` variant survives on top of
-// that fill. `primary` is `bg-orange`, which is pixel-identical to `turnering`'s surface and to
-// `annet`'s accent — a button in that spot vanishes into its own card. Same collision
-// `PostsSection`'s `linkVariants` guards against for the news feed's orange-family panels.
+// Whole class strings on purpose: Tailwind scans source text, so an assembled `bg-${category}`
+// never reaches the stylesheet.
 const CATEGORY_STYLES = {
-  // `bg-darkblue`, not `bg-category-spillkveld`. #88 repointed that token at orange so the
-  // news feed's spillkveld chip would match its cards, which are orange there. The calendar
-  // codes spillkveld navy (Calendar.jsx, and #87 spells it out) precisely so it reads apart
-  // from turnering at a glance — on the news feed the two are aliases of one orange, which
-  // is fine for a topic label and not fine for a list you scan for what kind of night it is.
-  spillkveld: {
-    surface: 'bg-darkblue text-white',
-    surfaceTone: 'surface-dark',
-    accent: 'bg-darkestblue surface-dark text-white',
-    surfaceButtonVariant: 'primary',
-    accentButtonVariant: 'primary',
-  },
-  turnering: {
-    surface: 'bg-category-turnering text-darkestblue',
-    surfaceTone: 'surface-light',
-    accent: 'bg-darkorange surface-light text-darkestblue',
-    surfaceButtonVariant: 'secondary',
-    accentButtonVariant: 'primary',
-  },
-  annet: {
-    surface: 'bg-category-annet text-darkestblue',
-    surfaceTone: 'surface-light',
-    accent: 'bg-orange surface-light text-darkestblue',
-    surfaceButtonVariant: 'primary',
-    accentButtonVariant: 'secondary',
-  },
-} as const;
+  spillkveld: { date: 'bg-tag-blue-bg text-tag-blue-fg', tag: 'blue' },
+  turnering: { date: 'bg-tag-orange-bg text-tag-orange-fg', tag: 'orange' },
+  annet: { date: 'bg-surface-muted text-heading', tag: 'blue' },
+} as const satisfies Record<Category, { date: string; tag: TagTone }>;
+
+const CATEGORY_LABELS: Record<Category, string> = {
+  spillkveld: 'Spillkveld',
+  turnering: 'Turnering',
+  annet: 'Annet',
+};
 
 const categoryStyles = (category: Category) =>
   CATEGORY_STYLES[category] ?? CATEGORY_STYLES.spillkveld;
@@ -265,12 +238,10 @@ export default function CalendarSection({
 function CompactHeading({ title, subtitle }: CalendarHeroTypes = {}) {
   return (
     <div className="max-w-content content-gutter:px-0 flex w-full flex-col gap-2 px-3">
-      <h2 className="font-heading text-h2 text-darkestblue tracking-heading font-bold dark:text-white">
+      <h2 className="font-heading text-h2 text-heading tracking-heading font-bold">
         {title || FALLBACK_CALENDAR.title}
       </h2>
-      <p className="font-body text-darkestblue dark:text-white">
-        {subtitle || FALLBACK_CALENDAR.subtitle}
-      </p>
+      <p className="font-body text-fg-muted">{subtitle || FALLBACK_CALENDAR.subtitle}</p>
     </div>
   );
 }
@@ -345,14 +316,14 @@ function CalendarHero({
               target="_blank"
               rel="noopener noreferrer"
               variant="inherit"
-              className="bg-darkestblue/50 text-xs text-white underline sm:text-sm"
+              className="bg-footer/70 px-1 text-xs text-white underline sm:text-sm"
             >
               {resolvedImageSource}
             </ExternalTextLink>
           </div>
         )}
       </div>
-      <div className="bg-darkblue surface-dark flex flex-col items-start gap-2 p-4 text-white sm:p-6">
+      <div className="bg-header on-dark text-fg flex flex-col items-start gap-2 p-4 sm:p-6">
         <h1 className="font-heading text-h1 tracking-heading font-bold">{resolvedTitle}</h1>
         <p className="font-body">{resolvedSubtitle}</p>
       </div>
@@ -436,7 +407,7 @@ function EventList({ events, failed }: { events: CalendarEventTypes[]; failed?: 
 
   if (events.length === 0) {
     return (
-      <div className="max-w-content text-darkestblue content-gutter:px-0 mx-auto w-full px-2 dark:text-white">
+      <div className="max-w-content content-gutter:px-0 mx-auto w-full px-2">
         {/* An unreachable backend must not be reported as an empty programme — see PostsSection. */}
         {failed ? (
           <EmptyState
@@ -635,19 +606,14 @@ function EventRow({
     <div
       data-event-id={event._id}
       data-expanded={expanded}
-      className={[
-        'w-full border border-black dark:border-white',
-        styles.surface,
-        expandable || linksOut ? 'lift-card' : '',
-      ].join(' ')}
+      className="border-border bg-surface text-fg shadow-card w-full border"
     >
       <div
         onClick={
           expandable ? onToggle : linksOut && detailPath ? () => navigate(detailPath) : undefined
         }
         className={[
-          'flex min-h-27 items-stretch',
-          styles.surfaceTone,
+          'group flex min-h-27 items-stretch',
           expandable || linksOut ? 'cursor-pointer select-none' : '',
         ].join(' ')}
       >
@@ -655,7 +621,7 @@ function EventRow({
         <div
           className={[
             'flex w-20 flex-none flex-col items-center justify-center p-1 sm:w-25',
-            styles.accent,
+            styles.date,
           ].join(' ')}
         >
           <span className="font-heading sm:text-daymark text-5xl leading-[0.78] font-extrabold">
@@ -668,11 +634,21 @@ function EventRow({
 
         <div className="relative flex flex-1 flex-wrap items-center gap-4 p-4 pr-12 sm:flex-nowrap sm:gap-5">
           <div className="flex min-w-0 flex-[1_1_100%] flex-col gap-1 sm:flex-1">
-            <span className="font-body text-xs opacity-85">
-              {timeRange(start, end)}
-              {event.location ? ` · ${event.location}` : ''}
+            <span className="font-body text-fg-muted flex flex-wrap items-center gap-2 text-xs">
+              <Tag tone={styles.tag}>{CATEGORY_LABELS[event.category] ?? 'Annet'}</Tag>
+              <span>
+                {timeRange(start, end)}
+                {event.location ? ` · ${event.location}` : ''}
+              </span>
             </span>
-            <h3 className="font-heading text-h3 font-bold">{event.title}</h3>
+            <h3
+              className={[
+                'font-heading text-heading text-h3 font-bold',
+                expandable || linksOut ? 'group-hover:underline' : '',
+              ].join(' ')}
+            >
+              {event.title}
+            </h3>
           </div>
 
           {/* Members-only. Kept as one block so avatars and the RSVP wrap together. */}
@@ -685,7 +661,7 @@ function EventRow({
                 <AvatarStack people={toAvatarPeople(attendees)} max={3} size="sm" />
               )}
               <Button
-                variant={attending ? 'secondary' : styles.surfaceButtonVariant}
+                variant={attending ? 'ghost' : 'secondary'}
                 size="sm"
                 disabled={rsvp.pending[event._id]}
                 aria-label={attending ? `Meld deg av ${event.title}` : `Meld deg på ${event.title}`}
@@ -707,7 +683,7 @@ function EventRow({
                 clickEvent.stopPropagation();
                 onToggle();
               }}
-              className="focus-visible:outline-focus-ring absolute top-4 right-3 flex h-7 w-7 cursor-pointer items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 sm:static sm:top-auto sm:right-auto"
+              className="focus-visible:outline-focus text-heading absolute top-3 right-2 flex size-11 cursor-pointer items-center justify-center focus-visible:outline-3 focus-visible:outline-offset-2 sm:static sm:top-auto sm:right-auto"
             >
               <ExpandIcon
                 className={[
@@ -723,7 +699,7 @@ function EventRow({
             <Link
               to={detailPath}
               aria-label={`Les mer om ${event.title}`}
-              className="focus-visible:outline-focus-ring absolute top-4 right-3 flex h-7 w-7 items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 sm:static sm:top-auto sm:right-auto"
+              className="focus-visible:outline-focus text-heading absolute top-3 right-2 flex size-11 items-center justify-center focus-visible:outline-3 focus-visible:outline-offset-2 sm:static sm:top-auto sm:right-auto"
             >
               <ArrowRight className="h-5 w-5 fill-current" />
             </Link>
@@ -734,7 +710,7 @@ function EventRow({
       {error && (
         <p
           role="status"
-          className="bg-darkestorange font-body border-t border-black p-2 text-center text-sm font-bold text-white dark:border-white"
+          className="border-border bg-danger-bg text-danger-text font-body border-t px-4 py-2 text-sm font-semibold"
         >
           {error}
         </p>
@@ -756,12 +732,7 @@ function EventRow({
           ].join(' ')}
         >
           <div className="overflow-hidden">
-            <div
-              className={[
-                'flex flex-col gap-4 border-t border-black p-4 sm:p-6 dark:border-white',
-                styles.accent,
-              ].join(' ')}
-            >
+            <div className={['border-border flex flex-col gap-4 border-t p-4 sm:p-6'].join(' ')}>
               {/* Same rich-text rhythm the news cards use — `.sbsk-rt` (src/index.css) owns the
                 spacing *between* blocks; the Portable Text components own the type scale. */}
               {event.content && (
@@ -786,7 +757,7 @@ function EventRow({
                   loading="lazy"
                   decoding="async"
                   alt=""
-                  className="h-84 w-full border border-black object-cover lg:h-100 dark:border-white"
+                  className="border-border h-84 w-full border object-cover lg:h-100"
                 />
               )}
 
@@ -794,7 +765,7 @@ function EventRow({
                 <div className="flex flex-row flex-wrap gap-2">
                   {detailPath && (
                     <Button
-                      variant={styles.accentButtonVariant}
+                      variant="primary"
                       size="sm"
                       icon="right"
                       onClick={() => navigate(detailPath)}
@@ -807,7 +778,9 @@ function EventRow({
                     return (
                       <Button
                         key={index}
-                        variant={styles.accentButtonVariant}
+                        // One main action per panel: the event page if there is one, else the
+                        // first link.
+                        variant={!detailPath && index === 0 ? 'primary' : 'secondary'}
                         size="sm"
                         icon="right"
                         onClick={() =>

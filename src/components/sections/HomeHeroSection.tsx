@@ -42,15 +42,13 @@ export default function HomeHero({
         {/* The home hero is the LCP element on the route every visitor lands on first (#222). */}
         <HeroImage image={image} priority />
       </div>
-      <div className="absolute inset-0 flex h-[calc(80vh)] flex-col items-center justify-center bg-white/50 p-4 text-center dark:bg-black/50">
+      <div className="bg-page/70 text-fg absolute inset-0 flex h-[calc(80vh)] flex-col items-center justify-center p-4 text-center">
         <div className="flex flex-1 flex-col justify-center gap-12 md:w-[calc(60%)]">
           <div className="max-w-form flex flex-col items-start gap-4">
-            <h1 className="text-darkestblue text-h1 text-left font-bold dark:text-white">
+            <h1 className="font-heading text-heading text-h1 text-left font-bold">
               {resolvedTitle}
             </h1>
-            <p className="text-darkestblue text-left text-lg font-normal dark:text-white">
-              {resolvedSubtitle}
-            </p>
+            <p className="text-fg text-left text-lg font-normal">{resolvedSubtitle}</p>
           </div>
           {/* `navigate(link.url)` used to take the editor's value verbatim, which only worked
               for a bare path — a full URL copied from the address bar, which is what an editor
@@ -61,10 +59,10 @@ export default function HomeHero({
         <div className="flex w-full flex-col pb-2 lg:w-[calc(80%)]">
           {sponsorsExist && (
             <div className="flex flex-col items-start gap-4">
-              <h2 className="text-darkestblue text-h2 text-left font-bold dark:text-white">
+              <h2 className="font-heading text-heading text-h2 text-left font-bold">
                 Vi samarbeider med:
               </h2>
-              <div className="flex w-full flex-col items-start justify-between gap-2 self-baseline rounded-none p-4 sm:flex-row md:gap-0 dark:bg-white/50">
+              <div className="flex w-full flex-col items-start justify-between gap-2 self-baseline bg-white/80 p-4 sm:flex-row md:gap-0">
                 {sponsors.map((sponsor, index) => (
                   <Link
                     key={index}
@@ -91,7 +89,7 @@ export default function HomeHero({
                 target="_blank"
                 rel="noopener noreferrer"
                 variant="inherit"
-                className="text-darkestblue text-sm underline dark:text-white"
+                className="text-fg text-sm underline"
               >
                 {resolvedImageSource}
               </Link>

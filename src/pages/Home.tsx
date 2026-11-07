@@ -13,7 +13,7 @@ export default function Home() {
 
   return (
     <>
-      <div className="dark:bg-darkestblue min-h-[60vh] bg-white dark:text-white">
+      <div className="bg-page text-fg min-h-[60vh]">
         {homeHero ? <HomeHero {...homeHero} /> : <HomeHero />}
         <Posts posts={posts} failed={postsFailed} />
       </div>

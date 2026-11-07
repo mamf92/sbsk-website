@@ -36,11 +36,11 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
   const revalidator = useRevalidator();
 
   return (
-    <div className="bg-darkblue surface-dark max-w-form md:max-w-content mx-auto mb-4 flex w-full flex-col gap-2 px-2 py-24">
+    <div className="border-border bg-surface text-fg shadow-card max-w-form md:max-w-content mx-auto mb-4 flex w-full flex-col gap-2 border px-2 py-12 md:py-16">
       <div className="flex flex-col items-center gap-2 sm:gap-4 sm:px-2">
         <div className="flex flex-col items-start gap-2">
-          <h2 className="font-heading text-h2 font-bold text-white">Medlemsliste</h2>
-          <p className="font-body text-white">
+          <h2 className="font-heading text-heading text-h2 font-bold">Medlemsliste</h2>
+          <p className="font-body text-fg-muted">
             Her ser du oversikt over alle medlemmene i klubben. Klikk på et medlem for å se mer info
             eller redigere innholdet.
           </p>
@@ -75,7 +75,7 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
                 key={option.key}
                 onClick={() => handleSortClick(option.key)}
                 className={`${option.size}`}
-                variant={`${selectedSortField === option.key ? 'secondary' : 'primary'}`}
+                variant={selectedSortField === option.key ? 'secondary' : 'ghost'}
                 size="sm"
                 icon={
                   selectedSortField === option.key ? (sortOrder === 'asc' ? 'asc' : 'desc') : 'none'
@@ -89,7 +89,7 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
         {/* Was a full-screen fixed overlay with a blur — the most intrusive of the three
             loading treatments in the app, for the least consequential wait. The list it is
             about is right here, so the indicator belongs here too. */}
-        {loading && <LoadingIndicator label="Laster medlemmer…" className="px-4 py-6 text-white" />}
+        {loading && <LoadingIndicator label="Laster medlemmer…" className="px-4 py-6" />}
         {members.length === 0 && (
           <EmptyState
             icon={InfoIcon}
@@ -109,10 +109,10 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
           />
         )}
         {sortedMembers.length > 0 && selectedSortField && (
-          <ul className="flex flex-col bg-white px-2 py-4">
+          <ul className="flex flex-col px-2 py-4">
             {sortedMembers.map((member) => (
               <li
-                className="focus-visible:outline-focus-ring ease-standard cursor-pointer transition-colors duration-(--duration-fast) hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2"
+                className="focus-visible:outline-focus hover:bg-surface-muted cursor-pointer transition-colors duration-150 focus-visible:outline-3 focus-visible:-outline-offset-3 motion-reduce:transition-none"
                 key={member.id}
                 role="button"
                 tabIndex={0}
@@ -128,7 +128,7 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
                   }
                 }}
               >
-                <div className="flex w-full justify-between border-b border-black py-4 text-start">
+                <div className="border-border flex w-full justify-between border-b py-4 text-start">
                   <div className="w-[20%]">
                     <p className="text-sm hyphens-auto capitalize sm:text-base" lang="no">
                       {member.name}

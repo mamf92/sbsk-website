@@ -11,7 +11,7 @@ export default function Calendar() {
   };
   return (
     <>
-      <div className="dark:bg-darkestblue min-h-[60vh] bg-white dark:text-white">
+      <div className="bg-page text-fg min-h-[60vh]">
         {calendarHero ? (
           <CalendarSection calendarHero={calendarHero} events={events} failed={eventsFailed} />
         ) : (

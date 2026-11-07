@@ -1,15 +1,7 @@
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import { PagePlaceholder } from './PagePlaceholder';
-
-const navigate = vi.fn();
-
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
-  return { ...actual, useNavigate: () => navigate };
-});
 
 const renderPlaceholder = (props: Parameters<typeof PagePlaceholder>[0]) =>
   render(
@@ -45,14 +37,15 @@ describe('PagePlaceholder', () => {
     expect(screen.queryByText('Kommer snart.')).not.toBeInTheDocument();
   });
 
-  it('offers the calendar and membership routes by default', async () => {
+  it('offers the calendar and membership routes by default, as links, the first one orange', () => {
     renderPlaceholder({ title: 'Om oss' });
 
-    await userEvent.click(screen.getByRole('button', { name: /Se kalender/ }));
-    expect(navigate).toHaveBeenLastCalledWith('/kalender');
-
-    await userEvent.click(screen.getByRole('button', { name: /Bli medlem/ }));
-    expect(navigate).toHaveBeenLastCalledWith('/bli-medlem');
+    const calendar = screen.getByRole('link', { name: /Se kalender/ });
+    expect(calendar).toHaveAttribute('href', '/kalender');
+    expect(calendar).toHaveClass('bg-primary');
+    const join = screen.getByRole('link', { name: /Bli medlem/ });
+    expect(join).toHaveAttribute('href', '/bli-medlem');
+    expect(join).not.toHaveClass('bg-primary');
   });
 
   it('lets a page that would link to itself narrow the actions', () => {
@@ -61,8 +54,8 @@ describe('PagePlaceholder', () => {
       actions: [{ label: 'Se kalender', to: '/kalender' }],
     });
 
-    expect(screen.getByRole('button', { name: /Se kalender/ })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Bli medlem/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Se kalender/ })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Bli medlem/ })).not.toBeInTheDocument();
   });
 
   // Dark mode is the reason #147 was a P2: four of the six routes had a bare `bg-white`, so in
@@ -72,8 +65,8 @@ describe('PagePlaceholder', () => {
     renderPlaceholder({ title: 'Om oss' });
 
     const section = screen.getByRole('heading', { level: 1 }).closest('section');
-    expect(section?.className).toContain('bg-white');
-    expect(section?.className).toContain('dark:bg-darkestblue');
+    // `bg-page` has a light and a dark value, so one class covers both themes.
+    expect(section?.className).toContain('bg-page');
   });
 
   // The shell already gives `main` `flex-1`. A viewport-height floor on top of that produced a
