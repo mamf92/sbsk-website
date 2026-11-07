@@ -757,6 +757,7 @@
   --color-on-secondary: #002f5f;
   --color-surface-muted: rgb(255 255 255 / 0.12);
   --color-border: rgb(255 255 255 / 0.2);
+  --color-border-strong: #a3b1c2;
   --color-focus: #f29d35;
   /* A dark fill takes the dark-theme status colours, so an Alert or FieldError on it reads. */
   --color-danger-text: #ff8a80;
@@ -780,6 +781,7 @@
   --color-on-secondary: #ffffff;
   --color-surface-muted: rgb(0 47 95 / 0.1);
   --color-border: rgb(0 47 95 / 0.25);
+  --color-border-strong: #10233a;
   --color-focus: #10233a;
   /* A light fill takes the light-theme status colours, whatever the page theme. */
   --color-danger-text: #b5251f;
@@ -803,6 +805,7 @@
   --color-on-secondary: #002f5f;
   --color-surface-muted: rgb(255 255 255 / 0.12);
   --color-border: rgb(255 255 255 / 0.2);
+  --color-border-strong: #a3b1c2;
   --color-focus: #f29d35;
   /* A dark fill takes the dark-theme status colours, so an Alert or FieldError on it reads. */
   --color-danger-text: #ff8a80;

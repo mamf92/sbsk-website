@@ -116,8 +116,10 @@ describe('PostsSection month grouping', () => {
   it('hides the month dividers under a title sort, without dropping any post', async () => {
     renderList();
 
-    await userEvent.click(screen.getByRole('button', { name: /Sorter innlegg/ }));
-    await userEvent.click(screen.getByRole('option', { name: 'Tittel (A-Å)' }));
+    await userEvent.selectOptions(
+      screen.getByRole('combobox', { name: 'Sorter etter' }),
+      screen.getByRole('option', { name: 'Tittel (A-Å)' }),
+    );
 
     expect(screen.queryByText('JUNI 2026')).not.toBeInTheDocument();
     expect(screen.queryByText('MAI 2026')).not.toBeInTheDocument();

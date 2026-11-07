@@ -54,17 +54,14 @@ describe('Textarea', () => {
     expect(ref.current).toBe(screen.getByPlaceholderText('x'));
   });
 
-  it('uses the hard offset shadow as its focus treatment, not an outline or a ring', () => {
+  it('draws the shared focus outline and turns its bottom line to the focus colour', () => {
     render(<Textarea placeholder="x" />);
     const { className } = screen.getByPlaceholderText('x');
 
-    expect(className).toContain('focus-visible:shadow-focus-2');
-    // `focus-visible:outline-none` is the fix, not the thing being guarded against here — it
-    // suppresses the browser's own default ring rather than painting one. No `outline-<n>` /
-    // `outline-focus-ring` utility should paint an actual outline alongside the shadow.
-    expect(className).toContain('focus-visible:outline-none');
-    expect(className).not.toMatch(/focus-visible:outline-(?!none)/);
-    expect(className).not.toContain('focus:ring');
+    expect(className).toContain('focus-visible:outline-focus');
+    expect(className).toContain('focus:border-focus');
+    expect(className).toContain('border-b-2');
+    expect(className).not.toMatch(/shadow/);
   });
 
   it('marks itself valid with a check glyph, distinct from the resting class list', () => {

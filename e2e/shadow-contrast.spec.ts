@@ -307,9 +307,9 @@ test('the front page really does carry lifting elements to measure', async ({ pa
   await expect(page.locator('#main')).not.toBeEmpty();
 
   // Without this the contrast tests would pass on an empty page. The count is a floor, not a
-  // pin. Redesign 2026: Button no longer lifts, so the floor drops as each component is rebuilt
+  // pin. Redesign 2026: Button and Chip no longer lift, so the floor drops as each component is rebuilt
   // without `lift`; this spec goes once the last `lift*` consumer has gone.
   await expect(page.locator('.lift, .lift-chip, .lift-card')).not.toHaveCount(0);
   const measurements = await measureLiftingElements(page);
-  expect(measurements.length).toBeGreaterThanOrEqual(5);
+  expect(measurements.length).toBeGreaterThanOrEqual(1);
 });

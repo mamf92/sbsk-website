@@ -36,9 +36,11 @@ describe('Checkbox', () => {
     expect(box).toHaveAttribute('name', 'is_admin');
   });
 
-  it('renders the tick glyph, which the native control never painted', () => {
-    const { container } = render(<Checkbox aria-label="Administrator" />);
-    expect(container.querySelector('svg')).not.toBeNull();
+  it('is the native checkbox, tinted with accent-color', () => {
+    render(<Checkbox aria-label="Administrator" />);
+    const box = screen.getByRole('checkbox');
+    expect(box).toHaveClass('accent-secondary');
+    expect(box.className).not.toContain('appearance-none');
   });
 
   it('applies a distinct class list when invalid', () => {
@@ -62,16 +64,8 @@ describe('Checkbox', () => {
     expect(ref.current).toBe(screen.getByRole('checkbox'));
   });
 
-  it('uses the hard offset shadow as its focus treatment, not an outline or a ring', () => {
+  it('draws the shared focus outline', () => {
     render(<Checkbox aria-label="x" />);
-    const { className } = screen.getByRole('checkbox');
-
-    expect(className).toContain('focus-visible:shadow-focus-2');
-    // `focus-visible:outline-none` is the fix, not the thing being guarded against here — it
-    // suppresses the browser's own default ring rather than painting one. No `outline-<n>` /
-    // `outline-focus-ring` utility should paint an actual outline alongside the shadow.
-    expect(className).toContain('focus-visible:outline-none');
-    expect(className).not.toMatch(/focus-visible:outline-(?!none)/);
-    expect(className).not.toContain('focus:ring');
+    expect(screen.getByRole('checkbox')).toHaveClass('focus-visible:outline-focus');
   });
 });

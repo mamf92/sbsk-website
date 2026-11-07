@@ -5,10 +5,10 @@ import { Reveal } from '../ui/Reveal';
 // Aliased: this module already imports React Router's `Link` for in-app navigation.
 import { Link as ExternalTextLink } from '../ui/Link';
 import { Button } from '../ui/Buttons';
-import { Chip, type ChipCategory } from '../ui/Chip';
+import { Chip } from '../ui/Chip';
 import { Input } from '../ui/Input';
-import { Segmented } from '../ui/Segmented';
-import { Dropdown } from '../ui/Dropdown';
+import { Tabs } from '../ui/Tabs';
+import { Select } from '../ui/Select';
 import { Divider } from '../ui/Divider';
 import AlertCircleIcon from '../../assets/icons/symbols/alert-circle.svg?react';
 import InfoIcon from '../../assets/icons/symbols/info.svg?react';
@@ -106,15 +106,11 @@ const CATEGORY_STYLES = {
 const categoryStyles = (category: Category) =>
   CATEGORY_STYLES[category] ?? CATEGORY_STYLES.spillkveld;
 
-// `spillkveld` uses the `spillkveldKalender` chip, not the plain `spillkveld` one: the
-// calendar's own spillkveld cards stay navy (`CATEGORY_STYLES` above) rather than following
-// `--color-category-spillkveld`, which was repointed to orange for the posts feed (#88). The
-// chip has to match its own page's cards, not the other page's (#203).
-const CATEGORY_FILTERS: { value: 'all' | Category; label: string; chip: ChipCategory }[] = [
-  { value: 'all', label: 'Alle', chip: 'neutral' },
-  { value: 'spillkveld', label: 'Spillkveld', chip: 'spillkveldKalender' },
-  { value: 'turnering', label: 'Turnering', chip: 'turnering' },
-  { value: 'annet', label: 'Annet', chip: 'annet' },
+const CATEGORY_FILTERS: { value: 'all' | Category; label: string }[] = [
+  { value: 'all', label: 'Alle' },
+  { value: 'spillkveld', label: 'Spillkveld' },
+  { value: 'turnering', label: 'Turnering' },
+  { value: 'annet', label: 'Annet' },
 ];
 
 type Scope = 'upcoming' | 'past' | 'all';
@@ -462,17 +458,15 @@ function EventList({ events, failed }: { events: CalendarEventTypes[]; failed?: 
 
   return (
     <div className="max-w-content content-gutter:px-0 flex w-full flex-col gap-4 px-2">
-      <div className="flex justify-end">
-        <Segmented
-          label="Vis arrangementer"
-          options={SCOPE_OPTIONS}
-          value={scope}
-          onChange={(value) => {
-            setScope(value);
-            setVisibleCount(PAGE_SIZE);
-          }}
-        />
-      </div>
+      <Tabs
+        label="Vis arrangementer"
+        options={SCOPE_OPTIONS}
+        value={scope}
+        onChange={(value) => {
+          setScope(value);
+          setVisibleCount(PAGE_SIZE);
+        }}
+      />
 
       <Input
         type="search"
@@ -491,7 +485,6 @@ function EventList({ events, failed }: { events: CalendarEventTypes[]; failed?: 
           {CATEGORY_FILTERS.map((filter) => (
             <Chip
               key={filter.value}
-              category={filter.chip}
               active={category === filter.value}
               onClick={() => {
                 setCategory(filter.value);
@@ -503,20 +496,21 @@ function EventList({ events, failed }: { events: CalendarEventTypes[]; failed?: 
           ))}
           {rsvp.loggedIn && (
             <Chip
-              className="normal-case"
               active={onlyMine}
               onClick={() => {
                 setOnlyMine((value) => !value);
                 setVisibleCount(PAGE_SIZE);
               }}
             >
-              ★ Mine kommende
+              Mine kommende
             </Chip>
           )}
         </div>
 
-        <Dropdown
-          label="Sorter arrangementer"
+        <Select
+          label="Sorter etter"
+          labelHidden
+          className="w-full sm:w-56"
           options={SORT_OPTIONS}
           value={sort}
           onChange={setSort}

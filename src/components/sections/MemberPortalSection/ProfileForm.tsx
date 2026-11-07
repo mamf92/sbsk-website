@@ -4,6 +4,7 @@ import { Dialog } from '../../ui/Dialog';
 import { Input } from '../../ui/Input';
 import { Textarea } from '../../ui/Textarea';
 import { Alert, FieldError } from '../../ui/Alert';
+import { Label } from '../../ui/Label';
 import getImage from '../../../supabase/queryHelpers/getImage';
 import uploadImage from '../../../supabase/queryHelpers/uploadImage';
 import { useState } from 'react';
@@ -168,13 +169,9 @@ export default function ProfileForm({ profile, onSubmitProfile, onClose }: Profi
             const errorId = `${field.id}-error`;
             return (
               <div key={field.id} className="flex w-full flex-col gap-1">
-                <label
-                  key={field.name}
-                  htmlFor={field.id}
-                  className="font-body flex w-full flex-col gap-1 text-white max-sm:sr-only"
-                >
+                <Label htmlFor={field.id} optional={!field.required}>
                   {field.label}
-                </label>
+                </Label>
                 <Input
                   type={field.type ?? 'text'}
                   id={field.id}
@@ -194,12 +191,9 @@ export default function ProfileForm({ profile, onSubmitProfile, onClose }: Profi
               </div>
             );
           })}
-          <label
-            htmlFor="bio"
-            className="font-body flex w-full flex-col gap-1 text-white max-sm:sr-only"
-          >
+          <Label htmlFor="bio" optional>
             Bio
-          </label>
+          </Label>
           <Textarea
             id="bio"
             name="bio"
