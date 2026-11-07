@@ -79,7 +79,7 @@ describe('HeroLinks', () => {
     renderLinks([{ label: 'Om oss', url: 'https://mamf92.github.io/sbsk-website/om-oss' }]);
 
     await user.click(screen.getByRole('button', { name: /Om oss/ }));
-    expect(screen.getByTestId('path').textContent).toBe('/sbsk-website/om-oss');
+    expect(screen.getByTestId('path').textContent).toBe('/om-oss');
   });
 
   // Neither half of a link row was required until this shipped, so a published document can
