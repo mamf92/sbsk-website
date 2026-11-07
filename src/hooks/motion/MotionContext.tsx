@@ -3,10 +3,8 @@ import type { MotionPreference } from '../../utils/motion';
 
 export interface MotionContextType {
   motion: MotionPreference;
-  /** `true` when motion is reduced, whether by the visitor's choice or by their OS. */
+  /** `true` when the OS asks for reduced motion. */
   reduced: boolean;
-  setMotion: (motion: MotionPreference) => void;
-  toggleReducedMotion: () => void;
 }
 
 export const MotionContext = createContext<MotionContextType | undefined>(undefined);

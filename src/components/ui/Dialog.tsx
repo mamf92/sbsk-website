@@ -53,12 +53,11 @@ function unlockPageScroll() {
   if (openDialogCount === 0) document.body.style.overflow = restoreOverflow;
 }
 
-// `sbsk-dialog` is the hook for the `::backdrop` rule in src/index.css — the scrim and its
-// blur cannot be expressed as utilities on this element, because they paint on a pseudo.
-// `shadow-overlay` is the system's one soft shadow and is reserved for exactly this.
+// `sbsk-dialog` is the hook for the `::backdrop` rule in src/index.css, which a utility on
+// this element cannot reach. The panel is an ordinary surface with the overlay shadow, square.
 const panelBase =
-  'sbsk-dialog bg-darkblue surface-dark shadow-overlay ' +
-  'm-auto flex w-[calc(100vw-1rem)] flex-col gap-3 rounded-none border-0 text-white';
+  'sbsk-dialog bg-surface text-fg shadow-overlay-soft ' +
+  'm-auto flex w-[calc(100vw-1rem)] flex-col gap-4 rounded-none border-0';
 
 // A lookup map, not two competing `max-w-*`/`px-*` strings concatenated — Tailwind resolves
 // conflicting utilities by emit order, not by which one is listed last in a template literal,
@@ -147,7 +146,7 @@ export const Dialog = React.forwardRef<HTMLDialogElement, DialogProps>(function 
       <div className="flex items-center justify-between gap-4">
         {/* h2, not h1: every route already has an h1, and a dialog opening on top of it
             must not mint a second one. */}
-        <h2 id={titleId} className="font-heading text-h2 font-bold text-white">
+        <h2 id={titleId} className="font-heading text-heading text-h3 font-bold">
           {title}
         </h2>
         {headerEnd}

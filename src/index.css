@@ -2,19 +2,10 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Reduced motion is a *preference*, not only an OS setting, so the condition it reads has to
-   be something a toggle can write: `src/utils/motion.ts` puts `.reduce-motion` on `<html>` the
-   same way `theme.ts` puts `.dark` there, seeding it from the OS query on first load.
-   Redefining Tailwind's own `motion-reduce` rather than inventing a second name keeps the
-   `motion-reduce:` classes already in `Card.tsx` working untouched, and means every future one
-   reads the preference for free.
-
-   Dropping the media query entirely — rather than OR-ing it with the class — is what makes the
-   toggle authoritative in *both* directions: a visitor whose OS asks for less motion but who
-   explicitly turns it back on would otherwise still be suppressed by the query. That is only
-   safe because this is a client-rendered SPA: nothing paints before `initMotion()` has run, so
-   there is no window in which the OS preference goes unhonoured. `motion-safe` is redefined as
-   the exact negation so the pair cannot drift apart. */
+/* Reduced motion follows the OS (redesign 2026, decision 3). `src/utils/motion.ts` mirrors
+   `prefers-reduced-motion` onto `.reduce-motion` on `<html>`, which these variants read, so
+   code that asks at the moment something happens (`DiceLogo`, `useGoHome`) reads the same
+   answer as the stylesheet. `motion-safe` is the exact negation so the pair cannot drift. */
 @custom-variant motion-reduce (&:where(.reduce-motion, .reduce-motion *));
 @custom-variant motion-safe (&:not(:where(.reduce-motion, .reduce-motion *)));
 
@@ -105,7 +96,6 @@
   --color-hero-scrim: rgb(255 255 255 / 0.55);
   /* The modal scrim. Paints on `::backdrop`, which no utility can reach, so it is consumed
      by the `.sbsk-dialog::backdrop` rule below rather than as a `bg-*` class. */
-  --color-overlay-scrim: rgb(255 255 255 / 0.7);
   --color-toggle-bg: var(--color-darkestblue);
   --color-toggle-text: var(--color-white);
 
@@ -371,32 +361,15 @@
      surface inside the page that paints a light fill takes `surface-light`. */
   --hard-shadow-color: var(--color-white);
   --color-hero-scrim: rgb(3 31 59 / 0.55);
-  --color-overlay-scrim: rgb(0 47 95 / 0.7);
   --color-toggle-bg: var(--color-orange);
   --color-toggle-text: var(--color-darkblue);
   --overlay-shadow-color: rgb(0 0 0 / 0.6);
 }
 
-/* The modal scrim, painted by `Dialog` (src/components/ui/Dialog.tsx) on the native
-   `<dialog>`'s `::backdrop`. Hand-written because `::backdrop` is a pseudo-element and no
-   Tailwind utility on the dialog can reach it.
-
-   The blur is the one deliberate exception to "no blur" in docs/DESIGN_LANGUAGE.md, and it
-   is an exception about *separation*, not elevation: nothing here pretends to float, the
-   page behind is being pushed out of focus because it is inert. It is the same call the
-   design language already made for `--shadow-overlay`, which it names as the single soft
-   shadow in the system and reserves for modals. Two ad-hoc `backdrop-blur-xs` copies used
-   to make this decision by accident; it is made once, here.
-
-   The fallback covers browsers where `::backdrop` inherits from nothing rather than from
-   its originating element — without it the scrim would resolve to transparent there. */
+/* The modal scrim on the native `<dialog>`'s `::backdrop`, which no utility on the dialog can
+   reach. A plain navy dim in both themes, like most sites' modals; no blur. */
 .sbsk-dialog::backdrop {
-  background-color: var(--color-overlay-scrim, rgb(255 255 255 / 0.7));
-  backdrop-filter: blur(2px);
-}
-
-.dark .sbsk-dialog::backdrop {
-  background-color: var(--color-overlay-scrim, rgb(0 47 95 / 0.7));
+  background-color: rgb(3 31 59 / 0.6);
 }
 
 /* Dice — shared interactive die used in the header logo and the error page.
@@ -673,49 +646,6 @@
       transform: none;
     }
   }
-}
-
-/* The scroll reveal (`src/components/ui/Reveal.tsx`). The one piece of motion here that a
-   pointer did not ask for, so it is built out of what the language already says rather than
-   out of anything new: an item is held at the card hover offset on `--shadow-3` and settles
-   flat, which is the gesture a card already makes when you stop hovering it. No scale, no
-   blur, no soft shadow — the same rules as everything else.
-
-   The shadow is why `surface-dark`/`surface-light` on a panel is load-bearing rather than
-   cosmetic once a reveal lands inside it: the offset is painted onto the fill behind it for
-   280ms, and a `darkblue` panel that declares no tone casts the default darkestblue at 1.24:1.
-   `e2e/shadow-contrast.spec.ts` cannot catch this the way it catches lifts, because it reads
-   resting style and this shadow only exists mid-transition — so the tone declaration is the
-   guard.
-
-   Opacity is not the "soft gradient sliding under a surface" the loading section rules out:
-   nothing is sliding and nothing is a gradient, the element is simply not painted yet. */
-.sbsk-reveal {
-  opacity: 0;
-  transform: var(--lift-card-hover);
-  box-shadow: var(--shadow-3);
-  transition:
-    opacity var(--duration-slow) var(--ease-out),
-    transform var(--duration-slow) var(--ease-out),
-    box-shadow var(--duration-slow) var(--ease-out);
-}
-
-.sbsk-reveal[data-revealed='true'] {
-  opacity: 1;
-  transform: none;
-  box-shadow: none;
-}
-
-/* The finished state outright, not a shorter version of the journey — and stated as its own
-   rule rather than `transition: none` so it holds for an element that was already revealed.
-   `transition-delay` is cleared because the stagger is set inline and would otherwise survive
-   into a state that has nothing left to delay. */
-.reduce-motion .sbsk-reveal {
-  opacity: 1;
-  transform: none;
-  box-shadow: none;
-  transition: none;
-  transition-delay: 0s;
 }
 
 /* The shadow colour is a property of the *surface*, not of the theme.

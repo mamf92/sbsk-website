@@ -3,14 +3,10 @@ import {
   applyMotion,
   getInitialMotion,
   getSystemMotion,
-  hasStoredMotion,
   initMotion,
   motionIsReduced,
-  storeMotion,
   subscribeToSystemMotion,
 } from './motion';
-
-const STORAGE_KEY = 'motion-preference';
 
 type Listener = (event: MediaQueryListEvent) => void;
 
@@ -46,21 +42,9 @@ function mockSystemMotion(reduce: boolean) {
 }
 
 describe('getInitialMotion', () => {
-  it('prefers a stored preference over the system setting', () => {
-    localStorage.setItem(STORAGE_KEY, 'full');
-    mockSystemMotion(true);
-    expect(getInitialMotion()).toBe('full');
-  });
-
   it('falls back to the system setting when nothing is stored', () => {
     mockSystemMotion(true);
     expect(getInitialMotion()).toBe('reduced');
-  });
-
-  it('ignores a corrupt stored value', () => {
-    localStorage.setItem(STORAGE_KEY, 'sideways');
-    mockSystemMotion(false);
-    expect(getInitialMotion()).toBe('full');
   });
 });
 
@@ -92,25 +76,14 @@ describe('initMotion', () => {
     expect(document.documentElement).toHaveClass('reduce-motion');
   });
 
-  it('lets a stored choice override the system preference in both directions', () => {
-    localStorage.setItem(STORAGE_KEY, 'full');
-    mockSystemMotion(true);
-    initMotion();
-    expect(document.documentElement).not.toHaveClass('reduce-motion');
-
-    localStorage.setItem(STORAGE_KEY, 'reduced');
-    mockSystemMotion(false);
-    initMotion();
-    expect(document.documentElement).toHaveClass('reduce-motion');
-  });
-
   // The reason storage is written only by an explicit toggle: `ThemeProvider` persists a
   // system-derived value on mount, which destroys "follow the system" the first time the app
   // runs. A motion preference has to keep following until it is actually asked not to.
-  it('does not persist a system-derived preference', () => {
-    mockSystemMotion(true);
+  it('ignores an old stored preference from the retired on-site switch', () => {
+    localStorage.setItem('motion-preference', 'reduced');
+    mockSystemMotion(false);
     initMotion();
-    expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+    expect(motionIsReduced()).toBe(false);
   });
 });
 
@@ -153,45 +126,5 @@ describe('subscribeToSystemMotion', () => {
     media.emit(true);
 
     expect(document.documentElement).not.toHaveClass('reduce-motion');
-  });
-});
-
-describe('hasStoredMotion', () => {
-  it('is false while the visitor is still following their OS', () => {
-    mockSystemMotion(true);
-    initMotion();
-    expect(hasStoredMotion()).toBe(false);
-  });
-
-  it('is true once they have chosen', () => {
-    storeMotion('full');
-    expect(hasStoredMotion()).toBe(true);
-  });
-
-  it('ignores a corrupt stored value', () => {
-    localStorage.setItem(STORAGE_KEY, 'sideways');
-    expect(hasStoredMotion()).toBe(false);
-  });
-});
-
-describe('storeMotion', () => {
-  it('persists the choice', () => {
-    storeMotion('reduced');
-    expect(localStorage.getItem(STORAGE_KEY)).toBe('reduced');
-  });
-
-  it('does not throw when storage is unavailable', () => {
-    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-      throw new Error('QuotaExceededError');
-    });
-    expect(() => storeMotion('reduced')).not.toThrow();
-  });
-
-  it('degrades to the system setting when storage cannot be read', () => {
-    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
-      throw new Error('SecurityError');
-    });
-    mockSystemMotion(true);
-    expect(getInitialMotion()).toBe('reduced');
   });
 });

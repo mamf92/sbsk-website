@@ -2,7 +2,6 @@ import type { AboutPageTypes } from '../../../sanity/queryHelpers/about-page';
 import type { BoardMemberTypes } from '../../../sanity/queryHelpers/board-members';
 import { urlFor } from '../../../sanity/sanityImageUrl';
 import { BoardMemberCard } from './BoardMemberCard';
-import { Reveal } from '../../ui/Reveal';
 import { Link } from '../../ui/Link';
 import { FALLBACK_ABOUT, FALLBACK_BOARD } from './fallbackAbout';
 
@@ -81,15 +80,15 @@ export default function AboutUsSection({ aboutPage, boardMembers }: AboutUsSecti
             <p className="font-body font-bold">{boardIntro}</p>
           </div>
           <div className="grid grid-cols-[repeat(auto-fill,minmax(290px,1fr))] items-stretch gap-5">
-            {members.map((member, index) => (
-              <Reveal key={member._id} index={index} className="flex">
+            {members.map((member) => (
+              <div key={member._id} className="flex">
                 <BoardMemberCard
                   name={member.name}
                   role={member.role}
                   bio={member.bio}
                   imageUrl={member.imageUrl}
                 />
-              </Reveal>
+              </div>
             ))}
           </div>
         </div>

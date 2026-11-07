@@ -3,8 +3,6 @@ import { SocialIcon } from 'react-social-icons';
 import { DiceLogo } from '../ui/DiceLogo';
 import { Link } from '../ui/Link';
 import { navLinkClassesBody } from '../ui/linkClasses';
-import { Button } from '../ui/Buttons';
-import { useMotion } from '../../hooks/motion/MotionContext';
 import { useGoHome } from '../../hooks/useGoHome';
 import { CLUB_EMAIL, CLUB_EMAIL_HREF } from '../../utils/contact';
 
@@ -32,7 +30,6 @@ const footerLink = `${navLinkClassesBody} min-h-9 text-fg-muted hover:text-fg`;
  */
 export default function Footer() {
   const { goHome, handleHomeLinkClick } = useGoHome();
-  const { reduced, toggleReducedMotion } = useMotion();
 
   return (
     <footer className="bg-footer on-dark text-fg font-body w-full">
@@ -102,19 +99,8 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* The motion switch retires with the rest of the custom motion system in the cleanup
-            step (decision 3: reduced motion follows the OS). Until then it keeps working. */}
-        <div className="border-border flex flex-col items-center gap-4 border-t pt-6 sm:flex-row sm:justify-between">
+        <div className="border-border border-t pt-6">
           <p className="text-fg-muted text-sm">&copy; 2026 Stavanger Brettspillklubb</p>
-          <Button
-            variant="ghost"
-            size="sm"
-            icon={reduced ? 'block' : 'motion'}
-            aria-pressed={reduced}
-            onClick={toggleReducedMotion}
-          >
-            Reduser animasjoner
-          </Button>
         </div>
       </div>
     </footer>

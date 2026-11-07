@@ -1,45 +1,21 @@
 /**
- * The reduced-motion preference, and the one place that reads, applies and persists it —
- * `src/utils/theme.ts`'s opposite number.
+ * The reduced-motion setting, and the one place that reads and applies it. Since the 2026
+ * redesign (decision 3) it follows the OS and nothing else: there is no on-site switch and
+ * nothing is stored.
  *
  * `src/index.css` decides what reduced motion *means* (the `motion-reduce` variant and the
  * three `lift-*` utilities); this file decides *when* it applies. The condition there is the
- * `.reduce-motion` class on `<html>`, not `prefers-reduced-motion`, so that an explicit choice
- * can win in both directions — see the comment above the variant for why dropping the media
- * query is safe in a client-rendered SPA.
+ * `.reduce-motion` class on `<html>`, which this file keeps in step with
+ * `prefers-reduced-motion`.
  */
 
 export type MotionPreference = 'full' | 'reduced';
 
-const STORAGE_KEY = 'motion-preference';
 const REDUCE_MOTION_CLASS = 'reduce-motion';
 const QUERY = '(prefers-reduced-motion: reduce)';
 
 export function getSystemMotion(): MotionPreference {
   return window.matchMedia?.(QUERY).matches ? 'reduced' : 'full';
-}
-
-/**
- * Unlike `theme.ts`'s equivalent, this is wrapped: `localStorage` *throws* rather than
- * returning null in Safari's private mode, and a preference that cannot be read must degrade
- * to the system setting rather than take the page down. `DiceLogo` already guards its own
- * reads this way.
- */
-function getStoredMotion(): MotionPreference | null {
-  try {
-    const value = localStorage.getItem(STORAGE_KEY);
-    return value === 'reduced' || value === 'full' ? value : null;
-  } catch {
-    return null;
-  }
-}
-
-export function storeMotion(preference: MotionPreference) {
-  try {
-    localStorage.setItem(STORAGE_KEY, preference);
-  } catch {
-    /* storage unavailable — the class is still applied, it just will not survive a reload */
-  }
 }
 
 /**
@@ -61,20 +37,12 @@ export function applyMotion(preference: MotionPreference) {
 }
 
 export function getInitialMotion(): MotionPreference {
-  return getStoredMotion() ?? getSystemMotion();
-}
-
-/** Whether the visitor has made an explicit choice, as opposed to following their OS. */
-export function hasStoredMotion(): boolean {
-  return getStoredMotion() !== null;
+  return getSystemMotion();
 }
 
 /**
- * Subscribe to the OS setting. `MotionProvider` owns this rather than `initMotion` owning it:
- * a listener that wrote the class directly would leave the provider's state stale, so after an
- * OS change mid-session the toggle would report the wrong `aria-pressed` and its next click
- * would be a visual no-op — rewriting the class to the value it already had, so the visitor had
- * to click twice.
+ * Subscribe to the OS setting. `MotionProvider` owns this, so its state and the class on
+ * `<html>` move together.
  *
  * Returns its own unsubscribe. Safe in a browser with no `matchMedia`, where it is a no-op.
  */
@@ -91,8 +59,7 @@ export function subscribeToSystemMotion(onChange: (preference: MotionPreference)
  * Called from `src/main.tsx` before the router is built, next to `initTheme()` — nothing has
  * painted at that point, so the class is in place before any transition could run.
  *
- * Seeding is all it does. Keeping up with the OS afterwards belongs to `MotionProvider`, which
- * is the thing that also has to stay in step with it; see `subscribeToSystemMotion`.
+ * Seeding is all it does. Keeping up with the OS afterwards belongs to `MotionProvider`.
  */
 export function initMotion() {
   applyMotion(getInitialMotion());
