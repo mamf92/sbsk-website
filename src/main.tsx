@@ -16,6 +16,7 @@ import RouteError from './components/sections/RouteError';
 import RouteFallback from './components/sections/RouteFallback';
 import { homeLoader } from './loaders/home-loader';
 import { eventsListLoader, eventDetailLoader } from './sanity/queryHelpers/events';
+import { postDetailLoader } from './sanity/queryHelpers/posts';
 import { calendarLoader } from './loaders/calendar-loader';
 import { ourGamesLoader } from './loaders/our-games-loader';
 import { aboutUsLoader } from './loaders/about-us-loader';
@@ -42,6 +43,7 @@ const AboutUs = React.lazy(() => import('./pages/AboutUs'));
 const ContactUs = React.lazy(() => import('./pages/ContactUs'));
 const BecomeAMember = React.lazy(() => import('./pages/BecomeAMember'));
 const Event = React.lazy(() => import('./pages/SingleEventPage'));
+const Post = React.lazy(() => import('./pages/PostPage'));
 const Events = React.lazy(() => import('./pages/Events'));
 const OurPartners = React.lazy(() => import('./pages/OurPartners'));
 const Register = React.lazy(() => import('./pages/Register'));
@@ -91,6 +93,7 @@ const router = createBrowserRouter(
             { path: 'bli-medlem', element: <BecomeAMember /> },
             { path: 'arrangementer', element: <Events />, loader: eventsListLoader },
             { path: 'arrangementer/:id', element: <Event />, loader: eventDetailLoader },
+            { path: 'innlegg/:id', element: <Post />, loader: postDetailLoader },
             { path: 'våre-partnere', element: <OurPartners /> },
             // Gated behind #213: no member/board portal for the MVP launch, so these four
             // routes are absent from the production build and fall through to the catch-all
