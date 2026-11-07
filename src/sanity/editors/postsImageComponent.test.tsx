@@ -35,5 +35,7 @@ describe('PostImageComponent', () => {
     expect(figure).not.toBeNull();
     expect(figure!.className).toContain('w-full');
     expect(figure!.className).not.toMatch(/float|w-1\/2/);
+    // Starts below the carousel's left float rather than sliding behind it.
+    expect(figure!.className).toContain('clear-both');
   });
 });
