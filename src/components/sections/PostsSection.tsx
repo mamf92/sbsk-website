@@ -1,26 +1,28 @@
+import { useSearchParams } from 'react-router-dom';
+import { toPlainText } from '@portabletext/react';
+import type { PortableTextBlock } from '@portabletext/types';
 import { Button } from '../ui/Buttons';
-import { Reveal } from '../ui/Reveal';
-import { Card, type CardCategory } from '../ui/Card';
-import { Carousel } from '../ui/Carousel';
+import { Card } from '../ui/Card';
 import { Chip } from '../ui/Chip';
-import { Select } from '../ui/Select';
-import { Divider } from '../ui/Divider';
 import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
+import { Tag } from '../ui/Tag';
+import EmptyState from '../ui/EmptyState';
 import AlertCircleIcon from '../../assets/icons/symbols/alert-circle.svg?react';
 import InfoIcon from '../../assets/icons/symbols/info.svg?react';
-import EmptyState from '../ui/EmptyState';
-import { groupByMonth } from '../../utils/groupByMonth';
-import { useState } from 'react';
-import Clock from '../../assets/icons/symbols/clock.svg?react';
-import { getThumbnail, type PostTypes } from '../../sanity/queryHelpers/posts';
-import { hotspotPosition } from '../../utils/sanityImage';
+import SearchIcon from '../../assets/icons/symbols/search.svg?react';
+import {
+  POST_CATEGORY_LABELS,
+  POST_CATEGORY_TONES,
+  getThumbnail,
+  postDateLabel,
+  postPath,
+  postSummary,
+  type PostTypes,
+} from '../../sanity/queryHelpers/posts';
 import type { PostsHeroTypes } from '../../sanity/queryHelpers/posts-hero';
-import { PortableText, toPlainText } from '@portabletext/react';
-import { components } from '../../sanity/editors/portableTextComponents';
-import type { PortableTextBlock } from '@portabletext/types';
-import { useNavigate } from 'react-router-dom';
+import { hotspotPosition } from '../../utils/sanityImage';
 import { urlFor } from '../../sanity/sanityImageUrl';
-import { isInternalLink, internalLinkPath } from '../../utils/internalLinks';
 
 interface PostsProps {
   postsHero?: PostsHeroTypes;
@@ -29,194 +31,154 @@ interface PostsProps {
   failed?: boolean;
 }
 
-type PostCategory = 'nyheter' | 'spillkveldrapporter' | 'arrangementer';
-
-type PostLink = {
-  label: string;
-  url: string;
-};
-
-type PostWithExtras = PostTypes & {
-  category: PostCategory;
-  publishedAt: string;
-  links?: PostLink[];
-  content?: PortableTextBlock[];
-};
+type PostCategory = PostTypes['category'];
 
 const FALLBACK_POSTS = {
   title: 'Innlegg',
-  subtitle:
-    'Her vil du finne de siste nyhetene, spillkveldrapportene og annet innhold fra klubben. ',
+  subtitle: 'Her finner du de siste nyhetene, spillkveldrapportene og annet nytt fra klubben.',
 };
 
-const categories: Array<'all' | PostCategory> = [
-  'all',
-  'nyheter',
-  'spillkveldrapporter',
-  'arrangementer',
+const CATEGORY_FILTERS: { value: 'all' | PostCategory; label: string }[] = [
+  { value: 'all', label: 'Alle' },
+  { value: 'nyheter', label: 'Nyheter' },
+  { value: 'spillkveldrapporter', label: 'Spillkveldrapporter' },
+  { value: 'arrangementer', label: 'Arrangementer' },
 ];
 
-// A spillkveld*rapport* is a write-up of a spillkveld, so its card takes that category's colour.
-const cardCategories: Record<PostCategory, CardCategory> = {
-  nyheter: 'nyheter',
-  spillkveldrapporter: 'spillkveld',
-  arrangementer: 'arrangementer',
-};
-
-// Which Button variant survives on the open card's *header* fill — these render in `Card`'s
-// `actions` slot now, not the panel below it (#203). `primary` is orange, which all but
-// vanishes on `spillkveld`'s orange header and `arrangementer`'s darkorange one; `tertiary`'s
-// navy clears both. The values are unchanged from when this was keyed off the panel fill — the
-// header and panel swap which of the two orange tones each category gets, but navy clears
-// either one, so the same assignment still holds.
-const linkVariants: Record<PostCategory, 'primary' | 'secondary'> = {
-  nyheter: 'primary',
-  spillkveldrapporter: 'secondary',
-  arrangementer: 'secondary',
-};
-
 const sortOptions = [
-  { label: 'Dato (siste til første)', value: 'date-desc' },
-  { label: 'Dato (første til siste)', value: 'date-asc' },
-  { label: 'Tittel (A-Å)', value: 'title-asc' },
-  { label: 'Tittel (Å-A)', value: 'title-desc' },
+  { label: 'Nyeste først', value: 'date-desc' },
+  { label: 'Eldste først', value: 'date-asc' },
+  { label: 'Tittel (A–Å)', value: 'title-asc' },
+  { label: 'Tittel (Å–A)', value: 'title-desc' },
 ] as const;
 
 type SortOption = (typeof sortOptions)[number]['value'];
 
+/** Two rows of three on a wide screen. */
+const PAGE_SIZE = 6;
+
+function parseCategory(value: string | null): 'all' | PostCategory {
+  return CATEGORY_FILTERS.some((filter) => filter.value === value && value !== 'all')
+    ? (value as PostCategory)
+    : 'all';
+}
+
+function parseSort(value: string | null): SortOption {
+  return sortOptions.find((option) => option.value === value)?.value ?? 'date-desc';
+}
+
 export default function Posts({ postsHero, posts, failed = false }: PostsProps) {
   return (
-    <div className="flex flex-col items-center gap-6 py-6">
-      {postsHero ? <PostsHero {...postsHero} /> : <PostsHero />}
+    <section className="max-w-content content-gutter:px-0 mx-auto flex w-full flex-col gap-6 px-4 py-10">
+      <PostsHeading {...postsHero} />
       <PostsList posts={posts} failed={failed} />
-    </div>
+    </section>
   );
 }
 
-// An <h2>, not an <h1>. This renders on `/` under `HomeHeroSection`, whose title is the page's
-// document heading — two h1s on one page leaves a screen reader without a single answer to
-// "what is this page", and the h1 → h3 jump to the cards below came from the same place. The
-// posts stack is a section of the front page, so h2 is both the honest level and the step that
-// puts this heading above the card titles it introduces rather than below them.
-function PostsHero({ title, subtitle }: PostsHeroTypes = {}) {
-  const resolvedTitle = title || FALLBACK_POSTS.title;
-  const resolvedSubtitle = subtitle || FALLBACK_POSTS.subtitle;
+// An <h2>, not an <h1>: this renders on `/` under the hero, whose title is the page's heading.
+function PostsHeading({ title, subtitle }: PostsHeroTypes = {}) {
   return (
-    <div className="bg-darkblue surface-dark max-w-content flex w-full flex-col items-start gap-2 p-4 py-8 text-white">
-      <h2 className="text-h2 font-bold">{resolvedTitle}</h2>
-      <p> {resolvedSubtitle}</p>
+    <div className="flex flex-col gap-2">
+      <h2 className="font-heading text-heading text-h2 font-bold">
+        {title || FALLBACK_POSTS.title}
+      </h2>
+      <p className="text-fg-muted max-w-[60ch]">{subtitle || FALLBACK_POSTS.subtitle}</p>
     </div>
   );
 }
 
 function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<'all' | PostCategory>('all');
-  const [sortBy, setSelectedSort] = useState<SortOption>('date-desc');
-  const [visibleItemCount, setVisibleItemCount] = useState(5);
-  // Each card opens and closes on its own, and the page loads with every one of them closed
-  // (#223). Seeding the newest post open meant the list arrived already scrolled past by one
-  // article's worth of body copy, which is not what a list of headlines is for.
-  //
-  // Deliberately not an accordion, even though the design library specifies one. Auto-closing
-  // the previously open card moves everything below it up by that card's full height, so the
-  // header you just clicked jumps out from under the pointer — worst exactly when the open
-  // card was long, which is when the reader is most likely to be mid-article. Nothing here
-  // opens or closes without the reader asking for it, so the only content shift is one they
-  // caused.
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
-  const postItems = posts as PostWithExtras[];
+  // The filters live in the URL, not in component state, so opening a post and pressing Back
+  // returns to the same search, category, sort and number of cards, and a filtered feed can be
+  // shared as a link. `replace` keeps typing from filling the history with one entry per key.
+  const [params, setParams] = useSearchParams();
+  const searchTerm = params.get('sok') ?? '';
+  const category = parseCategory(params.get('kategori'));
+  const sortBy = parseSort(params.get('sorter'));
+  const visibleCount = Math.max(PAGE_SIZE, Number(params.get('vis')) || PAGE_SIZE);
 
-  const filteredPosts = postItems.filter((post) => {
-    const bodyText = toPlainText(post.content || []);
-    const matchesSearch =
-      post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      bodyText.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesCategory = selectedCategory === 'all' || post.category === selectedCategory;
-
-    return matchesSearch && matchesCategory;
-  });
-
-  const sortedPosts = [...filteredPosts].sort((a, b) => {
-    const aPublishedAt = new Date(a.publishedAt);
-    const bPublishedAt = new Date(b.publishedAt);
-    if (sortBy === 'date-asc') return aPublishedAt.getTime() - bPublishedAt.getTime();
-    if (sortBy === 'date-desc') return bPublishedAt.getTime() - aPublishedAt.getTime();
-    if (sortBy === 'title-asc')
-      return a.title.localeCompare(b.title, ['no', 'sv', 'da'], {
-        sensitivity: 'base',
-      });
-    if (sortBy === 'title-desc')
-      return b.title.localeCompare(a.title, ['no', 'sv', 'da'], {
-        sensitivity: 'base',
-      });
-    return 0;
-  });
-
-  const displayedPosts = sortedPosts.slice(0, visibleItemCount);
-
-  // Dividers only read as month sections on a date-sorted list — grouping a title-sorted one
-  // the same way would print the same month's divider again every time the alphabetical order
-  // revisits it (see `groupByMonth`'s own comment, and the same call in `CalendarSection`), so
-  // a title sort renders `displayedPosts` flat.
-  const isTitleSort = sortBy === 'title-asc' || sortBy === 'title-desc';
-  const postGroups = isTitleSort
-    ? []
-    : groupByMonth(displayedPosts, (post) => new Date(post.publishedAt));
-
-  const handleLoadedMore = () => {
-    setVisibleItemCount((prev) => prev + 5);
-  };
-
-  function clearFilters() {
-    setSearchTerm('');
-    setSelectedCategory('all');
-    setSelectedSort('date-desc');
-  }
-
-  if (posts.length === 0 || !posts) {
-    return (
-      <div className="max-w-content text-darkestblue content-gutter:px-0 mx-auto px-2 dark:text-white">
-        {/* "There are no posts" and "we could not reach Sanity" look identical from here, and only
-            one of them is true. Saying the wrong one sends a visitor away believing the club has
-            gone quiet. */}
-        {failed ? (
-          <EmptyState
-            icon={AlertCircleIcon}
-            title="Kunne ikke laste innlegg"
-            body="Vi fikk ikke kontakt med innholdstjenesten. Prøv å laste siden på nytt om et øyeblikk."
-          />
-        ) : (
-          <EmptyState
-            icon={InfoIcon}
-            title="Ingen innlegg"
-            body="Det ser ikke ut til å være noen innlegg for øyeblikket. Vennligst sjekk igjen senere."
-          />
-        )}
-      </div>
+  function update(changes: Record<string, string | null>) {
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        for (const [key, value] of Object.entries(changes)) {
+          if (value === null || value === '') next.delete(key);
+          else next.set(key, value);
+        }
+        return next;
+      },
+      { replace: true, preventScrollReset: true },
     );
   }
+
+  if (posts.length === 0) {
+    // "There are no posts" and "we could not reach Sanity" look identical from here, and only
+    // one of them is true.
+    return failed ? (
+      <EmptyState
+        icon={AlertCircleIcon}
+        headingLevel={3}
+        title="Kunne ikke laste innlegg"
+        body="Vi fikk ikke kontakt med innholdstjenesten. Prøv å laste siden på nytt om et øyeblikk."
+      />
+    ) : (
+      <EmptyState
+        icon={InfoIcon}
+        headingLevel={3}
+        title="Ingen innlegg"
+        body="Det er ingen innlegg her ennå. Sjekk igjen senere."
+      />
+    );
+  }
+
+  const query = searchTerm.trim().toLowerCase();
+  const filtered = posts.filter((post) => {
+    const blocks = (post.content ?? []).filter(
+      (block): block is PortableTextBlock => block._type === 'block',
+    );
+    const matchesSearch =
+      !query ||
+      post.title.toLowerCase().includes(query) ||
+      toPlainText(blocks).toLowerCase().includes(query);
+    return matchesSearch && (category === 'all' || post.category === category);
+  });
+
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortBy === 'date-asc') return Date.parse(a.publishedAt) - Date.parse(b.publishedAt);
+    if (sortBy === 'date-desc') return Date.parse(b.publishedAt) - Date.parse(a.publishedAt);
+    const byTitle = a.title.localeCompare(b.title, 'nb', { sensitivity: 'base' });
+    return sortBy === 'title-asc' ? byTitle : -byTitle;
+  });
+
+  const shown = sorted.slice(0, visibleCount);
+  const isFiltered = query !== '' || category !== 'all' || sortBy !== 'date-desc';
+
+  function reset() {
+    update({ sok: null, kategori: null, sorter: null, vis: null });
+  }
+
   return (
-    <div className="max-w-content content-gutter:px-0 flex w-full flex-col items-center gap-4 px-2 pb-2 sm:pb-4">
+    <div className="flex w-full flex-col gap-4">
       <Input
         type="search"
         icon="search"
         aria-label="Søk etter innlegg"
         placeholder="Søk etter innlegg…"
         value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
+        onChange={(event) => update({ sok: event.target.value, vis: null })}
       />
       <div className="flex w-full flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          {categories.map((category) => (
+          {CATEGORY_FILTERS.map((filter) => (
             <Chip
-              key={category}
-              className="capitalize"
-              active={selectedCategory === category}
-              onClick={() => setSelectedCategory(category)}
+              key={filter.value}
+              active={category === filter.value}
+              onClick={() =>
+                update({ kategori: filter.value === 'all' ? null : filter.value, vis: null })
+              }
             >
-              {category === 'all' ? 'Alle innlegg' : category}
+              {filter.label}
             </Chip>
           ))}
         </div>
@@ -226,156 +188,89 @@ function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) 
           className="w-full sm:w-56"
           options={sortOptions}
           value={sortBy}
-          onChange={setSelectedSort}
+          onChange={(value) => update({ sorter: value === 'date-desc' ? null : value })}
         />
       </div>
-      {displayedPosts.length === 0 && (
-        <div className="flex w-full flex-col items-center justify-center gap-4 p-6">
-          <p className="text-darkestblue text-h2 font-bold dark:text-white">
-            Ingen innlegg matcher søket.
-          </p>
-          <Button variant="primary" size="md" icon="backspace" onClick={clearFilters}>
-            Fjern filtre
+
+      <div className="flex min-h-9 items-center justify-between gap-3">
+        <p aria-live="polite" className="text-fg-muted text-sm">
+          {filtered.length === 1 ? '1 innlegg' : `${filtered.length} innlegg`}
+        </p>
+        {isFiltered ? (
+          <Button variant="ghost" size="sm" onClick={reset}>
+            Nullstill
           </Button>
-        </div>
-      )}
-      {displayedPosts.length > 0 && isTitleSort && (
-        // 14px between cards, per the design library — enough that the 6px hover shadow of
-        // one card never touches the next.
-        <div className="flex w-full flex-col gap-3.5">
-          {displayedPosts.map((post, index) => (
-            <Reveal key={post._id} index={index}>
-              <PostCard
-                post={post}
-                expanded={expandedIds.has(post._id)}
-                onToggle={() =>
-                  setExpandedIds((prev) => {
-                    const next = new Set(prev);
-                    // `delete` reports whether it removed anything, so this is toggle in one step.
-                    if (!next.delete(post._id)) next.add(post._id);
-                    return next;
-                  })
-                }
-              />
-            </Reveal>
+        ) : null}
+      </div>
+
+      {shown.length === 0 ? (
+        <EmptyState
+          icon={SearchIcon}
+          variant="inline"
+          headingLevel={3}
+          title="Ingen innlegg matcher søket"
+          body="Prøv et annet søkeord, eller nullstill filtrene."
+          action={
+            <Button variant="secondary" onClick={reset}>
+              Nullstill filtre
+            </Button>
+          }
+        />
+      ) : (
+        <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {shown.map((post) => (
+            <li key={post._id} className="flex">
+              <PostCard post={post} />
+            </li>
           ))}
-        </div>
+        </ul>
       )}
-      {displayedPosts.length > 0 && !isTitleSort && (
-        <div className="flex w-full flex-col gap-4">
-          {postGroups.map((group) => (
-            <div key={group.key} className="flex flex-col gap-3.5">
-              <Divider>
-                <span>{group.label}</span>
-              </Divider>
-              {group.items.map((post, index) => (
-                <Reveal key={post._id} index={index}>
-                  <PostCard
-                    post={post}
-                    expanded={expandedIds.has(post._id)}
-                    onToggle={() =>
-                      setExpandedIds((prev) => {
-                        const next = new Set(prev);
-                        if (!next.delete(post._id)) next.add(post._id);
-                        return next;
-                      })
-                    }
-                  />
-                </Reveal>
-              ))}
-            </div>
-          ))}
-        </div>
-      )}
-      {visibleItemCount < sortedPosts.length && (
-        <Button variant="primary" size="md" onClick={handleLoadedMore}>
-          Last inn flere
+
+      {visibleCount < sorted.length ? (
+        <Button
+          variant="secondary"
+          className="self-center"
+          onClick={() => update({ vis: String(visibleCount + PAGE_SIZE) })}
+        >
+          Vis flere innlegg
         </Button>
-      )}
+      ) : null}
     </div>
   );
 }
 
-function PostDate({ publishedAt }: { publishedAt: Date }) {
-  return (
-    <span className="inline-flex flex-wrap items-center gap-1">
-      <Clock className="h-4 w-4 fill-current" aria-hidden="true" />
-      <span className="capitalize">{publishedAt.toLocaleString('no-NO', { weekday: 'long' })}</span>
-      <span>
-        {publishedAt.toLocaleString('no-NO', {
-          day: 'numeric',
-          month: 'short',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        })}
-      </span>
-    </span>
-  );
-}
-
-function PostCard({
-  post,
-  expanded,
-  onToggle,
-}: {
-  post: PostWithExtras;
-  expanded: boolean;
-  onToggle: () => void;
-}) {
-  const navigate = useNavigate();
-  const publishedAt = new Date(post.publishedAt);
-  const hasLinks = !!post.links && post.links.length > 0;
+function PostCard({ post }: { post: PostTypes }) {
   const thumbnail = getThumbnail(post);
-
-  const actions = hasLinks
-    ? post.links?.map((link, index) => {
-        const isInternal = isInternalLink(link.url);
-
-        return (
-          <Button
-            key={index}
-            variant={linkVariants[post.category]}
-            size="sm"
-            icon="right"
-            onClick={() => {
-              if (isInternal) {
-                navigate(internalLinkPath(link.url));
-              } else {
-                window.location.href = link.url;
-              }
-            }}
-          >
-            {link.label}
-          </Button>
-        );
-      })
-    : undefined;
+  const crop = (width: number) =>
+    thumbnail
+      ? urlFor(thumbnail)
+          .width(width)
+          .height(Math.round((width * 9) / 16))
+          .fit('crop')
+          .auto('format')
+          .url()
+      : '';
 
   return (
     <Card
-      category={cardCategories[post.category]}
-      date={<PostDate publishedAt={publishedAt} />}
+      className="w-full"
+      to={postPath(post._id)}
       title={post.title}
-      subtitle={post.subtitle}
-      image={thumbnail && urlFor(thumbnail).width(320).height(320).fit('crop').auto('format').url()}
-      imagePosition={thumbnail && hotspotPosition(thumbnail)}
-      expanded={expanded}
-      onToggle={onToggle}
-      actions={actions}
-    >
-      {/* First child in the same normal-flow block as the body text below it — a carousel is a
-          flex sibling of nothing, so the float here is what lets the body's text wrap beside it.
-          Floated only from `lg` up; below that it's a full-width block at the top of the panel,
-          per the mobile/tablet "top and centered, one column" treatment. */}
-      {post.carousel && post.carousel.length > 0 && (
-        <Carousel
-          images={post.carousel}
-          label={`Bilder fra «${post.title}»`}
-          className="lg:float-left lg:mr-4 lg:mb-4 lg:w-1/2"
-        />
-      )}
-      {post.content && <PortableText value={post.content} components={components} />}
-    </Card>
+      image={
+        thumbnail
+          ? {
+              src: crop(640),
+              srcSet: `${crop(400)} 400w, ${crop(640)} 640w, ${crop(960)} 960w`,
+              sizes: '(min-width: 1024px) 320px, (min-width: 640px) 50vw, 100vw',
+              position: hotspotPosition(thumbnail),
+            }
+          : undefined
+      }
+      tag={
+        <Tag tone={POST_CATEGORY_TONES[post.category]}>{POST_CATEGORY_LABELS[post.category]}</Tag>
+      }
+      date={<time dateTime={post.publishedAt}>{postDateLabel(post.publishedAt)}</time>}
+      summary={postSummary(post)}
+    />
   );
 }

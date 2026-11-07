@@ -1,7 +1,8 @@
 import { NavLink } from 'react-router-dom';
 import { SocialIcon } from 'react-social-icons';
 import { DiceLogo } from '../ui/DiceLogo';
-import { Link, navLinkClassesBody } from '../ui/Link';
+import { Link } from '../ui/Link';
+import { navLinkClassesBody } from '../ui/linkClasses';
 import { Button } from '../ui/Buttons';
 import { useMotion } from '../../hooks/motion/MotionContext';
 import { useGoHome } from '../../hooks/useGoHome';

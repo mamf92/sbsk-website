@@ -4,7 +4,7 @@ import { Button } from '../ui/Buttons';
 import { Input } from '../ui/Input';
 import { Alert } from '../ui/Alert';
 import { useAuthActions } from '../../hooks/useAuthActions';
-import { linkClassesInherit } from '../ui/Link';
+import { linkClassesInherit } from '../ui/linkClasses';
 
 export default function RegisterSection() {
   const navigate = useNavigate();

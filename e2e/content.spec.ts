@@ -66,10 +66,45 @@ test('a search matching nothing offers a way back rather than a blank list', asy
   await page.goto('/');
 
   await page.getByRole('searchbox', { name: 'Søk etter innlegg' }).fill('zzzznomatch');
-  await expect(page.getByText('Ingen innlegg matcher søket.')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Ingen innlegg matcher søket' })).toBeVisible();
 
-  await page.getByRole('button', { name: 'Fjern filtre' }).click();
+  await page.getByRole('button', { name: 'Nullstill filtre' }).click();
   await expect(page.getByRole('heading', { name: POSTS[0].title })).toBeVisible();
+});
+
+test('a post card opens the post on its own page', async ({ page }) => {
+  const errors = watchForErrors(page);
+  await page.goto('/');
+
+  await page.getByRole('link', { name: POSTS[0].title }).click();
+
+  await expect(page).toHaveURL(new RegExp(`/innlegg/${POSTS[0]._id}$`));
+  await expect(page.getByRole('heading', { level: 1, name: POSTS[0].title })).toBeVisible();
+  await page.getByRole('link', { name: 'Alle innlegg' }).click();
+  await expect(page.getByRole('searchbox', { name: 'Søk etter innlegg' })).toBeVisible();
+  expect(errors, `page threw: ${errors.join(', ')}`).toEqual([]);
+});
+
+test('Back from a post returns to the same filtered feed', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Nyheter' }).click();
+  await page.getByRole('link', { name: 'Høstprogrammet er klart' }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+
+  await page.goBack();
+
+  await expect(page.getByRole('button', { name: 'Nyheter' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await expect(page.getByRole('heading', { name: 'Fullt hus på siste spillkveld' })).toHaveCount(0);
+});
+
+test('a post id that does not resolve renders the 404 page inside the shell', async ({ page }) => {
+  await page.goto('/innlegg/finnes-ikke');
+  await expect(page.getByRole('heading', { name: 'Denne siden mangler i esken' })).toBeVisible();
+  await expect(page.locator('header')).toBeVisible();
+  await expect(page.locator('footer')).toBeVisible();
 });
 
 test('the calendar renders upcoming events with their times and places', async ({ page }) => {

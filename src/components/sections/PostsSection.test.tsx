@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
@@ -20,6 +20,7 @@ const posts: PostTypes[] = [
   {
     _id: 'nyest',
     title: 'Nyeste innlegg',
+    subtitle: 'En kort ingress',
     publishedAt: '2026-06-05T18:00:00Z',
     category: 'nyheter',
     content: body('a', 'Brødtekst for det nyeste'),
@@ -40,182 +41,143 @@ const posts: PostTypes[] = [
   },
 ];
 
-const renderList = () =>
+const renderList = (list: PostTypes[] = posts, failed = false) =>
   render(
     <MemoryRouter>
-      <Posts posts={posts} />
+      <Posts posts={list} failed={failed} />
     </MemoryRouter>,
   );
 
-// Card toggles are the only buttons whose aria-expanded is ever true in these tests — the
-// filter chips use aria-pressed, and the sort Dropdown's trigger also carries aria-expanded
-// but stays closed (false) throughout — so querying by `expanded: true` selects exactly the
-// open post headers.
-const toggle = (title: string) => screen.getByRole('button', { name: new RegExp(title) });
-const openTitles = () =>
-  screen
-    .getAllByRole('button', { expanded: true })
-    .map((el) => el.textContent?.match(/\w[\wåøæÅØÆ ]*innlegg/)?.[0]);
+const cardTitles = () =>
+  within(screen.getByRole('list'))
+    .getAllByRole('heading', { level: 3 })
+    .map((h) => h.textContent);
 
-describe('PostsSection expand behaviour', () => {
-  it('leaves every post closed on load, the newest one included', () => {
+describe('PostsSection', () => {
+  it('shows every post as a card that links to its own page', () => {
     renderList();
-
-    expect(toggle('Nyeste innlegg')).toHaveAttribute('aria-expanded', 'false');
-    expect(toggle('Midterste innlegg')).toHaveAttribute('aria-expanded', 'false');
-    expect(toggle('Eldste innlegg')).toHaveAttribute('aria-expanded', 'false');
+    expect(cardTitles()).toEqual(['Nyeste innlegg', 'Midterste innlegg', 'Eldste innlegg']);
+    expect(screen.getByRole('link', { name: 'Nyeste innlegg' })).toHaveAttribute(
+      'href',
+      '/innlegg/nyest',
+    );
   });
 
-  it('opening a post leaves the already-open ones open', async () => {
-    // The reason this is not an accordion: auto-closing the post above shifts everything
-    // below it up by that post's full height, yanking the header out from under the pointer.
+  it('summarises with the subtitle, or with the start of the body when there is none', () => {
     renderList();
-
-    await userEvent.click(toggle('Nyeste innlegg'));
-    await userEvent.click(toggle('Midterste innlegg'));
-    expect(openTitles()).toHaveLength(2);
-
-    await userEvent.click(toggle('Eldste innlegg'));
-    expect(openTitles()).toHaveLength(3);
-
-    expect(toggle('Nyeste innlegg')).toHaveAttribute('aria-expanded', 'true');
-    expect(toggle('Midterste innlegg')).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText('En kort ingress')).toBeInTheDocument();
+    expect(screen.getByText('Brødtekst for det midterste')).toBeInTheDocument();
   });
 
-  it('closes only the post that was clicked', async () => {
+  it('labels each card with its category as a tag', () => {
     renderList();
-
-    await userEvent.click(toggle('Nyeste innlegg'));
-    await userEvent.click(toggle('Midterste innlegg'));
-    await userEvent.click(toggle('Nyeste innlegg'));
-
-    expect(toggle('Nyeste innlegg')).toHaveAttribute('aria-expanded', 'false');
-    expect(toggle('Midterste innlegg')).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText('Spillkveldrapport')).toHaveClass('bg-tag-orange-bg');
   });
 
-  it('can close every post, leaving nothing open', async () => {
+  it('counts the results and filters by category', async () => {
     renderList();
+    expect(screen.getByText('3 innlegg')).toBeInTheDocument();
 
-    await userEvent.click(toggle('Nyeste innlegg'));
-    expect(screen.queryAllByRole('button', { expanded: true })).toHaveLength(1);
-
-    await userEvent.click(toggle('Nyeste innlegg'));
-    expect(screen.queryAllByRole('button', { expanded: true })).toHaveLength(0);
-  });
-});
-
-describe('PostsSection month grouping', () => {
-  it('groups posts under uppercase month dividers when sorted by date', () => {
-    renderList();
-
-    expect(screen.getByText('JUNI 2026')).toBeInTheDocument();
-    expect(screen.getByText('MAI 2026')).toBeInTheDocument();
-    expect(screen.getByText('APRIL 2026')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Nyheter' }));
+    expect(cardTitles()).toEqual(['Nyeste innlegg']);
+    expect(screen.getByText('1 innlegg')).toBeInTheDocument();
   });
 
-  it('hides the month dividers under a title sort, without dropping any post', async () => {
+  it('searches titles and body text', async () => {
     renderList();
+    await userEvent.type(screen.getByRole('searchbox', { name: 'Søk etter innlegg' }), 'eldste');
+    expect(cardTitles()).toEqual(['Eldste innlegg']);
+  });
 
+  it('sorts with the native select', async () => {
+    renderList();
     await userEvent.selectOptions(
       screen.getByRole('combobox', { name: 'Sorter etter' }),
-      screen.getByRole('option', { name: 'Tittel (A-Å)' }),
+      screen.getByRole('option', { name: 'Tittel (A–Å)' }),
     );
-
-    expect(screen.queryByText('JUNI 2026')).not.toBeInTheDocument();
-    expect(screen.queryByText('MAI 2026')).not.toBeInTheDocument();
-    expect(screen.queryByText('APRIL 2026')).not.toBeInTheDocument();
-    expect(toggle('Nyeste innlegg')).toBeInTheDocument();
-    expect(toggle('Midterste innlegg')).toBeInTheDocument();
-    expect(toggle('Eldste innlegg')).toBeInTheDocument();
-  });
-});
-
-describe('PostsSection links', () => {
-  it('shows a post’s link buttons only while it is open', async () => {
-    const withLinks: PostTypes[] = [
-      {
-        ...posts[0],
-        links: [{ label: 'Meld deg på', url: 'https://example.com/paamelding' }],
-      },
-      posts[1],
-      posts[2],
-    ];
-    render(
-      <MemoryRouter>
-        <Posts posts={withLinks} />
-      </MemoryRouter>,
-    );
-
-    // Every post loads closed (#223), so the link is not reachable until one is opened.
-    expect(screen.queryByRole('button', { name: /Meld deg på/ })).not.toBeInTheDocument();
-
-    await userEvent.click(toggle('Nyeste innlegg'));
-    expect(screen.getByRole('button', { name: /Meld deg på/ })).toBeInTheDocument();
-
-    await userEvent.click(toggle('Nyeste innlegg'));
-    expect(screen.queryByRole('button', { name: /Meld deg på/ })).not.toBeInTheDocument();
+    expect(cardTitles()).toEqual(['Eldste innlegg', 'Midterste innlegg', 'Nyeste innlegg']);
   });
 
-  it('renders every link a post has, not just one or two', async () => {
-    const withManyLinks: PostTypes[] = [
-      {
-        ...posts[0],
-        links: [
-          { label: 'Første lenke', url: 'https://example.com/1' },
-          { label: 'Andre lenke', url: 'https://example.com/2' },
-          { label: 'Tredje lenke', url: 'https://example.com/3' },
-        ],
-      },
-      posts[1],
-      posts[2],
-    ];
-    render(
-      <MemoryRouter>
-        <Posts posts={withManyLinks} />
-      </MemoryRouter>,
-    );
-
-    await userEvent.click(toggle('Nyeste innlegg'));
-
-    expect(screen.getByRole('button', { name: /Første lenke/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Andre lenke/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Tredje lenke/ })).toBeInTheDocument();
-  });
-});
-
-describe('PostsSection carousel', () => {
-  it('renders a floated carousel region for a post that has one', () => {
-    const withCarousel: PostTypes[] = [
-      {
-        ...posts[0],
-        carousel: [
-          {
-            _type: 'image',
-            _key: 'c1',
-            alt: 'Bilde 1',
-            asset: { _ref: 'image-abc-1536x2048-png' },
-          },
-          {
-            _type: 'image',
-            _key: 'c2',
-            alt: 'Bilde 2',
-            asset: { _ref: 'image-def-1536x2048-png' },
-          },
-        ],
-      },
-    ];
-    render(
-      <MemoryRouter>
-        <Posts posts={withCarousel} />
-      </MemoryRouter>,
-    );
-
-    const region = screen.getByRole('region', { name: /Bilder fra/ });
-    expect(region).toHaveClass('lg:float-left', 'lg:w-1/2');
-  });
-
-  it('renders no carousel region for a post without one', () => {
+  it('offers Nullstill only once something is filtered, and it resets everything', async () => {
     renderList();
-    expect(screen.queryByRole('region')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Nullstill' })).toBeNull();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Arrangementer' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Nullstill' }));
+
+    expect(cardTitles()).toHaveLength(3);
+    expect(screen.getByRole('button', { name: 'Alle' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('turns a search with no matches into an empty state with a way back', async () => {
+    renderList();
+    await userEvent.type(screen.getByRole('searchbox'), 'zzzz');
+    expect(
+      screen.getByRole('heading', { name: 'Ingen innlegg matcher søket' }),
+    ).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Nullstill filtre' }));
+    expect(cardTitles()).toHaveLength(3);
+  });
+
+  it('shows six at a time and reveals more on request', async () => {
+    const many = Array.from({ length: 8 }, (_, i) => ({
+      ...posts[0],
+      _id: `p${i}`,
+      title: `Innlegg ${i}`,
+    }));
+    renderList(many);
+    expect(cardTitles()).toHaveLength(6);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Vis flere innlegg' }));
+    expect(cardTitles()).toHaveLength(8);
+    expect(screen.queryByRole('button', { name: 'Vis flere innlegg' })).toBeNull();
+  });
+
+  it('tells a failed fetch apart from an empty feed', () => {
+    const { unmount } = renderList([], true);
+    expect(screen.getByRole('heading', { name: 'Kunne ikke laste innlegg' })).toBeInTheDocument();
+    unmount();
+
+    renderList([]);
+    expect(screen.getByRole('heading', { name: 'Ingen innlegg' })).toBeInTheDocument();
+  });
+
+  it('reads its filters from the URL, so Back from a post returns to the same view', () => {
+    render(
+      <MemoryRouter initialEntries={['/?kategori=spillkveldrapporter&sok=midterste']}>
+        <Posts posts={posts} />
+      </MemoryRouter>,
+    );
+    expect(cardTitles()).toEqual(['Midterste innlegg']);
+    expect(screen.getByRole('searchbox')).toHaveValue('midterste');
+    expect(screen.getByRole('button', { name: 'Spillkveldrapporter' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+  });
+
+  it('keeps every card it had shown when the URL says so', () => {
+    const many = Array.from({ length: 8 }, (_, i) => ({
+      ...posts[0],
+      _id: `p${i}`,
+      title: `Innlegg ${i}`,
+    }));
+    render(
+      <MemoryRouter initialEntries={['/?vis=12']}>
+        <Posts posts={many} />
+      </MemoryRouter>,
+    );
+    expect(cardTitles()).toHaveLength(8);
+  });
+
+  it('ignores a category or sort in the URL that it does not know', () => {
+    render(
+      <MemoryRouter initialEntries={['/?kategori=tull&sorter=tull']}>
+        <Posts posts={posts} />
+      </MemoryRouter>,
+    );
+    expect(cardTitles()).toHaveLength(3);
+    expect(screen.getByRole('combobox')).toHaveValue('date-desc');
   });
 });

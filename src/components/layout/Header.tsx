@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Buttons';
 import { NavMenuButton } from '../ui/NavMenuButton';
 import { DiceLogo } from '../ui/DiceLogo';
-import { navLinkClasses } from '../ui/Link';
+import { navLinkClasses } from '../ui/linkClasses';
 import { useTheme } from '../../hooks/theme/ThemeContext';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../hooks/authContext/authContext';

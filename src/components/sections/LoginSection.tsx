@@ -5,7 +5,7 @@ import { Input } from '../ui/Input';
 import { Alert } from '../ui/Alert';
 import { useAuthActions } from '../../hooks/useAuthActions';
 import { useAutofillSync } from '../../hooks/useAutofillSync';
-import { linkClassesInherit } from '../ui/Link';
+import { linkClassesInherit } from '../ui/linkClasses';
 
 export default function LoginSection({ reason }: { reason?: string }) {
   const navigate = useNavigate();

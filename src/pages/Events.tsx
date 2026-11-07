@@ -1,6 +1,6 @@
 import { Link, useLoaderData } from 'react-router-dom';
 import type { CalendarEventTypes } from '../sanity/queryHelpers/events';
-import { linkClassesInherit } from '../components/ui/Link';
+import { linkClassesInherit } from '../components/ui/linkClasses';
 
 export default function Events() {
   const { events } = useLoaderData() as { events: CalendarEventTypes[] };

@@ -301,15 +301,6 @@ for (const theme of ['light', 'dark'] as const) {
   }
 }
 
-test('the front page really does carry lifting elements to measure', async ({ page }) => {
-  await stubSanity(page);
-  await page.goto('/');
-  await expect(page.locator('#main')).not.toBeEmpty();
-
-  // Without this the contrast tests would pass on an empty page. The count is a floor, not a
-  // pin. Redesign 2026: Button and Chip no longer lift, so the floor drops as each component is rebuilt
-  // without `lift`; this spec goes once the last `lift*` consumer has gone.
-  await expect(page.locator('.lift, .lift-chip, .lift-card')).not.toHaveCount(0);
-  const measurements = await measureLiftingElements(page);
-  expect(measurements.length).toBeGreaterThanOrEqual(1);
-});
+// Redesign 2026: the front page no longer carries any lifting element (Button, Chip and the post
+// card are rebuilt without `lift`), so its floor test is gone. This spec goes with the last
+// `lift*` consumer.
