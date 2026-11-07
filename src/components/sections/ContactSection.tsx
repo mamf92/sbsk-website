@@ -277,14 +277,9 @@ export default function ContactSection() {
             {apiError && <Alert>{apiError}</Alert>}
             {success && <Alert tone="success">{SUCCESS_MESSAGE}</Alert>}
 
-            {/* `variant="disabled"` is cosmetic only — `Buttons.tsx` still needs the `disabled`
-                attribute below to actually stop the submit, but without the variant the button
-                stayed orange and looked live while every click did nothing. `isValid` covers
-                both: it never goes false while `loading` (the values it was computed from are
-                already known-valid at that point), so the button never flips grey mid-submit. */}
             <Button
               type="submit"
-              variant={isValid ? 'primary' : 'disabled'}
+              variant="primary"
               size="md"
               icon="right"
               loading={loading}

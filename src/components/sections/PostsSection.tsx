@@ -76,10 +76,10 @@ const cardCategories: Record<PostCategory, CardCategory> = {
 // navy clears both. The values are unchanged from when this was keyed off the panel fill — the
 // header and panel swap which of the two orange tones each category gets, but navy clears
 // either one, so the same assignment still holds.
-const linkVariants: Record<PostCategory, 'primary' | 'tertiary'> = {
+const linkVariants: Record<PostCategory, 'primary' | 'secondary'> = {
   nyheter: 'primary',
-  spillkveldrapporter: 'tertiary',
-  arrangementer: 'tertiary',
+  spillkveldrapporter: 'secondary',
+  arrangementer: 'secondary',
 };
 
 const sortOptions = [
@@ -237,7 +237,7 @@ function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) 
           <p className="text-darkestblue text-h2 font-bold dark:text-white">
             Ingen innlegg matcher søket.
           </p>
-          <Button variant="primary" size="lg" icon="backspace" onClick={clearFilters}>
+          <Button variant="primary" size="md" icon="backspace" onClick={clearFilters}>
             Fjern filtre
           </Button>
         </div>
@@ -291,7 +291,7 @@ function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) 
         </div>
       )}
       {visibleItemCount < sortedPosts.length && (
-        <Button variant="primary" size="lg" onClick={handleLoadedMore}>
+        <Button variant="primary" size="md" onClick={handleLoadedMore}>
           Last inn flere
         </Button>
       )}

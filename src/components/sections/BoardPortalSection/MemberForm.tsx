@@ -172,7 +172,7 @@ export default function MemberForm({ member, onSubmitMember, onClose }: MemberFo
           <Button
             onClick={onClose}
             type="button"
-            variant="tertiary"
+            variant="secondary"
             size="md"
             className="border border-white/50"
           >

@@ -115,8 +115,8 @@ export default function Header() {
               match. Lighthouse flags the same thing as label-content-name-mismatch (#222). */}
           <Button
             onClick={toggleDarkMode}
-            variant="toggle"
-            size="xs"
+            variant="ghost"
+            size="sm"
             icon={isDarkMode ? 'sun' : 'moon'}
             aria-label={isDarkMode ? 'LM – bytt til lys modus' : 'DM – bytt til mørk modus'}
           >
@@ -212,7 +212,7 @@ export default function Header() {
               {isAdmin && (
                 <Button
                   variant="primary"
-                  size="xs"
+                  size="sm"
                   icon="right"
                   onClick={() => {
                     closeMobileMenu();
@@ -224,7 +224,7 @@ export default function Header() {
               )}
               <Button
                 variant="primary"
-                size="xs"
+                size="sm"
                 icon="right"
                 onClick={() => {
                   closeMobileMenu();
@@ -235,7 +235,7 @@ export default function Header() {
               </Button>
               <Button
                 variant="secondary"
-                size="xs"
+                size="sm"
                 icon="right"
                 onClick={() => {
                   logout();

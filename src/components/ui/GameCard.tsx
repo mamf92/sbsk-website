@@ -193,7 +193,7 @@ export function GameCard({
                   title="Se på BoardGameGeek"
                   aria-label="Se på BoardGameGeek"
                   className={buttonClasses({
-                    variant: 'outline',
+                    variant: 'secondary',
                     size: 'md',
                     className: 'min-w-11 flex-1',
                   })}
@@ -208,7 +208,7 @@ export function GameCard({
                   rel="noopener noreferrer"
                   title="Se reglene forklart på video"
                   className={buttonClasses({
-                    variant: 'outline',
+                    variant: 'secondary',
                     size: 'md',
                     className: 'min-w-11 flex-1 text-xs font-bold',
                   })}

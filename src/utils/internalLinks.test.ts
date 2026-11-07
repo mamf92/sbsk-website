@@ -24,11 +24,14 @@ describe('internalLinks — root basename (test env default)', () => {
     expect(internalLinkPath('/kalender')).toBe('/kalender');
   });
 
-  it('resolves an internal URL to its pathname unchanged', async () => {
+  it('strips the live site path from an absolute live-site URL', async () => {
     const { internalLinkPath } = await import('./internalLinks');
-    expect(internalLinkPath('https://mamf92.github.io/sbsk-website/kalender')).toBe(
-      '/sbsk-website/kalender',
-    );
+    expect(internalLinkPath('https://mamf92.github.io/sbsk-website/kalender')).toBe('/kalender');
+  });
+
+  it('leaves a root-relative path alone even if it repeats the live prefix', async () => {
+    const { internalLinkPath } = await import('./internalLinks');
+    expect(internalLinkPath('/sbsk-website/kalender')).toBe('/sbsk-website/kalender');
   });
 });
 
@@ -55,5 +58,25 @@ describe('internalLinks — deployed basename (VITE_BASE=/sbsk-website/)', () =>
 
     expect(internalLinkPath('https://mamf92.github.io/sbsk-website')).toBe('/');
     expect(internalLinkPath('https://mamf92.github.io/sbsk-website/')).toBe('/');
+  });
+});
+
+describe('internalLinks — redesign preview basename (VITE_BASE=/sbsk-website/redesign/)', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.resetModules();
+  });
+
+  it('maps a pasted live-site URL onto the preview route', async () => {
+    vi.stubEnv('VITE_BASE', '/sbsk-website/redesign/');
+    vi.resetModules();
+    const { internalLinkPath } = await import('./internalLinks');
+
+    expect(internalLinkPath('https://mamf92.github.io/sbsk-website/kalender')).toBe('/kalender');
+    expect(internalLinkPath('https://mamf92.github.io/sbsk-website/')).toBe('/');
+    expect(internalLinkPath('https://mamf92.github.io/sbsk-website/redesign/om-oss')).toBe(
+      '/om-oss',
+    );
+    expect(internalLinkPath('/kalender')).toBe('/kalender');
   });
 });

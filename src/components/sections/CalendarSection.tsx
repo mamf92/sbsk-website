@@ -88,7 +88,7 @@ const CATEGORY_STYLES = {
     surface: 'bg-category-turnering text-darkestblue',
     surfaceTone: 'surface-light',
     accent: 'bg-darkorange surface-light text-darkestblue',
-    surfaceButtonVariant: 'tertiary',
+    surfaceButtonVariant: 'secondary',
     accentButtonVariant: 'primary',
   },
   annet: {
@@ -96,7 +96,7 @@ const CATEGORY_STYLES = {
     surfaceTone: 'surface-light',
     accent: 'bg-orange surface-light text-darkestblue',
     surfaceButtonVariant: 'primary',
-    accentButtonVariant: 'tertiary',
+    accentButtonVariant: 'secondary',
   },
 } as const;
 
@@ -575,7 +575,7 @@ function EventList({ events, failed }: { events: CalendarEventTypes[]; failed?: 
               : 'Prøv et annet søk, eller fjern filtrene for å se alt.'
           }
           action={
-            <Button variant="primary" size="lg" icon="backspace" onClick={clearFilters}>
+            <Button variant="primary" size="md" icon="backspace" onClick={clearFilters}>
               Fjern filtre
             </Button>
           }
@@ -586,7 +586,7 @@ function EventList({ events, failed }: { events: CalendarEventTypes[]; failed?: 
         <div className="flex justify-center">
           <Button
             variant="primary"
-            size="lg"
+            size="md"
             onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
           >
             Last inn flere
@@ -687,7 +687,7 @@ function EventRow({
                 <AvatarStack people={toAvatarPeople(attendees)} max={3} size="sm" />
               )}
               <Button
-                variant={attending ? 'toggle' : styles.surfaceButtonVariant}
+                variant={attending ? 'secondary' : styles.surfaceButtonVariant}
                 size="sm"
                 disabled={rsvp.pending[event._id]}
                 aria-label={attending ? `Meld deg av ${event.title}` : `Meld deg på ${event.title}`}
