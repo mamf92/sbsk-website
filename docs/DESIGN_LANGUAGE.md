@@ -98,3 +98,51 @@ Sizes: `md` (44px, default) and `sm` (36px, dense rows only). `disabled` uses th
 and greys the button out. `loading` disables the button, sets `aria-busy` and shows a spinner in
 the icon slot while keeping the label. Anything that navigates is a link wearing
 `buttonClasses()`, not a `<button>`.
+
+### Links (`Link.tsx`, `linkClasses.ts`)
+
+Text links are `text-link`, always underlined, and thicken the underline on hover. `inherit`
+borrows the surface's text colour. Navigation links (`navLinkClasses`, `navLinkClassesBody`) drop
+the underline and show a 2px orange bar under the current page (`aria-current="page"`).
+
+### Fields (`Input`, `Textarea`, `Select`, `Checkbox`, `Label`, `fieldClasses.ts`)
+
+A tinted `surface-muted` fill, 44px tall, with a 2px bottom line in `border-strong` that turns to
+the focus colour on focus, plus the focus outline. `invalid` turns the line red and shows the
+alert glyph; pair it with `FieldError` through `aria-describedby`. Every field has a visible
+`Label` above it, and `optional` adds "(valgfritt)". `Select` is the native `<select>` in the same
+look. `Checkbox` is the native control with `accent-secondary`.
+
+### Filters (`Chip`, `Tabs`, `Select`)
+
+`Tabs` switch between views of one list (underline tabs, orange bar on the current one). `Chip`
+toggles a filter: navy fill and a tick when on, `aria-pressed`. Sorting is a `Select`. A list
+with filters shows a result count and a ghost **Nullstill** button once anything is filtered.
+
+### Cards (`Card`, `Tag`, `GameCard`, `EventScheduleCard`)
+
+`Card` is the content card for a grid: photo (16:9, decorative), `Tag`, date, title and a
+two-line summary on `bg-surface shadow-card`. The whole card is one link, stretched from the
+title, and keyboard focus outlines the whole card. `Tag` is the only place category colour
+appears (`blue` or `orange`). Game and event cards follow the same surface and shadow.
+
+### Feedback (`Alert`, `FieldError`, `EmptyState`, `Skeleton`, `Spinner`, `LoadingIndicator`)
+
+`Alert` has `info`, `success` and `error` tones: a tinted fill, a 4px bar on the left, an icon
+and a sentence. Errors are `role="alert"`, the others `role="status"`. `EmptyState` is an icon,
+a heading, a sentence and the next step. While loading, prefer `Skeleton` / `SkeletonCard` in the
+shape of what is coming (`RouteFallback` does this for routes); `LoadingIndicator` (spinner and
+label) is for waits with no shape.
+
+### Header, footer and dialogs
+
+The header and footer are `bg-header` / `bg-footer` with `on-dark`. The header carries four
+links, the sun/moon toggle, "Logg inn" as a quiet link and "Bli medlem" as the one orange action;
+below `lg` the links fold into a full-width list. `Dialog` is a `bg-surface` panel with
+`shadow-overlay-soft` over a plain navy scrim.
+
+### Motion
+
+Reduced motion follows the OS. `src/utils/motion.ts` mirrors `prefers-reduced-motion` onto
+`.reduce-motion` on `<html>`, which the `motion-reduce:` / `motion-safe:` variants read. There is
+no on-site switch and no scroll reveal.

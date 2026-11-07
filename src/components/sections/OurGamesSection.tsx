@@ -5,7 +5,6 @@ import { Input } from '../ui/Input';
 import { Dialog } from '../ui/Dialog';
 import SearchIcon from '../../assets/icons/symbols/search.svg?react';
 import EmptyState from '../ui/EmptyState';
-import { Reveal } from '../ui/Reveal';
 import { GameCard, type BuyInfo } from '../ui/GameCard';
 import { HeroImage } from '../ui/HeroImage';
 import { HeroLinks, type HeroLink } from '../ui/HeroLinks';
@@ -170,8 +169,8 @@ export default function OurGamesSection({ gamesHero, games }: OurGamesProps) {
           />
         ) : (
           <div className="grid grid-cols-[repeat(auto-fill,minmax(290px,1fr))] items-stretch gap-5">
-            {filteredGames.map((game, index) => (
-              <Reveal key={game._id} index={index} className="flex">
+            {filteredGames.map((game) => (
+              <div key={game._id} className="flex">
                 <GameCard
                   title={game.title}
                   genre={game.genre}
@@ -189,7 +188,7 @@ export default function OurGamesSection({ gamesHero, games }: OurGamesProps) {
                   member={isAuthenticated}
                   onBuy={handleBuy}
                 />
-              </Reveal>
+              </div>
             ))}
           </div>
         )}
@@ -261,7 +260,7 @@ function BuyConfirmDialog({ info, onClose }: { info: BuyInfo | null; onClose: ()
 
   return (
     <Dialog title="Rabattkode kopiert" onClose={onClose}>
-      <p className="text-white">
+      <p className="text-fg">
         Koden <b className="font-heading">{info.discountCode}</b> er kopiert. Bruk den i kassen hos{' '}
         {info.sponsor} for å få rabatten på {info.title}.
       </p>

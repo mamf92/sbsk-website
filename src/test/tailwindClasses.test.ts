@@ -162,18 +162,16 @@ describe('every class name in src/ compiles to CSS', () => {
     expect(design.candidatesToCss(['lift', 'lift-chip', 'lift-card'])).not.toContain(null);
     // `motion-reduce` is redefined in `index.css` as a class-driven variant so a visitor's own
     // preference can reach it. Pin that it still compiles *and* that it compiles to the class
-    // rather than the media query — a stray `@media` here would mean the footer toggle silently
-    // stops working for every `motion-reduce:` class in the tree.
+    // rather than the media query, which `motion.ts` mirrors onto that class.
     const motionReduce = design.candidatesToCss(['motion-reduce:transition-none'])[0];
     expect(motionReduce).toContain('.reduce-motion');
     expect(motionReduce).not.toContain('@media');
 
-    // `.sbsk-reveal` and `.reduce-motion` are hand-written in `index.css` rather than Tailwind
+    // `.reduce-motion` is hand-written in `index.css` rather than Tailwind
     // utilities, so the sweep above allows them only because it harvests class names out of the
     // stylesheet. Pin that they are still actually there — a rename would otherwise make the
     // sweep quietly stop checking the classes that use them.
     const handWritten = handWrittenClasses();
-    expect(handWritten.has('sbsk-reveal')).toBe(true);
     expect(handWritten.has('reduce-motion')).toBe(true);
     expect(design.candidatesToCss(['bg-darkestblue', 'text-h1', 'xs:text-base'])).not.toContain(
       null,

@@ -15,70 +15,19 @@ function renderFooter() {
   );
 }
 
-const toggle = () => screen.getByRole('button', { name: 'Reduser animasjoner' });
-
-describe('Footer — motion preference toggle', () => {
-  // WCAG 2.5.3 Label in Name, the rule `Header.tsx`'s LM/DM comment is about. The header's
-  // theme toggle has to prefix its name with a two-letter abbreviation; putting this control in
-  // the footer is what buys it a name that is simply its visible label.
-  it('is named by the words it shows', () => {
+describe('Footer — links (decision 6)', () => {
+  it('carries Board Game Masters and Partnere, which left the header', () => {
     renderFooter();
-    expect(toggle()).toHaveTextContent('Reduser animasjoner');
+    expect(screen.getByRole('link', { name: 'Board Game Masters' })).toHaveAttribute(
+      'href',
+      '/board-game-masters',
+    );
+    expect(screen.getByRole('link', { name: 'Våre partnere' })).toBeInTheDocument();
   });
 
-  it('reports its state through aria-pressed rather than the label', async () => {
-    const user = userEvent.setup();
+  it('has no motion switch: reduced motion follows the OS', () => {
     renderFooter();
-
-    expect(toggle()).toHaveAttribute('aria-pressed', 'false');
-
-    await user.click(toggle());
-
-    // The label is deliberately unchanged — a toggle that renames itself is read out as a
-    // different control, and the pressed state already carries the meaning.
-    expect(toggle()).toHaveAttribute('aria-pressed', 'true');
-    expect(toggle()).toHaveTextContent('Reduser animasjoner');
-  });
-
-  it('drives the class the stylesheet actually reads', async () => {
-    const user = userEvent.setup();
-    renderFooter();
-
-    await user.click(toggle());
-    expect(document.documentElement).toHaveClass('reduce-motion');
-
-    await user.click(toggle());
-    expect(document.documentElement).not.toHaveClass('reduce-motion');
-  });
-
-  // `aria-pressed` alone is invisible: nothing in `buttonClasses` styles it, and only
-  // `lift-chip` reads it. A setting control that looks identical in both states is a setting
-  // control that only assistive tech can read.
-  it('looks different when pressed, not only to a screen reader', async () => {
-    const user = userEvent.setup();
-    renderFooter();
-    const off = toggle().querySelector('svg')!.innerHTML;
-
-    await user.click(toggle());
-
-    // The icon swaps, so the state shows on screen as well as in aria-pressed.
-    expect(toggle().querySelector('svg')!.innerHTML).not.toBe(off);
-  });
-
-  it('keeps its label across the state change', async () => {
-    const user = userEvent.setup();
-    renderFooter();
-
-    await user.click(toggle());
-
-    // A control that renames itself reads as a different control.
-    expect(toggle()).toHaveTextContent('Reduser animasjoner');
-  });
-
-  it('shows as pressed when the preference was already reduced', () => {
-    localStorage.setItem('motion-preference', 'reduced');
-    renderFooter();
-    expect(toggle()).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.queryByRole('button', { name: 'Reduser animasjoner' })).toBeNull();
   });
 });
 
@@ -133,7 +82,7 @@ describe('Footer — going home', () => {
     const user = userEvent.setup();
     renderAt('/');
 
-    await user.click(toggle());
+    document.documentElement.classList.add('reduce-motion');
     await user.click(wordmark());
 
     expect(scrollTo).toHaveBeenLastCalledWith({ top: 0, behavior: 'auto' });
