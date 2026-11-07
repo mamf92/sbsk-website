@@ -35,8 +35,8 @@ function without<T>(
 
 /**
  * Kontakt oss (#180). One column — heading and intro on top, fields stacked below — on the
- * same `bg-darkblue surface-dark max-w-form` framed panel `LoginSection` and `RegisterSection`
- * use, sitting on the page's own `bg-white dark:bg-darkestblue` background (`ContactUs.tsx`)
+ * same framed `bg-surface shadow-card max-w-form` panel `LoginSection` and `RegisterSection`
+ * use, sitting on the page's own `bg-page` (`ContactUs.tsx`)
  * rather than spanning full width on its own navy backdrop.
  *
  * Validation is `contactSchema` (`src/schemas/contact.ts`), the first form on `src/schemas/` —
@@ -152,10 +152,12 @@ export default function ContactSection() {
   };
 
   return (
-    <div className="bg-darkblue surface-dark max-w-form my-4 flex w-full items-center justify-center px-4">
+    <div className="border-border bg-surface text-fg shadow-card max-w-form my-4 flex w-full items-center justify-center border px-4">
       <div className="flex w-full flex-col gap-8 py-16 md:py-24">
-        <div className="flex flex-col gap-4 text-white">
-          <h1 className="font-heading text-h1 tracking-heading font-bold">Kontakt oss!</h1>
+        <div className="flex flex-col gap-4">
+          <h1 className="font-heading text-heading text-h1 tracking-heading font-bold">
+            Kontakt oss!
+          </h1>
           <p className="font-body">
             Ta kontakt hvis du ønsker å bli medlem, har spørsmål, tilbakemeldinger eller andre ting
             du ønsker å ta opp med klubben. Vi svarer så fort vi kan og vanligvis i løpet av en uke.
@@ -277,7 +279,7 @@ export default function ContactSection() {
               Send melding
             </Button>
 
-            <p className="font-body text-sm text-white/80">
+            <p className="font-body text-fg-muted text-sm">
               Meldingen din lagres slik at klubben kan svare deg.
             </p>
           </form>

@@ -166,13 +166,7 @@ export default function MemberForm({ member, onSubmitMember, onClose }: MemberFo
         </div>
         {submitError && <Alert>{submitError}</Alert>}
         <div className="flex w-full flex-col gap-3 sm:flex-row sm:justify-end">
-          <Button
-            onClick={onClose}
-            type="button"
-            variant="secondary"
-            size="md"
-            className="border border-white/50"
-          >
+          <Button onClick={onClose} type="button" variant="secondary" size="md">
             Avbryt
           </Button>
           <Button type="submit" variant="primary" size="md" icon="right" loading={submitting}>

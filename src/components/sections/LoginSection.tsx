@@ -5,7 +5,7 @@ import { Input } from '../ui/Input';
 import { Alert } from '../ui/Alert';
 import { useAuthActions } from '../../hooks/useAuthActions';
 import { useAutofillSync } from '../../hooks/useAutofillSync';
-import { linkClassesInherit } from '../ui/linkClasses';
+import { linkClasses } from '../ui/linkClasses';
 
 export default function LoginSection({ reason }: { reason?: string }) {
   const navigate = useNavigate();
@@ -48,24 +48,26 @@ export default function LoginSection({ reason }: { reason?: string }) {
   };
 
   return (
-    <div className="bg-darkblue surface-dark max-w-form my-4 flex w-full items-center justify-center px-4">
+    <div className="border-border bg-surface text-fg shadow-card max-w-form my-4 flex w-full items-center justify-center border px-4">
       <div className="flex w-full flex-col gap-8 py-24">
         <div className="flex flex-col items-center gap-4">
-          <h1 className="font-heading text-h1 text-center text-white">Velkommen tilbake!</h1>
+          <h1 className="font-heading text-heading text-h1 text-center font-bold">
+            Velkommen tilbake!
+          </h1>
           {reason === 'not_authenticated' && (
-            <p className="font-body text-orange text-center">
+            <Alert tone="info">
               Det ser ut som at du ikke er logget inn. Logg inn igjen for å fortsette.
-            </p>
+            </Alert>
           )}
-          <p className="font-body w-full text-center text-white">
+          <p className="font-body w-full text-center">
             Her kan du logge inn på din medlemsprofil og få tilgang til arrangementer,
             medlemsfordeler og mer!
           </p>
-          <p className="font-body w-full text-center text-white">
+          <p className="font-body w-full text-center">
             Ingen konto enda? Er du medlem i klubben kan du lage din egen medlemsprofil ved å klikke
             på lenken under.
           </p>
-          <Link to="/lag-medlemsprofil" className={`${linkClassesInherit} text-white underline`}>
+          <Link to="/lag-medlemsprofil" className={linkClasses()}>
             Registrere deg her!
           </Link>
         </div>

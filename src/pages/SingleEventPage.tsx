@@ -1,4 +1,4 @@
-import { useLoaderData } from 'react-router-dom';
+import { Link as RouterLink, useLoaderData } from 'react-router-dom';
 import { PortableText, toPlainText } from '@portabletext/react';
 import type { CalendarEventTypes } from '../sanity/queryHelpers/events';
 import { urlFor } from '../sanity/sanityImageUrl';
@@ -7,6 +7,18 @@ import { Button } from '../components/ui/Buttons';
 import { EventScheduleCard, type EventScheduleCardTone } from '../components/ui/EventScheduleCard';
 import { monthAbbreviation, timeRange } from '../utils/eventDateFormat';
 import { Link } from '../components/ui/Link';
+import { Tag } from '../components/ui/Tag';
+import { linkClasses } from '../components/ui/linkClasses';
+import ArrowLeft from '../assets/icons/arrows/arrowleft.svg?react';
+
+const CATEGORY_LABELS: Record<CalendarEventTypes['category'], string> = {
+  spillkveld: 'Spillkveld',
+  turnering: 'Turnering',
+  annet: 'Arrangement',
+};
+
+/** A text block on the page's own surface, the same card frame the lists use. */
+const PANEL = 'border-border bg-surface shadow-card flex flex-col gap-3 border p-6';
 
 /** "23." for a single day, "23.–26." for a range — the date block's big number. */
 function dayLabel(start: Date, end: Date): string {
@@ -40,7 +52,22 @@ export default function SingleEventPage() {
 
   return (
     <div className="bg-page text-fg min-h-[60vh] pb-16">
-      <div className="max-w-content content-gutter:px-0 mx-auto flex w-full flex-col gap-8 px-3">
+      <article className="max-w-content content-gutter:px-0 mx-auto flex w-full flex-col gap-8 px-4 pt-8">
+        <RouterLink
+          to="/kalender"
+          className={`${linkClasses()} inline-flex items-center gap-2 self-start`}
+        >
+          <ArrowLeft aria-hidden="true" className="size-4 fill-current" />
+          Alle arrangementer
+        </RouterLink>
+
+        <header className="flex max-w-[70ch] flex-col items-start gap-3">
+          <Tag tone={tone}>{CATEGORY_LABELS[event.category] ?? 'Arrangement'}</Tag>
+          <h1 className="font-heading text-heading text-h1 tracking-heading font-bold">
+            {event.title}
+          </h1>
+        </header>
+
         {event.image && (
           <img
             src={urlFor(event.image).width(1440).fit('crop').auto('format').url()}
@@ -55,16 +82,9 @@ export default function SingleEventPage() {
           />
         )}
 
-        <div className="bg-darkblue flex flex-col gap-2 p-4 text-white sm:p-6">
-          <span className="font-heading text-orange text-xs font-bold tracking-[0.14em] uppercase">
-            Arrangement
-          </span>
-          <h1 className="font-heading text-h1 tracking-heading font-bold">{event.title}</h1>
-        </div>
-
         {hasSponsors && (
-          <div className="bg-darkorange flex flex-col items-center gap-6 px-4 py-8 sm:px-8">
-            <span className="font-body text-darkestblue text-xs font-semibold tracking-[0.14em] uppercase opacity-80">
+          <div className="bg-surface-muted flex flex-col items-center gap-6 px-4 py-8 sm:px-8">
+            <span className="font-body text-fg-muted text-xs font-semibold tracking-[0.14em] uppercase">
               Med støtte fra
             </span>
             <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6">
@@ -119,7 +139,7 @@ export default function SingleEventPage() {
         )}
 
         {hasContent && (
-          <div className="bg-darkblue p-6 text-white sm:p-8">
+          <div className="max-w-[70ch]">
             <div className="sbsk-rt">
               <PortableText value={event.content!} components={components} />
             </div>
@@ -145,16 +165,16 @@ export default function SingleEventPage() {
         {(hasPricing || hasProgram) && (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             {hasPricing && (
-              <div className="bg-darkblue flex flex-col gap-3 p-6 text-white">
-                <h2 className="font-heading text-h3 font-bold">Priser</h2>
+              <div className={PANEL}>
+                <h2 className="font-heading text-heading text-h3 font-bold">Priser</h2>
                 <div className="sbsk-rt">
                   <PortableText value={event.pricingInfo!} components={components} />
                 </div>
               </div>
             )}
             {hasProgram && (
-              <div className="bg-darkblue flex flex-col gap-3 p-6 text-white">
-                <h2 className="font-heading text-h3 font-bold">Program</h2>
+              <div className={PANEL}>
+                <h2 className="font-heading text-heading text-h3 font-bold">Program</h2>
                 <div className="sbsk-rt">
                   <PortableText value={event.programInfo!} components={components} />
                 </div>
@@ -189,7 +209,7 @@ export default function SingleEventPage() {
             })}
           </div>
         )}
-      </div>
+      </article>
     </div>
   );
 }

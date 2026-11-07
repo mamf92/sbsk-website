@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Button } from '../ui/Buttons';
 import { DiceLogo } from '../ui/DiceLogo';
+import { Tag } from '../ui/Tag';
 import type { DiceLogoHandle } from '../ui/DiceLogo';
 
 /**
@@ -26,7 +27,7 @@ type ErrorStateProps = React.HTMLAttributes<HTMLElement> & {
 // The two numerals flanking the die. `--text-errorcode` is the one-off display size they sit at,
 // in the `--text-daymark` mould: decorative digits, not a heading, so they take a named size of
 // their own rather than a step off the h1–h4 scale.
-const numeralClasses = 'font-heading text-errorcode text-darkblue font-bold';
+const numeralClasses = 'font-heading text-errorcode font-bold text-white/15';
 
 export default function ErrorState({
   code = '404',
@@ -52,7 +53,7 @@ export default function ErrorState({
         // oversight — a 404 is the one page that should not change character underfoot. It is
         // stated in utilities now, so a future `dark:` pass can reach it; while this file was
         // inline styles it could not have.
-        'bg-darkestblue surface-dark flex flex-1 items-center justify-center overflow-hidden text-white',
+        'bg-footer on-dark text-fg flex flex-1 items-center justify-center overflow-hidden',
         // The discrete ladder the section's two `clamp()`s became. Steps chosen where the
         // clamp actually sat at each breakpoint rather than at round numbers, so the page keeps
         // its proportions on the way up: within a few pixels of the old fluid padding at every
@@ -69,15 +70,13 @@ export default function ErrorState({
       <div className="max-w-shell grid w-full grid-cols-[repeat(auto-fit,minmax(320px,1fr))] items-center gap-8 md:gap-12 xl:gap-18">
         {/* Text column */}
         <div className="flex flex-col items-start gap-6">
-          <span className="font-heading border-darkorange text-orange border px-3 py-1.5 text-xs font-bold tracking-[0.18em] uppercase">
-            {eyebrow}
-          </span>
+          <Tag tone="orange">{eyebrow}</Tag>
 
-          <h1 className="font-heading text-display font-bold tracking-[-0.01em] text-balance text-white">
+          <h1 className="font-heading text-display text-heading font-bold tracking-[-0.01em] text-balance">
             {title}
           </h1>
 
-          <p className="font-body max-w-[44ch] text-lg leading-relaxed text-pretty text-white/80">
+          <p className="font-body text-fg-muted max-w-[44ch] text-lg leading-relaxed text-pretty">
             {body}
           </p>
 
