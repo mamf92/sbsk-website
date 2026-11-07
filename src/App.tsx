@@ -16,7 +16,7 @@ export default function App() {
       <ScrollRestoration />
       <a
         href="#main"
-        className="sr-only rounded-none bg-white px-3 py-2 focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
+        className="bg-surface text-link sr-only rounded-none px-3 py-2 underline focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[2000]"
       >
         Skip to content
       </a>

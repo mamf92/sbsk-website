@@ -11,7 +11,7 @@ export default function MemberPortal() {
 
   return (
     <>
-      <div className="dark:bg-darkestblue min-h-[60vh] bg-white">
+      <div className="bg-page text-fg min-h-[60vh]">
         <MemberPoartalSection profile={profile} reason={reason} />
       </div>
     </>

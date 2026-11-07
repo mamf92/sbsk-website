@@ -64,7 +64,7 @@ describe('AvatarStack', () => {
   it('gives the "+N" button a visible focus ring', () => {
     render(<AvatarStack people={people} max={3} onMore={vi.fn()} />);
     expect(screen.getByRole('button', { name: 'Vis 2 deltakere til' })).toHaveClass(
-      'focus-visible:outline-focus-ring',
+      'focus-visible:outline-focus',
     );
   });
 

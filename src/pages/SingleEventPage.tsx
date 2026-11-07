@@ -39,7 +39,7 @@ export default function SingleEventPage() {
   const signupLabel = event.signupUrl?.label || 'Meld deg på';
 
   return (
-    <div className="dark:bg-darkestblue min-h-[60vh] bg-white pb-16 dark:text-white">
+    <div className="bg-page text-fg min-h-[60vh] pb-16">
       <div className="max-w-content content-gutter:px-0 mx-auto flex w-full flex-col gap-8 px-3">
         {event.image && (
           <img

@@ -15,7 +15,7 @@ type AvatarProps = Omit<React.HTMLAttributes<HTMLSpanElement>, 'children'> & {
 // avatars, which is what separates this from the usual round social-media chip.
 const base =
   'inline-flex flex-none items-center justify-center overflow-hidden rounded-none border ' +
-  'border-black bg-gray-100 font-heading font-bold text-darkblue select-none ';
+  'border-border bg-surface-muted font-heading font-bold text-heading select-none ';
 
 // 24 / 32 / 44 / 64px, the library's avatar scale.
 const sizes = {

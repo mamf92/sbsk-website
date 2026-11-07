@@ -107,21 +107,21 @@ describe('SanityImage', () => {
     const { container } = render(<SanityImage value={imageValue(1536, 2048, { alt: 'Bilde' })} />);
 
     const figure = container.querySelector('figure');
-    expect(figure).toHaveClass('border', 'border-black');
+    expect(figure).toHaveClass('border', 'border-border');
     expect(figure?.className).not.toMatch(/\bmx-auto\b/);
     // The frame belongs to the figure now, not a second border drawn by the image itself.
     expect(container.querySelector('img')).toHaveClass('border-0');
   });
 
-  it('gives the caption strip a hard rule and a tint of its own text colour', () => {
+  it('gives the caption strip a hairline and muted text', () => {
     const { container } = render(
       <SanityImage value={imageValue(1536, 2048, { alt: 'Bilde', caption: 'En bildetekst' })} />,
     );
 
     expect(container.querySelector('figcaption')).toHaveClass(
       'border-t',
-      'border-black',
-      'bg-current/10',
+      'border-border',
+      'text-fg-muted',
     );
   });
 

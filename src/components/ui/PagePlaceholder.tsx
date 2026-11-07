@@ -1,6 +1,8 @@
 import * as React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from './Buttons';
+import { Link as RouterLink } from 'react-router-dom';
+import { buttonClasses } from './buttonClasses';
+import { Tag } from './Tag';
+import ArrowRight from '../../assets/icons/arrows/arrowright.svg?react';
 
 export type PagePlaceholderAction = {
   label: string;
@@ -42,49 +44,38 @@ export function PagePlaceholder({
   className = '',
   ...props
 }: PagePlaceholderProps) {
-  const navigate = useNavigate();
-
   return (
     <section
       className={[
-        // No `surface-*`: the fill is the page background in both themes, which is exactly what
-        // the theme-level `--hard-shadow-color` already describes.
-        'dark:bg-darkestblue text-darkestblue bg-white',
-        'flex flex-1 flex-col items-center justify-center gap-6 px-4 py-24 dark:text-white',
+        'bg-page text-fg flex flex-1 flex-col items-center justify-center gap-6 px-4 py-24',
         className,
       ]
         .filter(Boolean)
         .join(' ')}
       {...props}
     >
-      <span className="font-heading border-darkorange text-darkestorange dark:text-orange border px-3 py-1.5 text-xs font-bold tracking-[0.18em] uppercase">
-        Kommer snart
-      </span>
+      <Tag tone="orange">Kommer snart</Tag>
 
-      <h1 className="font-heading text-h1 tracking-heading max-w-content text-center font-bold">
+      <h1 className="font-heading text-heading text-h1 max-w-content text-center font-bold">
         {title}
       </h1>
 
       {description ? (
-        <p className="font-body max-w-form text-center text-base">{description}</p>
+        <p className="font-body text-fg-muted max-w-form text-center text-base">{description}</p>
       ) : null}
 
       {actions.length > 0 ? (
         <div className="mt-2 flex flex-row flex-wrap justify-center gap-4">
-          {/* All `primary` (#223). `secondary` is `darkorange` against `primary`'s `orange` —
-              two fills a shade apart, which on a page whose only content is these buttons
-              reads as one of them being subtly wrong rather than as a hierarchy. Neither
-              destination outranks the other here anyway. */}
-          {actions.map((action) => (
-            <Button
+          {/* Navigation, so links wearing button classes. The first is the one orange action. */}
+          {actions.map((action, index) => (
+            <RouterLink
               key={action.to}
-              onClick={() => navigate(action.to)}
-              variant="primary"
-              size="md"
-              icon="right"
+              to={action.to}
+              className={buttonClasses({ variant: index === 0 ? 'primary' : 'secondary' })}
             >
               {action.label}
-            </Button>
+              <ArrowRight aria-hidden="true" className="size-4 shrink-0 fill-current" />
+            </RouterLink>
           ))}
         </div>
       ) : null}
