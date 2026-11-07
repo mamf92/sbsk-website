@@ -1,16 +1,17 @@
 import { defineField } from 'sanity';
+import { imageCreditFields } from './sharedFields';
 
 // Shared by the inline `content` image and the `carousel` field on `postType.ts`, so the two
 // can't drift apart. Layout is never an editor choice: an inline image fills the text column,
 // and a carousel image's layout is decided by the carousel itself.
 export const postImageFields = [
   defineField({
-    title: 'Alt-tekst',
+    title: 'Bildebeskrivelse (alt-tekst)',
     name: 'alt',
     type: 'string',
     description:
-      'Beskriv hva bildet viser, for lesere som bruker skjermleser. Vises ikke på siden.',
-    validation: (rule) => rule.required().error('Skriv en alt-tekst som beskriver bildet.'),
+      'Beskriv kort hva bildet viser, f.eks. «Seks personer rundt et bord med Catan». Leses opp for blinde og svaksynte, og vises ikke på siden.',
+    validation: (rule) => rule.required().error('Skriv en kort beskrivelse av bildet.'),
   }),
   defineField({
     title: 'Bildetekst',
@@ -18,18 +19,7 @@ export const postImageFields = [
     type: 'string',
     description: 'Teksten som står under bildet på siden. Valgfritt.',
   }),
-  defineField({
-    title: 'Bildekilde navn',
-    name: 'imageSourceName',
-    type: 'string',
-    description: 'Navn på kilden for bildet.',
-  }),
-  defineField({
-    title: 'Bildekilde URL',
-    name: 'imageSourceUrl',
-    type: 'url',
-    description: 'URL til kilden for bildet.',
-  }),
+  ...imageCreditFields,
 ];
 
 export const postImagePreview = {

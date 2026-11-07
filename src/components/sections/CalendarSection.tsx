@@ -46,7 +46,7 @@ const FALLBACK_CALENDAR = {
     'Her vil du finne oversikt over alle våre arrangementer fra ukentlige spillkvelder, til turneringer og andre events. ',
   imageUrl: calendarPlaceholderImage,
   imageSourceName: 'Designed by Freepik',
-  imageSourceUrl: 'www.freepik.com',
+  imageSourceUrl: 'https://www.freepik.com',
 };
 
 // How many events past the featured one to render before "Last inn flere".
@@ -317,8 +317,9 @@ function CalendarHero({
 }: CalendarHeroTypes = {}) {
   const resolvedTitle = title || FALLBACK_CALENDAR.title;
   const resolvedSubtitle = subtitle || FALLBACK_CALENDAR.subtitle;
-  const resolvedImageSource = imageSourceName || FALLBACK_CALENDAR.imageSourceName;
-  const resolvedImageSourceUrl = imageSourceUrl || FALLBACK_CALENDAR.imageSourceUrl;
+  // The Freepik credit belongs to the bundled fallback photo only, never to an editor's image.
+  const resolvedImageSource = image ? imageSourceName : FALLBACK_CALENDAR.imageSourceName;
+  const resolvedImageSourceUrl = image ? imageSourceUrl : FALLBACK_CALENDAR.imageSourceUrl;
   return (
     <div className="max-w-content content-gutter:px-0 flex w-full flex-col px-3">
       <div className="relative aspect-2/1 max-h-[40svh]">

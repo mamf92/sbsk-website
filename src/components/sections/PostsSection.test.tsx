@@ -20,7 +20,6 @@ const posts: PostTypes[] = [
   {
     _id: 'nyest',
     title: 'Nyeste innlegg',
-    slug: { current: 'nyeste' },
     publishedAt: '2026-06-05T18:00:00Z',
     category: 'nyheter',
     content: body('a', 'Brødtekst for det nyeste'),
@@ -28,7 +27,6 @@ const posts: PostTypes[] = [
   {
     _id: 'midt',
     title: 'Midterste innlegg',
-    slug: { current: 'midterste' },
     publishedAt: '2026-05-05T18:00:00Z',
     category: 'spillkveldrapporter',
     content: body('b', 'Brødtekst for det midterste'),
@@ -36,7 +34,6 @@ const posts: PostTypes[] = [
   {
     _id: 'eldst',
     title: 'Eldste innlegg',
-    slug: { current: 'eldste' },
     publishedAt: '2026-04-05T18:00:00Z',
     category: 'arrangementer',
     content: body('c', 'Brødtekst for det eldste'),

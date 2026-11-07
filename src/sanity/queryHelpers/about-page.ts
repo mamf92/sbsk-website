@@ -11,9 +11,9 @@ export interface AboutPageTypes {
   boardIntro?: string;
 }
 
-const ABOUT_PAGE_QUERY = `*[
-  _type == "aboutPage"
-]{
+// One document per page: the Studio opens the one with the fixed id `aboutPage`. The type match is
+// the fallback for a document created before the Studio pinned that id.
+const ABOUT_PAGE_QUERY = `coalesce(*[_id == "aboutPage"][0], *[_type == "aboutPage"][0]){
   _id,
   image,
   imageSource{imageSourceName, imageSourceUrl},
@@ -22,7 +22,7 @@ const ABOUT_PAGE_QUERY = `*[
   clubBody,
   boardTitle,
   boardIntro
-}[0]`;
+}`;
 
 export async function aboutPageLoader() {
   return { aboutPage: await client.fetch<AboutPageTypes | null>(ABOUT_PAGE_QUERY) };

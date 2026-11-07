@@ -1,304 +1,277 @@
 import { defineField, defineType } from 'sanity';
-import type { Rule } from 'sanity';
-import ExternalLink from '../../assets/icons/symbols/external-link.svg?react';
-import AddLink from '../../assets/icons/symbols/add-link.svg?react';
+import type { ConditionalPropertyCallbackContext } from 'sanity';
+import { buttonLinksField, hotspotHint, richTextBlock } from './sharedFields';
 
-// Shared by `content`, `pricingInfo` and `programInfo` below — three portable-text fields that
-// all want the same block/list/mark configuration. Defined once here rather than repeated
-// three times over in the same file.
-const richTextBlocks = [
-  {
-    type: 'block',
-    styles: [
-      { title: 'Normal', value: 'normal' },
-      { title: 'Heading 1', value: 'h2' },
-      { title: 'Heading 2', value: 'h3' },
-    ],
-    lists: [
-      { title: 'Bullet', value: 'bullet' },
-      { title: 'Numbered', value: 'number' },
-    ],
-    marks: {
-      decorators: [
-        { title: 'Strong', value: 'strong' },
-        { title: 'Underline', value: 'underline' },
-        { title: 'Emphasis', value: 'em' },
-      ],
-      annotations: [
-        {
-          name: 'link',
-          type: 'object',
-          title: 'Ekstern lenke',
-          icon: ExternalLink,
-          description: 'Brukes for lenker til eksterne nettsider',
-          fields: [
-            {
-              name: 'url',
-              type: 'url',
-              validation: (rule: Rule) => rule.uri({ scheme: ['http', 'https'] }),
-            },
-          ],
-        },
-        {
-          name: 'internalLink',
-          type: 'object',
-          title: 'Intern lenke',
-          icon: AddLink,
-          description: 'Brukes for lenker til andre sider på nettstedet',
-          fields: [
-            {
-              name: 'url',
-              type: 'url',
-              validation: (rule: Rule) =>
-                rule.uri({ scheme: ['http', 'https'], allowRelative: true }),
-            },
-          ],
-        },
-      ],
-    },
-  },
+// Fields that only appear on the event's own page are hidden until "Egen arrangementsside" is
+// switched on, so a plain spillkveld is a short form and nobody fills in a price list that is
+// never shown.
+const withoutDetailPage = ({ document }: ConditionalPropertyCallbackContext) =>
+  !document?.hasDetailPage;
+
+const categoryOptions = [
+  { title: 'Spillkveld', value: 'spillkveld' },
+  { title: 'Turnering', value: 'turnering' },
+  { title: 'Annet', value: 'annet' },
 ];
 
 export const eventType = defineType({
   name: 'event',
   title: 'Arrangement',
   type: 'document',
+  groups: [
+    { name: 'basics', title: 'Hva, når og hvor', default: true },
+    { name: 'page', title: 'Egen arrangementsside' },
+  ],
   fields: [
     defineField({
       title: 'Tittel',
       name: 'title',
       type: 'string',
-      validation: (rule) => rule.required(),
+      group: 'basics',
+      validation: (rule) => rule.required().error('Arrangementet må ha en tittel'),
     }),
     defineField({
-      name: 'slug',
-      type: 'slug',
-      options: { source: 'title' },
-      validation: (rule) => rule.required(),
-    }),
-    defineField({
-      title: 'Arrangementbeskrivelse',
-      name: 'content',
-      description: 'Beskrivelse av arrangementet. Valgfritt.',
-      type: 'array',
-      of: richTextBlocks,
-    }),
-    defineField({
-      title: 'Publiseringsdato',
-      name: 'publishedAt',
-      type: 'datetime',
-      initialValue: () => new Date().toISOString(),
-      validation: (rule) => rule.required(),
-    }),
-    defineField({
-      title: 'Starttid',
-      name: 'eventStartTime',
-      type: 'datetime',
-      validation: (rule) => rule.required(),
-    }),
-    defineField({
-      title: 'Sluttid',
-      name: 'eventEndTime',
-      type: 'datetime',
-      validation: (rule) => rule.required(),
-    }),
-    defineField({
-      title: 'Kategori',
+      title: 'Type arrangement',
       name: 'category',
       type: 'string',
-      options: {
-        list: [
-          { title: 'Spillkveld', value: 'spillkveld' },
-          { title: 'Turnering', value: 'turnering' },
-          { title: 'Annet', value: 'annet' },
-        ],
-        layout: 'radio',
-      },
-      validation: (rule) => rule.required(),
+      group: 'basics',
+      description: 'Bestemmer fargen i kalenderen og hvilket filter arrangementet havner under.',
+      options: { list: categoryOptions, layout: 'radio' },
+      validation: (rule) => rule.required().error('Velg en type'),
+    }),
+    defineField({
+      title: 'Starter',
+      name: 'eventStartTime',
+      type: 'datetime',
+      group: 'basics',
+      validation: (rule) => rule.required().error('Velg når arrangementet starter'),
+    }),
+    defineField({
+      title: 'Slutter',
+      name: 'eventEndTime',
+      type: 'datetime',
+      group: 'basics',
+      description: 'Arrangementet forsvinner fra «Kommende» når denne tiden har passert.',
+      validation: (rule) =>
+        rule
+          .required()
+          .error('Velg når arrangementet slutter')
+          .min(rule.valueOfField('eventStartTime'))
+          .error('Arrangementet kan ikke slutte før det starter'),
     }),
     defineField({
       title: 'Sted',
       name: 'location',
       type: 'string',
-      validation: (rule) => rule.required(),
+      group: 'basics',
+      description: 'F.eks. «Sølvberget, 3. etasje».',
+      validation: (rule) => rule.required().error('Skriv hvor arrangementet er'),
+    }),
+    defineField({
+      title: 'Beskrivelse',
+      name: 'content',
+      type: 'array',
+      group: 'basics',
+      description:
+        'Valgfritt. Vises når noen åpner arrangementet i kalenderen, og på arrangementssiden.',
+      of: [richTextBlock],
     }),
     defineField({
       title: 'Bilde',
       name: 'image',
       type: 'image',
-      description:
-        'Bilde som vises i arrangementskortet og som toppbilde på arrangementssiden. Valgfritt.',
+      group: 'basics',
+      description: `Valgfritt. Vises når noen åpner arrangementet i kalenderen, og øverst på arrangementssiden. ${hotspotHint}`,
       options: { hotspot: true },
+    }),
+    buttonLinksField({
+      description:
+        'Valgfritt. Knapper som vises når noen åpner arrangementet i kalenderen, f.eks. til Facebook-arrangementet.',
     }),
 
     defineField({
       title: 'Egen arrangementsside',
       name: 'hasDetailPage',
       type: 'boolean',
+      group: ['basics', 'page'],
       description:
-        'Skru på for å gi arrangementet sin egen side, lenket fra kalenderen. Uavhengig av kategori og størrelse — en liten spillkveld kan få en side hvis noe spesielt skjer, og en stor helg trenger den ikke hvis den ikke har mer innhold enn beskrivelsen over.',
+        'Skru på for å gi arrangementet en egen side med påmeldingsknapp, program, priser og sponsorer. Kalenderen får da en «Se arrangementet»-knapp. Passer for alt med mer innhold enn beskrivelsen, uansett størrelse.',
       initialValue: false,
     }),
     defineField({
-      title: 'Påmeldingslenke',
+      title: 'Nettadresse',
+      name: 'slug',
+      type: 'slug',
+      group: 'page',
+      description:
+        'Siste del av adressen til arrangementssiden, f.eks. «board-game-masters-2026». Trykk på knappen ved siden av feltet for å lage den fra tittelen. Endrer du den senere, slutter gamle lenker å virke.',
+      options: { source: 'title', maxLength: 96 },
+      hidden: withoutDetailPage,
+      validation: (rule) =>
+        rule.custom((slug, context) => {
+          const hasDetailPage = (context.document as { hasDetailPage?: boolean })?.hasDetailPage;
+          return hasDetailPage && !slug?.current
+            ? 'Arrangementssiden trenger en nettadresse'
+            : true;
+        }),
+    }),
+    defineField({
+      title: 'Påmeldingsknapp',
       name: 'signupUrl',
       type: 'object',
+      group: 'page',
       description:
-        'Hovedknappen på arrangementssiden, f.eks. til påmelding i Spond. Valgfritt — knappen vises ikke uten en URL.',
+        'Den store knappen øverst på arrangementssiden, f.eks. til påmelding i Spond. Vises bare når lenken er fylt ut.',
+      hidden: withoutDetailPage,
       fields: [
         defineField({
+          title: 'Knappetekst',
           name: 'label',
           type: 'string',
-          title: 'Knappetekst',
           initialValue: 'Meld deg på',
         }),
         defineField({
+          title: 'Lenke',
           name: 'url',
           type: 'url',
-          title: 'URL',
+          description: 'Hele adressen, f.eks. https://spond.com/….',
           validation: (rule) => rule.uri({ scheme: ['http', 'https'] }),
         }),
+      ],
+    }),
+    defineField({
+      title: 'Program',
+      name: 'programInfo',
+      type: 'array',
+      group: 'page',
+      description: 'Valgfritt. Hva som skjer på arrangementet. Vises som en egen boks.',
+      hidden: withoutDetailPage,
+      of: [richTextBlock],
+    }),
+    defineField({
+      title: 'Priser',
+      name: 'pricingInfo',
+      type: 'array',
+      group: 'page',
+      description: 'Valgfritt. Hva det koster å delta. Vises som en egen boks.',
+      hidden: withoutDetailPage,
+      of: [richTextBlock],
+    }),
+    defineField({
+      title: 'Tidsplan',
+      name: 'schedule',
+      type: 'array',
+      group: 'page',
+      description:
+        'Valgfritt. For arrangementer over flere dager eller med flere programposter, f.eks. «Dag 1» og «Dag 2».',
+      hidden: withoutDetailPage,
+      of: [
+        {
+          type: 'object',
+          title: 'Programpost',
+          fields: [
+            defineField({
+              title: 'Navn',
+              name: 'label',
+              type: 'string',
+              description: 'F.eks. «Dag 1» eller «Finale».',
+              validation: (rule) => rule.required().error('Gi programposten et navn'),
+            }),
+            defineField({
+              title: 'Starter',
+              name: 'startTime',
+              type: 'datetime',
+              validation: (rule) => rule.required(),
+            }),
+            defineField({
+              title: 'Slutter',
+              name: 'endTime',
+              type: 'datetime',
+              validation: (rule) => rule.required(),
+            }),
+            defineField({
+              title: 'Sted',
+              name: 'location',
+              type: 'string',
+              description: 'Valgfritt. Fyll bare ut hvis stedet er et annet enn for arrangementet.',
+            }),
+          ],
+          preview: { select: { title: 'label', subtitle: 'startTime' } },
+        },
       ],
     }),
     defineField({
       title: 'Vis sponsorer',
       name: 'showSponsors',
       type: 'boolean',
-      description: 'Skru på for å vise sponsorbåndet og legge til sponsorer under.',
+      group: 'page',
+      description: 'Skru på for å vise en rad med sponsorlogoer på arrangementssiden.',
+      hidden: withoutDetailPage,
       initialValue: false,
     }),
     defineField({
       title: 'Sponsorer',
       name: 'sponsors',
       type: 'array',
-      description: 'Vises som store logoer på sponsorbåndet på arrangementssiden.',
-      hidden: ({ parent }) => !(parent as { showSponsors?: boolean } | undefined)?.showSponsors,
+      group: 'page',
+      hidden: ({ document }) => {
+        const doc = document as { hasDetailPage?: boolean; showSponsors?: boolean } | undefined;
+        return !doc?.hasDetailPage || !doc.showSponsors;
+      },
       of: [
         {
           type: 'object',
+          title: 'Sponsor',
           fields: [
             defineField({
+              title: 'Logo',
               name: 'logo',
               type: 'image',
-              title: 'Logo',
-              options: { hotspot: true },
-              validation: (rule) => rule.required(),
+              validation: (rule) => rule.required().error('Last opp sponsorens logo'),
             }),
             defineField({
+              title: 'Sponsorens navn',
               name: 'altText',
               type: 'string',
-              title: 'Alt-tekst',
-              description: 'Beskriv logoen for skjermlesere, f.eks. "Outland sin logo".',
-              validation: (rule) => rule.required(),
+              description: 'Leses opp for blinde og svaksynte i stedet for logoen.',
+              validation: (rule) => rule.required().error('Skriv sponsorens navn'),
             }),
             defineField({
+              title: 'Sponsorens nettside',
               name: 'link',
               type: 'url',
-              title: 'Lenke',
-              description: 'Dit logoen tar deg når du klikker. Valgfritt.',
+              description: 'Valgfritt. Dit man kommer ved å trykke på logoen.',
               validation: (rule) => rule.uri({ scheme: ['http', 'https'] }),
             }),
             defineField({
+              title: 'Tilbud',
               name: 'ctaLabel',
               type: 'string',
-              title: 'Tilbudstekst',
-              description: 'F.eks. "Få 10 % rabatt hos Outland". Valgfritt.',
+              description:
+                'Valgfritt. En knapp under logoen, f.eks. «Få 10 % rabatt hos Outland». Knappen går til sponsorens nettside, eller til lenken under.',
             }),
             defineField({
+              title: 'Lenke til tilbudet',
               name: 'ctaLink',
               type: 'url',
-              title: 'Tilbudslenke',
-              description: 'Lenke tilbudsteksten peker til, hvis ulik logoens lenke. Valgfritt.',
+              description:
+                'Valgfritt. Fyll bare ut hvis tilbudet ligger på en annen side enn nettsiden over.',
               validation: (rule) => rule.uri({ scheme: ['http', 'https'] }),
             }),
           ],
-          preview: {
-            select: { title: 'altText', media: 'logo' },
-          },
-        },
-      ],
-    }),
-    defineField({
-      title: 'Priser',
-      name: 'pricingInfo',
-      type: 'array',
-      description: 'Prisoversikt for arrangementet. Valgfritt — vises som eget kort.',
-      of: richTextBlocks,
-    }),
-    defineField({
-      title: 'Program',
-      name: 'programInfo',
-      type: 'array',
-      description: 'Programomtale for arrangementet. Valgfritt — vises som eget kort.',
-      of: richTextBlocks,
-    }),
-    defineField({
-      title: 'Dagsplan',
-      name: 'schedule',
-      type: 'array',
-      description:
-        'Enkeltdager eller økter for flerdagersarrangementer, f.eks. "Dag 1 av BGM". Valgfritt.',
-      of: [
-        {
-          type: 'object',
-          fields: [
-            defineField({
-              name: 'label',
-              type: 'string',
-              title: 'Tittel',
-              description: 'F.eks. "Dag 1 av BGM" eller "Åpningsseremoni".',
-              validation: (rule) => rule.required(),
-            }),
-            defineField({
-              name: 'startTime',
-              type: 'datetime',
-              title: 'Starttid',
-              validation: (rule) => rule.required(),
-            }),
-            defineField({
-              name: 'endTime',
-              type: 'datetime',
-              title: 'Sluttid',
-              validation: (rule) => rule.required(),
-            }),
-            defineField({
-              name: 'location',
-              type: 'string',
-              title: 'Sted',
-              description: 'Overstyrer arrangementets sted for denne økten. Valgfritt.',
-            }),
-          ],
-          preview: {
-            select: { title: 'label', subtitle: 'startTime' },
-          },
-        },
-      ],
-    }),
-
-    defineField({
-      title: 'Lenker',
-      name: 'links',
-      type: 'array',
-      description:
-        'Legg til lenker relatert til arrangementet, f.eks. Facebook-arrangement. Valgfritt. ',
-      of: [
-        {
-          type: 'object',
-          fields: [
-            defineField({
-              name: 'label',
-              type: 'string',
-              description: 'Tekst som vises på knappen.',
-            }),
-            defineField({
-              name: 'url',
-              type: 'url',
-              description: 'URL for lenken.',
-              validation: (rule) => rule.uri({ scheme: ['http', 'https'] }),
-            }),
-          ],
+          preview: { select: { title: 'altText', subtitle: 'ctaLabel', media: 'logo' } },
         },
       ],
     }),
   ],
+  orderings: [
+    {
+      title: 'Starttid, nyeste først',
+      name: 'eventStartTimeDesc',
+      by: [{ field: 'eventStartTime', direction: 'desc' }],
+    },
+  ],
+  preview: {
+    select: { title: 'title', subtitle: 'eventStartTime', media: 'image' },
+  },
 });

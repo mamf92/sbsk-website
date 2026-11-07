@@ -1,8 +1,6 @@
 import { defineField, defineType } from 'sanity';
-import type { Rule } from 'sanity';
-import ExternalLink from '../../assets/icons/symbols/external-link.svg?react';
-import AddLink from '../../assets/icons/symbols/add-link.svg?react';
 import { postImageFields, postImagePreview } from './postImageFields';
+import { buttonLinksField, hotspotHint, richTextBlock } from './sharedFields';
 
 export const postType = defineType({
   name: 'post',
@@ -10,24 +8,25 @@ export const postType = defineType({
   type: 'document',
   fields: [
     defineField({
+      title: 'Tittel',
       name: 'title',
       type: 'string',
-      validation: (rule) => rule.required(),
+      validation: (rule) => rule.required().error('Innlegget må ha en tittel'),
     }),
     defineField({
+      title: 'Ingress',
       name: 'subtitle',
       type: 'text',
-      validation: (rule) => rule.max(160).error('Undertittelen må være på maks 160 tegn'),
+      rows: 3,
+      description:
+        'En kort oppsummering på én-to setninger. Vises under tittelen i oversikten over innlegg. Maks 160 tegn.',
+      validation: (rule) => rule.max(160).error('Ingressen kan være maks 160 tegn'),
     }),
     defineField({
-      name: 'slug',
-      type: 'slug',
-      options: { source: 'title' },
-      validation: (rule) => rule.required(),
-    }),
-    defineField({
+      title: 'Publiseringsdato',
       name: 'publishedAt',
       type: 'datetime',
+      description: 'Vises på innlegget. Innleggene sorteres etter denne datoen, nyeste først.',
       initialValue: () => new Date().toISOString(),
       validation: (rule) => rule.required(),
     }),
@@ -35,96 +34,42 @@ export const postType = defineType({
       title: 'Kategori',
       name: 'category',
       type: 'string',
+      description: 'Bestemmer fargen på kortet og hvilket filter innlegget dukker opp under.',
       options: {
         list: [
           { title: 'Nyheter', value: 'nyheter' },
-          { title: 'Spillkveldrapporter', value: 'spillkveldrapporter' },
+          { title: 'Spillkveldrapport', value: 'spillkveldrapporter' },
           { title: 'Arrangementer', value: 'arrangementer' },
         ],
         layout: 'radio',
       },
-      validation: (rule) => rule.required(),
+      validation: (rule) => rule.required().error('Velg en kategori'),
     }),
     defineField({
-      title: 'Lenker',
-      name: 'links',
+      title: 'Bilder øverst',
+      name: 'carousel',
       type: 'array',
-      description:
-        'Legg til lenker relatert til arrangementet, f.eks. påmelding eller Facebook-arrangement. Valgfritt. ',
+      description: `Valgfritt. Flere bilder fra samme anledning, som leseren blar gjennom øverst i innlegget. ${hotspotHint}`,
+      options: { layout: 'grid' },
       of: [
         {
-          type: 'object',
-          fields: [
-            defineField({
-              name: 'label',
-              type: 'string',
-              description: 'Tekst som vises på knappen.',
-            }),
-            defineField({
-              name: 'url',
-              type: 'url',
-              description: 'URL for lenken.',
-              validation: (rule) => rule.uri({ scheme: ['http', 'https'] }),
-            }),
-          ],
+          type: 'image',
+          title: 'Bilde',
+          options: { hotspot: true },
+          fields: postImageFields,
+          preview: postImagePreview,
         },
       ],
+      validation: (rule) => rule.max(12).error('Det er plass til maks 12 bilder'),
     }),
     defineField({
-      title: 'Innhold',
+      title: 'Tekst',
       name: 'content',
       type: 'array',
+      description:
+        'Selve innlegget. Sett inn et bilde mellom avsnittene med bildeknappen i verktøylinjen. Det første bildet i teksten blir miniatyrbilde i oversikten, ellers det første av «Bilder øverst».',
       of: [
-        {
-          type: 'block',
-          styles: [
-            { title: 'Normal', value: 'normal' },
-            { title: 'Heading 1', value: 'h2' },
-            { title: 'Heading 2', value: 'h3' },
-          ],
-          lists: [
-            { title: 'Bullet', value: 'bullet' },
-            { title: 'Numbered', value: 'number' },
-          ],
-          marks: {
-            decorators: [
-              { title: 'Strong', value: 'strong' },
-              { title: 'Underline', value: 'underline' },
-              { title: 'Emphasis', value: 'em' },
-            ],
-            annotations: [
-              {
-                name: 'link',
-                type: 'object',
-                title: 'Ekstern lenke',
-                icon: ExternalLink,
-                description: 'Brukes for lenker til eksterne nettsider',
-                fields: [
-                  {
-                    name: 'url',
-                    type: 'url',
-                    validation: (rule: Rule) => rule.uri({ scheme: ['http', 'https'] }),
-                  },
-                ],
-              },
-              {
-                name: 'internalLink',
-                type: 'object',
-                title: 'Intern lenke',
-                icon: AddLink,
-                description: 'Brukes for lenker til andre sider på nettstedet',
-                fields: [
-                  {
-                    name: 'url',
-                    type: 'url',
-                    validation: (rule: Rule) =>
-                      rule.uri({ scheme: ['http', 'https'], allowRelative: true }),
-                  },
-                ],
-              },
-            ],
-          },
-        },
+        richTextBlock,
         // Drop a photo where it belongs in the text. It always fills the text column: no
         // floating beside the paragraph, so there is no layout choice for the editor to make and
         // nothing for the text to squeeze around on a narrow screen. Size and crop are decided by
@@ -134,31 +79,25 @@ export const postType = defineType({
           title: 'Bilde',
           type: 'image',
           options: { hotspot: true },
-          description:
-            'Bildet vises der du plasserer det i teksten, i full bredde. Dra i sirkelen under «Hotspot» for å peke ut det viktigste i bildet – da blir det med uansett hvordan bildet beskjæres.',
+          description: `Bildet vises der du plasserer det i teksten, i hele tekstens bredde. ${hotspotHint}`,
           fields: postImageFields,
           preview: postImagePreview,
         },
       ],
     }),
-    defineField({
-      title: 'Bildekarusell',
-      name: 'carousel',
-      type: 'array',
+    buttonLinksField({
       description:
-        'Valgfritt. Flere bilder fra samme anledning, vist som en karusell øverst i innlegget, ' +
-        'med teksten ved siden av på store skjermer. Dra i «Hotspot» for å peke ut det ' +
-        'viktigste i hvert bilde.',
-      options: { layout: 'grid' },
-      of: [
-        {
-          type: 'image',
-          options: { hotspot: true },
-          fields: postImageFields,
-          preview: postImagePreview,
-        },
-      ],
-      validation: (rule) => rule.max(12),
+        'Valgfritt. Knapper som vises på innlegget, f.eks. til påmelding eller et Facebook-arrangement.',
     }),
   ],
+  orderings: [
+    {
+      title: 'Nyeste først',
+      name: 'publishedAtDesc',
+      by: [{ field: 'publishedAt', direction: 'desc' }],
+    },
+  ],
+  preview: {
+    select: { title: 'title', subtitle: 'publishedAt', media: 'carousel.0' },
+  },
 });

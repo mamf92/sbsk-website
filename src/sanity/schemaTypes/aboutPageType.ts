@@ -1,69 +1,67 @@
 import { defineField, defineType } from 'sanity';
+import { pageImageField } from './pageTopFields';
+import { imageCreditField } from './sharedFields';
 
 export const aboutPageType = defineType({
   name: 'aboutPage',
-  title: 'Om oss',
+  title: 'Om oss-siden',
   type: 'document',
+  fieldsets: [
+    {
+      name: 'club',
+      title: 'Om klubben',
+      description: 'Første del av siden. Tomme felt viser standardteksten.',
+    },
+    {
+      name: 'board',
+      title: 'Om styret',
+      description:
+        'Teksten over styremedlemmene. Selve styremedlemmene legger du inn under «Styremedlemmer».',
+    },
+  ],
   fields: [
+    pageImageField,
+    imageCreditField,
     defineField({
-      title: 'Bilde',
-      name: 'image',
-      type: 'image',
-      description: 'Bildet øverst på siden. Valgfritt.',
-      options: { hotspot: true },
-    }),
-    defineField({
-      title: 'Bildekilde',
-      name: 'imageSource',
-      type: 'object',
-      description: 'Kilde for bildet (f.eks. fotografens navn og nettsted). Valgfritt.',
-      fields: [
-        {
-          title: 'Bildekilde navn',
-          name: 'imageSourceName',
-          type: 'string',
-          description: 'Navn på kilden for bildet.',
-        },
-        {
-          title: 'Bildekilde URL',
-          name: 'imageSourceUrl',
-          type: 'url',
-          description: 'URL til kilden for bildet.',
-        },
-      ],
-    }),
-    defineField({
-      title: 'Tittel - Om klubben',
+      title: 'Overskrift',
       name: 'clubTitle',
       type: 'string',
-      validation: (rule) => rule.max(60).error('Tittelen må være på maks 60 tegn'),
+      fieldset: 'club',
+      validation: (rule) => rule.max(60).error('Overskriften kan være maks 60 tegn'),
     }),
     defineField({
-      title: 'Ingress - Om klubben',
+      title: 'Ingress',
       name: 'clubIntro',
       type: 'text',
-      description: 'Kort, uthevet innledning rett under tittelen. Valgfritt.',
-      validation: (rule) => rule.max(300).error('Ingressen må være på maks 300 tegn'),
+      rows: 3,
+      fieldset: 'club',
+      description: 'Kort innledning i større skrift rett under overskriften. Maks 300 tegn.',
+      validation: (rule) => rule.max(300).error('Ingressen kan være maks 300 tegn'),
     }),
     defineField({
-      title: 'Brødtekst - Om klubben',
+      title: 'Avsnitt',
       name: 'clubBody',
       type: 'array',
-      description: 'Ett avsnitt per rad. Valgfritt.',
-      of: [{ type: 'text' }],
+      fieldset: 'club',
+      description: 'Resten av teksten. Legg til ett felt per avsnitt.',
+      of: [{ type: 'text', title: 'Avsnitt', rows: 4 }],
     }),
     defineField({
-      title: 'Tittel - Om styret',
+      title: 'Overskrift',
       name: 'boardTitle',
       type: 'string',
-      validation: (rule) => rule.max(60).error('Tittelen må være på maks 60 tegn'),
+      fieldset: 'board',
+      validation: (rule) => rule.max(60).error('Overskriften kan være maks 60 tegn'),
     }),
     defineField({
-      title: 'Ingress - Om styret',
+      title: 'Ingress',
       name: 'boardIntro',
       type: 'text',
-      description: 'Kort innledning over styremedlemmene. Valgfritt.',
-      validation: (rule) => rule.max(300).error('Ingressen må være på maks 300 tegn'),
+      rows: 3,
+      fieldset: 'board',
+      description: 'Maks 300 tegn.',
+      validation: (rule) => rule.max(300).error('Ingressen kan være maks 300 tegn'),
     }),
   ],
+  preview: { prepare: () => ({ title: 'Om oss-siden' }) },
 });

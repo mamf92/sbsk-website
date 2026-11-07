@@ -1,34 +1,49 @@
 import { defineField, defineType } from 'sanity';
+import { hotspotHint } from './sharedFields';
 
 export const gameType = defineType({
   name: 'game',
   title: 'Spill',
   type: 'document',
+  fieldsets: [
+    {
+      name: 'players',
+      title: 'Antall spillere',
+      description: 'Vises som «2–4 spillere» på kortet, og brukes av filteret på Våre spill.',
+      options: { columns: 2 },
+    },
+    {
+      name: 'links',
+      title: 'Lenker',
+      description: 'Valgfritt. Hver lenke blir en knapp på spillkortet.',
+    },
+  ],
   fields: [
     defineField({
-      title: 'Tittel',
+      title: 'Navn på spillet',
       name: 'title',
       type: 'string',
-      validation: (rule) => rule.required(),
+      validation: (rule) => rule.required().error('Skriv navnet på spillet'),
     }),
     defineField({
       title: 'Sjanger',
       name: 'genre',
       type: 'string',
-      description: 'F.eks. «Strategi · Motorbygging». Vises over tittelen på kortet. Valgfritt.',
+      description: 'Valgfritt. Vises over navnet på kortet, f.eks. «Strategi · Motorbygging».',
     }),
     defineField({
-      title: 'Beskrivelse',
+      title: 'Kort beskrivelse',
       name: 'description',
       type: 'text',
-      description: 'Én-to setninger om spillet. Valgfritt.',
-      validation: (rule) => rule.max(200).error('Beskrivelsen må være på maks 200 tegn'),
+      rows: 3,
+      description: 'Valgfritt. Én-to setninger om spillet. Maks 200 tegn.',
+      validation: (rule) => rule.max(200).error('Beskrivelsen kan være maks 200 tegn'),
     }),
     defineField({
-      title: 'Bilde',
+      title: 'Bilde av esken',
       name: 'image',
       type: 'image',
-      description: 'Bilde av spillesken. Vises på spillkortet.',
+      description: `Vises på spillkortet. ${hotspotHint}`,
       options: { hotspot: true },
     }),
     defineField({
@@ -42,69 +57,68 @@ export const gameType = defineType({
           { title: 'Avansert', value: 3 },
         ],
         layout: 'radio',
+        direction: 'horizontal',
       },
       initialValue: 2,
       validation: (rule) => rule.required().min(1).max(3),
     }),
     defineField({
-      title: 'Spilletid',
+      title: 'Spilletid i minutter',
       name: 'time',
       type: 'string',
-      description: 'Vises som tekst, f.eks. «40–70». Enheten (min) legges på av kortet.',
-      validation: (rule) => rule.required(),
+      description:
+        'Ett tall eller et spenn, f.eks. «30» eller «40–70». «min» legges til på kortet.',
+      validation: (rule) => rule.required().error('Skriv omtrent hvor lang tid spillet tar'),
     }),
     defineField({
-      title: 'Antall spillere (tekst)',
-      name: 'players',
-      type: 'string',
-      description: 'Vises som tekst på kortet, f.eks. «2–4».',
-      validation: (rule) => rule.required(),
-    }),
-    defineField({
-      title: 'Minste antall spillere',
+      title: 'Minst',
       name: 'playersMin',
       type: 'number',
-      description: 'Brukes av spillerantall-filteret, ikke vist direkte.',
-      validation: (rule) => rule.required().min(1),
+      fieldset: 'players',
+      validation: (rule) => rule.required().error('Skriv minste antall spillere').min(1).integer(),
     }),
     defineField({
-      title: 'Høyeste antall spillere',
+      title: 'Flest',
       name: 'playersMax',
       type: 'number',
-      description: 'Brukes av spillerantall-filteret, ikke vist direkte.',
+      fieldset: 'players',
       validation: (rule) =>
         rule
           .required()
+          .error('Skriv høyeste antall spillere')
           .min(1)
+          .integer()
           .custom((max, context) => {
             const min = (context.document as { playersMin?: number })?.playersMin;
             if (typeof min === 'number' && typeof max === 'number' && max < min) {
-              return 'Høyeste antall spillere kan ikke være lavere enn minste antall.';
+              return '«Flest» kan ikke være lavere enn «Minst».';
             }
             return true;
           }),
     }),
     defineField({
-      title: 'Kjøpslenke',
+      title: 'Kjøp spillet',
       name: 'buyUrl',
       type: 'url',
+      fieldset: 'links',
       description:
-        'Lenke til spillet hos sponsoren. Valgfritt — faller tilbake til sponsorens forside.',
+        'Lenke til spillet hos sponsoren. Står det tomt, går knappen til sponsorens forside.',
     }),
     defineField({
-      title: 'BoardGameGeek-lenke',
+      title: 'BoardGameGeek',
       name: 'bggUrl',
       type: 'url',
-      description: 'Lenke til spillets side på BoardGameGeek. Valgfritt.',
+      fieldset: 'links',
+      description: 'Lenke til spillets side på boardgamegeek.com.',
     }),
     defineField({
-      title: 'Video-lenke',
+      title: 'Forklaringsvideo',
       name: 'videoUrl',
       type: 'url',
-      description: 'Lenke til en forklaringsvideo, f.eks. på YouTube. Valgfritt.',
+      fieldset: 'links',
+      description: 'Lenke til en video som forklarer reglene, f.eks. på YouTube.',
     }),
   ],
-  preview: {
-    select: { title: 'title', subtitle: 'genre', media: 'image' },
-  },
+  orderings: [{ title: 'Navn A–Å', name: 'titleAsc', by: [{ field: 'title', direction: 'asc' }] }],
+  preview: { select: { title: 'title', subtitle: 'genre', media: 'image' } },
 });
