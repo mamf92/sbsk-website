@@ -70,6 +70,8 @@ describe('public/404.html', () => {
     ['/sbsk-website/arrangementer/123', '?foo=bar', ''],
     ['/sbsk-website/om-oss', '', '#styret'],
     ['/sbsk-website/kontakt-oss', '?a=1&b=2', ''],
+    ['/sbsk-website/redesign/kalender', '', ''],
+    ['/sbsk-website/redesign/arrangementer/123', '?foo=bar', '#info'],
   ])(
     'round-trips %s (search=%s, hash=%s) through decodeGithubPagesRedirect',
     (pathname, search, hash) => {
@@ -81,4 +83,19 @@ describe('public/404.html', () => {
       );
     },
   );
+
+  // The redesign preview is its own build under /sbsk-website/redesign/, but GitHub Pages only
+  // ever serves the root 404.html. A deep link into the preview has to land on the preview's own
+  // index.html, not the live site's, or the live router renders its 404 for "redesign/kalender".
+  it.each([
+    ['/sbsk-website/kalender', 'https://mamf92.github.io/sbsk-website/?/kalender'],
+    [
+      '/sbsk-website/redesign/kalender',
+      'https://mamf92.github.io/sbsk-website/redesign/?/kalender',
+    ],
+    ['/sbsk-website/redesign', 'https://mamf92.github.io/sbsk-website/redesign/?/'],
+    ['/sbsk-website/redesignet', 'https://mamf92.github.io/sbsk-website/?/redesignet'],
+  ])('sends %s to the index.html of the build that owns it', (pathname, expected) => {
+    expect(runRedirectScript(pathname)).toBe(expected);
+  });
 });

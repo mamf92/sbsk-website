@@ -1,0 +1,60 @@
+name: Redesign preview
+
+# Redeploys GitHub Pages when CI goes green on a push to `redesign`, so the preview at
+# /<repo>/redesign/ follows that branch without waiting for the next merge to main.
+#
+# `workflow_run` always runs this file from the default branch, with `main` checked out. That is
+# deliberate: the `github-pages` environment only accepts deployments from `main`, and the live
+# half of the upload must be built from `main` anyway — every Pages deploy replaces the whole site.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [redesign]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy live site + redesign preview
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    # Shares the live deploy's group so the two never upload over each other.
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}redesign/
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+      - uses: ./.github/actions/setup
+
+      - name: Build live site and redesign preview
+        uses: ./.github/actions/build-site
+        with:
+          supabase-url: ${{ vars.VITE_SUPABASE_URL }}
+          supabase-publishable-key: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - name: Upload build artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: ./dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0

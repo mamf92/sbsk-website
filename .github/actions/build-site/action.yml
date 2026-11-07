@@ -1,0 +1,60 @@
+name: Build site
+description: >-
+  Build the live site from the current checkout into ./dist, then, if a `redesign` branch exists,
+  build it into ./dist/redesign/ as a noindex preview. Both share one GitHub Pages deployment,
+  because a repository only gets one Pages site and each deploy replaces the whole of it: the
+  live build and the preview have to be uploaded together or one wipes the other.
+
+# The caller checks out `main` and runs ./.github/actions/setup first.
+
+inputs:
+  supabase-url:
+    description: VITE_SUPABASE_URL for both builds.
+    required: true
+  supabase-publishable-key:
+    description: VITE_SUPABASE_PUBLISHABLE_KEY for both builds.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Build live site
+      # public/404.html (the GitHub Pages SPA-routing fallback, #22) is copied into dist/ by
+      # Vite automatically — it must not be overwritten with a copy of index.html here, which
+      # is what used to serve every deep link with a bare 404 status instead of the redirect.
+      shell: bash
+      run: npm run build
+      env:
+        VITE_BASE: /${{ github.event.repository.name }}/
+        VITE_SUPABASE_URL: ${{ inputs.supabase-url }}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${{ inputs.supabase-publishable-key }}
+        # No member/board portal on MVP launch (#213) — Studio is the only sign-in this round.
+        VITE_ENABLE_MEMBER_PORTAL: 'false'
+        # Nothing reads the messages the Kontakt oss form writes yet (#254) — the page
+        # publishes the club's address instead until #133 or portal access lands.
+        VITE_ENABLE_CONTACT_FORM: 'false'
+
+    - name: Build redesign preview
+      # Same flags as the live build, so the preview shows what would ship. Only the root
+      # 404.html is ever served by Pages; it routes /<repo>/redesign/* deep links here.
+      shell: bash
+      env:
+        VITE_BASE: /${{ github.event.repository.name }}/redesign/
+        VITE_SUPABASE_URL: ${{ inputs.supabase-url }}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${{ inputs.supabase-publishable-key }}
+        VITE_ENABLE_MEMBER_PORTAL: 'false'
+        VITE_ENABLE_CONTACT_FORM: 'false'
+      run: |
+        if ! git ls-remote --exit-code --heads origin redesign >/dev/null; then
+          echo "No redesign branch; deploying the live site only."
+          exit 0
+        fi
+        git fetch --depth=1 origin redesign
+        git worktree add "$RUNNER_TEMP/redesign" FETCH_HEAD
+        cd "$RUNNER_TEMP/redesign"
+        npm ci
+        npm run build
+        rm -f dist/404.html
+        # Keep the preview out of search results; robots.txt can't do it from a project subpath.
+        sed -i 's|<head>|<head><meta name="robots" content="noindex, nofollow">|' dist/index.html
+        cp -r dist "$GITHUB_WORKSPACE/dist/redesign"

@@ -3,7 +3,9 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main]
+    # `redesign` is the long-lived UI refresh branch; its green pushes feed the preview at
+    # /<repo>/redesign/ through .github/workflows/preview.yml.
+    branches: [main, redesign]
   workflow_dispatch:
 
 concurrency:
@@ -168,20 +170,11 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup
 
-      - name: Build
-        # public/404.html (the GitHub Pages SPA-routing fallback, #22) is copied into dist/ by
-        # Vite automatically — it must not be overwritten with a copy of index.html here, which
-        # is what used to serve every deep link with a bare 404 status instead of the redirect.
-        run: npm run build
-        env:
-          VITE_BASE: /${{ github.event.repository.name }}/
-          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
-          # No member/board portal on MVP launch (#213) — Studio is the only sign-in this round.
-          VITE_ENABLE_MEMBER_PORTAL: 'false'
-          # Nothing reads the messages the Kontakt oss form writes yet (#254) — the page
-          # publishes the club's address instead until #133 or portal access lands.
-          VITE_ENABLE_CONTACT_FORM: 'false'
+      - name: Build live site and redesign preview
+        uses: ./.github/actions/build-site
+        with:
+          supabase-url: ${{ vars.VITE_SUPABASE_URL }}
+          supabase-publishable-key: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0

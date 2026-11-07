@@ -28,15 +28,16 @@
     -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'none'; script-src 'sha256-2DD3ifwSLBp5i76SUMXsP0m2JtSSGsUIJOw5YX9JDb4='; base-uri 'none'"
+      content="default-src 'none'; script-src 'sha256-l82CoKbUEsbBA9f8Ii+RUY3K3HkF/MIhRaQVVtg8W/E='; base-uri 'none'"
     />
   </head>
   <body>
     <script>
       // Single Page Apps for GitHub Pages, MIT — https://github.com/rafgraph/spa-github-pages
-      // pathSegmentsToKeep=1: this site is always served at <user>.github.io/sbsk-website/.
-      var pathSegmentsToKeep = 1;
+      // pathSegmentsToKeep=1: this site is served at <user>.github.io/sbsk-website/. The redesign
+      // preview is a second build at <user>.github.io/sbsk-website/redesign/, which keeps 2.
       var l = window.location;
+      var pathSegmentsToKeep = /^\/[^/]+\/redesign(\/|$)/.test(l.pathname) ? 2 : 1;
       l.replace(
         l.protocol +
           '//' +
