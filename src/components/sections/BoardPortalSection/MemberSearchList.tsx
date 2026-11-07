@@ -74,7 +74,7 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
                 onClick={() => handleSortClick(option.key)}
                 className={`${option.size}`}
                 variant={`${selectedSortField === option.key ? 'secondary' : 'primary'}`}
-                size="xs"
+                size="sm"
                 icon={
                   selectedSortField === option.key ? (sortOrder === 'asc' ? 'asc' : 'desc') : 'none'
                 }

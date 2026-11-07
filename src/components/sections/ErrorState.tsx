@@ -82,14 +82,14 @@ export default function ErrorState({
           </p>
 
           <div className="mt-1.5 flex flex-wrap gap-3">
-            <Button variant="primary" size="lg" icon="right" onClick={onPrimary}>
+            <Button variant="primary" size="md" icon="right" onClick={onPrimary}>
               {primaryLabel}
             </Button>
-            <Button variant="tertiary" size="lg" onClick={onSecondary}>
+            <Button variant="secondary" size="md" onClick={onSecondary}>
               {secondaryLabel}
             </Button>
             {showRoll && (
-              <Button variant="tertiary" size="lg" onClick={() => diceRef.current?.roll()}>
+              <Button variant="secondary" size="md" onClick={() => diceRef.current?.roll()}>
                 {rollLabel}
               </Button>
             )}
