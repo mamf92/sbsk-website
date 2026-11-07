@@ -1,49 +1,44 @@
 import * as React from 'react';
 import AlertCircle from '../../assets/icons/symbols/alert-circle.svg?react';
 import Check from '../../assets/icons/symbols/check.svg?react';
+import Info from '../../assets/icons/symbols/info.svg?react';
+
+type Tone = 'info' | 'success' | 'error';
 
 type AlertProps = React.HTMLAttributes<HTMLDivElement> & {
   size?: 'sm' | 'md';
-  /** See the tone note below. Defaults to `error`, the only tone this had until #180. */
-  tone?: 'error' | 'success';
+  /** Defaults to `error`, the most common case in the forms. */
+  tone?: Tone;
 };
 
-const toneGlyph = { error: AlertCircle, success: Check } as const;
+const tones = {
+  info: { glyph: Info, classes: 'border-info-text bg-info-bg text-info-text' },
+  success: { glyph: Check, classes: 'border-success-text bg-success-bg text-success-text' },
+  error: { glyph: AlertCircle, classes: 'border-danger-text bg-danger-bg text-danger-text' },
+} as const;
 
 /**
- * The error message, announced rather than merely painted. `role="alert"` is the whole point:
- * `LoginSection` and `RegisterSection` rendered failures as orange body text that no screen
- * reader ever mentioned.
+ * A message box: a tinted fill, a 4px bar on the left, an icon and a plain sentence, in blue,
+ * green or red. An error is `role="alert"` so it interrupts; info and success are
+ * `role="status"` so they are announced politely.
  *
- * **Why it paints its own white surface.** `--color-error` is `#b5251f` and both auth forms
- * sit on a `darkblue` panel — red on `#002f5f` measures 2.07:1, so the obvious "red text on
- * the panel" fails badly. A white block with a red hairline, a red glyph and red text is
- * 6.4:1 and works on any surface, which matters because this component has to be usable on a
- * `darkblue` form panel and on the white page alike. It stays flat and square; the brand's
- * only concession here is that it brings its own fill.
- *
- * **Two tones now, not one.** Error was the only tone until the Kontakt oss form (#180) needed
- * to confirm a send rather than only report a failure — a genuine second case, not a guess at
- * a map nobody asked for. `tone="success"` swaps the red for `--color-success` (`#007124`,
- * 6.20:1 on white) and the glyph for a check, and announces via `role="status"` instead of
- * `role="alert"`: a status update should not interrupt the way an alert does. `FieldError`
- * stays error-only — nothing pairs a field-level success message with it yet.
+ * The tints and inks are status tokens, which `surface-dark` and `on-dark` re-point to their
+ * dark-theme values, so the same Alert stays legible on a navy form panel.
  */
 export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
   { size = 'md', tone = 'error', className = '', children, ...props },
   ref,
 ) {
-  const Glyph = toneGlyph[tone];
-  const toneClass = tone === 'success' ? 'border-success text-success' : 'border-error text-error';
+  const { glyph: Glyph, classes } = tones[tone];
 
   return (
     <div
       ref={ref}
-      role={tone === 'success' ? 'status' : 'alert'}
+      role={tone === 'error' ? 'alert' : 'status'}
       className={[
-        toneClass,
-        'font-body flex w-full items-start rounded-none border bg-white',
-        size === 'sm' ? 'gap-2 px-2 py-1.5 text-sm' : 'gap-3 px-3 py-2 text-base',
+        classes,
+        'font-body flex w-full items-start rounded-none border-l-4',
+        size === 'sm' ? 'gap-2 px-3 py-2 text-sm' : 'gap-3 px-4 py-3 text-base',
         className,
       ]
         .filter(Boolean)
@@ -52,7 +47,7 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert
     >
       <Glyph
         aria-hidden="true"
-        className={['mt-0.5 shrink-0', size === 'sm' ? 'size-4' : 'size-5'].join(' ')}
+        className={['shrink-0', size === 'sm' ? 'mt-0.5 size-4' : 'mt-0.5 size-5'].join(' ')}
       />
       <span>{children}</span>
     </div>
@@ -60,15 +55,23 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert
 });
 
 /**
- * The field-level message, and the counterpart to `invalid` on `Input` / `Textarea` — those
- * own the box's own treatment (the red hairline, the glyph, `aria-invalid`), this owns the
- * words. Wire the two together with `aria-describedby`.
- *
- * It is `Alert` at `sm`, because a field error and a form error are the same statement at two
- * scales and giving them two different looks would say otherwise.
+ * The fix-it message under a field: red text with an icon, no box. Pair it with `invalid` on
+ * `Input` / `Textarea` and wire the two together with `aria-describedby`.
  */
-export const FieldError = React.forwardRef<HTMLDivElement, Omit<AlertProps, 'size'>>(
-  function FieldError(props, ref) {
-    return <Alert ref={ref} size="sm" {...props} />;
+export const FieldError = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  function FieldError({ className = '', children, ...props }, ref) {
+    return (
+      <div
+        ref={ref}
+        role="alert"
+        className={['font-body text-danger-text flex items-start gap-1.5 text-sm', className]
+          .filter(Boolean)
+          .join(' ')}
+        {...props}
+      >
+        <AlertCircle aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
+        <span>{children}</span>
+      </div>
+    );
   },
 );

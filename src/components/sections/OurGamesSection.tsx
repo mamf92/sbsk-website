@@ -3,6 +3,7 @@ import { Button } from '../ui/Buttons';
 import { Chip } from '../ui/Chip';
 import { Input } from '../ui/Input';
 import { Dialog } from '../ui/Dialog';
+import SearchIcon from '../../assets/icons/symbols/search.svg?react';
 import EmptyState from '../ui/EmptyState';
 import { Reveal } from '../ui/Reveal';
 import { GameCard, type BuyInfo } from '../ui/GameCard';
@@ -157,6 +158,7 @@ export default function OurGamesSection({ gamesHero, games }: OurGamesProps) {
 
         {filteredGames.length === 0 ? (
           <EmptyState
+            icon={SearchIcon}
             variant="inline"
             title="Ingen spill matcher søket"
             body="Prøv et annet søkeord eller nullstill filtrene."

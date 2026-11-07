@@ -12,6 +12,7 @@ import DescIcon from '../../assets/icons/symbols/desc.svg?react';
 import Add from '../../assets/icons/symbols/add.svg?react';
 import Motion from '../../assets/icons/symbols/motion.svg?react';
 import { buttonClasses } from './buttonClasses';
+import { Spinner } from './Spinner';
 import type { ButtonSize, ButtonVariant } from './buttonClasses';
 
 const icons = {
@@ -42,21 +43,6 @@ type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
    */
   loading?: boolean;
 };
-
-/** The small ring shown while a button is busy. Decorative: `aria-busy` carries the state. */
-export function Spinner({ className = '' }: { className?: string }) {
-  return (
-    <span
-      aria-hidden="true"
-      data-testid="button-spinner"
-      className={[
-        'inline-block size-4 shrink-0 animate-spin rounded-full border-2 border-current',
-        'border-r-transparent motion-reduce:[animation-duration:2.4s]',
-        className,
-      ].join(' ')}
-    />
-  );
-}
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (

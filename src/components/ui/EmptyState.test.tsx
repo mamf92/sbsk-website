@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import EmptyState from './EmptyState';
 import { Button } from './Buttons';
+import SearchIcon from '../../assets/icons/symbols/search.svg?react';
 
 describe('EmptyState', () => {
   it('renders a heading and body copy', () => {
@@ -60,5 +61,20 @@ describe('EmptyState', () => {
     const root = container.firstChild as HTMLElement;
     expect(root.className).toContain('text-white');
     expect(root).toHaveAttribute('data-testid', 'tom');
+  });
+
+  it('shows an optional decorative icon above the title', () => {
+    const { container, unmount } = render(<EmptyState title="Ingen treff" icon={SearchIcon} />);
+    expect(container.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+    unmount();
+
+    const { container: bare } = render(<EmptyState title="Ingen treff" />);
+    expect(bare.querySelector('svg')).toBeNull();
+  });
+
+  it('takes its colours from the roles, so it reads on the page and on a navy panel', () => {
+    render(<EmptyState title="Ingen treff" body="Prøv et annet søk." />);
+    expect(screen.getByRole('heading')).toHaveClass('text-heading');
+    expect(screen.getByText('Prøv et annet søk.')).toHaveClass('text-fg-muted');
   });
 });

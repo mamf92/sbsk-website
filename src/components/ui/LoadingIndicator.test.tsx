@@ -1,13 +1,12 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { LoadingIndicator, LoadingPips } from './LoadingIndicator';
+import { LoadingIndicator } from './LoadingIndicator';
 
 describe('LoadingIndicator', () => {
   it('is a polite live region so the wait is announced, not just painted', () => {
     render(<LoadingIndicator label="Laster medlemmer…" />);
 
     const status = screen.getByRole('status');
-    expect(status).toBeInTheDocument();
     expect(status).toHaveTextContent('Laster medlemmer…');
   });
 
@@ -18,34 +17,25 @@ describe('LoadingIndicator', () => {
 
   it('keeps the label for assistive tech when it is visually hidden', () => {
     render(<LoadingIndicator label="Laster studio…" labelHidden />);
-
-    const label = screen.getByText('Laster studio…');
-    expect(label).toBeInTheDocument();
-    expect(label.className).toContain('sr-only');
+    expect(screen.getByText('Laster studio…')).toHaveClass('sr-only');
   });
 
-  it('renders four stepping pips, hidden from assistive tech', () => {
-    const { container } = render(<LoadingIndicator />);
-
-    expect(container.querySelectorAll('.sbsk-load-pip')).toHaveLength(4);
-    expect(container.querySelector('[aria-hidden="true"]')).not.toBeNull();
+  it('shows a decorative spinner', () => {
+    render(<LoadingIndicator />);
+    expect(screen.getByTestId('spinner')).toHaveAttribute('aria-hidden', 'true');
   });
 
-  it('applies a distinct class list for every size', () => {
-    const sizes = ['sm', 'md'] as const;
+  it('sizes the spinner with the indicator', () => {
+    const { unmount } = render(<LoadingIndicator size="sm" />);
+    const sm = screen.getByTestId('spinner').className;
+    unmount();
 
-    const classes = sizes.map((size) => {
-      const { container, unmount } = render(<LoadingPips size={size} />);
-      const className = container.querySelector('.sbsk-load-pip')!.className;
-      unmount();
-      return className;
-    });
-
-    expect(new Set(classes).size).toBe(sizes.length);
+    render(<LoadingIndicator size="md" />);
+    expect(screen.getByTestId('spinner').className).not.toBe(sm);
   });
 
   it('merges a caller className', () => {
     render(<LoadingIndicator className="p-6" />);
-    expect(screen.getByRole('status').className).toContain('p-6');
+    expect(screen.getByRole('status')).toHaveClass('p-6');
   });
 });

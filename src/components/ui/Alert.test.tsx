@@ -44,37 +44,52 @@ describe('Alert', () => {
 
   it('defaults to the error tone', () => {
     render(<Alert>x</Alert>);
-    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveClass('bg-danger-bg', 'text-danger-text');
   });
 
-  it('announces a success tone as a status, not an alert, and uses a distinct class list', () => {
-    const { unmount } = render(<Alert>x</Alert>);
-    const errorClass = screen.getByRole('alert').className;
-    unmount();
-
-    render(<Alert tone="success">Meldingen din er sendt.</Alert>);
+  it.each([
+    ['info', 'bg-info-bg'],
+    ['success', 'bg-success-bg'],
+  ] as const)('announces the %s tone politely as a status, on its own tint', (tone, bg) => {
+    render(<Alert tone={tone}>Meldingen din er sendt.</Alert>);
     const status = screen.getByRole('status');
     expect(status).toHaveTextContent('Meldingen din er sendt.');
+    expect(status).toHaveClass(bg, 'border-l-4');
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-    expect(status.className).not.toBe(errorClass);
+  });
+
+  it('gives each tone its own icon', () => {
+    const paths = (['info', 'success', 'error'] as const).map((tone) => {
+      const { container, unmount } = render(<Alert tone={tone}>x</Alert>);
+      const svg = container.querySelector('svg')!.innerHTML;
+      unmount();
+      return svg;
+    });
+    expect(new Set(paths).size).toBe(3);
+  });
+
+  it('is square and casts no shadow', () => {
+    render(<Alert>x</Alert>);
+    const classes = screen.getByRole('alert').className;
+    expect(classes).toContain('rounded-none');
+    expect(classes).not.toMatch(/shadow/);
   });
 });
 
 describe('FieldError', () => {
-  it('is the small Alert, and is announced the same way', () => {
+  it('is announced, so a screen reader hears the fix-it message', () => {
     render(<FieldError>Postnummeret må være på 4 siffer.</FieldError>);
 
     const alert = screen.getByRole('alert');
     expect(alert).toHaveTextContent('Postnummeret må være på 4 siffer.');
   });
 
-  it('matches Alert at size sm exactly', () => {
-    const { unmount } = render(<FieldError>x</FieldError>);
-    const field = screen.getByRole('alert').className;
-    unmount();
-
-    render(<Alert size="sm">x</Alert>);
-    expect(screen.getByRole('alert').className).toBe(field);
+  it('is red text with an icon, not a box', () => {
+    const { container } = render(<FieldError>x</FieldError>);
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveClass('text-danger-text');
+    expect(alert.className).not.toMatch(/\bbg-|border/);
+    expect(container.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
   });
 
   it('can be pointed at by aria-describedby, which is how it pairs with Input', () => {

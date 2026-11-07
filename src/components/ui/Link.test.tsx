@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { Link, linkClassesInherit, navLinkClasses } from './Link';
+import { Link, linkClassesInherit, navLinkClasses, navLinkClassesBody } from './Link';
 
 describe('Link', () => {
   it('renders its children as an accessible link', () => {
@@ -53,14 +53,19 @@ describe('Link', () => {
     expect(new Set(classes).size).toBe(variants.length);
   });
 
-  it('underlines on hover rather than lifting', () => {
-    // Text links are the one interactive surface that does not lift.
+  it('is always underlined, and hover changes only colour and underline weight', () => {
     render(<Link href="#">Les mer</Link>);
     const classes = screen.getByRole('link').className.split(/\s+/);
 
-    expect(classes).toContain('hover:underline');
-    expect(classes).not.toContain('lift');
-    expect(classes).not.toContain('lift-chip');
+    expect(classes).toContain('underline');
+    expect(classes).toContain('text-link');
+    expect(classes).toContain('hover:text-link-hover');
+    expect(classes.some((c) => c.startsWith('lift') || c.includes('translate'))).toBe(false);
+  });
+
+  it('draws the shared focus outline', () => {
+    render(<Link href="#">Les mer</Link>);
+    expect(screen.getByRole('link')).toHaveClass('focus-visible:outline-focus');
   });
 
   it('merges a caller-supplied className instead of dropping it', () => {
@@ -84,21 +89,22 @@ describe('Link', () => {
 });
 
 describe('navLinkClasses', () => {
-  it('drives the underline off aria-current, which is what NavLink sets', () => {
-    // Router NavLinks get `aria-current="page"` on the active route; that attribute is the
-    // only thing holding the rule open, so losing it would silently break the active state.
-    expect(navLinkClasses).toContain('aria-[current=page]:after:scale-x-100');
-    expect(navLinkClasses).toContain('aria-[current=page]:text-orange');
+  it('draws the current-page bar off aria-current, which is what NavLink sets', () => {
+    expect(navLinkClasses.split(/\s+/)).toContain('aria-[current=page]:border-primary');
   });
 
-  it('wipes the rule in from the left on hover', () => {
-    expect(navLinkClasses).toContain('after:origin-left');
-    expect(navLinkClasses).toContain('after:scale-x-0');
-    expect(navLinkClasses).toContain('hover:after:scale-x-100');
+  it('is a 44px target with no underline and no motion beyond colour', () => {
+    const classes = navLinkClasses.split(/\s+/);
+    expect(classes).toContain('min-h-11');
+    expect(classes).toContain('no-underline');
+    expect(navLinkClasses).not.toMatch(/scale|translate|after:/);
   });
 
-  it('is positioned so the absolute rule has something to anchor to', () => {
-    expect(navLinkClasses.split(/\s+/)).toContain('relative');
+  it('has exactly one font family in each flavour', () => {
+    const fonts = (value: string) =>
+      value.split(/\s+/).filter((c) => /^font-(heading|body)$/.test(c));
+    expect(fonts(navLinkClasses)).toEqual(['font-heading']);
+    expect(fonts(navLinkClassesBody)).toEqual(['font-body']);
   });
 });
 
@@ -115,7 +121,7 @@ describe('Link — the inherit variant', () => {
 
     const link = screen.getByRole('link', { name: 'Foto: Ola' });
     expect(link).toHaveClass('text-current');
-    expect(link.className).not.toMatch(/\btext-(darkblue|orange|gray-neutral|white)\b/);
+    expect(link.className).not.toMatch(/\btext-(link|fg-muted|darkblue|orange|white)\b/);
   });
 
   it('still draws the focus ring, which is the whole reason these links moved here', () => {
@@ -126,14 +132,12 @@ describe('Link — the inherit variant', () => {
     );
 
     expect(screen.getByRole('link', { name: 'Foto: Ola' })).toHaveClass(
-      'focus-visible:outline-focus-ring',
+      'focus-visible:outline-focus',
     );
   });
 });
 
 describe('linkClassesInherit', () => {
-  // It is spelled out rather than composed from `base`, matching how `navLinkClassesBody` is
-  // written. This is the cost of writing it twice, paid here.
   it('matches what the inherit variant renders', () => {
     render(
       <Link href="#" variant="inherit">
