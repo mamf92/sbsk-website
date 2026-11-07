@@ -168,4 +168,19 @@ describe('Dialog', () => {
 
     expect(ref.current).toBe(screen.getByRole('dialog'));
   });
+
+  // A dialog opened from inside a fixed-dark panel must not inherit that panel's white ink
+  // onto its own light surface (the profile and member editors open from `surface-dark`).
+  it('renders outside the subtree that opened it', () => {
+    render(
+      <div className="surface-dark" data-testid="panel">
+        <Dialog title="Rediger profil" onClose={vi.fn()}>
+          <p>x</p>
+        </Dialog>
+      </div>,
+    );
+
+    expect(screen.getByTestId('panel')).not.toContainElement(screen.getByRole('dialog'));
+    expect(screen.getByRole('dialog').parentElement).toBe(document.body);
+  });
 });

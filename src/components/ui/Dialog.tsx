@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { createPortal } from 'react-dom';
 
 type DialogProps = Omit<
   React.DialogHTMLAttributes<HTMLDialogElement>,
@@ -133,7 +134,12 @@ export const Dialog = React.forwardRef<HTMLDialogElement, DialogProps>(function 
     };
   }, [open, returnFocusTo]);
 
-  return (
+  // Portalled to <body> so the panel reads the page theme's roles. `showModal()` lifts the
+  // element into the top layer but leaves it where it is in the DOM, so a dialog opened from
+  // inside a `surface-dark` panel (the portal's profile and member editors) would inherit
+  // that panel's white ink onto its own white `bg-surface`. React events still bubble
+  // through the portal to the component that rendered it.
+  return createPortal(
     <dialog
       ref={dialogRef}
       aria-labelledby={titleId}
@@ -152,6 +158,7 @@ export const Dialog = React.forwardRef<HTMLDialogElement, DialogProps>(function 
         {headerEnd}
       </div>
       {children}
-    </dialog>
+    </dialog>,
+    document.body,
   );
 });
