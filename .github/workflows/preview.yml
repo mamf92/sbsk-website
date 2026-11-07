@@ -23,6 +23,7 @@ jobs:
 
     permissions:
       contents: read
+      actions: read
       pages: write
       id-token: write
 
@@ -36,9 +37,25 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}redesign/
 
     steps:
+      # The live half of the upload replaces production, so it must be a `main` commit that
+      # passed CI, not whatever `main` happens to point at: a newer commit may still be running,
+      # or have failed, and the deploy job in ci.yml would never have shipped it.
+      - name: Find the newest main commit that passed CI
+        id: live
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sha=$(gh run list -R "$GITHUB_REPOSITORY" --workflow CI --branch main --event push \
+            --status success --limit 1 --json headSha -q '.[0].headSha')
+          if [ -z "$sha" ]; then
+            echo "::error::No successful CI run on main to deploy as the live site."
+            exit 1
+          fi
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: main
+          ref: ${{ steps.live.outputs.sha }}
       - uses: ./.github/actions/setup
 
       - name: Build live site and redesign preview
