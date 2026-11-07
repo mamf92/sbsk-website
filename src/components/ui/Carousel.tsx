@@ -5,6 +5,10 @@ import { Dialog } from './Dialog';
 import { clampAspect, cropUrl, hotspotPosition } from '../../utils/sanityImage';
 import type { SanityImageValue } from './SanityImage';
 
+// The arrows sit on the photo, so they bring a fixed light chip of their own (`surface-light`
+// pins the ink) and stay legible on any picture, in either theme.
+const ARROW_WRAP = 'surface-light absolute top-1/2 -translate-y-1/2 bg-white/90';
+
 type CarouselProps = Omit<React.HTMLAttributes<HTMLElement>, 'children'> & {
   images: SanityImageValue[];
   /** Index shown first. Clamped into range; defaults to 0. */
@@ -129,20 +133,20 @@ export const Carousel = React.forwardRef<HTMLElement, CarouselProps>(
     // arrows have to be one piece of JSX rather than two copies that could drift apart.
     const arrowControls = hasControls ? (
       <>
-        <span className="absolute top-1/2 left-2 -translate-y-1/2">
+        <span className={`${ARROW_WRAP} left-2`}>
           <Button
             type="button"
-            variant="secondary"
+            variant="ghost"
             size="sm"
             icon="left"
             aria-label="Forrige bilde"
             onClick={prev}
           />
         </span>
-        <span className="absolute top-1/2 right-2 -translate-y-1/2">
+        <span className={`${ARROW_WRAP} right-2`}>
           <Button
             type="button"
-            variant="secondary"
+            variant="ghost"
             size="sm"
             icon="right"
             aria-label="Neste bilde"
@@ -154,45 +158,23 @@ export const Carousel = React.forwardRef<HTMLElement, CarouselProps>(
 
     const tickRow = hasControls ? (
       <>
-        {/* The one position indicator, at every breakpoint — a paginated row of desktop
-            thumbnails used to sit alongside this, but paging through undifferentiated
-            photos didn't make "which one is this" any clearer than the ticks already do, so
-            it's gone rather than kept as a second, redundant control. Square, not circular:
-            the brand's zero-radius rule rules out a dot, and unlike Instagram's own
-            (non-interactive) dots these are real, tappable, labelled buttons. */}
+        {/* The one position indicator: square ticks (no dots, the corners are square), each a
+            real, labelled 24px button. The current one is filled. */}
         <div className="flex shrink-0 flex-wrap items-center justify-center gap-1.5">
           {images.map((_image, i) => (
             <button
               key={i}
               type="button"
-              // `aria-pressed`, not `aria-current`: this is the same "which one of a small
-              // row of buttons is selected" shape `Chip` and `Segmented` already use, so a
-              // screen reader hears it the same way. The 24px button is the tap target;
-              // `--shadow-1` (src/index.css) — the same hard offset shadow every other
-              // "raised" surface in the system reads — lands on the small mark below instead
-              // of the invisible outer button, so it draws where the fill actually is rather
-              // than as a stray corner shadow on empty space. It used to be `--shadow-inset-1`,
-              // the hard *inset* shadow the now-removed `segment` utility read off
-              // `aria-pressed` for a joined control pressed into its group — borrowed because
-              // it was the nearest existing "this one is selected" affordance at the time. A
-              // carousel tick isn't joined to anything, though, and reads as raised like every
-              // other selected surface in the system, so it takes the offset shadow instead.
-              //
-              // An offset shadow paints outside the mark, onto the panel — `surface-dark` /
-              // `-light` already guarantee that contrast — so the mark itself is free to fill
-              // with `bg-current` instead of staying hollow. (The earlier inset shadow could
-              // not: it paints *inside* the mark, and `currentColor` is chosen to match the
-              // panel's own text, so a filled mark and an inset shadow in the same colour
-              // would have painted directly on top of each other and vanished.)
+              // `aria-pressed`: the same "which one of a row is selected" shape as `Chip`.
               aria-pressed={i === index}
               aria-label={`Bilde ${i + 1} av ${count}`}
               onClick={() => setIndex(i)}
-              className="focus-visible:outline-focus-ring flex size-6 items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2"
+              className="focus-visible:outline-focus flex size-6 items-center justify-center focus-visible:outline-3 focus-visible:-outline-offset-3"
             >
               <span
                 className={[
-                  'ease-standard size-2.5 border border-current transition-[box-shadow,background-color] duration-(--duration-fast)',
-                  i === index ? 'shadow-1 bg-current' : '',
+                  'size-2.5 border border-current transition-colors duration-150 motion-reduce:transition-none',
+                  i === index ? 'bg-current' : '',
                 ].join(' ')}
               />
             </button>
@@ -216,7 +198,7 @@ export const Carousel = React.forwardRef<HTMLElement, CarouselProps>(
         className={['flex max-h-[80vh] w-full flex-col gap-2 lg:max-h-[60vh]', className].join(' ')}
         {...props}
       >
-        <figure className="flex min-h-0 flex-col border border-black dark:border-white">
+        <figure className="border-border bg-surface flex min-h-0 flex-col border">
           <div className="relative aspect-[3/2] min-h-0 w-full shrink">
             <button
               type="button"
@@ -226,7 +208,7 @@ export const Carousel = React.forwardRef<HTMLElement, CarouselProps>(
               onPointerUp={onImagePointerUp}
               // `pan-y`, not `none`: the swipe only reads the horizontal delta, so vertical
               // page scroll has to keep working for a finger that lands on the photo.
-              className="focus-visible:outline-focus-ring block h-full w-full cursor-zoom-in touch-pan-y focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2"
+              className="focus-visible:outline-focus block h-full w-full cursor-zoom-in touch-pan-y focus-visible:outline-3 focus-visible:-outline-offset-3"
             >
               <img
                 src={cropUrl(current, 960, MAIN_ASPECT)}
@@ -244,7 +226,7 @@ export const Carousel = React.forwardRef<HTMLElement, CarouselProps>(
             {arrowControls}
           </div>
           {current.caption || credit ? (
-            <figcaption className="shrink-0 border-t border-black bg-current/10 px-3 py-2 text-sm dark:border-white">
+            <figcaption className="border-border text-fg-muted shrink-0 border-t px-3 py-2 text-sm">
               {current.caption ? <span className="block">{current.caption}</span> : null}
               {credit ? <span className="mt-0.5 block text-xs opacity-80">{credit}</span> : null}
             </figcaption>
@@ -258,7 +240,7 @@ export const Carousel = React.forwardRef<HTMLElement, CarouselProps>(
             size="full"
             title={label}
             headerEnd={
-              <Button type="button" variant="secondary" size="sm" onClick={closeLightbox}>
+              <Button type="button" variant="ghost" size="sm" onClick={closeLightbox}>
                 Lukk
               </Button>
             }
@@ -283,7 +265,7 @@ export const Carousel = React.forwardRef<HTMLElement, CarouselProps>(
             </div>
             {tickRow}
             {current.caption || credit ? (
-              <p className="shrink-0 text-center text-sm text-white/80">
+              <p className="text-fg-muted shrink-0 text-center text-sm">
                 {current.caption}
                 {current.caption && credit ? ' — ' : null}
                 {credit}

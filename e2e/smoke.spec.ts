@@ -192,10 +192,9 @@ test('theme toggle flips the dark class and survives a reload', async ({ page })
   const html = page.locator('html');
   const startedDark = await html.evaluate((el) => el.classList.contains('dark'));
 
-  // The accessible name leads with the visible "DM"/"LM" — WCAG 2.5.3 Label in Name, see the
-  // comment on the toggle in Header.tsx (#222).
+  // Icon only, so the name says what pressing it does.
   await page
-    .getByRole('button', { name: /^(DM|LM) – bytt til (lys|mørk) modus$/ })
+    .getByRole('button', { name: /^Bytt til (lyst|mørkt) tema$/ })
     .first()
     .click();
   await expect(html).toHaveClass(startedDark ? /^(?!.*\bdark\b).*$/ : /\bdark\b/);

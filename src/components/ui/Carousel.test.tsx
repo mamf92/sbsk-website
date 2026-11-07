@@ -84,7 +84,7 @@ describe('Carousel', () => {
     expect(ticks.filter((el) => el.getAttribute('aria-pressed') === 'true')).toHaveLength(1);
   });
 
-  it('gives the active tick a filled mark with a hard offset shadow, not an inset one', async () => {
+  it('fills the active tick, with no shadow', async () => {
     const user = userEvent.setup();
     render(<Carousel images={photos(3)} />);
 
@@ -92,9 +92,8 @@ describe('Carousel', () => {
     await user.click(tick2);
 
     const mark = tick2.querySelector('span');
-    expect(mark).toHaveClass('shadow-1');
     expect(mark).toHaveClass('bg-current');
-    expect(mark).not.toHaveClass('shadow-inset-1');
+    expect(mark?.className).not.toMatch(/shadow/);
   });
 
   it('labels every tick with its position and total', () => {

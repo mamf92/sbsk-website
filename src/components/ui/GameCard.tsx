@@ -77,45 +77,30 @@ export function GameCard({
   }
 
   return (
-    // No `lift-card`: nothing on this article is pressable — the three calls-to-action inside
-    // are, and each lifts on its own. "Lift is for things you press. It is not decoration."
-    // (docs/DESIGN_LANGUAGE.md). It carried one anyway, which also meant hovering a button
-    // travelled the card 3px and the button 2px on two different clocks.
-    //
-    // `surface-*` is legal here now that it does not lift: the buttons cast onto this fill, and
-    // it is white in light mode and darkblue in dark, so the tone has to flip with the theme.
-    <article className="dark:bg-darkblue surface-light dark:surface-dark text-darkestblue flex w-full flex-col border border-black bg-white dark:border-white dark:text-white">
-      <div className="bg-darkblue relative aspect-square overflow-hidden border-b border-black dark:border-white">
+    <article className="bg-surface text-fg shadow-card flex w-full flex-col rounded-none">
+      <div className="bg-surface-muted relative aspect-square overflow-hidden">
         {image ? (
           <img src={image} alt="" className="h-full w-full object-cover" />
         ) : (
-          <span className="absolute inset-0 flex items-center justify-center text-xs font-bold tracking-[0.08em] text-white uppercase opacity-70">
-            Spillfoto
-          </span>
+          <span aria-hidden="true" className="absolute inset-0" />
         )}
         {member && (
-          <span className="bg-orange text-darkestblue absolute top-3 right-0 px-3 py-1.5 text-xs font-bold tracking-[0.03em]">
-            −{discountPercent}% MEDLEM
+          <span className="bg-tag-orange-bg text-tag-orange-fg absolute top-3 left-3 px-2 py-0.5 text-xs font-semibold">
+            −{discountPercent} % for medlemmer
           </span>
         )}
       </div>
 
       <div className="flex flex-1 flex-col p-4">
-        {genre && (
-          <p className="text-darkorange m-0 text-xs font-bold tracking-[0.04em] uppercase">
-            {genre}
-          </p>
-        )}
-        <h3 className="font-heading text-h3 mt-1 mb-0 font-bold">{title}</h3>
+        {genre && <p className="text-fg-muted m-0 text-sm">{genre}</p>}
+        <h3 className="font-heading text-heading text-h4 mt-1 mb-0 font-bold">{title}</h3>
         {description && (
-          <p className="mt-1.5 mb-0 text-base leading-normal text-gray-500 dark:text-gray-300">
-            {description}
-          </p>
+          <p className="text-fg-muted mt-1.5 mb-0 line-clamp-3 text-base">{description}</p>
         )}
 
-        <div className="my-3 flex border-t border-b border-black dark:border-white">
+        <div className="border-border my-3 flex border-t border-b">
           <div className="flex flex-1 flex-row items-center justify-center gap-1.5 p-2 text-center">
-            <Signal aria-hidden="true" className="h-[18px] w-[18px] fill-current" />
+            <Signal aria-hidden="true" className="text-fg-muted size-4 fill-current" />
             <span
               className="flex gap-[3px]"
               role="img"
@@ -126,24 +111,22 @@ export function GameCard({
                   key={n}
                   aria-hidden="true"
                   className={
-                    'h-[9px] w-[9px] border ' +
-                    (n <= difficulty
-                      ? 'border-darkorange bg-orange'
-                      : 'border-darkestblue bg-transparent dark:border-white')
+                    'size-2.5 border ' +
+                    (n <= difficulty ? 'border-fg bg-fg' : 'border-border-strong bg-transparent')
                   }
                 />
               ))}
             </span>
           </div>
-          <div className="flex flex-1 flex-row items-center justify-center gap-1.5 border-l border-gray-300 p-2 text-center dark:border-white/30">
-            <Clock aria-hidden="true" className="h-[18px] w-[18px] fill-current" />
-            <span className="font-heading text-xs font-bold">
+          <div className="border-border flex flex-1 flex-row items-center justify-center gap-1.5 border-l p-2 text-center">
+            <Clock aria-hidden="true" className="text-fg-muted size-4 fill-current" />
+            <span className="text-sm">
               {time} {timeUnit}
             </span>
           </div>
-          <div className="flex flex-1 flex-row items-center justify-center gap-1.5 border-l border-gray-300 p-2 text-center dark:border-white/30">
-            <Players aria-hidden="true" className="h-[18px] w-[18px] fill-none stroke-current" />
-            <span className="font-heading text-xs font-bold">
+          <div className="border-border flex flex-1 flex-row items-center justify-center gap-1.5 border-l p-2 text-center">
+            <Players aria-hidden="true" className="text-fg-muted size-4 fill-none stroke-current" />
+            <span className="text-sm">
               {players} {playersUnit}
             </span>
           </div>
@@ -158,23 +141,21 @@ export function GameCard({
             className={buttonClasses({
               variant: 'primary',
               size: 'md',
-              className: 'border-orange w-full border font-bold tracking-[0.02em]',
+              className: 'w-full',
             })}
           >
-            {member && <Tag aria-hidden="true" className="h-[15px] w-[15px]" />}
+            {member && <Tag aria-hidden="true" className="size-4 fill-current" />}
             {buyLabel}
-            <ExternalLink aria-hidden="true" className="h-3.5 w-3.5 fill-current" />
+            <ExternalLink aria-hidden="true" className="size-3.5 fill-current" />
           </a>
-          <p className="m-0 text-center text-sm text-gray-500 dark:text-gray-300">
+          <p className="text-fg-muted m-0 text-center text-sm">
             {member ? (
               'Rabattkoden legges inn automatisk i kassen'
             ) : (
               <>
                 Medlemmer får{' '}
-                <b className="text-darkestorange dark:text-orange font-heading">
-                  {discountPercent}&thinsp;% rabatt
-                </b>{' '}
-                hos {sponsor}
+                <b className="text-fg font-semibold">{discountPercent}&thinsp;% rabatt</b> hos{' '}
+                {sponsor}
               </>
             )}
           </p>
@@ -210,10 +191,10 @@ export function GameCard({
                   className={buttonClasses({
                     variant: 'secondary',
                     size: 'md',
-                    className: 'min-w-11 flex-1 text-xs font-bold',
+                    className: 'min-w-11 flex-1 text-sm',
                   })}
                 >
-                  <YouTube aria-hidden="true" className="h-[18px] w-auto fill-current" />
+                  <YouTube aria-hidden="true" className="h-4 w-auto fill-current" />
                   Se reglene
                 </a>
               )}

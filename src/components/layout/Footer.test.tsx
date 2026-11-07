@@ -57,11 +57,12 @@ describe('Footer — motion preference toggle', () => {
   it('looks different when pressed, not only to a screen reader', async () => {
     const user = userEvent.setup();
     renderFooter();
-    const off = toggle().className;
+    const off = toggle().querySelector('svg')!.innerHTML;
 
     await user.click(toggle());
 
-    expect(toggle().className).not.toBe(off);
+    // The icon swaps, so the state shows on screen as well as in aria-pressed.
+    expect(toggle().querySelector('svg')!.innerHTML).not.toBe(off);
   });
 
   it('keeps its label across the state change', async () => {

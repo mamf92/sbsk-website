@@ -1,28 +1,47 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, NavLink, useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '../ui/Buttons';
 import { NavMenuButton } from '../ui/NavMenuButton';
 import { DiceLogo } from '../ui/DiceLogo';
+import { buttonClasses } from '../ui/buttonClasses';
 import { navLinkClasses } from '../ui/linkClasses';
 import { useTheme } from '../../hooks/theme/ThemeContext';
-import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../hooks/authContext/authContext';
 import { useGoHome } from '../../hooks/useGoHome';
 import { memberPortalEnabled } from '../../utils/featureFlags';
 
-const desktopNavLink = `${navLinkClasses} text-sm`;
+/** The four main sections (decision 6). Board Game Masters and Partnere live in the footer. */
+const NAV_ITEMS = [
+  { to: '/kalender', label: 'Kalender' },
+  { to: '/våre-spill', label: 'Våre spill' },
+  { to: '/om-oss', label: 'Om oss' },
+  { to: '/kontakt-oss', label: 'Kontakt oss' },
+] as const;
 
+const desktopNavLink = `${navLinkClasses} text-base`;
+
+// Full-width rows in the mobile drop-down list. The current page is orange and bold, which
+// #f29d35 carries at 7.7:1 on the footer navy.
 const mobileNavLink =
-  'relative block w-full py-[15px] px-6 border-t border-white/12 ' +
-  'font-heading no-underline text-lg ' +
-  'transition-colors duration-(--duration-fast) ease-standard ' +
-  'after:absolute after:left-6 after:right-6 after:bottom-[9px] after:h-0.5 after:origin-left ' +
-  'after:scale-x-0 after:bg-orange after:transition-transform ' +
-  'after:duration-(--duration-base) after:ease-out hover:after:scale-x-100 ' +
-  'motion-reduce:after:transition-none ' +
-  'aria-[current=page]:text-orange aria-[current=page]:after:scale-x-100 ' +
-  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 ' +
-  'focus-visible:outline-focus-ring';
+  'flex min-h-12 w-full items-center border-t border-border px-6 font-heading text-lg ' +
+  'no-underline transition-colors duration-150 hover:bg-surface-muted ' +
+  'motion-reduce:transition-none aria-[current=page]:font-bold aria-[current=page]:text-primary ' +
+  'focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-focus';
 
+// The profile menu's rows, on the same navy as the mobile list.
+const menuItem =
+  'flex min-h-11 w-full items-center px-4 text-left font-body no-underline ' +
+  'transition-colors duration-150 hover:bg-surface-muted motion-reduce:transition-none ' +
+  'focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-focus';
+
+/**
+ * The navy bar (decision 6): the dice and the club's name, four links, a sun/moon theme
+ * toggle, a quiet "Logg inn" link and the one orange action, "Bli medlem". Below `lg` the links
+ * fold into a full-width list under the bar.
+ *
+ * `on-dark` re-points the colour roles for the whole subtree, so every link, button and focus
+ * ring in here reads on navy in both themes without a variant of its own.
+ */
 export default function Header() {
   const { isDarkMode, toggleDarkMode } = useTheme();
   const navigate = useNavigate();
@@ -68,203 +87,154 @@ export default function Header() {
     };
   }, [isDropdownOpen]);
 
+  function signOut() {
+    logout();
+    setIsDropdownOpen(false);
+    closeMobileMenu();
+    navigate('/');
+  }
+
   return (
-    <header className="bg-darkblue surface-dark font-heading relative z-1100 w-full text-white">
-      <div className="max-w-shell mx-auto flex items-center justify-between gap-5 px-6 py-3.5">
-        {/* Logo group — dice + wordmark, both navigate home. Clicking either while already on
-            home scrolls back to the top instead of re-navigating; see `useGoHome`. */}
+    <header className="bg-header on-dark text-fg font-heading relative z-1100 w-full">
+      <div className="max-w-shell mx-auto flex min-h-16 items-center justify-between gap-2 px-3 sm:gap-4 sm:px-6">
+        {/* Dice and name both go home; on home they scroll back to the top (see `useGoHome`). */}
         <div className="flex items-center gap-2.5">
-          <DiceLogo size={40} onClick={goHome} />
+          <DiceLogo size={36} onClick={goHome} />
           <NavLink
             to="/"
             end
             onClick={handleHomeLinkClick}
-            className="font-heading tracking-heading focus-visible:outline-focus-ring text-h4 font-bold text-white no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="font-heading text-fg focus-visible:outline-focus text-lg font-bold no-underline focus-visible:outline-3 focus-visible:outline-offset-2"
           >
-            SBSK
+            <span className="hidden xl:inline">Stavanger Brettspillklubb</span>
+            <span className="xl:hidden">SBSK</span>
           </NavLink>
         </div>
 
-        {/* Desktop nav */}
-        <nav className="hidden items-center gap-[26px] lg:flex" aria-label="Hovedmeny">
-          <NavLink to="/" end className={desktopNavLink}>
-            Hjem
-          </NavLink>
-          <NavLink to="/kalender" className={desktopNavLink}>
-            Kalender
-          </NavLink>
-          <NavLink to="/board-game-masters" className={desktopNavLink}>
-            Board Game Masters
-          </NavLink>
-          <NavLink to="/våre-spill" className={desktopNavLink}>
-            Våre spill
-          </NavLink>
-          <NavLink to="/om-oss" className={desktopNavLink}>
-            Om oss
-          </NavLink>
-          <NavLink to="/kontakt-oss" className={desktopNavLink}>
-            Kontakt oss
-          </NavLink>
+        <nav className="hidden items-center gap-6 lg:flex" aria-label="Hovedmeny">
+          {NAV_ITEMS.map((item) => (
+            <NavLink key={item.to} to={item.to} className={desktopNavLink}>
+              {item.label}
+            </NavLink>
+          ))}
         </nav>
 
-        {/* Right controls */}
-        <div className="flex items-center gap-2.5">
-          {/* The accessible name has to start with the visible "LM"/"DM", not replace it. WCAG
-              2.5.3 Label in Name: someone driving the page by voice says what they can see —
-              "click DM" — and a name of only "Bytt til mørk modus" leaves nothing for that to
-              match. Lighthouse flags the same thing as label-content-name-mismatch (#222). */}
+        <div className="flex items-center gap-1 sm:gap-2">
+          {/* Icon only, so the name says what pressing it does. It starts from the OS setting
+              (see `src/utils/theme.ts`) until the visitor picks one. */}
           <Button
             onClick={toggleDarkMode}
             variant="ghost"
-            size="sm"
+            size="md"
             icon={isDarkMode ? 'sun' : 'moon'}
-            aria-label={isDarkMode ? 'LM – bytt til lys modus' : 'DM – bytt til mørk modus'}
-          >
-            {isDarkMode ? 'LM' : 'DM'}
-          </Button>
+            className="w-11 px-0"
+            aria-label={isDarkMode ? 'Bytt til lyst tema' : 'Bytt til mørkt tema'}
+          />
 
-          {/* Login / profile — desktop only. Gated behind #213: no member/board portal for the
-              MVP launch, so there is no login option to show at all. */}
           {memberPortalEnabled &&
             (isAuthenticated ? (
-              <div ref={dropdownRef} className="relative z-50 hidden lg:block">
+              <div ref={dropdownRef} className="relative hidden lg:block">
                 <Button
-                  variant="primary"
-                  size="sm"
-                  icon="expand"
+                  variant="ghost"
+                  size="md"
+                  icon="down"
+                  aria-expanded={isDropdownOpen}
+                  aria-controls="profile-menu"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 >
-                  {(user?.name && 'Hi, ' + user.name) || 'Min profil'}
+                  {user?.name || 'Min profil'}
                 </Button>
                 <div
-                  className={`bg-darkestblue absolute top-11 right-0 z-50 flex w-40 flex-col items-start gap-2 p-4 ${isDropdownOpen ? '' : 'hidden'}`}
+                  id="profile-menu"
+                  className={`bg-footer shadow-overlay-soft absolute top-full right-0 z-50 mt-1 flex w-48 flex-col py-1 ${isDropdownOpen ? '' : 'hidden'}`}
                 >
                   {isAdmin && (
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      icon="right"
-                      onClick={() => {
-                        navigate('/styreportal');
-                        setIsDropdownOpen(false);
-                      }}
+                    <RouterLink
+                      to="/styreportal"
+                      className={menuItem}
+                      onClick={() => setIsDropdownOpen(false)}
                     >
                       Styreportal
-                    </Button>
+                    </RouterLink>
                   )}
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    icon="right"
-                    onClick={() => {
-                      navigate('/medlemsportal');
-                      setIsDropdownOpen(false);
-                    }}
+                  <RouterLink
+                    to="/medlemsportal"
+                    className={menuItem}
+                    onClick={() => setIsDropdownOpen(false)}
                   >
                     Profil
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    icon="right"
-                    onClick={() => {
-                      logout();
-                      setIsDropdownOpen(false);
-                      navigate('/');
-                    }}
-                  >
+                  </RouterLink>
+                  <button type="button" className={`${menuItem} cursor-pointer`} onClick={signOut}>
                     Logg ut
-                  </Button>
+                  </button>
                 </div>
               </div>
             ) : (
-              <Button variant="primary" size="sm" icon="right" onClick={() => navigate('/login')}>
-                Logg inn
-              </Button>
+              // Wrapped: `hidden` and the link's own `inline-flex` on one element would be decided
+              // by stylesheet order, not by the breakpoint.
+              <span className="hidden lg:block">
+                <NavLink to="/login" className={desktopNavLink}>
+                  Logg inn
+                </NavLink>
+              </span>
             ))}
+
+          <RouterLink
+            to="/bli-medlem"
+            className={buttonClasses({ variant: 'primary', size: 'sm', className: 'max-xs:px-2' })}
+          >
+            Bli medlem
+          </RouterLink>
 
           <NavMenuButton
             open={isMobileMenuOpen}
+            aria-controls="mobile-menu"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="lg:hidden"
           />
         </div>
       </div>
 
-      {/* Mobile nav — collapses on `grid-template-rows: 0fr → 1fr`, the same technique and the
-          same clock `Card`'s panel uses, and for the reason its comment gives: the max-height
-          version this replaced silently clipped anything taller than its magic number. 460px
-          was one nav item from doing exactly that — the authenticated button row alone puts it
-          within ~60px — and the number had no way to know.
-
-          `inert` is still what removes the closed panel's links from the tab order; a 0fr row
-          leaves them focusable on its own. */}
+      {/* The drop-down list below `lg`. It opens on `grid-template-rows: 0fr → 1fr`, so it fits
+          any number of rows, and `inert` keeps the closed list out of the tab order. */}
       <nav
+        id="mobile-menu"
         inert={!isMobileMenuOpen}
-        className={`bg-darkestblue grid transition-[grid-template-rows] duration-(--duration-slow) ease-out motion-reduce:transition-none lg:hidden ${
+        className={`bg-footer grid transition-[grid-template-rows] duration-200 ease-out motion-reduce:transition-none lg:hidden ${
           isMobileMenuOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
         }`}
         aria-label="Mobilmeny"
       >
         <div className="flex flex-col overflow-hidden">
-          {memberPortalEnabled && isAuthenticated && (
-            <div className="flex gap-2 border-t border-white/12 px-6 py-[15px]">
-              {isAdmin && (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  icon="right"
-                  onClick={() => {
-                    closeMobileMenu();
-                    navigate('/styreportal');
-                  }}
+          {NAV_ITEMS.map((item) => (
+            <NavLink key={item.to} to={item.to} className={mobileNavLink} onClick={closeMobileMenu}>
+              {item.label}
+            </NavLink>
+          ))}
+          {memberPortalEnabled &&
+            (isAuthenticated ? (
+              <>
+                {isAdmin && (
+                  <NavLink to="/styreportal" className={mobileNavLink} onClick={closeMobileMenu}>
+                    Styreportal
+                  </NavLink>
+                )}
+                <NavLink to="/medlemsportal" className={mobileNavLink} onClick={closeMobileMenu}>
+                  Profil
+                </NavLink>
+                <button
+                  type="button"
+                  className={`${mobileNavLink} cursor-pointer`}
+                  onClick={signOut}
                 >
-                  Styreportal
-                </Button>
-              )}
-              <Button
-                variant="primary"
-                size="sm"
-                icon="right"
-                onClick={() => {
-                  closeMobileMenu();
-                  navigate('/medlemsportal');
-                }}
-              >
-                Profil
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                icon="right"
-                onClick={() => {
-                  logout();
-                  closeMobileMenu();
-                  navigate('/');
-                }}
-              >
-                Logg ut
-              </Button>
-            </div>
-          )}
-          <NavLink to="/" end className={mobileNavLink} onClick={closeMobileMenu}>
-            Hjem
-          </NavLink>
-          <NavLink to="/kalender" className={mobileNavLink} onClick={closeMobileMenu}>
-            Kalender
-          </NavLink>
-          <NavLink to="/board-game-masters" className={mobileNavLink} onClick={closeMobileMenu}>
-            Board Game Masters
-          </NavLink>
-          <NavLink to="/våre-spill" className={mobileNavLink} onClick={closeMobileMenu}>
-            Våre spill
-          </NavLink>
-          <NavLink to="/om-oss" className={mobileNavLink} onClick={closeMobileMenu}>
-            Om oss
-          </NavLink>
-          <NavLink to="/kontakt-oss" className={mobileNavLink} onClick={closeMobileMenu}>
-            Kontakt oss
-          </NavLink>
+                  Logg ut
+                </button>
+              </>
+            ) : (
+              <NavLink to="/login" className={mobileNavLink} onClick={closeMobileMenu}>
+                Logg inn
+              </NavLink>
+            ))}
         </div>
       </nav>
     </header>

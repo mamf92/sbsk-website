@@ -4,22 +4,20 @@ type NavMenuButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   open?: boolean;
 };
 
-// Three bars that fold into an X. Built from spans rather than an icon because the bars are
-// the animation — there is no closed-form "menu" and "close" glyph to swap between.
+// Three bars that fold into an X: the familiar hamburger. 44px target, colour from the text
+// around it, and the bars only move when the OS allows motion.
 const base =
-  'inline-flex size-[42px] cursor-pointer flex-col items-center justify-center gap-[5px] ' +
-  'rounded-none border-0 bg-transparent text-current lift ' +
-  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ' +
-  'focus-visible:outline-focus-ring ';
+  'inline-flex size-11 cursor-pointer flex-col items-center justify-center gap-[5px] ' +
+  'rounded-none border-0 bg-transparent text-current transition-colors duration-150 ' +
+  'hover:bg-surface-muted motion-reduce:transition-none ' +
+  'focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-focus';
 
-// 2px bar, 5px gap: the outer bars sit exactly 7px off centre, so that is how far they
-// travel to meet in the middle before rotating.
+// 2px bar, 5px gap: the outer bars sit 7px off centre, so that is how far they travel.
 const bar =
-  'block h-0.5 w-6 bg-current transition-transform duration-(--duration-base) ease-out ' +
+  'block h-0.5 w-6 bg-current transition-transform duration-200 ease-out ' +
   'motion-reduce:transition-none';
 const middleBar =
-  'block h-0.5 w-6 bg-current transition-opacity duration-(--duration-fast) ease-standard ' +
-  'motion-reduce:transition-none';
+  'block h-0.5 w-6 bg-current transition-opacity duration-150 motion-reduce:transition-none';
 
 export const NavMenuButton = React.forwardRef<HTMLButtonElement, NavMenuButtonProps>(
   ({ className = '', open = false, ...props }, ref) => (

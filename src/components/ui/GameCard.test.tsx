@@ -41,15 +41,16 @@ describe('GameCard', () => {
 
   it('shows the member discount flag only for a member', () => {
     const { rerender } = render(<GameCard {...baseProps} />);
-    expect(screen.queryByText('−15% MEDLEM')).not.toBeInTheDocument();
+    expect(screen.queryByText('−15 % for medlemmer')).not.toBeInTheDocument();
 
     rerender(<GameCard {...baseProps} member />);
-    expect(screen.getByText('−15% MEDLEM')).toBeInTheDocument();
+    expect(screen.getByText('−15 % for medlemmer')).toBeInTheDocument();
   });
 
-  it('falls back to the "Spillfoto" placeholder without an image', () => {
-    render(<GameCard {...baseProps} />);
-    expect(screen.getByText('Spillfoto')).toBeInTheDocument();
+  it('keeps the photo slot as a tinted square without an image', () => {
+    const { container } = render(<GameCard {...baseProps} />);
+    expect(container.querySelector('img')).toBeNull();
+    expect(container.querySelector('.aspect-square')).toHaveClass('bg-surface-muted');
   });
 
   it('renders an image and hides the placeholder once one is set', () => {
@@ -59,7 +60,6 @@ describe('GameCard', () => {
     const { container } = render(
       <GameCard {...baseProps} image="https://example.test/wingspan.jpg" />,
     );
-    expect(screen.queryByText('Spillfoto')).not.toBeInTheDocument();
     expect(container.querySelector('img')).toHaveAttribute(
       'src',
       'https://example.test/wingspan.jpg',
