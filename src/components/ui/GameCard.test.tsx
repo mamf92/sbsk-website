@@ -47,10 +47,10 @@ describe('GameCard', () => {
     expect(screen.getByText('−15 % for medlemmer')).toBeInTheDocument();
   });
 
-  it('keeps the photo slot as a tinted square without an image', () => {
+  it('keeps the photo slot as a tinted 16:9 block without an image', () => {
     const { container } = render(<GameCard {...baseProps} />);
     expect(container.querySelector('img')).toBeNull();
-    expect(container.querySelector('.aspect-square')).toHaveClass('bg-surface-muted');
+    expect(container.querySelector('.aspect-video')).toHaveClass('bg-surface-muted');
   });
 
   it('renders an image and hides the placeholder once one is set', () => {
@@ -64,6 +64,11 @@ describe('GameCard', () => {
       'src',
       'https://example.test/wingspan.jpg',
     );
+  });
+
+  it('shows the genre as a tag, like the category on a post card', () => {
+    render(<GameCard {...baseProps} genre="Strategi · Motorbygging" />);
+    expect(screen.getByText('Strategi · Motorbygging')).toHaveClass('bg-tag-blue-bg');
   });
 
   it('announces the difficulty level for assistive tech', () => {
