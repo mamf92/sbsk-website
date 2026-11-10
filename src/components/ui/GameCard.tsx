@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { buttonClasses } from './buttonClasses';
+import { Tag as CategoryTag } from './Tag';
 import Signal from '../../assets/icons/symbols/signal.svg?react';
 import Clock from '../../assets/icons/symbols/clock.svg?react';
 import Players from '../../assets/icons/symbols/players.svg?react';
@@ -78,7 +79,7 @@ export function GameCard({
 
   return (
     <article className="bg-surface text-fg shadow-card flex w-full flex-col rounded-none">
-      <div className="bg-surface-muted relative aspect-square overflow-hidden">
+      <div className="bg-surface-muted relative aspect-video overflow-hidden">
         {image ? (
           <img src={image} alt="" className="h-full w-full object-cover" />
         ) : (
@@ -92,10 +93,15 @@ export function GameCard({
       </div>
 
       <div className="flex flex-1 flex-col p-4">
-        {genre && <p className="text-fg-muted m-0 text-sm">{genre}</p>}
-        <h3 className="font-heading text-heading text-h4 mt-1 mb-0 font-bold">{title}</h3>
+        {/* Same head as the post `Card` (decision 9): tag, title, two-line summary. */}
+        {genre && (
+          <div>
+            <CategoryTag>{genre}</CategoryTag>
+          </div>
+        )}
+        <h3 className="font-heading text-heading text-h4 mt-2 mb-0 font-bold">{title}</h3>
         {description && (
-          <p className="text-fg-muted mt-1.5 mb-0 line-clamp-3 text-base">{description}</p>
+          <p className="text-fg-muted mt-2 mb-0 line-clamp-2 text-base">{description}</p>
         )}
 
         <div className="border-border my-3 flex border-t border-b">
