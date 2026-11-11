@@ -141,7 +141,8 @@ create table public.vipps_payments (
   state text not null default 'CREATED',        -- last state from GET payment
   psp_reference text,
   redirect_url text,
-  capture_attempted_at timestamptz,
+  capture_attempted_at timestamptz,             -- last attempt; a retry hint, never a completion flag
+  capture_attempts int not null default 0,
   fulfilled_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -238,8 +239,14 @@ Shared modules (`supabase/functions/_shared/`):
   constant-time comparison of the decoded signature bytes. Test it with the docs' example vector.
 - `vipps/apply.ts` — `applyPayment(reference, source)`: `getPayment` → upsert state and
   aggregate amounts into `vipps_payments` → insert `vipps_payment_events` (ignore unique
-  conflicts) → if `authorized_ore > 0 && captured_ore == 0 && !capture_attempted_at` and the
-  registration is still valid: `capture` with key `cap-<reference>` → if captured: `rpc
+  conflicts) → if `authorized_ore > captured_ore + cancelled_ore` (money still reserved) and the
+  registration is still valid, and either no attempt yet or the last attempt is older than
+  2 minutes: set `capture_attempted_at = now()`, `capture_attempts++`, then `capture` with the
+  stable key `cap-<reference>` (Vipps de-duplicates on it, so a retry after an unknown outcome is
+  safe). Completion is decided only by Vipps' `aggregate.capturedAmount`, never by the attempt
+  columns; webhooks, polls and reconcile keep retrying until it is captured, the capture
+  deadline (`captureGuaranteedUntil`) passes, or 10 attempts fail, at which point admins get an
+  alert → if captured: `rpc
 vipps_fulfil` → if it returns `needs_refund`: refund in full with reason "Fullt — plass ikke
   tilgjengelig" and notify admins. If the registration is no longer valid before capture:
   `cancel`. Every branch is idempotent.

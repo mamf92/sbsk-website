@@ -209,6 +209,7 @@ create table public.notification_outbox (
   not_before timestamptz not null default now(),
   status text not null default 'pending' check (status in ('pending','sending','sent','failed','skipped')),
   attempts int not null default 0,
+  claimed_at timestamptz,                              -- lease: set when a sender claims the row
   last_error text,
   created_at timestamptz not null default now()
 );
@@ -245,9 +246,13 @@ be bypassed. `push-send` re-checks the host allow-list before every send as a se
 
 `push-send` (no JWT; requires `x-push-secret` = `PUSH_CRON_SECRET`, constant-time compare):
 
-1. `update notification_outbox set status='sending' … where id in (select id … where
-status='pending' and not_before <= now() order by id limit 100 for update skip locked)
-returning *`.
+1. `update notification_outbox set status='sending', claimed_at=now() … where id in (select id
+… where ((status='pending' and not_before <= now()) or (status='sending' and claimed_at <
+now() - interval '5 minutes')) order by id limit 100 for update skip locked) returning *`.
+   The second branch is the lease: a run that crashed or hit the execution limit after claiming
+   leaves rows in `sending`, and the next cron run reclaims them after 5 minutes. A reclaimed
+   row may re-send to devices that already got it once; the notification `tag` makes the
+   browser replace rather than stack it, which is acceptable.
 2. Resolve recipients: `member` → that user; `admins` → users with `members.is_admin`;
    `all_members` → active members. Filter by preferences (missing key → default) and drop
    disabled members (Phase 3's disabled flag).
