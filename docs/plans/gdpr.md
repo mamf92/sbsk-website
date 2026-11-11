@@ -19,7 +19,7 @@ security (`SECURITY_AND_RELIABILITY.md`) plans.
   payment records, which accounting law requires us to keep for 5 years (art. 17(3)(b)). Those are
   cut loose from the account and keep only what a receipt needs: name, amount, date, reference.
   Check-ins become an anonymous number on the event so club statistics stay right. Backups age
-  out within 30 days.
+  out within 12 weeks.
 - **Where is the data?** Member data is in Supabase, in the EU (Frankfurt, AWS
   `eu-central-1`). Website content is in Sanity and contains no member data. The privacy policy
   lists every service and what it sees.
@@ -205,18 +205,19 @@ Each job is a SQL function with a pgTAP test using fixed timestamps.
 
 ### Step 5 — Backups and restore
 
-Supabase's free tier has no downloadable backups. The security plan's weekly encrypted dump
-(retention 30 days) is a copy of personal data too: document in the privacy policy that deleted
-data disappears from backups within 30 days.
+Supabase's free tier has no downloadable backups. The security plan's weekly age-encrypted dump
+(`SECURITY_AND_RELIABILITY.md`, S7: private repo `mamf92/sbsk-backups`, kept 12 weeks) is a copy
+of personal data too: document in the privacy policy that deleted data disappears from backups
+within 12 weeks.
 
 A dump taken before an erasure also predates that erasure's `erasure_log` row, so the ledger
 inside a restored dump cannot be trusted to be complete. Keep the ledger **independently**:
 
-- The weekly backup job also writes `erasure_log` on its own (hashes only, no personal data)
+- The weekly backup job (S7) also writes `erasure_log` on its own (hashes only, no personal data)
   to a separate file, `erasure-ledger-<date>.csv`, retained **1 year** (longer than any dump),
   next to but not inside the dumps.
 - `erase_member()` runs on every deletion, so between backups the live database holds the only
-  copy of recent hashes. The restore runbook (in the security plan's backup section) therefore
+  copy of recent hashes. The restore runbook (`SECURITY_AND_RELIABILITY.md`, S7) therefore
   starts by exporting `erasure_log` from the live database if it is still reachable.
 
 Restore runbook: (1) export the live `erasure_log` if possible; (2) take the newest standalone
@@ -268,7 +269,7 @@ Plain language, short sentences, headings as questions. Norwegian first; English
 7. **Barn.** Own account from 13; younger members registered by a parent/guardian.
 8. **Lagring i nettleseren.** The four local-storage items and why no cookie banner is needed.
 9. **Sikkerhet.** EU hosting, encryption in transit and at rest, access control, 2FA for the
-   board, backups kept 30 days.
+   board, encrypted backups kept 12 weeks.
 10. **Endringer.** Versioned; members asked to re-accept on material changes.
 
 ## Terms — outline (`legal.json` → `terms.*`)
