@@ -183,7 +183,10 @@ create table public.push_subscriptions (
 create index on public.push_subscriptions (supabase_id);
 alter table public.push_subscriptions enable row level security;
 create policy "Own subscriptions: read"   on public.push_subscriptions for select to authenticated using (auth.uid() = supabase_id);
-create policy "Own subscriptions: add"    on public.push_subscriptions for insert to authenticated with check (auth.uid() = supabase_id);
+-- No insert or update policy, on purpose: the push-subscribe Edge Function (service role) is the
+-- only writer, because it enforces the push-service host allow-list. A direct REST insert would
+-- let a member point push-send at any HTTPS host (SSRF). Revoke the grants too:
+revoke insert, update on public.push_subscriptions from anon, authenticated;
 create policy "Own subscriptions: remove" on public.push_subscriptions for delete to authenticated using (auth.uid() = supabase_id);
 
 create table public.notification_preferences (
@@ -236,8 +239,9 @@ endpoint is `https://` and its host ends with one of the known push services
 (`fcm.googleapis.com`, `updates.push.services.mozilla.com`, `web.push.apple.com`,
 `*.notify.windows.com`) — rejects anything else so the sender can never be turned into an SSRF
 proxy. Upserts on `endpoint` (a re-subscribe on the same device moves it to the current user).
-`push-unsubscribe` deletes by endpoint for the caller. (These could be direct RLS inserts, but
-the host allow-list has to be server-side.)
+`push-unsubscribe` deletes by endpoint for the caller. Clients must not write the table
+directly: it has no insert/update policy and those grants are revoked, so the allow-list cannot
+be bypassed. `push-send` re-checks the host allow-list before every send as a second guard.
 
 `push-send` (no JWT; requires `x-push-secret` = `PUSH_CRON_SECRET`, constant-time compare):
 
