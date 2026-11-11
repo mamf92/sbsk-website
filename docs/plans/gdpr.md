@@ -19,7 +19,7 @@ security (`SECURITY_AND_RELIABILITY.md`) plans.
   payment records, which accounting law requires us to keep for 5 years (art. 17(3)(b)). Those are
   cut loose from the account and keep only what a receipt needs: name, amount, date, reference.
   Check-ins become an anonymous number on the event so club statistics stay right. Backups age
-  out within 12 weeks.
+  out within 12 weeks (plus a short delay while GitHub clears old copies).
 - **Where is the data?** Member data is in Supabase, in the EU (Frankfurt, AWS
   `eu-central-1`). Website content is in Sanity and contains no member data. The privacy policy
   lists every service and what it sees.
@@ -208,7 +208,9 @@ Each job is a SQL function with a pgTAP test using fixed timestamps.
 Supabase's free tier has no downloadable backups. The security plan's weekly age-encrypted dump
 (`SECURITY_AND_RELIABILITY.md`, S7: private repo `mamf92/sbsk-backups`, kept 12 weeks) is a copy
 of personal data too: document in the privacy policy that deleted data disappears from backups
-within 12 weeks.
+within 12 weeks plus a short processing delay (each backup run replaces the backups repo's
+history with one commit holding only files still within retention; GitHub keeps unreachable
+objects briefly before removing them).
 
 A dump taken before an erasure also predates that erasure's `erasure_log` row, so the ledger
 inside a restored dump cannot be trusted to be complete. Keep the ledger **independently**:
@@ -269,7 +271,7 @@ Plain language, short sentences, headings as questions. Norwegian first; English
 7. **Barn.** Own account from 13; younger members registered by a parent/guardian.
 8. **Lagring i nettleseren.** The four local-storage items and why no cookie banner is needed.
 9. **Sikkerhet.** EU hosting, encryption in transit and at rest, access control, 2FA for the
-   board, encrypted backups kept 12 weeks.
+   board, encrypted backups deleted within 12 weeks plus a short processing delay.
 10. **Endringer.** Versioned; members asked to re-accept on material changes.
 
 ## Terms — outline (`legal.json` → `terms.*`)
