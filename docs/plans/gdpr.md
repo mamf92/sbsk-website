@@ -160,9 +160,14 @@ encode(digest(supabase_id::text || member_id::text, 'sha256'), 'hex')`, trigger 
 Edge function `supabase/functions/gdpr-delete/index.ts`:
 
 1. `requireUser(req)`; body `{ confirm: "SLETT" }` (or `"DELETE"` in English) must match.
-2. **Fresh authentication**: the JWT's `iat` must be under 5 minutes old; otherwise reply
-   `reauth_required` and the UI asks for a new sign-in code first (stops a borrowed unlocked
-   phone deleting someone's account).
+2. **Fresh authentication**: the newest `timestamp` in the JWT's `amr` claim (the time of the
+   last real password, OTP or TOTP verification) must be under 5 minutes old. **Not** `iat`:
+   a token refresh issues a new JWT with a fresh `iat` and no new proof of identity, while `amr`
+   timestamps survive refreshes unchanged. Verify the JWT with `auth.getUser()` first, then read
+   `amr` from the verified token's payload. Otherwise reply `reauth_required` and the UI asks
+   for a new sign-in code (`signInWithOtp` + `verifyOtp`, which adds a new `amr` entry) before
+   retrying. This stops a borrowed unlocked phone deleting someone's account. Deno test: a JWT
+   with a fresh `iat` but an `amr` timestamp older than 5 minutes is refused.
 3. Send the confirmation email first (Resend; the address is about to be erased): "Kontoen din
    hos Stavanger Brettspillklubb er slettet" + what was kept (payments) and for how long.
 4. `rpc('erase_member')` with the service role.
@@ -202,9 +207,25 @@ Each job is a SQL function with a pgTAP test using fixed timestamps.
 
 Supabase's free tier has no downloadable backups. The security plan's weekly encrypted dump
 (retention 30 days) is a copy of personal data too: document in the privacy policy that deleted
-data disappears from backups within 30 days. **After any restore**, run
-`reapply_erasures()` which deletes every member whose hash is in `erasure_log` — this is what the
-ledger is for.
+data disappears from backups within 30 days.
+
+A dump taken before an erasure also predates that erasure's `erasure_log` row, so the ledger
+inside a restored dump cannot be trusted to be complete. Keep the ledger **independently**:
+
+- The weekly backup job also writes `erasure_log` on its own (hashes only, no personal data)
+  to a separate file, `erasure-ledger-<date>.csv`, retained **1 year** (longer than any dump),
+  next to but not inside the dumps.
+- `erase_member()` runs on every deletion, so between backups the live database holds the only
+  copy of recent hashes. The restore runbook (in the security plan's backup section) therefore
+  starts by exporting `erasure_log` from the live database if it is still reachable.
+
+Restore runbook: (1) export the live `erasure_log` if possible; (2) take the newest standalone
+ledger file; (3) restore the dump; (4) merge both ledgers into the restored `erasure_log`
+(`insert … on conflict do nothing`); (5) run `reapply_erasures()`, which erases every member
+whose hash is in the merged ledger; (6) re-run the storage/auth cleanup for those ids. If the
+live database is gone and the newest ledger file is older than an erasure, that erasure can be
+lost. The window is at most one week; the runbook says so, and after such a restore the board
+re-runs any deletion it handled by email in that week.
 
 ### Step 6 — Processor agreements and records (Martin / the board, no code)
 
@@ -274,7 +295,8 @@ Plain language, short sentences, headings as questions. Norwegian first; English
   unlinked with name kept, every `audit_personal_keys()` key redacted in old and new snapshots (including the audit rows the erasure itself just wrote) and
   actor nulled where they acted, `erasure_log` row present; refuses the last
   admin; callable only by `service_role`. Each retention job with fixed clocks.
-  `reapply_erasures()` removes a re-inserted member.
+  `reapply_erasures()` removes a re-inserted member when given a ledger merged from outside the
+  restored dump (simulate: dump, erase, restore the dump, merge the saved ledger, reapply).
 - **pgTAP inventory guard**: a test lists every `public` table and every column whose name
   matches `email|name|phone|supabase_id|member_id|photo|bio|birth` and fails if a table is not
   in an allowlist that maps it to its erase/export handling. A new personal-data table without
