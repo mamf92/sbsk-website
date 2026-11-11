@@ -523,7 +523,14 @@ The ledger sits next to the dumps, never inside them, so it survives a restore o
    `\copy public.erasure_log to 'ledger.csv' csv header`.
 4. `age -r "$BACKUP_AGE_RECIPIENT"` on both; delete the plaintext in the same step.
 5. Check out `mamf92/sbsk-backups` with `BACKUP_REPO_TOKEN` (a fine-grained token with contents
-   write on that repo only), add the two files, prune by date, commit, push.
+   write on that repo only). Add the two new files and drop files past their retention. Then
+   **replace the history** rather than add to it: `git checkout --orphan next`, commit the
+   retained set as one commit, `git push --force origin next:main`. Deleting a file in a normal
+   commit would leave every expired dump recoverable from history, so erased members would live
+   on in old dumps indefinitely and the repo would grow with every full dump. The backups repo
+   gets no branch protection, so the force push is allowed there and nowhere else. GitHub can
+   keep unreachable objects for a while after a force push; that window is accepted and noted
+   in the privacy policy as "backups are deleted within 12 weeks plus a short processing delay".
 6. Report "backup ok, N bytes" or the failure into the weekly security issue.
 
 **Restore runbook** (add to `docs/RUNBOOK.md` when #265 creates it, else to this file):
