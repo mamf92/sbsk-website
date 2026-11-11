@@ -483,6 +483,62 @@ floor):
 validation, auth failures (no JWT, member calling an admin function, `aal1` admin) and CORS.
 Run in the `Database tests` job.
 
+### S7 — Weekly encrypted backups and the erasure ledger (M)
+
+The Supabase free plan gives us no downloadable backups and no point-in-time recovery, and the
+project pauses when idle. Member data has to be recoverable without depending on either.
+
+**Decisions.**
+
+- A weekly GitHub Actions job dumps the database and pushes it, encrypted, to a separate
+  **private** repository, `mamf92/sbsk-backups`. Private and separate because this repo is
+  public (D1): Actions artifacts here are downloadable by any signed-in GitHub user, and they
+  expire after 90 days.
+- Encryption with [`age`](https://github.com/FiloSottile/age) to a public key stored as the
+  repo variable `BACKUP_AGE_RECIPIENT`. The private key never touches GitHub; Martin keeps it in
+  his password manager plus one offline copy. A leaked backup repo then leaks ciphertext only.
+- Profile images in storage are **not** backed up. Members can upload a new one; accepted.
+
+**The erasure ledger.** The GDPR plan (`docs/plans/gdpr.md`, Step 5) keeps
+`public.erasure_log`, holding only hashes of erased members, and `reapply_erasures()`. A
+restored dump predates the erasures made after it was taken, and its own copy of the log is just
+as old, so the job also writes the ledger to its own file:
+
+| File                                   | Contents                                                                       | Kept                                        |
+| -------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------- |
+| `dumps/<date>.sql.age`                 | `supabase db dump` of schema and data (`public`, `auth` users and MFA factors) | 12 weeks; older ones are deleted by the job |
+| `ledger/erasure-ledger-<date>.csv.age` | `public.erasure_log`, hashes only, as CSV                                      | 1 year                                      |
+
+The ledger sits next to the dumps, never inside them, so it survives a restore of any dump.
+
+**Workflow** `.github/workflows/backup-weekly.yml`, schedule `0 2 * * 0` plus
+`workflow_dispatch`, `permissions: contents: read`:
+
+1. `supabase/setup-cli` (pinned) and `age` from the distribution package.
+2. If the project is paused, report it in the weekly security issue (S5.2) and stop; do not wake
+   it. A paused project has no new data to lose.
+3. Dump schema and data with `supabase db dump --db-url "$SUPABASE_DB_URL"` (once plain, once
+   with `--data-only`), making sure the `auth` users and MFA factors are included (check the
+   CLI's schema flags at the time of writing). Export the ledger with `psql` and
+   `\copy public.erasure_log to 'ledger.csv' csv header`.
+4. `age -r "$BACKUP_AGE_RECIPIENT"` on both; delete the plaintext in the same step.
+5. Check out `mamf92/sbsk-backups` with `BACKUP_REPO_TOKEN` (a fine-grained token with contents
+   write on that repo only), add the two files, prune by date, commit, push.
+6. Report "backup ok, N bytes" or the failure into the weekly security issue.
+
+**Restore runbook** (add to `docs/RUNBOOK.md` when #265 creates it, else to this file):
+
+1. Export the live `public.erasure_log`, if the live database can still be reached.
+2. Take the newest `erasure-ledger-<date>.csv.age` from the backup repo and decrypt it.
+3. Restore the chosen dump into the target project.
+4. Load both ledgers into `public.erasure_log` with `on conflict do nothing`.
+5. Run `select public.reapply_erasures();`.
+6. Redo storage and auth cleanup for the ids it reports (delete their `profile-images/<uid>/`
+   objects and their `auth.users` rows), as `erase_member()` does.
+
+Test the runbook once a quarter against a local stack (`supabase start`, restore, reapply), and
+once against the staging project when #262 exists.
+
 ## 5. Order and dependencies
 
 ```
@@ -491,6 +547,7 @@ S1 (quick hardening) ─┬─> S2a (MFA UI) ──> admins enroll ──> S2b (
 S4.1 (baseline) ──> S4.2 (pgTAP) ──> S4.3 (CI job)   [shared with #262]
 S5.1, S5.2, S5.3 — independent, any time
 S6.1–S6.3 — independent; S6.4 lands with each feature
+S7 (backups) — independent; the ledger file starts once gdpr.md Step 5 lands
 ```
 
 Recommended sequence for agents: S1 → S5.1 → S5.2 → S2a → S4 → S2b → S3 → S6.2/S6.3.
@@ -529,4 +586,7 @@ Agents cannot reach these settings. Each line is one click or one paste.
 | S4.1            | Supabase                                            | Wake the project if paused, and approve marking the baseline migration as applied.                                                                   |
 | S5.2            | GitHub → Settings → Secrets and variables → Actions | Add `SUPABASE_ACCESS_TOKEN` (an `sbp_` personal access token) and `SUPABASE_PROJECT_REF` as repository secrets.                                      |
 | After S4.3/S5.1 | GitHub → Settings → Rules                           | Re-import `.github/rulesets/main.json` with `Database tests` and `CodeQL` as required checks.                                                        |
+| S7              | GitHub                                              | Create the private repo `mamf92/sbsk-backups`; add a fine-grained token for it as secret `BACKUP_REPO_TOKEN`.                                        |
+| S7              | Supabase → Project settings → Database              | Add the connection string (session pooler) as secret `SUPABASE_DB_URL`.                                                                              |
+| S7              | Locally                                             | `age-keygen`; put the public key in repo variable `BACKUP_AGE_RECIPIENT`; keep the private key in the password manager and one offline copy.         |
 | Monthly         | Calendar                                            | The 15-minute check in S5.3.                                                                                                                         |
