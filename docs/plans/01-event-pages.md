@@ -420,7 +420,8 @@ Pure helpers in `src/utils/festival.ts` (unit tested):
 - `nowAndNext(day, now)` → `{ nowKeys: string[], nextKey?: string }`.
 - `groupByStart(sessions)` → `[{ start: 'HH:MM', sessions }]`.
 - `festivalIcs(festival, locale)` → one VCALENDAR with a VEVENT per session (extend
-  `buildIcs` to accept many events; keep `UID` stable as `${festival._id}-${session._key}`).
+  `buildIcs` to accept many events; keep `UID` stable as `${festival._id}-${day._key}-${session._key}`, since session keys are
+  only unique within their day).
 
 **Loaders — `src/loaders/festival-loader.ts`**
 
@@ -606,8 +607,12 @@ This phase stores no personal data. The members and Vipps phases add our own sig
 (`signup.method = 'sbsk'`) on top of this model, with these identifiers:
 
 - **Where a sign-up points:** `event_id` = Sanity `_id` of the `event` or `festival` document
-  (published id, never `drafts.`), and `session_id` = nullable Sanity `_key` of a festival
-  **day or session** (keys are unique within a document). `null` = the whole event/festival.
+  (published id, never `drafts.`), and `session_id` = a nullable **path** inside that
+  document: `{dayKey}` for a whole festival day, `{dayKey}/{sessionKey}` for one session.
+  Sanity only guarantees `_key` uniqueness within one array, so a bare session key can
+  repeat across days (e.g. after copying a day's program) or collide with a day key; the
+  path cannot. Build and parse it only with `festivalScopeId()` / `parseFestivalScopeId()` in
+  `src/utils/festival.ts` (unit tested). `null` = the whole event/festival.
 - **Price and capacity come from Sanity**, from the `signup` object at the level where the
   sign-up lives (event, festival, day or session): `signup.priceNok` (integer NOK, empty =
   free) and `signup.capacity`. There is no separate `signupPrice` field on `event`. The server
