@@ -143,12 +143,15 @@ EXECUTE granted to `service_role` only, one transaction:
 4. Unlink: `membership_payments.member_id = null`, `vipps_payments` / paid
    `event_registrations` → `supabase_id = null`, `email = null`; keep payer name, amount, date,
    reference.
-5. `admin_audit_log`: for every row about this member, replace every key returned by the
-   security plan's `public.audit_personal_keys()` (name, surname, email, phone, photo_url, bio,
-   …) with `'[slettet]'` in **both** the old and new snapshots; keep action and time. Where the
-   member was the **actor**, set `actor_id = null`. Use that function, never a local key list,
-   so the trigger and the erasure can't drift.
-6. Delete the `profiles` row and the `members` row.
+5. Delete the `profiles` row and the `members` row.
+6. **Last of all mutations** — `admin_audit_log`: for every row about this member, replace
+   every key returned by the security plan's `public.audit_personal_keys()` (name, surname,
+   email, phone, photo_url, bio, …) with `'[slettet]'` in **both** the old and new snapshots;
+   keep action and time. Where the member was the **actor**, set `actor_id = null`. Use that
+   function, never a local key list, so the trigger and the erasure can't drift. This must run
+   after steps 2–5, because the audit triggers on `members`, `membership_payments` and
+   `attendance` write new rows (with the deleted values in the old snapshot) for those very
+   mutations; redacting earlier would leave those fresh rows unredacted.
 7. Insert `erasure_log(at, subject_hash, trigger)` where `subject_hash =
 encode(digest(supabase_id::text || member_id::text, 'sha256'), 'hex')`, trigger in
    `'self' | 'admin_request' | 'retention'`.
@@ -268,7 +271,7 @@ Plain language, short sentences, headings as questions. Norwegian first; English
 
 - **pgTAP**: `erase_member` on a fully seeded member (every table above has a row) leaves zero
   rows referencing them anywhere, `event_headcounts` increased by their check-ins, payments
-  unlinked with name kept, every `audit_personal_keys()` key redacted in old and new snapshots and
+  unlinked with name kept, every `audit_personal_keys()` key redacted in old and new snapshots (including the audit rows the erasure itself just wrote) and
   actor nulled where they acted, `erasure_log` row present; refuses the last
   admin; callable only by `service_role`. Each retention job with fixed clocks.
   `reapply_erasures()` removes a re-inserted member.
