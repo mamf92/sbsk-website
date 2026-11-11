@@ -79,7 +79,7 @@ export function GameCard({
 
   return (
     <article className="bg-surface text-fg shadow-card flex w-full flex-col rounded-none">
-      <div className="bg-surface-muted relative aspect-video overflow-hidden">
+      <div className="bg-surface-muted relative aspect-square overflow-hidden">
         {image ? (
           <img src={image} alt="" className="h-full w-full object-cover" />
         ) : (
@@ -93,7 +93,9 @@ export function GameCard({
       </div>
 
       <div className="flex flex-1 flex-col p-4">
-        {/* Same head as the post `Card` (decision 9): tag, title, two-line summary. */}
+        {/* Same head as the post `Card` (decision 9): tag, title, two-line summary. The photo stays
+            square, not the post card's 16:9: game boxes are square or portrait, and a wide crop
+            cuts the name off the box. */}
         {genre && (
           <div>
             <CategoryTag>{genre}</CategoryTag>
