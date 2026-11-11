@@ -311,10 +311,21 @@ delete` on `members`, and later on every admin-managed table (payments, event si
    an admin, check-ins). Store only changed columns in `old`/`new` to keep it small.
 3. Revoke execute on the trigger function from `public, anon, authenticated` (same pattern as
    `20260809200650`).
-4. GDPR interplay: when a member is deleted (GDPR plan), their `old` snapshot in the audit log
-   is personal data. The deletion function replaces name/email fields in audit rows for that
-   member with `'[slettet]'` and keeps the action, time and actor. Retention: rows older than two
-   years are deleted by a scheduled `pg_cron` job. Document both in the privacy policy.
+4. GDPR interplay: both the `old` and the `new` snapshot of every audit row about a member hold
+   their personal data, from the insert that created them through every edit. When a member is
+   deleted (GDPR plan), the deletion function rewrites **every** audit row whose `row_id` is
+   that member, setting every personal key in both snapshots to `'[slettet]'`: today `name`,
+   `surname`, `email`, `phone`, `address`, `postcode`, `city`, `photo_url`, `bio` (check the
+   columns `createMember.ts`/`editMember.ts` write, and every table the trigger is attached to,
+   when implementing). Define the key list once, as `public.audit_personal_keys()`, so the
+   trigger and the deletion function cannot drift, and keep `action`, `at`, `actor` and
+   non-personal keys such as `is_admin`. Rows where the deleted member is the `actor` keep the
+   row and set `actor` to null. Retention: rows older than two years are deleted by a scheduled
+   `pg_cron` job. Document both in the privacy policy.
+
+   Test (pgTAP): create a member, edit their phone and address, delete them, then assert that no
+   audit row contains any of their original personal values in `old` or `new`.
+
 5. Board portal: a read-only "Endringslogg" panel (last 50 entries) once the admin page plan
    reaches it. Not part of this package.
 6. Sign-out everywhere: "Logg ut på alle enheter" button in the member portal calling
