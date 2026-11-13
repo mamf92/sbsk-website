@@ -296,6 +296,42 @@ export const FESTIVAL_BGM = {
   contactEmail: 'styret@example.test',
 };
 
+/**
+ * An event an editor (or an API write) filled with hostile URLs. Not in `DATASET`: the spec that
+ * needs it adds it. Every link here must be dropped, never rendered as an `href`.
+ */
+export const MALICIOUS_EVENT = {
+  _id: 'event-malicious',
+  _type: 'event',
+  title: 'Arrangement med farlige lenker',
+  slug: slug('farlige-lenker'),
+  publishedAt: daysFromNow(-1, 9),
+  eventStartTime: daysFromNow(10, 15),
+  eventEndTime: daysFromNow(10, 20),
+  category: 'annet',
+  hasDetailPage: true,
+  content: [
+    {
+      _type: 'block',
+      _key: 'm1',
+      style: 'normal',
+      markDefs: [{ _type: 'link', _key: 'bad', url: 'javascript:alert(1)' }],
+      children: [{ _type: 'span', _key: 'm1-span', text: 'Klikk her', marks: ['bad'] }],
+    },
+  ],
+  links: [{ _key: 'l1', label: 'Farlig knapp', url: 'javascript:alert(2)' }],
+  signup: { method: 'lenke', url: 'javascript:alert(3)', label: { nb: 'Meld deg på' } },
+  showSponsors: true,
+  sponsors: [
+    {
+      _key: 'bad-sponsor',
+      altText: 'Farlig sponsor',
+      tier: 'partner',
+      link: 'data:text/html,<script>alert(4)</script>',
+    },
+  ],
+};
+
 /** The dataset the queries run against, in the same shape Sanity stores documents. */
 export const DATASET = [
   UPCOMING_EVENT,
