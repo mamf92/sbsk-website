@@ -297,7 +297,10 @@ export default function FestivalPage({ festival }: { festival: FestivalTypes }) 
               {t('festival.contactTitle')}
             </h2>
             <p>
-              {t('festival.contactLead')} <Link href={contact}>{festival.contactEmail}</Link>
+              {t('festival.contactLead')}{' '}
+              <Link href={contact} className="underline">
+                {festival.contactEmail}
+              </Link>
             </p>
           </section>
         )}

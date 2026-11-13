@@ -97,7 +97,8 @@ export const components: PortableTextComponents = {
       const path = typeof value?.url === 'string' ? resolveKnownRoute(value.url) : null;
       if (!path) return <>{children}</>;
       return (
-        <Link to={path} className={linkClassesInherit}>
+        // Underlined like the external `link` mark: in running text, colour alone can't mark a link.
+        <Link to={path} className={`${linkClassesInherit} underline`}>
           {children}
         </Link>
       );
