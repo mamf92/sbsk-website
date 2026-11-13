@@ -11,6 +11,7 @@ import {
   monthAbbreviation,
   osloDateKey,
   osloDaysBetween,
+  parseInstant,
   timeRange,
   weekdayAbbreviation,
 } from './eventDateFormat';
@@ -71,5 +72,17 @@ describe('event dates are shown in Oslo time, whatever the runtime zone', () => 
   it('monthKey groups by Oslo month', () => {
     // 23:30 UTC on 31 January is 1 February in Oslo.
     expect(monthKey(new Date('2027-01-31T23:30:00Z'))).toBe('2027-02');
+  });
+});
+
+describe('parseInstant', () => {
+  it('parses an ISO timestamp', () => {
+    expect(parseInstant('2027-01-29T17:00:00Z')?.toISOString()).toBe('2027-01-29T17:00:00.000Z');
+  });
+
+  it('returns null for missing or unparseable input', () => {
+    expect(parseInstant(undefined)).toBeNull();
+    expect(parseInstant('')).toBeNull();
+    expect(parseInstant('snart')).toBeNull();
   });
 });

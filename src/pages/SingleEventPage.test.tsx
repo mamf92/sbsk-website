@@ -52,8 +52,19 @@ const fullEvent: CalendarEventTypes = {
   signup: { method: 'spond', label: { nb: 'Meld deg på' }, url: 'https://spond.com/invite/abc' },
   showSponsors: true,
   sponsors: [
-    { altText: 'Outland sin logo', link: 'https://outland.no', ctaLabel: 'Få 10 % rabatt' },
+    {
+      altText: 'Outland',
+      tier: 'hovedsponsor',
+      link: 'https://outland.no',
+      ctaLabel: 'Få 10 % rabatt',
+    },
+    { altText: 'Spillbutikken', tier: 'partner' },
   ],
+  venue: {
+    name: 'Tasta bydelshus',
+    address: 'Tastarustå 6, 4027 Stavanger',
+    doorsOpen: '16:30',
+  },
   pricingInfo: body,
   programInfo: body,
   schedule: [
@@ -101,11 +112,33 @@ describe('SingleEventPage', () => {
 
     expect(screen.getByRole('button', { name: 'Meld deg på' })).toBeInTheDocument();
     expect(screen.getByText('Med støtte fra')).toBeInTheDocument();
-    expect(screen.getByLabelText('Outland sin logo')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Få 10 % rabatt' })).toBeInTheDocument();
+    // In the strip (main sponsor) and again in the grid of all sponsors.
+    expect(screen.getAllByRole('link', { name: /^Outland/ })).toHaveLength(2);
+    expect(screen.getAllByRole('button', { name: 'Få 10 % rabatt' }).length).toBeGreaterThan(0);
+    expect(screen.getByRole('heading', { name: 'Sponsorer' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Oppmøte' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Vis i kart/ })).toHaveAttribute(
+      'href',
+      expect.stringContaining('openstreetmap.org'),
+    );
     expect(screen.getByRole('heading', { name: 'Priser' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Program' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Dag 1 av BGM' })).toBeInTheDocument();
+  });
+
+  it('shows the key facts under the title', () => {
+    renderPage(fullEvent);
+    const terms = screen.getAllByRole('term').map((el) => el.textContent);
+    expect(terms).toEqual(['Når', 'Hvor', 'Påmelding']);
+    expect(screen.getByText('Tasta bydelshus', { selector: 'dd *' })).toBeInTheDocument();
+  });
+
+  it('links back to the calendar', () => {
+    renderPage(minimalEvent);
+    expect(screen.getByRole('link', { name: /Alle arrangementer/ })).toHaveAttribute(
+      'href',
+      '/kalender',
+    );
   });
 
   it('gives the multi-day summary card a date range', () => {

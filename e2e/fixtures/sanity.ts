@@ -58,6 +58,28 @@ export const UPCOMING_EVENT = {
   // Content-flagged as having its own page — see eventType.ts's `hasDetailPage`. Without this,
   // neither /arrangementer nor the calendar row links out to /arrangementer/spillkveld-torsdag.
   hasDetailPage: true,
+  signup: {
+    method: 'spond',
+    url: 'https://spond.com/landing/event/test',
+    label: { nb: 'Meld deg på spillkvelden' },
+    price: { nb: 'Gratis for medlemmer' },
+  },
+  venue: {
+    name: 'Byhaugkafeen',
+    address: 'Byhaugveien 1, 4021 Stavanger',
+    doorsOpen: '17:30',
+    meetingPoint: { nb: 'Inngangen ved parkeringen' },
+  },
+  showSponsors: true,
+  sponsors: [
+    {
+      _key: 's1',
+      altText: 'Hovedsponsoren',
+      tier: 'hovedsponsor',
+      link: 'https://example.test/hoved',
+    },
+    { _key: 's2', altText: 'Partneren', tier: 'partner' },
+  ],
 };
 
 export const UPCOMING_TOURNAMENT = {

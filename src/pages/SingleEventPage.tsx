@@ -1,42 +1,108 @@
-import { useLoaderData } from 'react-router-dom';
+import { Link as RouterLink, useLoaderData } from 'react-router-dom';
 import { PortableText, toPlainText } from '@portabletext/react';
 import type { CalendarEventTypes } from '../sanity/queryHelpers/events';
 import { urlFor } from '../sanity/sanityImageUrl';
 import { components } from '../sanity/editors/portableTextComponents';
-import { Button } from '../components/ui/Buttons';
 import { EventScheduleCard, type EventScheduleCardTone } from '../components/ui/EventScheduleCard';
-import { dayLabel, monthAbbreviation, timeRange } from '../utils/eventDateFormat';
-import { openExternal, safeExternalUrl } from '../utils/safeUrl';
+import { EventFacts, type EventFact } from '../components/ui/EventFacts';
+import { SignupBlock } from '../components/ui/SignupBlock';
+import { SponsorGrid, SponsorStrip } from '../components/ui/Sponsors';
+import { Tag } from '../components/ui/Tag';
+import { VenueCard } from '../components/ui/VenueCard';
+import { linkClassesInherit } from '../components/ui/Link';
+import {
+  dayLabel,
+  formatDateTime,
+  formatDateTimeRange,
+  monthAbbreviation,
+  parseInstant,
+  timeRange,
+} from '../utils/eventDateFormat';
 import { signupState } from '../utils/signup';
-import { Link } from '../components/ui/Link';
+import { useEventsT } from '../i18n';
+import { pickLocale } from '../i18n/pickLocale';
+import { useLocale } from '../hooks/locale/useLocale';
 
 /**
  * One template for every event that has `hasDetailPage` set, from a biweekly spillkveld with
  * nothing but a title and a description to a multi-day tournament — every section below is
  * conditional on the data actually being there, so a small event simply renders fewer of them.
+ *
+ * Page chrome is translated; the event's own title and texts are Norwegian-only fields, so in
+ * English they carry `lang="nb"`.
  */
 export default function SingleEventPage() {
   const { event } = useLoaderData() as { event: CalendarEventTypes };
+  const t = useEventsT();
+  const { locale } = useLocale();
+  const nbLang = locale === 'nb' ? undefined : 'nb';
 
   const start = new Date(event.eventStartTime);
   const end = new Date(event.eventEndTime);
   const tone: EventScheduleCardTone = event.category === 'spillkveld' ? 'blue' : 'orange';
+  const now = new Date();
 
   const hasContent = !!event.content?.length;
   const hasPricing = !!event.pricingInfo?.length;
   const hasProgram = !!event.programInfo?.length;
-  const hasSponsors = !!event.showSponsors && !!event.sponsors?.length;
+  const sponsors = event.showSponsors ? (event.sponsors ?? []) : [];
   const hasSchedule = !!event.schedule?.length;
-  // Every URL below comes from the CMS and is checked here, at render time: Studio validation
-  // does not cover documents written straight to the API.
-  // Interim until the sign-up block in WP4: only an open link sign-up shows a button.
-  const signupUrl =
-    signupState(event.signup, new Date()) === 'open' ? safeExternalUrl(event.signup?.url) : null;
-  const signupLabel = event.signup?.label?.nb || 'Meld deg på';
+  // One place for every spot the page names it. `location` is the legacy free-text field.
+  const place = event.venue?.name ?? event.location;
+  const icsLocation =
+    [event.venue?.name, event.venue?.address].filter(Boolean).join(', ') || event.location;
+  const price = pickLocale(event.signup?.price, locale);
+  const state = signupState(event.signup, now);
+
+  const opens = parseInstant(event.signup?.opens);
+  const signupFact: Record<typeof state, string | null> = {
+    open: t('facts.signupOpen'),
+    notYetOpen: opens ? t('facts.signupNotYetOpen', { date: formatDateTime(opens, locale) }) : null,
+    closed: t('facts.signupClosed'),
+    dropIn: t('facts.signupDropIn'),
+    none: null,
+  };
+
+  const facts: EventFact[] = [
+    {
+      id: 'when',
+      label: t('facts.when'),
+      value: <time dateTime={start.toISOString()}>{formatDateTimeRange(start, end, locale)}</time>,
+    },
+    ...(place
+      ? [{ id: 'where', label: t('facts.where'), value: <span lang={nbLang}>{place}</span> }]
+      : []),
+    ...(price
+      ? [
+          {
+            id: 'price',
+            label: t('facts.price'),
+            value: <span lang={price.lang !== locale ? price.lang : undefined}>{price.value}</span>,
+          },
+        ]
+      : []),
+    ...(signupFact[state]
+      ? [{ id: 'signup', label: t('facts.signup'), value: signupFact[state] }]
+      : []),
+  ];
 
   return (
     <div className="dark:bg-darkestblue min-h-[60vh] bg-white pb-16 dark:text-white">
-      <div className="max-w-content content-gutter:px-0 mx-auto flex w-full flex-col gap-8 px-3">
+      <div className="max-w-content content-gutter:px-0 mx-auto flex w-full flex-col gap-8 px-3 pt-6">
+        <RouterLink to="/kalender" className={`${linkClassesInherit} w-fit underline`}>
+          ← {t('back')}
+        </RouterLink>
+
+        <div className="flex flex-col gap-0">
+          <div className="bg-darkblue flex flex-col gap-2 p-4 text-white sm:p-6">
+            <Tag tone="orange">{t('kicker')}</Tag>
+            <h1 className="font-heading text-h1 tracking-heading font-bold" lang={nbLang}>
+              {event.title}
+            </h1>
+          </div>
+          <EventFacts facts={facts} className="border-t border-white/20" />
+        </div>
+
         {event.image && (
           <img
             src={urlFor(event.image).width(1440).fit('crop').auto('format').url()}
@@ -47,81 +113,16 @@ export default function SingleEventPage() {
             ].join(', ')}
             sizes="(max-width: 400px) 400px, (max-width: 800px) 800px, 1024px"
             alt=""
-            className="h-64 w-full object-cover sm:h-96"
+            className="aspect-video w-full object-cover"
           />
         )}
 
-        <div className="bg-darkblue flex flex-col gap-2 p-4 text-white sm:p-6">
-          <span className="font-heading text-orange text-xs font-bold tracking-[0.14em] uppercase">
-            Arrangement
-          </span>
-          <h1 className="font-heading text-h1 tracking-heading font-bold">{event.title}</h1>
-        </div>
+        <SignupBlock signup={event.signup} now={now} />
 
-        {hasSponsors && (
-          <div className="bg-darkorange flex flex-col items-center gap-6 px-4 py-8 sm:px-8">
-            <span className="font-body text-darkestblue text-xs font-semibold tracking-[0.14em] uppercase opacity-80">
-              Med støtte fra
-            </span>
-            <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6">
-              {event.sponsors!.map((sponsor, index) => {
-                // The logo is optional now: without one, the sponsor's name stands in.
-                const logo = sponsor.logo ? (
-                  <img
-                    src={urlFor(sponsor.logo).width(320).url()}
-                    alt={sponsor.altText}
-                    className="h-16 w-auto object-contain sm:h-24"
-                  />
-                ) : (
-                  <span className="font-heading text-darkestblue text-lg font-bold">
-                    {sponsor.altText}
-                  </span>
-                );
-                const sponsorLink = safeExternalUrl(sponsor.link);
-                const ctaTarget = safeExternalUrl(sponsor.ctaLink) ?? sponsorLink;
-
-                return (
-                  <div key={index} className="flex flex-col items-center gap-2">
-                    {sponsorLink ? (
-                      <Link
-                        href={sponsorLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        variant="inherit"
-                        aria-label={sponsor.altText}
-                      >
-                        {logo}
-                      </Link>
-                    ) : (
-                      logo
-                    )}
-                    {sponsor.ctaLabel && ctaTarget && (
-                      <Button variant="tertiary" size="xs" onClick={() => openExternal(ctaTarget)}>
-                        {sponsor.ctaLabel}
-                      </Button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {signupUrl && (
-          <div className="flex justify-center">
-            <Button
-              variant="primary"
-              size="lg"
-              icon="right"
-              onClick={() => openExternal(signupUrl)}
-            >
-              {signupLabel}
-            </Button>
-          </div>
-        )}
+        <SponsorStrip sponsors={sponsors} />
 
         {hasContent && (
-          <div className="bg-darkblue p-6 text-white sm:p-8">
+          <div className="bg-darkblue p-6 text-white sm:p-8" lang={nbLang}>
             <div className="sbsk-rt">
               <PortableText value={event.content!} components={components} />
             </div>
@@ -132,12 +133,13 @@ export default function SingleEventPage() {
           day={dayLabel(start, end)}
           month={monthAbbreviation(start)}
           title={event.title}
-          meta={`${timeRange(start, end)}${event.location ? ` · ${event.location}` : ''}`}
+          meta={`${timeRange(start, end)}${place ? ` · ${place}` : ''}`}
           tone={tone}
+          lang={nbLang}
           ics={{
             title: event.title,
             description: event.content ? toPlainText(event.content) : undefined,
-            location: event.location,
+            location: icsLocation,
             start,
             end,
             url: window.location.href,
@@ -148,16 +150,16 @@ export default function SingleEventPage() {
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             {hasPricing && (
               <div className="bg-darkblue flex flex-col gap-3 p-6 text-white">
-                <h2 className="font-heading text-h3 font-bold">Priser</h2>
-                <div className="sbsk-rt">
+                <h2 className="font-heading text-h3 font-bold">{t('pricing')}</h2>
+                <div className="sbsk-rt" lang={nbLang}>
                   <PortableText value={event.pricingInfo!} components={components} />
                 </div>
               </div>
             )}
             {hasProgram && (
               <div className="bg-darkblue flex flex-col gap-3 p-6 text-white">
-                <h2 className="font-heading text-h3 font-bold">Program</h2>
-                <div className="sbsk-rt">
+                <h2 className="font-heading text-h3 font-bold">{t('program.title')}</h2>
+                <div className="sbsk-rt" lang={nbLang}>
                   <PortableText value={event.programInfo!} components={components} />
                 </div>
               </div>
@@ -170,7 +172,7 @@ export default function SingleEventPage() {
             {event.schedule!.map((entry) => {
               const entryStart = new Date(entry.startTime);
               const entryEnd = new Date(entry.endTime);
-              const location = entry.location ?? event.location;
+              const location = entry.location ?? place;
 
               return (
                 <EventScheduleCard
@@ -180,9 +182,10 @@ export default function SingleEventPage() {
                   title={entry.label}
                   meta={`${timeRange(entryStart, entryEnd)}${location ? ` · ${location}` : ''}`}
                   tone={tone}
+                  lang={nbLang}
                   ics={{
                     title: entry.label,
-                    location,
+                    location: entry.location ?? icsLocation,
                     start: entryStart,
                     end: entryEnd,
                   }}
@@ -191,6 +194,10 @@ export default function SingleEventPage() {
             })}
           </div>
         )}
+
+        <VenueCard venue={event.venue} />
+
+        <SponsorGrid sponsors={sponsors} />
       </div>
     </div>
   );
