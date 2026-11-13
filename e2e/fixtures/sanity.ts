@@ -138,7 +138,24 @@ export const POSTS = [
     slug: slug('trenger-frivillige'),
     publishedAt: daysFromNow(-16, 9),
     category: 'arrangementer',
-    content: [block('b6', 'Meld fra i Facebook-gruppa hvis du kan ta en vakt.')],
+    content: [
+      {
+        _type: 'block',
+        _key: 'b6',
+        style: 'normal',
+        markDefs: [
+          { _type: 'link', _key: 'fb', url: 'https://example.test/fb' },
+          { _type: 'internalLink', _key: 'cal', url: '/kalender' },
+        ],
+        children: [
+          { _type: 'span', _key: 'b6-a', text: 'Meld fra i ', marks: [] },
+          { _type: 'span', _key: 'b6-b', text: 'Facebook-gruppa', marks: ['fb'] },
+          { _type: 'span', _key: 'b6-c', text: ' hvis du kan ta en vakt, og se ', marks: [] },
+          { _type: 'span', _key: 'b6-d', text: 'kalenderen', marks: ['cal'] },
+          { _type: 'span', _key: 'b6-e', text: ' for tidene.', marks: [] },
+        ],
+      },
+    ],
     relatedEvent: { _type: 'reference', _ref: 'festival-bgm' },
   },
 ];
@@ -294,6 +311,42 @@ export const FESTIVAL_BGM = {
     },
   ],
   contactEmail: 'styret@example.test',
+};
+
+/**
+ * An event an editor (or an API write) filled with hostile URLs. Not in `DATASET`: the spec that
+ * needs it adds it. Every link here must be dropped, never rendered as an `href`.
+ */
+export const MALICIOUS_EVENT = {
+  _id: 'event-malicious',
+  _type: 'event',
+  title: 'Arrangement med farlige lenker',
+  slug: slug('farlige-lenker'),
+  publishedAt: daysFromNow(-1, 9),
+  eventStartTime: daysFromNow(10, 15),
+  eventEndTime: daysFromNow(10, 20),
+  category: 'annet',
+  hasDetailPage: true,
+  content: [
+    {
+      _type: 'block',
+      _key: 'm1',
+      style: 'normal',
+      markDefs: [{ _type: 'link', _key: 'bad', url: 'javascript:alert(1)' }],
+      children: [{ _type: 'span', _key: 'm1-span', text: 'Klikk her', marks: ['bad'] }],
+    },
+  ],
+  links: [{ _key: 'l1', label: 'Farlig knapp', url: 'javascript:alert(2)' }],
+  signup: { method: 'lenke', url: 'javascript:alert(3)', label: { nb: 'Meld deg på' } },
+  showSponsors: true,
+  sponsors: [
+    {
+      _key: 'bad-sponsor',
+      altText: 'Farlig sponsor',
+      tier: 'partner',
+      link: 'data:text/html,<script>alert(4)</script>',
+    },
+  ],
 };
 
 /** The dataset the queries run against, in the same shape Sanity stores documents. */

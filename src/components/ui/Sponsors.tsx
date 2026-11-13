@@ -115,7 +115,7 @@ export const SponsorStrip = React.forwardRef<HTMLElement, SponsorListProps>(
         ].join(' ')}
         {...props}
       >
-        <p className="font-body text-xs font-semibold tracking-[0.14em] uppercase opacity-80">
+        <p className="font-body text-xs font-semibold tracking-[0.14em] uppercase">
           {t('sponsors.supportedBy')}
         </p>
         <ul className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6">
