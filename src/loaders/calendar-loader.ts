@@ -15,7 +15,11 @@ export async function calendarLoader() {
 
   return {
     calendarHero: hero.data ?? null,
-    events: [...(events.data ?? []), ...(festivals.data ?? []).flatMap(festivalDayRows)],
+    // When the events failed, the list must stay empty so the calendar says so: festival days
+    // alone would read as the whole calendar.
+    events: events.failed
+      ? []
+      : [...(events.data ?? []), ...(festivals.data ?? []).flatMap(festivalDayRows)],
     eventsFailed: events.failed,
   };
 }

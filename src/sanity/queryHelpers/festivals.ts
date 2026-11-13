@@ -190,6 +190,7 @@ export interface FestivalCalendarTypes {
   _id: string;
   title?: LocaleString;
   slug: string;
+  series?: 'bgm' | 'annet';
   venue?: { name?: string } | null;
   days?: Pick<FestivalDayTypes, '_key' | 'date' | 'label' | 'opens' | 'closes'>[];
 }
@@ -198,6 +199,7 @@ export const FESTIVAL_CALENDAR_QUERY = `*[_type == "festival" && defined(slug.cu
   _id,
   title,
   "slug": slug.current,
+  series,
   venue{ name },
   days[]{ _key, date, label, opens, closes }
 }`;

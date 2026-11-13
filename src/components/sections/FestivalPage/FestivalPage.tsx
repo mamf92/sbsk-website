@@ -18,13 +18,8 @@ import { components } from '../../../sanity/editors/portableTextComponents';
 import type { FestivalTypes } from '../../../sanity/queryHelpers/festivals';
 import type { LocaleBlock } from '../../../sanity/queryHelpers/fragments';
 import type { SanityImageValue } from '../../ui/SanityImage';
-import {
-  formatDateRange,
-  formatDateTime,
-  formatDayLong,
-  parseInstant,
-} from '../../../utils/eventDateFormat';
-import { festivalDate } from '../../../utils/festival';
+import { formatDateTime, formatDayLong, parseInstant } from '../../../utils/eventDateFormat';
+import { festivalDate, festivalDateLabel } from '../../../utils/festival';
 import { safeLinkUrl } from '../../../utils/safeUrl';
 import { signupState } from '../../../utils/signup';
 
@@ -73,12 +68,7 @@ export default function FestivalPage({ festival }: { festival: FestivalTypes }) 
     };
   }, [titleText]);
 
-  const dateRange =
-    festival.startDate && festival.endDate
-      ? festival.startDate === festival.endDate
-        ? formatDayLong(festivalDate(festival.startDate), locale)
-        : formatDateRange(festivalDate(festival.startDate), festivalDate(festival.endDate), locale)
-      : null;
+  const dateRange = festivalDateLabel(festival.startDate, festival.endDate, locale);
 
   const opens = parseInstant(festival.signup?.opens);
   const signupFact = {

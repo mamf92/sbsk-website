@@ -286,8 +286,24 @@ describe('festivalDayRows', () => {
       title: 'Board Game Masters – Åpningskveld',
       category: 'turnering',
       location: 'Tasta bydelshus',
-      hasDetailPage: true,
+      festivalDay: true,
     });
+  });
+
+  it('keeps ?dag=N pointing at the right day when an earlier day is skipped', () => {
+    const rows = festivalDayRows({
+      ...festival,
+      days: [festival.days[0], { _key: 'bad', date: 'snart' }, festival.days[2]],
+    });
+    expect(rows.map((row) => row.detailPath)).toEqual([
+      '/arrangementer/bgm-2027?dag=1',
+      '/arrangementer/bgm-2027?dag=3',
+    ]);
+  });
+
+  it('files a festival outside the BGM series under «annet»', () => {
+    const [row] = festivalDayRows({ ...festival, series: 'annet' });
+    expect(row.category).toBe('annet');
   });
 
   it('names an unlabelled day by its date, and times the row by the doors', () => {
