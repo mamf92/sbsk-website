@@ -9,6 +9,7 @@ import { gameType } from '../sanity/schemaTypes/gameType';
 import { gamesHeroType } from '../sanity/schemaTypes/gamesHeroType';
 import { aboutPageType } from '../sanity/schemaTypes/aboutPageType';
 import { boardMemberType } from '../sanity/schemaTypes/boardMemberType';
+import { sharedObjectTypes } from '../sanity/schemaTypes/objects';
 
 const appBase = import.meta.env.VITE_BASE ?? '/';
 const basePrefix = appBase === '/' ? '' : appBase.replace(/\/$/, '');
@@ -31,6 +32,7 @@ const config = defineConfig({
       gamesHeroType,
       aboutPageType,
       boardMemberType,
+      ...sharedObjectTypes,
     ],
   },
 });

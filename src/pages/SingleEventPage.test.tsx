@@ -49,7 +49,7 @@ const fullEvent: CalendarEventTypes = {
   eventEndTime: new Date('2026-01-26T18:00:00'),
   hasDetailPage: true,
   content: body,
-  signupUrl: { label: 'Meld deg på', url: 'https://spond.com/invite/abc' },
+  signup: { method: 'spond', label: { nb: 'Meld deg på' }, url: 'https://spond.com/invite/abc' },
   showSponsors: true,
   sponsors: [
     { altText: 'Outland sin logo', link: 'https://outland.no', ctaLabel: 'Få 10 % rabatt' },

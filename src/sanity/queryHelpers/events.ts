@@ -2,14 +2,17 @@ import type { LoaderFunctionArgs } from 'react-router-dom';
 import { type SanityImageSource } from '@sanity/image-url';
 import { client } from '../client';
 import type { PortableTextBlock } from 'sanity';
+import {
+  SIGNUP_PROJECTION,
+  SPONSOR_PROJECTION,
+  VENUE_PROJECTION,
+  type SignupTypes,
+  type SponsorTypes,
+  type VenueTypes,
+} from './fragments';
 
-export interface EventSponsorTypes {
-  logo?: SanityImageSource;
-  altText: string;
-  link?: string;
-  ctaLabel?: string;
-  ctaLink?: string;
-}
+/** @deprecated Use `SponsorTypes` from `./fragments`. */
+export type EventSponsorTypes = SponsorTypes;
 
 export interface EventScheduleEntryTypes {
   _key: string;
@@ -33,9 +36,11 @@ export interface CalendarEventTypes {
   /** Whether the event has its own page at `/arrangementer/:slug` — a content decision, not
    *  something inferred from category or from having inline content. */
   hasDetailPage?: boolean;
-  signupUrl?: { label?: string; url?: string };
+  /** Detail page only. Falls back to the deprecated `signupUrl` field in the query. */
+  signup?: SignupTypes | null;
+  venue?: VenueTypes | null;
   showSponsors?: boolean;
-  sponsors?: EventSponsorTypes[];
+  sponsors?: SponsorTypes[];
   pricingInfo?: PortableTextBlock[];
   programInfo?: PortableTextBlock[];
   schedule?: EventScheduleEntryTypes[];
@@ -76,6 +81,9 @@ const CALENDAR_EVENTS_QUERY = `*[
   ${EVENT_ROW_PROJECTION}
 }`;
 
+// The deprecated `signupUrl` field is read as a "lenke" sign-up when `signup` is empty, so
+// nothing entered under it is lost.
+//
 // `hasDetailPage == true` is the guard that keeps a calendar-only event from getting a page:
 // every event has a slug, so without it `/arrangementer/<any-slug>` would render one.
 export const EVENT_BY_SLUG_QUERY = `*[
@@ -94,9 +102,17 @@ export const EVENT_BY_SLUG_QUERY = `*[
   location,
   links,
   hasDetailPage,
-  signupUrl,
+  "signup": coalesce(
+    signup${SIGNUP_PROJECTION},
+    select(defined(signupUrl.url) => {
+      "method": "lenke",
+      "url": signupUrl.url,
+      "label": { "nb": signupUrl.label }
+    })
+  ),
+  venue${VENUE_PROJECTION},
   showSponsors,
-  sponsors[]{ logo, altText, link, ctaLabel, ctaLink },
+  sponsors[]${SPONSOR_PROJECTION},
   pricingInfo,
   programInfo,
   schedule[]{ _key, label, startTime, endTime, location }

@@ -1,63 +1,5 @@
 import { defineField, defineType } from 'sanity';
-import type { Rule } from 'sanity';
-import ExternalLink from '../../assets/icons/symbols/external-link.svg?react';
-import AddLink from '../../assets/icons/symbols/add-link.svg?react';
-
-// Shared by `content`, `pricingInfo` and `programInfo` below — three portable-text fields that
-// all want the same block/list/mark configuration. Defined once here rather than repeated
-// three times over in the same file.
-const richTextBlocks = [
-  {
-    type: 'block',
-    styles: [
-      { title: 'Normal', value: 'normal' },
-      { title: 'Heading 1', value: 'h2' },
-      { title: 'Heading 2', value: 'h3' },
-    ],
-    lists: [
-      { title: 'Bullet', value: 'bullet' },
-      { title: 'Numbered', value: 'number' },
-    ],
-    marks: {
-      decorators: [
-        { title: 'Strong', value: 'strong' },
-        { title: 'Underline', value: 'underline' },
-        { title: 'Emphasis', value: 'em' },
-      ],
-      annotations: [
-        {
-          name: 'link',
-          type: 'object',
-          title: 'Ekstern lenke',
-          icon: ExternalLink,
-          description: 'Brukes for lenker til eksterne nettsider',
-          fields: [
-            {
-              name: 'url',
-              type: 'url',
-              validation: (rule: Rule) => rule.uri({ scheme: ['http', 'https'] }),
-            },
-          ],
-        },
-        {
-          name: 'internalLink',
-          type: 'object',
-          title: 'Intern lenke',
-          icon: AddLink,
-          description: 'Brukes for lenker til andre sider på nettstedet',
-          fields: [
-            {
-              name: 'url',
-              type: 'url',
-              validation: (rule: Rule) =>
-                rule.uri({ scheme: ['http', 'https'], allowRelative: true }),
-            },
-          ],
-        },
-      ],
-    },
-  },
-];
+import { richTextBlocks } from './objects/richText';
 
 export const eventType = defineType({
   name: 'event',
@@ -132,19 +74,37 @@ export const eventType = defineType({
     }),
 
     defineField({
-      title: 'Egen arrangementsside',
+      title: 'Egen side for arrangementet',
       name: 'hasDetailPage',
       type: 'boolean',
       description:
-        'Skru på for å gi arrangementet sin egen side, lenket fra kalenderen. Uavhengig av kategori og størrelse — en liten spillkveld kan få en side hvis noe spesielt skjer, og en stor helg trenger den ikke hvis den ikke har mer innhold enn beskrivelsen over.',
+        'Av: arrangementet vises bare i kalenderen, og åpnes der det står. På: arrangementet får sin egen side med påmelding, oppmøte og sponsorer, lenket fra kalenderen. Store arrangementer over flere dager med eget program, som Board Game Masters, lages under «Storarrangement» i stedet.',
       initialValue: false,
     }),
     defineField({
-      title: 'Påmeldingslenke',
+      title: 'Påmelding',
+      name: 'signup',
+      type: 'signup',
+      description: 'Vises som hovedknappen på arrangementets egen side. Valgfritt.',
+      hidden: ({ document }) => !document?.hasDetailPage,
+    }),
+    defineField({
+      title: 'Oppmøte',
+      name: 'venue',
+      type: 'venue',
+      description:
+        'Adresse, hvor man møtes og hvordan man kommer seg dit. Valgfritt – uten dette vises bare «Sted» over.',
+      hidden: ({ document }) => !document?.hasDetailPage,
+    }),
+    defineField({
+      title: 'Påmeldingslenke (gammel)',
       name: 'signupUrl',
       type: 'object',
-      description:
-        'Hovedknappen på arrangementssiden, f.eks. til påmelding i Spond. Valgfritt — knappen vises ikke uten en URL.',
+      // Replaced by `signup`. The query still reads it as a fallback, so it stays in the schema
+      // until no document uses it (none did when this was written).
+      hidden: true,
+      deprecated: { reason: 'Bruk «Påmelding».' },
+      readOnly: true,
       fields: [
         defineField({
           name: 'label',
@@ -171,52 +131,10 @@ export const eventType = defineType({
       title: 'Sponsorer',
       name: 'sponsors',
       type: 'array',
-      description: 'Vises som store logoer på sponsorbåndet på arrangementssiden.',
+      description:
+        'Hovedsponsorer vises med stor logo øverst på arrangementssiden, alle sponsorer i en egen del nederst.',
       hidden: ({ parent }) => !(parent as { showSponsors?: boolean } | undefined)?.showSponsors,
-      of: [
-        {
-          type: 'object',
-          fields: [
-            defineField({
-              name: 'logo',
-              type: 'image',
-              title: 'Logo',
-              options: { hotspot: true },
-              validation: (rule) => rule.required(),
-            }),
-            defineField({
-              name: 'altText',
-              type: 'string',
-              title: 'Alt-tekst',
-              description: 'Beskriv logoen for skjermlesere, f.eks. "Outland sin logo".',
-              validation: (rule) => rule.required(),
-            }),
-            defineField({
-              name: 'link',
-              type: 'url',
-              title: 'Lenke',
-              description: 'Dit logoen tar deg når du klikker. Valgfritt.',
-              validation: (rule) => rule.uri({ scheme: ['http', 'https'] }),
-            }),
-            defineField({
-              name: 'ctaLabel',
-              type: 'string',
-              title: 'Tilbudstekst',
-              description: 'F.eks. "Få 10 % rabatt hos Outland". Valgfritt.',
-            }),
-            defineField({
-              name: 'ctaLink',
-              type: 'url',
-              title: 'Tilbudslenke',
-              description: 'Lenke tilbudsteksten peker til, hvis ulik logoens lenke. Valgfritt.',
-              validation: (rule) => rule.uri({ scheme: ['http', 'https'] }),
-            }),
-          ],
-          preview: {
-            select: { title: 'altText', media: 'logo' },
-          },
-        },
-      ],
+      of: [{ type: 'sponsor' }],
     }),
     defineField({
       title: 'Priser',
