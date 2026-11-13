@@ -13,6 +13,7 @@ import { urlFor } from '../../sanity/sanityImageUrl';
 import type { GameTypes } from '../../sanity/queryHelpers/games';
 import type { GamesHeroTypes } from '../../sanity/queryHelpers/games-hero';
 import { FALLBACK_GAMES } from './fallbackGames';
+import { openExternal } from '../../utils/safeUrl';
 
 interface OurGamesProps {
   gamesHero?: GamesHeroTypes | null;
@@ -269,7 +270,7 @@ function BuyConfirmDialog({ info, onClose }: { info: BuyInfo | null; onClose: ()
           size="lg"
           icon="right"
           onClick={() => {
-            window.open(info.buyUrl, '_blank', 'noopener');
+            openExternal(info.buyUrl);
             onClose();
           }}
         >

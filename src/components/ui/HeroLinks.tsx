@@ -3,6 +3,7 @@ import ArrowRight from '../../assets/icons/arrows/arrowright.svg?react';
 import { Button } from './Buttons';
 import { buttonClasses } from './buttonClasses';
 import { isInternalLink, internalLinkPath } from '../../utils/internalLinks';
+import { safeLinkUrl } from '../../utils/safeUrl';
 
 export interface HeroLink {
   label: string;
@@ -45,7 +46,14 @@ export function HeroLinks({
   // filled in. Both matter here. An over-long row pushes the hero off its own image, and a
   // row with no `url` would reach `isInternalLink` as `undefined` during render — which is
   // not a broken button but a `TypeError` that takes the whole page to the error boundary.
-  const authored = (links ?? []).filter((link) => link?.label && link?.url);
+  // A link whose URL is neither ours nor a safe http(s)/mailto/tel URL is dropped: Studio
+  // validation does not cover API writes, so `javascript:` can arrive here.
+  const authored = (links ?? []).filter(
+    (link) =>
+      link?.label &&
+      typeof link.url === 'string' &&
+      (isInternalLink(link.url) || !!safeLinkUrl(link.url)),
+  );
   const resolved = (authored.length > 0 ? authored : fallback).slice(0, MAX_LINKS);
   if (resolved.length === 0) return null;
 
@@ -66,7 +74,7 @@ export function HeroLinks({
         ) : (
           <a
             key={index}
-            href={link.url}
+            href={safeLinkUrl(link.url)!}
             // A new tab is right for another website and wrong for `mailto:`/`tel:`, which the
             // schema also allows: the handler opens elsewhere and the blank tab is left behind.
             {...(isWebUrl(link.url) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}

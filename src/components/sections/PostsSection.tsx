@@ -20,6 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import { urlFor } from '../../sanity/sanityImageUrl';
 import { isInternalLink, internalLinkPath } from '../../utils/internalLinks';
 import { TIME_ZONE } from '../../utils/eventDateFormat';
+import { safeExternalUrl } from '../../utils/safeUrl';
 
 interface PostsProps {
   postsHero?: PostsHeroTypes;
@@ -337,7 +338,11 @@ function PostCard({
 
   const actions = hasLinks
     ? post.links?.map((link, index) => {
+        if (typeof link?.url !== 'string') return null;
         const isInternal = isInternalLink(link.url);
+        const external = isInternal ? null : safeExternalUrl(link.url);
+        // A CMS URL that is neither ours nor plain http(s) gets no button.
+        if (!isInternal && !external) return null;
 
         return (
           <Button
@@ -349,7 +354,7 @@ function PostCard({
               if (isInternal) {
                 navigate(internalLinkPath(link.url));
               } else {
-                window.location.href = link.url;
+                window.location.href = external!;
               }
             }}
           >

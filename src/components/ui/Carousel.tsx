@@ -4,6 +4,7 @@ import { Button } from './Buttons';
 import { Dialog } from './Dialog';
 import { clampAspect, cropUrl, hotspotPosition } from '../../utils/sanityImage';
 import type { SanityImageValue } from './SanityImage';
+import { safeExternalUrl } from '../../utils/safeUrl';
 
 type CarouselProps = Omit<React.HTMLAttributes<HTMLElement>, 'children'> & {
   images: SanityImageValue[];
@@ -109,9 +110,9 @@ export const Carousel = React.forwardRef<HTMLElement, CarouselProps>(
       .filter((width, i, all) => all.indexOf(width) === i);
 
     const credit =
-      current.imageSourceName && current.imageSourceUrl ? (
+      current.imageSourceName && safeExternalUrl(current.imageSourceUrl) ? (
         <Link
-          href={current.imageSourceUrl}
+          href={safeExternalUrl(current.imageSourceUrl)!}
           target="_blank"
           rel="noopener noreferrer"
           variant="inherit"

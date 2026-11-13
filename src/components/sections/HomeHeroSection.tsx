@@ -3,13 +3,14 @@ import { urlFor } from '../../sanity/sanityImageUrl';
 import { HeroImage } from '../ui/HeroImage';
 import { HeroLinks, type HeroLink } from '../ui/HeroLinks';
 import { Link } from '../ui/Link';
+import { safeExternalUrl } from '../../utils/safeUrl';
 
 const FALLBACK_HERO = {
   title: 'Stavanger Brettspillklubb',
   subtitle:
     'Bli med på ukentlige brettspillkvelder og prøv ut ny og kjente spill sammen med andre spilleglade folk.',
   imageSourceName: 'Designed by Freepik',
-  imageSourceUrl: 'www.freepik.com',
+  imageSourceUrl: 'https://www.freepik.com',
 };
 
 const HOME_HERO_LINKS: HeroLink[] = [
@@ -28,7 +29,9 @@ export default function HomeHero({
   const resolvedTitle = title || FALLBACK_HERO.title;
   const resolvedSubtitle = subtitle || FALLBACK_HERO.subtitle;
   const resolvedImageSource = imageSource?.imageSourceName || FALLBACK_HERO.imageSourceName;
-  const resolvedImageSourceUrl = imageSource?.imageSourceUrl || FALLBACK_HERO.imageSourceUrl;
+  const resolvedImageSourceUrl = safeExternalUrl(
+    imageSource?.imageSourceUrl || FALLBACK_HERO.imageSourceUrl,
+  );
   const sponsorsExist = sponsors && sponsors.length > 0;
 
   return (
@@ -67,7 +70,7 @@ export default function HomeHero({
                 {sponsors.map((sponsor, index) => (
                   <Link
                     key={index}
-                    href={sponsor.websiteUrl}
+                    href={safeExternalUrl(sponsor.websiteUrl) ?? undefined}
                     target="_blank"
                     rel="noopener noreferrer"
                     variant="inherit"

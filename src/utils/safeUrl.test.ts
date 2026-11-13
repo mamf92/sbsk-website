@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { openExternal, safeExternalUrl } from './safeUrl';
+import { openExternal, safeExternalUrl, safeLinkUrl } from './safeUrl';
 
 describe('safeExternalUrl', () => {
   it.each(['https://spond.com/landing/event/abc', 'http://example.com', 'HTTPS://EXAMPLE.COM/x'])(
@@ -55,4 +55,20 @@ describe('openExternal', () => {
     openExternal(undefined);
     expect(open).not.toHaveBeenCalled();
   });
+});
+
+describe('safeLinkUrl', () => {
+  it.each(['mailto:post@example.com', 'tel:+4712345678', 'https://example.com'])(
+    'accepts %s',
+    (url) => {
+      expect(safeLinkUrl(url)).toBe(url);
+    },
+  );
+
+  it.each(['javascript:alert(1)', 'data:text/html,x', 'mailto:', 'tel:\t1', 'ftp://x'])(
+    'rejects %j',
+    (url) => {
+      expect(safeLinkUrl(url)).toBeNull();
+    },
+  );
 });

@@ -30,6 +30,19 @@ export function safeExternalUrl(value: unknown): string | null {
   return url;
 }
 
+/**
+ * Like `safeExternalUrl`, but also lets `mailto:` and `tel:` through, for the few CMS fields
+ * whose schema allows them (hero links). Never `javascript:`, `data:` or anything else.
+ */
+export function safeLinkUrl(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const url = value.trim();
+  // eslint-disable-next-line no-control-regex
+  if (/[\u0000-\u001f\u007f]/.test(url)) return null;
+  if (/^(mailto|tel):[^\s]+$/i.test(url)) return url;
+  return safeExternalUrl(url);
+}
+
 /** Opens a safe external URL in a new tab with no opener. A no-op for anything unsafe. */
 export function openExternal(url: unknown): void {
   const safe = safeExternalUrl(url);
