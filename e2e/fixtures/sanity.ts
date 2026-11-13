@@ -138,7 +138,24 @@ export const POSTS = [
     slug: slug('trenger-frivillige'),
     publishedAt: daysFromNow(-16, 9),
     category: 'arrangementer',
-    content: [block('b6', 'Meld fra i Facebook-gruppa hvis du kan ta en vakt.')],
+    content: [
+      {
+        _type: 'block',
+        _key: 'b6',
+        style: 'normal',
+        markDefs: [
+          { _type: 'link', _key: 'fb', url: 'https://example.test/fb' },
+          { _type: 'internalLink', _key: 'cal', url: '/kalender' },
+        ],
+        children: [
+          { _type: 'span', _key: 'b6-a', text: 'Meld fra i ', marks: [] },
+          { _type: 'span', _key: 'b6-b', text: 'Facebook-gruppa', marks: ['fb'] },
+          { _type: 'span', _key: 'b6-c', text: ' hvis du kan ta en vakt, og se ', marks: [] },
+          { _type: 'span', _key: 'b6-d', text: 'kalenderen', marks: ['cal'] },
+          { _type: 'span', _key: 'b6-e', text: ' for tidene.', marks: [] },
+        ],
+      },
+    ],
     relatedEvent: { _type: 'reference', _ref: 'festival-bgm' },
   },
 ];

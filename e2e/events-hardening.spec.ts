@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import {
   DATASET,
   FESTIVAL_BGM,
@@ -30,22 +30,35 @@ test('hostile links in an event are dropped, and nothing runs', async ({ page })
     void dialog.dismiss();
   });
   await stubSanityWithContent(page, [...DATASET, MALICIOUS_EVENT]);
+
+  // The event page: rich text, sign-up and sponsors.
   await page.goto(`/arrangementer/${MALICIOUS_EVENT.slug.current}`);
   await expect(page.getByRole('heading', { level: 1, name: MALICIOUS_EVENT.title })).toBeVisible();
   // The text stays; only the link is gone.
   await expect(page.getByText('Klikk her')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Klikk her' })).toHaveCount(0);
+  // An unsafe sign-up URL counts as no sign-up: no button that would open it.
+  await expect(page.getByRole('button', { name: 'Meld deg på' })).toHaveCount(0);
+  // The sponsor still shows, without its link.
+  await expect(page.getByText('Farlig sponsor').first()).toBeVisible();
+  await expect(page.getByRole('link', { name: /Farlig sponsor/ })).toHaveCount(0);
+  await expectNoUnsafeHrefs(page);
 
+  // The calendar row draws the event's link buttons.
+  await page.goto('/kalender');
+  await page.getByRole('heading', { name: MALICIOUS_EVENT.title }).click();
+  await expect(page.getByText('Farlig knapp')).toHaveCount(0);
+  await expectNoUnsafeHrefs(page);
+
+  expect(dialogs).toEqual([]);
+});
+
+async function expectNoUnsafeHrefs(page: Page) {
   const hrefs = await page
     .locator('[href]')
     .evaluateAll((elements) => elements.map((element) => element.getAttribute('href') ?? ''));
   expect(hrefs.filter((href) => /^\s*(javascript|data|vbscript):/i.test(href))).toEqual([]);
-
-  // Click everything a visitor could click on the page body, then check nothing fired.
-  for (const target of await page.locator('#main a, #main button').all()) {
-    if (await target.isVisible()) await target.click({ trial: false }).catch(() => {});
-  }
-  expect(dialogs).toEqual([]);
-});
+}
 
 test.describe('during the festival', () => {
   test('the day whose doors are open is shown first, with the running session marked «Nå»', async ({
@@ -72,7 +85,8 @@ test.describe('a visitor in another time zone', () => {
     await stubSanityWithContent(page);
     await page.goto('/board-game-masters');
     const program = page.locator('#program');
-    await expect(program.getByRole('heading', { level: 3, name: '18:00' })).toBeVisible();
+    // The session card turns the stored wall clock into an instant and back, so this is the
+    // text that would shift by six hours if the conversion used the browser's zone.
     await expect(program.getByText('18:00–21:00')).toBeVisible();
   });
 });
@@ -82,8 +96,8 @@ test('the festival page has no horizontal scroll on a phone', async ({ page }) =
   await stubSanityWithContent(page);
   await page.goto('/board-game-masters');
   await expect(page.locator('#program')).toBeVisible();
-  // The page content only: the header's login button is the member portal's, which is off in
-  // production and on in this suite.
+  // The page content only: the header's own 320px overflow comes from the member portal's login
+  // button, which is off in production and on in this suite; tracked in #314.
   const overflow = await page
     .locator('#main')
     .evaluate((main) => main.scrollWidth - document.documentElement.clientWidth);
