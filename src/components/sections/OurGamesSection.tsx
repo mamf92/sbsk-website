@@ -13,7 +13,7 @@ import { urlFor } from '../../sanity/sanityImageUrl';
 import type { GameTypes } from '../../sanity/queryHelpers/games';
 import type { GamesHeroTypes } from '../../sanity/queryHelpers/games-hero';
 import { FALLBACK_GAMES } from './fallbackGames';
-import { openExternal } from '../../utils/safeUrl';
+import { openExternal, safeExternalUrl } from '../../utils/safeUrl';
 
 interface OurGamesProps {
   gamesHero?: GamesHeroTypes | null;
@@ -179,7 +179,7 @@ export default function OurGamesSection({ gamesHero, games }: OurGamesProps) {
                   difficulty={game.difficulty}
                   time={game.time}
                   players={game.players}
-                  buyUrl={game.buyUrl || SPONSOR.url}
+                  buyUrl={safeExternalUrl(game.buyUrl) ?? SPONSOR.url}
                   bggUrl={game.bggUrl}
                   videoUrl={game.videoUrl}
                   sponsor={SPONSOR.name}

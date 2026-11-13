@@ -77,6 +77,7 @@ export function GameCard({
   function handleBuy(event: React.MouseEvent<HTMLAnchorElement>) {
     if (member && onBuy) {
       event.preventDefault();
+      // Only reachable from the buy link, which only renders with a safe `buyHref`.
       if (buyHref) onBuy({ title, sponsor, discountCode, buyUrl: buyHref });
     }
   }

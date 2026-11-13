@@ -34,10 +34,11 @@ export const SanityImage = React.forwardRef<HTMLElement, SanityImageProps>(
       .map((width) => (dimensions?.width ? Math.min(width, dimensions.width) : width))
       .filter((width, index, all) => all.indexOf(width) === index);
 
+    const creditUrl = safeExternalUrl(value.imageSourceUrl);
     const credit =
-      value.imageSourceName && safeExternalUrl(value.imageSourceUrl) ? (
+      value.imageSourceName && creditUrl ? (
         <Link
-          href={safeExternalUrl(value.imageSourceUrl)!}
+          href={creditUrl}
           target="_blank"
           rel="noopener noreferrer"
           variant="inherit"

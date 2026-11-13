@@ -109,10 +109,11 @@ export const Carousel = React.forwardRef<HTMLElement, CarouselProps>(
       .map((width) => (dimensions?.width ? Math.min(width, dimensions.width) : width))
       .filter((width, i, all) => all.indexOf(width) === i);
 
+    const creditUrl = safeExternalUrl(current.imageSourceUrl);
     const credit =
-      current.imageSourceName && safeExternalUrl(current.imageSourceUrl) ? (
+      current.imageSourceName && creditUrl ? (
         <Link
-          href={safeExternalUrl(current.imageSourceUrl)!}
+          href={creditUrl}
           target="_blank"
           rel="noopener noreferrer"
           variant="inherit"

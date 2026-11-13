@@ -67,22 +67,30 @@ export default function HomeHero({
                 Vi samarbeider med:
               </h2>
               <div className="flex w-full flex-col items-start justify-between gap-2 self-baseline rounded-none p-4 sm:flex-row md:gap-0 dark:bg-white/50">
-                {sponsors.map((sponsor, index) => (
-                  <Link
-                    key={index}
-                    href={safeExternalUrl(sponsor.websiteUrl) ?? undefined}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    variant="inherit"
-                    aria-label={`${sponsor.name} (åpnes i ny fane)`}
-                  >
+                {sponsors.map((sponsor, index) => {
+                  const logo = (
                     <img
                       src={urlFor(sponsor.logoImage).url()}
                       alt={sponsor.name}
                       className="h-14 w-auto lg:h-20"
                     />
-                  </Link>
-                ))}
+                  );
+                  const website = safeExternalUrl(sponsor.websiteUrl);
+                  // No safe website: the logo on its own, not a link that goes nowhere.
+                  if (!website) return <span key={index}>{logo}</span>;
+                  return (
+                    <Link
+                      key={index}
+                      href={website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      variant="inherit"
+                      aria-label={`${sponsor.name} (åpnes i ny fane)`}
+                    >
+                      {logo}
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           )}
