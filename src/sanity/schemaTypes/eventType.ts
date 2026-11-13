@@ -1,5 +1,6 @@
 import { defineField, defineType } from 'sanity';
 import { richTextBlocks } from './objects/richText';
+import { isUniqueAcrossEvents } from './slugAcrossEvents';
 
 export const eventType = defineType({
   name: 'event',
@@ -15,7 +16,7 @@ export const eventType = defineType({
     defineField({
       name: 'slug',
       type: 'slug',
-      options: { source: 'title' },
+      options: { source: 'title', isUnique: isUniqueAcrossEvents },
       validation: (rule) => rule.required(),
     }),
     defineField({
@@ -78,7 +79,7 @@ export const eventType = defineType({
       name: 'hasDetailPage',
       type: 'boolean',
       description:
-        'Av: arrangementet vises bare i kalenderen, og åpnes der det står. På: arrangementet får sin egen side med påmelding, oppmøte og sponsorer, lenket fra kalenderen.',
+        'Av: arrangementet vises bare i kalenderen, og åpnes der det står. På: arrangementet får sin egen side med påmelding, oppmøte og sponsorer, lenket fra kalenderen. Store arrangementer over flere dager med eget program, som Board Game Masters, lages under «Storarrangement» i stedet.',
       initialValue: false,
     }),
     defineField({

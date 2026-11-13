@@ -83,11 +83,7 @@ const CALENDAR_EVENTS_QUERY = `*[
 //
 // `hasDetailPage == true` is the guard that keeps a calendar-only event from getting a page:
 // every event has a slug, so without it `/arrangementer/<any-slug>` would render one.
-export const EVENT_BY_SLUG_QUERY = `*[
-  _type == "event"
-  && slug.current == $slug
-  && hasDetailPage == true
-][0]{
+export const EVENT_DETAIL_PROJECTION = `{
   _id,
   title,
   content,
@@ -114,6 +110,12 @@ export const EVENT_BY_SLUG_QUERY = `*[
   programInfo,
   schedule[]{ _key, label, startTime, endTime, location }
 }`;
+
+export const EVENT_BY_SLUG_QUERY = `*[
+  _type == "event"
+  && slug.current == $slug
+  && hasDetailPage == true
+][0]${EVENT_DETAIL_PROJECTION}`;
 
 export async function eventsListLoader() {
   const events = await client.fetch<CalendarEventTypes[]>(EVENTS_LIST_QUERY);
