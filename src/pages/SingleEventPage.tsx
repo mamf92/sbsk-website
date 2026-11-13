@@ -65,12 +65,17 @@ export default function SingleEventPage() {
             </span>
             <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6">
               {event.sponsors!.map((sponsor, index) => {
-                const logo = sponsor.logo && (
+                // The logo is optional now: without one, the sponsor's name stands in.
+                const logo = sponsor.logo ? (
                   <img
                     src={urlFor(sponsor.logo).width(320).url()}
                     alt={sponsor.altText}
                     className="h-16 w-auto object-contain sm:h-24"
                   />
+                ) : (
+                  <span className="font-heading text-darkestblue text-lg font-bold">
+                    {sponsor.altText}
+                  </span>
                 );
                 const sponsorLink = safeExternalUrl(sponsor.link);
                 const ctaTarget = safeExternalUrl(sponsor.ctaLink) ?? sponsorLink;

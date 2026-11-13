@@ -7,8 +7,10 @@ export const SPONSOR_TIERS = [
 ] as const;
 
 /**
- * A sponsor on an event or festival page. The field names before `tier` are the ones the old
- * inline sponsor object on `event` used, so data entered under it stays valid.
+ * A sponsor on an event or festival page. The field names are the ones the old inline sponsor
+ * object on `event` used, so the query and page read old and new items alike. (Old items were
+ * stored as `_type: 'object'` and would show as an unknown type in the Studio; no document had
+ * any when this replaced it, drafts included, checked 13 Nov 2026.)
  */
 export const sponsorType = defineType({
   name: 'sponsor',
