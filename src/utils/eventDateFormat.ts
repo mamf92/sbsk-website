@@ -5,6 +5,8 @@
 // visitor's device (or a CI runner) is in. Nothing here may call a `Date` getter such as
 // `getDate()` or `toDateString()`, which read the runtime zone; go through `TIME_ZONE`.
 
+import type { Locale } from './locale';
+
 const LOCALE = 'no-NO';
 
 /** The zone every event time is shown in. */
@@ -84,4 +86,57 @@ export function dayLabel(start: Date, end: Date): string {
   return osloDateKey(start) === osloDateKey(end)
     ? `${dayOfMonth(start)}.`
     : `${dayOfMonth(start)}.–${dayOfMonth(end)}.`;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Locale-aware formatting for the translated event pages                      */
+/* -------------------------------------------------------------------------- */
+
+/** The BCP 47 tag `Intl` date formatting uses for a site locale. */
+export function dateLocale(locale: Locale): string {
+  return locale === 'en' ? 'en-GB' : 'nb-NO';
+}
+
+const WHEN: Intl.DateTimeFormatOptions = {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+};
+
+/** "fredag 29. januar kl. 18:00" / "Friday 29 January at 18:00", in Oslo time. */
+export function formatDateTime(date: Date, locale: Locale): string {
+  return format(date, dateLocale(locale), WHEN);
+}
+
+/**
+ * "fredag 29. januar 18:00–22:00", or a range across days, in Oslo time. `formatRange` drops
+ * whatever the two ends share, so the same call reads well for an evening and for a weekend.
+ */
+export function formatDateTimeRange(start: Date, end: Date, locale: Locale): string {
+  const key = `${dateLocale(locale)}|range`;
+  let formatter = formatters.get(key);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat(dateLocale(locale), { ...WHEN, timeZone: TIME_ZONE });
+    formatters.set(key, formatter);
+  }
+  return formatter.formatRange(start, end);
+}
+
+/** "29.–31. januar 2027" / "29–31 January 2027": the dates only, for a festival. */
+export function formatDateRange(start: Date, end: Date, locale: Locale): string {
+  const key = `${dateLocale(locale)}|daterange`;
+  let formatter = formatters.get(key);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat(dateLocale(locale), {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      timeZone: TIME_ZONE,
+    });
+    formatters.set(key, formatter);
+  }
+  return formatter.formatRange(start, end);
 }

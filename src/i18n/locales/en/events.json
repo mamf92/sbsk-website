@@ -4,7 +4,12 @@
     "when": "When",
     "where": "Where",
     "price": "Price",
-    "signup": "Sign-up"
+    "signup": "Sign-up",
+    "signupOpen": "Open",
+    "signupNotYetOpen": "Opens {{date}}",
+    "signupClosed": "Closed",
+    "signupDropIn": "Just show up",
+    "capacity": "{{count}} places"
   },
   "signup": {
     "default": "Sign up",
@@ -17,7 +22,11 @@
   "venue": {
     "title": "Getting there",
     "doorsOpen": "Doors open {{time}}",
-    "showMap": "Show on map"
+    "showMap": "Show on map",
+    "meetingPoint": "Where do we meet?",
+    "directions": "How to get there",
+    "accessibility": "Accessibility",
+    "contact": "Contact on site: {{name}}"
   },
   "program": {
     "title": "Programme",
@@ -45,8 +54,12 @@
       "hovedsponsor": "Main sponsor",
       "sponsor": "Sponsors",
       "partner": "Partners"
-    }
+    },
+    "title": "Sponsors"
   },
   "faq": "FAQ",
-  "contact": "Questions? Email {{email}}"
+  "contact": "Questions? Email {{email}}",
+  "kicker": "Event",
+  "pricing": "Prices",
+  "opensInNewTab": "(opens in a new tab)"
 }

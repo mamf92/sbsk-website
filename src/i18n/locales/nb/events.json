@@ -4,7 +4,12 @@
     "when": "Når",
     "where": "Hvor",
     "price": "Pris",
-    "signup": "Påmelding"
+    "signup": "Påmelding",
+    "signupOpen": "Åpen",
+    "signupNotYetOpen": "Åpner {{date}}",
+    "signupClosed": "Stengt",
+    "signupDropIn": "Bare møt opp",
+    "capacity": "{{count}} plasser"
   },
   "signup": {
     "default": "Meld deg på",
@@ -17,7 +22,11 @@
   "venue": {
     "title": "Oppmøte",
     "doorsOpen": "Dørene åpner {{time}}",
-    "showMap": "Vis i kart"
+    "showMap": "Vis i kart",
+    "meetingPoint": "Hvor møter vi?",
+    "directions": "Slik kommer du deg dit",
+    "accessibility": "Tilgjengelighet",
+    "contact": "Kontaktperson på stedet: {{name}}"
   },
   "program": {
     "title": "Program",
@@ -45,8 +54,12 @@
       "hovedsponsor": "Hovedsponsor",
       "sponsor": "Sponsorer",
       "partner": "Partnere"
-    }
+    },
+    "title": "Sponsorer"
   },
   "faq": "Spørsmål og svar",
-  "contact": "Spørsmål? Send e-post til {{email}}"
+  "contact": "Spørsmål? Send e-post til {{email}}",
+  "kicker": "Arrangement",
+  "pricing": "Priser",
+  "opensInNewTab": "(åpnes i ny fane)"
 }
