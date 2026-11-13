@@ -139,10 +139,14 @@ EXECUTE granted to `service_role` only, one transaction:
    delete the rows.
 3. Delete: `member_badges`, `event_participants` (by `supabase_id`), push subscriptions,
    `membership_applications` and `contact_messages` matching the email (case-insensitive),
-   unpaid/future `event_registrations`.
+   and `event_registrations` with **no payment** (`payment_reference is null`), whatever the
+   event date. A paid registration is never deleted here, even for a future event: it goes to
+   step 4.
 4. Unlink: `membership_payments.member_id = null`, `vipps_payments` / paid
-   `event_registrations` → `supabase_id = null`, `email = null`; keep payer name, amount, date,
-   reference.
+   `event_registrations` (past **and** future) → `supabase_id = null`, `email = null`; keep
+   payer name, amount, date, reference. A paid registration for an event that has not happened
+   yet is also set to `status = 'cancelled'`, which frees the place; any refund follows the
+   event's own terms and is the board's call (it shows up in the admin paid sign-ups list).
 5. Delete the `profiles` row and the `members` row.
 6. **Last of all mutations** — `admin_audit_log`: for every row about this member, replace
    every key returned by the security plan's `public.audit_personal_keys()` (name, surname,
@@ -153,8 +157,13 @@ EXECUTE granted to `service_role` only, one transaction:
    `attendance` write new rows (with the deleted values in the old snapshot) for those very
    mutations; redacting earlier would leave those fresh rows unredacted.
 7. Insert `erasure_log(at, subject_hash, trigger)` where `subject_hash =
-encode(digest(supabase_id::text || member_id::text, 'sha256'), 'hex')`, trigger in
-   `'self' | 'admin_request' | 'retention'`.
+encode(extensions.digest(member_id::text, 'sha256'), 'hex')`, trigger in
+   `'self' | 'admin_request' | 'retention'`. Hash `members.id` only: it is never null, while
+   `supabase_id` is null for register-only members (under-13s, anyone not yet invited), and
+   `||` with a null makes the whole hash null. `subject_hash` is `not null`.
+   `reapply_erasures()` uses the same formula: it erases every `members` row whose
+   `encode(digest(id::text, 'sha256'), 'hex')` is in the ledger, and through that row's
+   `supabase_id` (when set) the auth user and storage prefix.
 8. Return the auth user id and the storage prefix.
 
 Edge function `supabase/functions/gdpr-delete/index.ts`:
@@ -293,12 +302,13 @@ Plain language, short sentences, headings as questions. Norwegian first; English
 
 ## Tests
 
-- **pgTAP**: `erase_member` on a fully seeded member (every table above has a row) leaves zero
+- **pgTAP**: `erase_member` on a fully seeded member (every table above has a row, including a paid registration for a future event, which must survive unlinked and cancelled) leaves zero
   rows referencing them anywhere, `event_headcounts` increased by their check-ins, payments
   unlinked with name kept, every `audit_personal_keys()` key redacted in old and new snapshots (including the audit rows the erasure itself just wrote) and
   actor nulled where they acted, `erasure_log` row present; refuses the last
   admin; callable only by `service_role`. Each retention job with fixed clocks.
-  `reapply_erasures()` removes a re-inserted member when given a ledger merged from outside the
+  `reapply_erasures()` removes a re-inserted member (one with a login and one register-only
+  member with `supabase_id` null) when given a ledger merged from outside the
   restored dump (simulate: dump, erase, restore the dump, merge the saved ledger, reapply).
 - **pgTAP inventory guard**: a test lists every `public` table and every column whose name
   matches `email|name|phone|supabase_id|member_id|photo|bio|birth` and fails if a table is not
