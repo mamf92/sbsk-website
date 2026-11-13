@@ -284,7 +284,8 @@ export function festivalDayRows(festival: FestivalCalendarTypes): CalendarEventT
           eventStartTime: hours.start,
           eventEndTime: hours.end,
           category: festival.series === 'annet' ? 'annet' : 'turnering',
-          location: festival.venue?.name,
+          // A day held elsewhere names its own venue.
+          location: day.venue?.name ?? festival.venue?.name,
           festivalDay: true,
           detailPath: `/arrangementer/${festival.slug}?dag=${index + 1}`,
         };
