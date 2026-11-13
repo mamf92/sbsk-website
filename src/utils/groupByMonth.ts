@@ -1,13 +1,17 @@
+import { TIME_ZONE, osloDateKey } from './eventDateFormat';
+
 const LOCALE = 'no-NO';
 
 /** "AUGUST 2026" — the month divider between groups. */
 export function monthLabel(date: Date): string {
-  return date.toLocaleDateString(LOCALE, { month: 'long', year: 'numeric' }).toUpperCase();
+  return date
+    .toLocaleDateString(LOCALE, { month: 'long', year: 'numeric', timeZone: TIME_ZONE })
+    .toUpperCase();
 }
 
-/** Sorts and groups by real calendar month, not by the rendered label. */
+/** Sorts and groups by real calendar month in Oslo, not by the rendered label: "2026-09". */
 export function monthKey(date: Date): string {
-  return `${date.getFullYear()}-${date.getMonth()}`;
+  return osloDateKey(date).slice(0, 7);
 }
 
 export type MonthGroup<T> = { key: string; label: string; items: T[] };

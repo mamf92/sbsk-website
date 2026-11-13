@@ -76,9 +76,12 @@ const CALENDAR_EVENTS_QUERY = `*[
   ${EVENT_ROW_PROJECTION}
 }`;
 
-const EVENT_BY_SLUG_QUERY = `*[
+// `hasDetailPage == true` is the guard that keeps a calendar-only event from getting a page:
+// every event has a slug, so without it `/arrangementer/<any-slug>` would render one.
+export const EVENT_BY_SLUG_QUERY = `*[
   _type == "event"
   && slug.current == $slug
+  && hasDetailPage == true
 ][0]{
   _id,
   title,

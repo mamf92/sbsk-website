@@ -5,18 +5,9 @@ import { urlFor } from '../sanity/sanityImageUrl';
 import { components } from '../sanity/editors/portableTextComponents';
 import { Button } from '../components/ui/Buttons';
 import { EventScheduleCard, type EventScheduleCardTone } from '../components/ui/EventScheduleCard';
-import { monthAbbreviation, timeRange } from '../utils/eventDateFormat';
+import { dayLabel, monthAbbreviation, timeRange } from '../utils/eventDateFormat';
+import { openExternal, safeExternalUrl } from '../utils/safeUrl';
 import { Link } from '../components/ui/Link';
-
-/** "23." for a single day, "23.–26." for a range — the date block's big number. */
-function dayLabel(start: Date, end: Date): string {
-  const sameDay = start.toDateString() === end.toDateString();
-  return sameDay ? `${start.getDate()}.` : `${start.getDate()}.–${end.getDate()}.`;
-}
-
-function openExternal(url: string) {
-  window.open(url, '_blank', 'noopener,noreferrer');
-}
 
 /**
  * One template for every event that has `hasDetailPage` set, from a biweekly spillkveld with
@@ -35,7 +26,9 @@ export default function SingleEventPage() {
   const hasProgram = !!event.programInfo?.length;
   const hasSponsors = !!event.showSponsors && !!event.sponsors?.length;
   const hasSchedule = !!event.schedule?.length;
-  const signupUrl = event.signupUrl?.url;
+  // Every URL below comes from the CMS and is checked here, at render time: Studio validation
+  // does not cover documents written straight to the API.
+  const signupUrl = safeExternalUrl(event.signupUrl?.url);
   const signupLabel = event.signupUrl?.label || 'Meld deg på';
 
   return (
@@ -76,13 +69,14 @@ export default function SingleEventPage() {
                     className="h-16 w-auto object-contain sm:h-24"
                   />
                 );
-                const ctaTarget = sponsor.ctaLink || sponsor.link;
+                const sponsorLink = safeExternalUrl(sponsor.link);
+                const ctaTarget = safeExternalUrl(sponsor.ctaLink) ?? sponsorLink;
 
                 return (
                   <div key={index} className="flex flex-col items-center gap-2">
-                    {sponsor.link ? (
+                    {sponsorLink ? (
                       <Link
-                        href={sponsor.link}
+                        href={sponsorLink}
                         target="_blank"
                         rel="noopener noreferrer"
                         variant="inherit"
