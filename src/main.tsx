@@ -8,6 +8,7 @@ import './index.css';
 import App from './App';
 import Home from './pages/Home';
 import { initTheme } from './utils/theme';
+import { initLocale } from './utils/locale';
 import { initMotion } from './utils/motion';
 import { recoverFromStaleChunks } from './utils/staleChunkReload';
 import { restoreGithubPagesRoute } from './utils/githubPagesRedirect';
@@ -56,6 +57,7 @@ restoreGithubPagesRoute();
 
 initTheme();
 initMotion();
+initLocale();
 recoverFromStaleChunks();
 
 const router = createBrowserRouter(

@@ -50,6 +50,15 @@ describe('Header — theme toggle name', () => {
   });
 });
 
+describe('Header — language toggle', () => {
+  it('switches the page language from the header', async () => {
+    renderHeader();
+    await userEvent.click(screen.getByRole('button', { name: /^EN\b/ }));
+    expect(document.documentElement.lang).toBe('en');
+    expect(screen.getByRole('button', { name: /^NO\b/ })).toBeInTheDocument();
+  });
+});
+
 describe('Header — mobile nav tab order', () => {
   it('removes the closed mobile nav panel from the tab order via inert', () => {
     renderHeader();

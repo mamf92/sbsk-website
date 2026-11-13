@@ -7,7 +7,9 @@ import { useTheme } from '../../hooks/theme/ThemeContext';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../hooks/authContext/authContext';
 import { useGoHome } from '../../hooks/useGoHome';
-import { memberPortalEnabled } from '../../utils/featureFlags';
+import { i18nEnabled, memberPortalEnabled } from '../../utils/featureFlags';
+import { LanguageToggle } from '../ui/LanguageToggle';
+import { useLocale } from '../../hooks/locale/useLocale';
 
 const desktopNavLink = `${navLinkClasses} text-sm`;
 
@@ -25,6 +27,7 @@ const mobileNavLink =
 
 export default function Header() {
   const { isDarkMode, toggleDarkMode } = useTheme();
+  const { locale, setLocale } = useLocale();
   const navigate = useNavigate();
   const { goHome, handleHomeLinkClick } = useGoHome();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -122,6 +125,9 @@ export default function Header() {
           >
             {isDarkMode ? 'LM' : 'DM'}
           </Button>
+
+          {/* Hidden until the event pages are fully translated (VITE_ENABLE_I18N). */}
+          {i18nEnabled && <LanguageToggle locale={locale} onChange={setLocale} />}
 
           {/* Login / profile — desktop only. Gated behind #213: no member/board portal for the
               MVP launch, so there is no login option to show at all. */}

@@ -1,6 +1,8 @@
 import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
 import { afterEach, beforeEach, vi } from 'vitest';
+import '../i18n';
+import { resetLocaleForTests } from '../utils/locale';
 
 // jsdom does not implement matchMedia, which src/utils/theme.ts relies on.
 if (!window.matchMedia) {
@@ -40,6 +42,9 @@ if (typeof HTMLDialogElement !== 'undefined' && !HTMLDialogElement.prototype.sho
 
 beforeEach(() => {
   localStorage.clear();
+  // Norwegian, so tests asserting Norwegian copy pass; reset so a test that switches language
+  // does not leak English into the next one.
+  resetLocaleForTests('nb');
   document.documentElement.classList.remove('dark', 'reduce-motion');
 });
 
