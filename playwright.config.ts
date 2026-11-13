@@ -23,6 +23,10 @@ export default defineConfig({
   use: {
     baseURL: `http://localhost:${PORT}`,
     trace: 'on-first-retry',
+    // A Norwegian visitor, the club's audience. With VITE_ENABLE_I18N on, the browser language
+    // picks the first-visit locale, and Playwright's default (en-US) would make every spec an
+    // English visit. Specs about English set it themselves.
+    locale: 'nb-NO',
   },
   projects: [
     {
@@ -54,6 +58,8 @@ export default defineConfig({
       // The Kontakt oss form is hidden in production (#254); the smoke suite keeps it on so
       // its send-and-succeed path stays exercised.
       VITE_ENABLE_CONTACT_FORM: 'true',
+      // Off in production until the event pages are translated; on here so it stays covered.
+      VITE_ENABLE_I18N: 'true',
     },
   },
 });

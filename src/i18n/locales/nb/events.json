@@ -1,0 +1,52 @@
+{
+  "back": "Alle arrangementer",
+  "facts": {
+    "when": "Når",
+    "where": "Hvor",
+    "price": "Pris",
+    "signup": "Påmelding"
+  },
+  "signup": {
+    "default": "Meld deg på",
+    "opensInNewTab": "Åpner {{host}} i en ny fane",
+    "deadline": "Frist {{date}}",
+    "notYetOpen": "Påmeldingen åpner {{date}}",
+    "closed": "Påmeldingen er stengt",
+    "dropIn": "Ingen påmelding – bare møt opp"
+  },
+  "venue": {
+    "title": "Oppmøte",
+    "doorsOpen": "Dørene åpner {{time}}",
+    "showMap": "Vis i kart"
+  },
+  "program": {
+    "title": "Program",
+    "now": "Nå",
+    "next": "Neste",
+    "showing": "Viser {{shown}} av {{total}} programposter",
+    "reset": "Nullstill",
+    "addToCalendar": "Legg programmet i kalenderen",
+    "print": "Skriv ut programmet",
+    "emptyDay": "Programmet for denne dagen kommer snart"
+  },
+  "format": {
+    "turnering": "Turnering",
+    "finale": "Finale",
+    "laer-a-spille": "Lær å spille",
+    "fri-spilling": "Fri spilling",
+    "demo": "Demo",
+    "pause": "Pause",
+    "annet": "Annet"
+  },
+  "sponsors": {
+    "supportedBy": "Med støtte fra",
+    "presentedBy": "Presentert av",
+    "tier": {
+      "hovedsponsor": "Hovedsponsor",
+      "sponsor": "Sponsorer",
+      "partner": "Partnere"
+    }
+  },
+  "faq": "Spørsmål og svar",
+  "contact": "Spørsmål? Send e-post til {{email}}"
+}
