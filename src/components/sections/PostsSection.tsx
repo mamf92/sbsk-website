@@ -20,6 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import { urlFor } from '../../sanity/sanityImageUrl';
 import { isInternalLink, internalLinkPath } from '../../utils/internalLinks';
 import { TIME_ZONE } from '../../utils/eventDateFormat';
+import { safeExternalUrl } from '../../utils/safeUrl';
 
 interface PostsProps {
   postsHero?: PostsHeroTypes;
@@ -332,13 +333,21 @@ function PostCard({
 }) {
   const navigate = useNavigate();
   const publishedAt = new Date(post.publishedAt);
-  const hasLinks = !!post.links && post.links.length > 0;
+  // Only links that will work: trimmed, and either ours or a safe http(s) URL. A CMS URL that
+  // is neither gets no button, and a post whose links are all unsafe gets no actions column.
+  type PostLink = { label: string; internal: string | null; external: string | null };
+  const links = (post.links ?? []).flatMap((link): PostLink[] => {
+    if (typeof link?.url !== 'string') return [];
+    const url = link.url.trim();
+    if (isInternalLink(url)) return [{ label: link.label, internal: url, external: null }];
+    const external = safeExternalUrl(url);
+    return external ? [{ label: link.label, internal: null, external }] : [];
+  });
+  const hasLinks = links.length > 0;
   const thumbnail = getThumbnail(post);
 
   const actions = hasLinks
-    ? post.links?.map((link, index) => {
-        const isInternal = isInternalLink(link.url);
-
+    ? links.map((link, index) => {
         return (
           <Button
             key={index}
@@ -346,11 +355,8 @@ function PostCard({
             size="sm"
             icon="right"
             onClick={() => {
-              if (isInternal) {
-                navigate(internalLinkPath(link.url));
-              } else {
-                window.location.href = link.url;
-              }
+              if (link.internal) navigate(internalLinkPath(link.internal));
+              else if (link.external) window.location.href = link.external;
             }}
           >
             {link.label}

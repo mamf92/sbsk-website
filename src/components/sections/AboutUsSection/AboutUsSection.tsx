@@ -5,6 +5,7 @@ import { BoardMemberCard } from './BoardMemberCard';
 import { Reveal } from '../../ui/Reveal';
 import { Link } from '../../ui/Link';
 import { FALLBACK_ABOUT, FALLBACK_BOARD } from './fallbackAbout';
+import { safeExternalUrl } from '../../../utils/safeUrl';
 
 interface AboutUsSectionProps {
   aboutPage?: AboutPageTypes | null;
@@ -16,7 +17,7 @@ export default function AboutUsSection({ aboutPage, boardMembers }: AboutUsSecti
     ? urlFor(aboutPage.image).width(1440).fit('crop').auto('format').url()
     : FALLBACK_ABOUT.imageUrl;
   const imageSourceName = aboutPage?.imageSource?.imageSourceName;
-  const imageSourceUrl = aboutPage?.imageSource?.imageSourceUrl;
+  const imageSourceUrl = safeExternalUrl(aboutPage?.imageSource?.imageSourceUrl);
 
   const clubTitle = aboutPage?.clubTitle || FALLBACK_ABOUT.clubTitle;
   const clubIntro = aboutPage?.clubIntro || FALLBACK_ABOUT.clubIntro;

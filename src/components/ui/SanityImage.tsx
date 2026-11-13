@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Link } from './Link';
 import { clampAspect, cropUrl, MAX_IMAGE_HEIGHT } from '../../utils/sanityImage';
 import type { SanityImageSource } from '@sanity/asset-utils';
+import { safeExternalUrl } from '../../utils/safeUrl';
 
 type Dimensions = { width?: number; height?: number; aspectRatio?: number };
 
@@ -33,10 +34,11 @@ export const SanityImage = React.forwardRef<HTMLElement, SanityImageProps>(
       .map((width) => (dimensions?.width ? Math.min(width, dimensions.width) : width))
       .filter((width, index, all) => all.indexOf(width) === index);
 
+    const creditUrl = safeExternalUrl(value.imageSourceUrl);
     const credit =
-      value.imageSourceName && value.imageSourceUrl ? (
+      value.imageSourceName && creditUrl ? (
         <Link
-          href={value.imageSourceUrl}
+          href={creditUrl}
           target="_blank"
           rel="noopener noreferrer"
           variant="inherit"
