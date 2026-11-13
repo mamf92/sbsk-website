@@ -27,7 +27,9 @@ const KNOWN_ROUTES = new Set([
 ]);
 
 function isKnownInternalPath(path: string): boolean {
-  return KNOWN_ROUTES.has(path) || path.startsWith('/arrangementer/');
+  return (
+    KNOWN_ROUTES.has(path) || path.startsWith('/arrangementer/') || path.startsWith('/innlegg/')
+  );
 }
 
 // The router's basename (`VITE_BASE`, "/sbsk-website/" on Pages) is not part of the paths

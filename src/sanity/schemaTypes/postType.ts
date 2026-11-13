@@ -180,5 +180,14 @@ export const postType = defineType({
       ],
       validation: (rule) => rule.max(12),
     }),
+    defineField({
+      title: 'Hører til arrangement',
+      name: 'relatedEvent',
+      type: 'reference',
+      description:
+        'Valgfritt. Velg arrangementet innlegget handler om. Da vises innlegget på arrangementets ' +
+        'side, og innlegget får en lenke tilbake dit.',
+      to: [{ type: 'event' }, { type: 'festival' }],
+    }),
   ],
 });

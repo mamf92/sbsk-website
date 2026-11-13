@@ -16,6 +16,7 @@ import RouteError from './components/sections/RouteError';
 import RouteFallback from './components/sections/RouteFallback';
 import { homeLoader } from './loaders/home-loader';
 import { eventsListLoader } from './sanity/queryHelpers/events';
+import { postDetailLoader } from './sanity/queryHelpers/posts';
 import { arrangementLoader, boardGameMastersLoader } from './sanity/queryHelpers/festivals';
 import { calendarLoader } from './loaders/calendar-loader';
 import { ourGamesLoader } from './loaders/our-games-loader';
@@ -50,6 +51,7 @@ const Login = React.lazy(() => import('./pages/Login'));
 const MemberPortal = React.lazy(() => import('./pages/MemberPortal'));
 const BoardPortal = React.lazy(() => import('./pages/BoardPortal'));
 const NotFound = React.lazy(() => import('./pages/NotFound'));
+const Post = React.lazy(() => import('./pages/PostPage'));
 
 // Must run before createBrowserRouter below reads window.location. See public/404.html and
 // src/utils/githubPagesRedirect.ts for what this undoes (#22).
@@ -97,6 +99,7 @@ const router = createBrowserRouter(
             { path: 'arrangementer', element: <Events />, loader: eventsListLoader },
             { path: 'arrangementer/:id', element: <Event />, loader: arrangementLoader },
             { path: 'våre-partnere', element: <OurPartners /> },
+            { path: 'innlegg/:id', element: <Post />, loader: postDetailLoader },
             // Gated behind #213: no member/board portal for the MVP launch, so these four
             // routes are absent from the production build and fall through to the catch-all
             // 404 below. `memberPortalEnabled` is true in unit tests and the Playwright config

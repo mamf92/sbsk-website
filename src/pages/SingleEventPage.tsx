@@ -9,6 +9,7 @@ import { EventScheduleCard, type EventScheduleCardTone } from '../components/ui/
 import { EventFacts, type EventFact } from '../components/ui/EventFacts';
 import { SignupBlock } from '../components/ui/SignupBlock';
 import { SponsorGrid, SponsorStrip } from '../components/ui/Sponsors';
+import { RelatedPosts } from '../components/ui/RelatedPosts';
 import { Tag } from '../components/ui/Tag';
 import { VenueCard } from '../components/ui/VenueCard';
 import { linkClassesInherit } from '../components/ui/Link';
@@ -208,6 +209,8 @@ function EventPage({ event }: { event: CalendarEventTypes }) {
         <VenueCard venue={event.venue} />
 
         <SponsorGrid sponsors={sponsors} />
+
+        <RelatedPosts posts={event.relatedPosts} />
       </div>
     </div>
   );

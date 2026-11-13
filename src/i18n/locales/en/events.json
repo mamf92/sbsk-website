@@ -91,5 +91,6 @@
     "elsewhere": "Different venue on {{day}}",
     "doors": "Doors open {{opens}}, we close {{closes}}",
     "contactLead": "Questions? Email"
-  }
+  },
+  "relatedPosts": "Posts about this event"
 }
