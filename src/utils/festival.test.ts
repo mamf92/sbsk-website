@@ -301,6 +301,14 @@ describe('festivalDayRows', () => {
     ]);
   });
 
+  it("names a day's own venue when it is held elsewhere", () => {
+    const [, saturday] = festivalDayRows({
+      ...festival,
+      days: [festival.days[0], { ...festival.days[1], venue: { name: 'Sølvberget' } }],
+    });
+    expect(saturday.location).toBe('Sølvberget');
+  });
+
   it('files a festival outside the BGM series under «annet»', () => {
     const [row] = festivalDayRows({ ...festival, series: 'annet' });
     expect(row.category).toBe('annet');
