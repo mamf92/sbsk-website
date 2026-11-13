@@ -26,6 +26,20 @@ describe('RelatedPosts', () => {
     expect(screen.getByRole('link')).toHaveAttribute('href', '/innlegg/frivillige');
   });
 
+  it('dates each post with its year, and still lists a post whose date is broken', () => {
+    act(() => setLocale('nb'));
+    render(
+      <RelatedPosts
+        posts={[...posts, { ...posts[0], _id: 'p2', slug: 'x', publishedAt: 'snart' }]}
+      />,
+      {
+        wrapper: MemoryRouter,
+      },
+    );
+    expect(screen.getByText('10. januar 2027')).toBeInTheDocument();
+    expect(screen.getAllByRole('link')).toHaveLength(2);
+  });
+
   it('marks the Norwegian post titles on an English page', () => {
     act(() => setLocale('en'));
     render(<RelatedPosts posts={posts} />, { wrapper: MemoryRouter });

@@ -4,7 +4,7 @@ import { linkClassesInherit } from './Link';
 import { useEventsT } from '../../i18n';
 import { useLocale } from '../../hooks/locale/useLocale';
 import type { RelatedPostTypes } from '../../sanity/queryHelpers/fragments';
-import { formatDayLong } from '../../utils/eventDateFormat';
+import { formatDate, parseInstant } from '../../utils/eventDateFormat';
 
 type RelatedPostsProps = Omit<React.HTMLAttributes<HTMLElement>, 'children'> & {
   posts: RelatedPostTypes[] | null | undefined;
@@ -32,26 +32,32 @@ export const RelatedPosts = React.forwardRef<HTMLElement, RelatedPostsProps>(
           {t('relatedPosts')}
         </h2>
         <ul className="flex flex-col gap-3">
-          {posts.map((post) => (
-            <li key={post._id} className="border border-black p-4 dark:border-white">
-              <time dateTime={post.publishedAt} className="text-sm opacity-80">
-                {formatDayLong(new Date(post.publishedAt), locale)}
-              </time>
-              <p className="font-heading text-h4 font-bold" lang={nbLang}>
-                <RouterLink
-                  to={`/innlegg/${post.slug}`}
-                  className={`${linkClassesInherit} underline`}
-                >
-                  {post.title}
-                </RouterLink>
-              </p>
-              {post.subtitle && (
-                <p className="text-sm" lang={nbLang}>
-                  {post.subtitle}
+          {posts.map((post) => {
+            // A post written through the API may lack a valid date; the link still shows.
+            const published = parseInstant(post.publishedAt);
+            return (
+              <li key={post._id} className="border border-black p-4 dark:border-white">
+                {published && (
+                  <time dateTime={post.publishedAt} className="text-sm opacity-80">
+                    {formatDate(published, locale)}
+                  </time>
+                )}
+                <p className="font-heading text-h4 font-bold" lang={nbLang}>
+                  <RouterLink
+                    to={`/innlegg/${post.slug}`}
+                    className={`${linkClassesInherit} underline`}
+                  >
+                    {post.title}
+                  </RouterLink>
                 </p>
-              )}
-            </li>
-          ))}
+                {post.subtitle && (
+                  <p className="text-sm" lang={nbLang}>
+                    {post.subtitle}
+                  </p>
+                )}
+              </li>
+            );
+          })}
         </ul>
       </section>
     );

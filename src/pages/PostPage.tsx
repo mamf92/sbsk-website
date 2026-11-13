@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Link as RouterLink, useLoaderData } from 'react-router-dom';
+import { Link as RouterLink, useLoaderData, useNavigate } from 'react-router-dom';
 import { PortableText } from '@portabletext/react';
 import { Carousel } from '../components/ui/Carousel';
 import { linkClassesInherit } from '../components/ui/Link';
@@ -8,6 +8,7 @@ import { PostLinkButtons } from '../components/ui/PostLinkButtons';
 import { Tag } from '../components/ui/Tag';
 import { components } from '../sanity/editors/portableTextComponents';
 import type { PostTypes } from '../sanity/queryHelpers/posts';
+import { parseInstant } from '../utils/eventDateFormat';
 import { resolvePostLinks } from '../utils/postLinks';
 
 const SITE = 'Stavanger Brettspillklubb';
@@ -25,7 +26,9 @@ const categoryLabel: Record<PostTypes['category'], string> = {
 export default function PostPage() {
   const { post } = useLoaderData() as { post: PostTypes };
   const links = resolvePostLinks(post.links);
-  const related = post.relatedEvent?.path ? post.relatedEvent : null;
+  const relatedPath = post.relatedEvent?.path;
+  const published = parseInstant(post.publishedAt);
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     document.title = `${post.title} · ${SITE}`;
@@ -37,21 +40,33 @@ export default function PostPage() {
   return (
     <div className="dark:bg-darkestblue min-h-[60vh] bg-white pb-16 dark:text-white">
       <article className="max-w-content content-gutter:px-0 font-body mx-auto flex w-full flex-col gap-6 px-3 pt-6">
-        <RouterLink to="/" className={`${linkClassesInherit} w-fit underline`}>
+        <RouterLink
+          to="/"
+          className={`${linkClassesInherit} w-fit underline`}
+          onClick={(event) => {
+            // Opened from the feed: going back restores the visitor's place in it.
+            const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0;
+            if (idx > 0) {
+              event.preventDefault();
+              navigate(-1);
+            }
+          }}
+        >
           ← Alle innlegg
         </RouterLink>
 
         <header className="bg-darkblue surface-dark flex flex-col items-start gap-3 p-4 text-white sm:p-6">
           <div className="flex flex-wrap items-center gap-3 text-sm">
             <Tag tone="orange">{categoryLabel[post.category] ?? post.category}</Tag>
-            <PostDate publishedAt={new Date(post.publishedAt)} />
+            {published && <PostDate publishedAt={published} />}
           </div>
           <h1 className="font-heading text-h1 tracking-heading font-bold">{post.title}</h1>
           {post.subtitle && <p className="text-lg">{post.subtitle}</p>}
         </header>
 
         {post.carousel && post.carousel.length > 0 && (
-          <Carousel images={post.carousel} label={`Bilder fra «${post.title}»`} />
+          // Keyed by post, so moving to another post starts its photos from the first.
+          <Carousel key={post._id} images={post.carousel} label={`Bilder fra «${post.title}»`} />
         )}
 
         {post.content && (
@@ -60,14 +75,14 @@ export default function PostPage() {
           </div>
         )}
 
-        {(links.length > 0 || related) && (
+        {(links.length > 0 || relatedPath) && (
           <div className="flex flex-wrap gap-3">
-            {related?.path && (
+            {relatedPath && (
               <RouterLink
-                to={related.path}
+                to={relatedPath}
                 className={`${linkClassesInherit} self-center font-bold underline`}
               >
-                Les om {related.title ?? 'arrangementet'}
+                Les om {post.relatedEvent?.title ?? 'arrangementet'}
               </RouterLink>
             )}
             <PostLinkButtons links={links} variant="primary" size="md" />

@@ -210,7 +210,7 @@ function EventPage({ event }: { event: CalendarEventTypes }) {
 
         <SponsorGrid sponsors={sponsors} />
 
-        <RelatedPosts posts={event.relatedPosts} />
+        <RelatedPosts posts={event.relatedPosts} className="print:hidden" />
       </div>
     </div>
   );

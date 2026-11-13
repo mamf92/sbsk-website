@@ -152,3 +152,8 @@ export function formatDayShort(date: Date, locale: Locale): string {
 export function formatDayLong(date: Date, locale: Locale): string {
   return format(date, dateLocale(locale), { weekday: 'long', day: 'numeric', month: 'long' });
 }
+
+/** "29. januar 2027" / "29 January 2027": a date that may be from another year, such as a post's. */
+export function formatDate(date: Date, locale: Locale): string {
+  return format(date, dateLocale(locale), { day: 'numeric', month: 'long', year: 'numeric' });
+}
