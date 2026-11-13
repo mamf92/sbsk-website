@@ -14,6 +14,7 @@ import {
   formatDateTime,
   formatDateTimeRange,
   monthAbbreviation,
+  parseInstant,
   timeRange,
 } from '../utils/eventDateFormat';
 import { signupState } from '../utils/signup';
@@ -49,11 +50,10 @@ export default function SingleEventPage() {
   const price = pickLocale(event.signup?.price, locale);
   const state = signupState(event.signup, now);
 
+  const opens = parseInstant(event.signup?.opens);
   const signupFact: Record<typeof state, string | null> = {
     open: t('facts.signupOpen'),
-    notYetOpen: event.signup?.opens
-      ? t('facts.signupNotYetOpen', { date: formatDateTime(new Date(event.signup.opens), locale) })
-      : null,
+    notYetOpen: opens ? t('facts.signupNotYetOpen', { date: formatDateTime(opens, locale) }) : null,
     closed: t('facts.signupClosed'),
     dropIn: t('facts.signupDropIn'),
     none: null,

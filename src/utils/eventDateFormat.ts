@@ -106,6 +106,16 @@ const WHEN: Intl.DateTimeFormatOptions = {
   hour12: false,
 };
 
+/**
+ * A CMS timestamp as a Date, or null when it is missing or does not parse. Intl throws a
+ * RangeError on an invalid Date, so every optional CMS time goes through this before display.
+ */
+export function parseInstant(iso: string | null | undefined): Date | null {
+  if (!iso) return null;
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 /** "fredag 29. januar kl. 18:00" / "Friday 29 January at 18:00", in Oslo time. */
 export function formatDateTime(date: Date, locale: Locale): string {
   return format(date, dateLocale(locale), WHEN);

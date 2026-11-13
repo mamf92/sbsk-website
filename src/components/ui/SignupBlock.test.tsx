@@ -34,6 +34,12 @@ describe('SignupBlock', () => {
     expect(open).toHaveBeenCalledWith(url, '_blank', 'noopener,noreferrer');
   });
 
+  it('drops an unparseable deadline instead of crashing the page', () => {
+    render(<SignupBlock signup={{ method: 'spond', url, closes: 'snart' }} now={now} />);
+    const button = screen.getByRole('button', { name: 'Meld deg på' });
+    expect(button).toHaveAccessibleDescription('Åpner spond.com i en ny fane');
+  });
+
   it('falls back to the default label', () => {
     render(<SignupBlock signup={{ method: 'spond', url }} now={now} />);
     expect(screen.getByRole('button', { name: 'Meld deg på' })).toBeInTheDocument();
