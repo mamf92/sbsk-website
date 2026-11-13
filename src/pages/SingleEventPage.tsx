@@ -7,6 +7,7 @@ import { Button } from '../components/ui/Buttons';
 import { EventScheduleCard, type EventScheduleCardTone } from '../components/ui/EventScheduleCard';
 import { dayLabel, monthAbbreviation, timeRange } from '../utils/eventDateFormat';
 import { openExternal, safeExternalUrl } from '../utils/safeUrl';
+import { signupState } from '../utils/signup';
 import { Link } from '../components/ui/Link';
 
 /**
@@ -28,8 +29,10 @@ export default function SingleEventPage() {
   const hasSchedule = !!event.schedule?.length;
   // Every URL below comes from the CMS and is checked here, at render time: Studio validation
   // does not cover documents written straight to the API.
-  const signupUrl = safeExternalUrl(event.signupUrl?.url);
-  const signupLabel = event.signupUrl?.label || 'Meld deg på';
+  // Interim until the sign-up block in WP4: only an open link sign-up shows a button.
+  const signupUrl =
+    signupState(event.signup, new Date()) === 'open' ? safeExternalUrl(event.signup?.url) : null;
+  const signupLabel = event.signup?.label?.nb || 'Meld deg på';
 
   return (
     <div className="dark:bg-darkestblue min-h-[60vh] bg-white pb-16 dark:text-white">
@@ -62,12 +65,17 @@ export default function SingleEventPage() {
             </span>
             <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6">
               {event.sponsors!.map((sponsor, index) => {
-                const logo = sponsor.logo && (
+                // The logo is optional now: without one, the sponsor's name stands in.
+                const logo = sponsor.logo ? (
                   <img
                     src={urlFor(sponsor.logo).width(320).url()}
                     alt={sponsor.altText}
                     className="h-16 w-auto object-contain sm:h-24"
                   />
+                ) : (
+                  <span className="font-heading text-darkestblue text-lg font-bold">
+                    {sponsor.altText}
+                  </span>
                 );
                 const sponsorLink = safeExternalUrl(sponsor.link);
                 const ctaTarget = safeExternalUrl(sponsor.ctaLink) ?? sponsorLink;
