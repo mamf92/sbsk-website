@@ -275,7 +275,7 @@ The render rule lives in one pure function, `signupState(signup, now)` →
 `'open' | 'notYetOpen' | 'closed' | 'dropIn' | 'none'`, unit tested at each boundary.
 
 **`sponsor`** («Sponsor») — replaces the inline object in `eventType.ts`. Keep the existing
-field names (`logo`, `altText`, `link`, `ctaLabel`, `ctaLink`) so data stays valid, add:
+field names (`logo`, `altText`, `link`, `ctaLabel`, `ctaLink`), add:
 
 ```
 tier: 'hovedsponsor' | 'sponsor' | 'partner'   radio, default 'sponsor'
@@ -313,7 +313,13 @@ Map link built in code: `https://www.openstreetmap.org/search?query=${encodeURIC
   coalesces: `"signup": coalesce(signup, select(defined(signupUrl.url) => {"method":"lenke",
 "url": signupUrl.url, "label": {"nb": signupUrl.label}}))`. No content uses it today
   (checked 2026-11-11), so removal can follow later.
-- Sponsors array `of: [{type: 'sponsor'}]`.
+- Sponsors array `of: [{type: 'sponsor'}]`. Existing entries are stored as anonymous objects
+  (`_type: 'object'`, or no `_type`), which the new member type does not match, so Studio
+  would show them as unknown items. Before switching, query
+  `*[_type=="event" && count(sponsors) > 0]{_id, sponsors[]{_key, _type}}` with the Sanity
+  MCP. If any exist, patch each item's `_type` to `sponsor` (a draft-free patch, same
+  `_key`s) in the same PR and note it; if none exist (the case on 2026-11-11), switch directly.
+  The GROQ projection reads the same fields either way.
 
 Deploy the schema (`npx sanity schema deploy` via the Studio build, or the Sanity MCP
 `deploy_schema`) only after the PR merges into `main` — the production dataset is shared
@@ -445,7 +451,8 @@ first, and a `preview` with the date range.
   days[]{ _key, date, label, opens, closes, summary, signup, venue,
     sessions[] | order(start asc){ _key, start, end, title, format, room, seats, level,
       description, signup, sponsor,
-      "game": coalesce(game->{ name, image, minPlayers, maxPlayers }, { "name": gameName }) } },
+      "game": coalesce(game->{ "name": title, image, "minPlayers": playersMin,
+        "maxPlayers": playersMax }, { "name": gameName }) } },
   signup, pricing, venue, sponsors[]{ ..., "logo": logo, "logoOnDark": logoOnDark },
   faq, rules, contactEmail, gallery
 }
