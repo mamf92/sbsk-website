@@ -9,7 +9,8 @@
     "signupNotYetOpen": "Opens {{date}}",
     "signupClosed": "Closed",
     "signupDropIn": "Just show up",
-    "capacity": "{{count}} places"
+    "capacity_one": "{{count}} place",
+    "capacity_other": "{{count}} places"
   },
   "signup": {
     "default": "Sign up",

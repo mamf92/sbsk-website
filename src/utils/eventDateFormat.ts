@@ -15,14 +15,17 @@ export const TIME_ZONE = 'Europe/Oslo';
 // One formatter per option set, built once. `toLocale*String` with options builds a new
 // `Intl.DateTimeFormat` on every call, and a calendar row calls these about ten times.
 const formatters = new Map<string, Intl.DateTimeFormat>();
-function format(date: Date, locale: string, options: Intl.DateTimeFormatOptions): string {
+function formatter(locale: string, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
   const key = `${locale}|${JSON.stringify(options)}`;
-  let formatter = formatters.get(key);
-  if (!formatter) {
-    formatter = new Intl.DateTimeFormat(locale, { ...options, timeZone: TIME_ZONE });
-    formatters.set(key, formatter);
+  let cached = formatters.get(key);
+  if (!cached) {
+    cached = new Intl.DateTimeFormat(locale, { ...options, timeZone: TIME_ZONE });
+    formatters.set(key, cached);
   }
-  return formatter.format(date);
+  return cached;
+}
+function format(date: Date, locale: string, options: Intl.DateTimeFormatOptions): string {
+  return formatter(locale, options).format(date);
 }
 
 /** "2027-01-29": the Oslo calendar date of an instant. Sorts and compares as a string. */
@@ -97,10 +100,12 @@ export function dateLocale(locale: Locale): string {
   return locale === 'en' ? 'en-GB' : 'nb-NO';
 }
 
+// With the year: these name dates on pages read months ahead, and across New Year.
 const WHEN: Intl.DateTimeFormatOptions = {
   weekday: 'long',
   day: 'numeric',
   month: 'long',
+  year: 'numeric',
   hour: '2-digit',
   minute: '2-digit',
   hour12: false,
@@ -116,7 +121,7 @@ export function parseInstant(iso: string | null | undefined): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-/** "fredag 29. januar kl. 18:00" / "Friday 29 January at 18:00", in Oslo time. */
+/** "fredag 29. januar 2027 kl. 18:00" / "Friday 29 January 2027 at 18:00", in Oslo time. */
 export function formatDateTime(date: Date, locale: Locale): string {
   return format(date, dateLocale(locale), WHEN);
 }
@@ -126,27 +131,14 @@ export function formatDateTime(date: Date, locale: Locale): string {
  * whatever the two ends share, so the same call reads well for an evening and for a weekend.
  */
 export function formatDateTimeRange(start: Date, end: Date, locale: Locale): string {
-  const key = `${dateLocale(locale)}|range`;
-  let formatter = formatters.get(key);
-  if (!formatter) {
-    formatter = new Intl.DateTimeFormat(dateLocale(locale), { ...WHEN, timeZone: TIME_ZONE });
-    formatters.set(key, formatter);
-  }
-  return formatter.formatRange(start, end);
+  return formatter(dateLocale(locale), WHEN).formatRange(start, end);
 }
 
-/** "29.–31. januar 2027" / "29–31 January 2027": the dates only, for a festival. */
+/** "29.–31. januar 2027" / "29–31 January 2027": the dates only, for the festival page. */
 export function formatDateRange(start: Date, end: Date, locale: Locale): string {
-  const key = `${dateLocale(locale)}|daterange`;
-  let formatter = formatters.get(key);
-  if (!formatter) {
-    formatter = new Intl.DateTimeFormat(dateLocale(locale), {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      timeZone: TIME_ZONE,
-    });
-    formatters.set(key, formatter);
-  }
-  return formatter.formatRange(start, end);
+  return formatter(dateLocale(locale), {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).formatRange(start, end);
 }

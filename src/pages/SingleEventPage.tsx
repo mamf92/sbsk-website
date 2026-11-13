@@ -7,6 +7,7 @@ import { EventScheduleCard, type EventScheduleCardTone } from '../components/ui/
 import { EventFacts, type EventFact } from '../components/ui/EventFacts';
 import { SignupBlock } from '../components/ui/SignupBlock';
 import { SponsorGrid, SponsorStrip } from '../components/ui/Sponsors';
+import { Tag } from '../components/ui/Tag';
 import { VenueCard } from '../components/ui/VenueCard';
 import { linkClassesInherit } from '../components/ui/Link';
 import {
@@ -46,7 +47,10 @@ export default function SingleEventPage() {
   const hasProgram = !!event.programInfo?.length;
   const sponsors = event.showSponsors ? (event.sponsors ?? []) : [];
   const hasSchedule = !!event.schedule?.length;
+  // One place for every spot the page names it. `location` is the legacy free-text field.
   const place = event.venue?.name ?? event.location;
+  const icsLocation =
+    [event.venue?.name, event.venue?.address].filter(Boolean).join(', ') || event.location;
   const price = pickLocale(event.signup?.price, locale);
   const state = signupState(event.signup, now);
 
@@ -91,9 +95,7 @@ export default function SingleEventPage() {
 
         <div className="flex flex-col gap-0">
           <div className="bg-darkblue flex flex-col gap-2 p-4 text-white sm:p-6">
-            <span className="font-heading text-orange text-xs font-bold tracking-[0.14em] uppercase">
-              {t('kicker')}
-            </span>
+            <Tag tone="orange">{t('kicker')}</Tag>
             <h1 className="font-heading text-h1 tracking-heading font-bold" lang={nbLang}>
               {event.title}
             </h1>
@@ -131,12 +133,13 @@ export default function SingleEventPage() {
           day={dayLabel(start, end)}
           month={monthAbbreviation(start)}
           title={event.title}
-          meta={`${timeRange(start, end)}${event.location ? ` · ${event.location}` : ''}`}
+          meta={`${timeRange(start, end)}${place ? ` · ${place}` : ''}`}
           tone={tone}
+          lang={nbLang}
           ics={{
             title: event.title,
             description: event.content ? toPlainText(event.content) : undefined,
-            location: event.venue?.address ?? event.location,
+            location: icsLocation,
             start,
             end,
             url: window.location.href,
@@ -169,7 +172,7 @@ export default function SingleEventPage() {
             {event.schedule!.map((entry) => {
               const entryStart = new Date(entry.startTime);
               const entryEnd = new Date(entry.endTime);
-              const location = entry.location ?? event.location;
+              const location = entry.location ?? place;
 
               return (
                 <EventScheduleCard
@@ -179,9 +182,10 @@ export default function SingleEventPage() {
                   title={entry.label}
                   meta={`${timeRange(entryStart, entryEnd)}${location ? ` · ${location}` : ''}`}
                   tone={tone}
+                  lang={nbLang}
                   ics={{
                     title: entry.label,
-                    location,
+                    location: entry.location ?? icsLocation,
                     start: entryStart,
                     end: entryEnd,
                   }}

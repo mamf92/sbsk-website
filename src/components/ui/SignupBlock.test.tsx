@@ -49,7 +49,7 @@ describe('SignupBlock', () => {
     render(
       <SignupBlock signup={{ method: 'spond', url, closes: '2027-01-20T22:59:00Z' }} now={now} />,
     );
-    expect(screen.getByText(/Frist onsdag 20\. januar kl\. 23:59/)).toBeInTheDocument();
+    expect(screen.getByText(/Frist onsdag 20\. januar 2027 kl\. 23:59/)).toBeInTheDocument();
   });
 
   it('shows a disabled button and the opening time before sign-up opens', () => {
@@ -57,7 +57,9 @@ describe('SignupBlock', () => {
       <SignupBlock signup={{ method: 'spond', url, opens: '2027-01-15T17:00:00Z' }} now={now} />,
     );
     expect(screen.getByRole('button', { name: 'Meld deg på' })).toBeDisabled();
-    expect(screen.getByText(/Påmeldingen åpner fredag 15\. januar kl\. 18:00/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Påmeldingen åpner fredag 15\. januar 2027 kl\. 18:00/),
+    ).toBeInTheDocument();
   });
 
   it('says when sign-up is closed, and when there is none to do', () => {

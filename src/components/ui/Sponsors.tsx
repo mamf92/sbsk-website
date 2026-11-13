@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Button } from './Buttons';
+import { Link } from './Link';
 import { useEventsT } from '../../i18n';
 import { urlFor } from '../../sanity/sanityImageUrl';
 import type { SponsorTier, SponsorTypes } from '../../sanity/queryHelpers/fragments';
@@ -15,10 +16,20 @@ const logoBox = {
 
 /**
  * One sponsor's logo, linked to their site when that link is safe. Many logos are dark on a
- * transparent background, so in dark mode the logo sits on a white tile unless the editor gave
- * a separate light version. A sponsor without a logo gets a text tile with its name.
+ * transparent background. On a surface that follows the theme (`themed`), dark mode shows the
+ * editor's light version when there is one, else puts the logo on a white tile. On a fixed
+ * light surface such as the orange strip, the normal logo is always right. A sponsor without a
+ * logo gets a text tile with its name.
  */
-export function SponsorLogo({ sponsor, size }: { sponsor: SponsorTypes; size: SponsorTier }) {
+export function SponsorLogo({
+  sponsor,
+  size,
+  themed = true,
+}: {
+  sponsor: SponsorTypes;
+  size: SponsorTier;
+  themed?: boolean;
+}) {
   const t = useEventsT();
   const link = safeExternalUrl(sponsor.link);
   const box = `${logoBox[size]} flex items-center justify-center`;
@@ -32,7 +43,7 @@ export function SponsorLogo({ sponsor, size }: { sponsor: SponsorTypes; size: Sp
         {sponsor.altText}
       </span>
     );
-  } else if (sponsor.logoOnDark) {
+  } else if (themed && sponsor.logoOnDark) {
     mark = (
       <span className={box}>
         <img
@@ -49,7 +60,7 @@ export function SponsorLogo({ sponsor, size }: { sponsor: SponsorTypes; size: Sp
     );
   } else {
     mark = (
-      <span className={`${box} bg-white p-2`}>
+      <span className={`${box} ${themed ? 'dark:bg-white dark:p-2' : ''}`}>
         <img
           src={urlFor(sponsor.logo).width(480).url()}
           alt={sponsor.altText}
@@ -61,15 +72,16 @@ export function SponsorLogo({ sponsor, size }: { sponsor: SponsorTypes; size: Sp
 
   if (!link) return <>{mark}</>;
   return (
-    <a
+    <Link
+      variant="inherit"
       href={link}
       target="_blank"
       rel="noopener noreferrer sponsored"
       aria-label={`${sponsor.altText} ${t('opensInNewTab')}`}
-      className="focus-visible:outline-focus-ring block focus-visible:outline-2 focus-visible:outline-offset-2"
+      className="block"
     >
       {mark}
-    </a>
+    </Link>
   );
 }
 
@@ -109,7 +121,7 @@ export const SponsorStrip = React.forwardRef<HTMLElement, SponsorListProps>(
         <ul className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6">
           {main.map((sponsor, index) => (
             <li key={sponsor._key ?? index} className="flex flex-col items-center gap-2">
-              <SponsorLogo sponsor={sponsor} size="hovedsponsor" />
+              <SponsorLogo sponsor={sponsor} size="hovedsponsor" themed={false} />
               <SponsorOffer sponsor={sponsor} />
             </li>
           ))}
@@ -133,7 +145,7 @@ export const SponsorGrid = React.forwardRef<HTMLElement, SponsorListProps>(
         className={['font-body flex flex-col gap-6', className].join(' ')}
         {...props}
       >
-        <h2 className="font-heading text-h2 font-bold">{t('sponsors.title')}</h2>
+        <h2 className="font-heading text-h3 font-bold">{t('sponsors.title')}</h2>
         {groups.map((group) => (
           <div key={group.tier} className="flex flex-col gap-3">
             <h3 className="font-heading text-h4 font-bold">{t(`sponsors.tier.${group.tier}`)}</h3>

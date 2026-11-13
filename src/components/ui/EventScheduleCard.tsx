@@ -29,6 +29,8 @@ interface EventScheduleCardProps {
   /** Powers the trailing "add to calendar" button. */
   ics: IcsEventInput;
   className?: string;
+  /** Language of the card's text when it differs from the page's, e.g. `nb` on an English page. */
+  lang?: string;
 }
 
 /**
@@ -45,11 +47,13 @@ export function EventScheduleCard({
   tone = 'blue',
   ics,
   className = '',
+  lang,
 }: EventScheduleCardProps) {
   const styles = TONE_STYLES[tone];
 
   return (
     <div
+      lang={lang}
       className={['flex border border-black dark:border-white', styles.surface, className]
         .filter(Boolean)
         .join(' ')}
