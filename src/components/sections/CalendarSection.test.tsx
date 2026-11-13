@@ -237,6 +237,25 @@ describe('CalendarSection', () => {
     expect(within(next).getByRole('button', { name: /Meld deg på/ })).toHaveTextContent('Bli med');
   });
 
+  it('offers no RSVP on a festival day, whose sign-up lives on the festival page', async () => {
+    auth.isAuthenticated = true;
+    auth.user = member;
+    const festivalDay: CalendarEventTypes = {
+      _id: 'bgm:fre',
+      title: 'Board Game Masters – Åpningskveld',
+      category: 'turnering',
+      festivalDay: true,
+      detailPath: '/arrangementer/bgm?dag=1',
+      eventStartTime: new Date('2026-08-14T17:00:00'),
+      eventEndTime: new Date('2026-08-14T23:00:00'),
+    };
+    renderSection({ events: [...events, festivalDay] });
+
+    const row = card('Board Game Masters – Åpningskveld');
+    expect(within(row).queryByRole('button', { name: /Meld deg på/ })).not.toBeInTheDocument();
+    expect(getEventParticipants).toHaveBeenCalledWith(expect.not.arrayContaining(['bgm:fre']));
+  });
+
   it('joins an event optimistically', async () => {
     auth.isAuthenticated = true;
     auth.user = member;

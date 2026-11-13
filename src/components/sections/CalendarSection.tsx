@@ -166,7 +166,11 @@ function useRsvp(events: CalendarEventTypes[]) {
   // `event._id` values, joined into a string so the effect's dependency is stable across
   // re-renders that pass an equal-but-new `events` array — an array itself would never satisfy
   // `Object.is` and would re-fetch on every render.
-  const eventIdsKey = events.map((event) => event._id).join(',');
+  // Festival days are not event documents and have no participants to fetch.
+  const eventIdsKey = events
+    .filter((event) => !event.festivalDay)
+    .map((event) => event._id)
+    .join(',');
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -683,7 +687,7 @@ function EventRow({
           </div>
 
           {/* Members-only. Kept as one block so avatars and the RSVP wrap together. */}
-          {rsvp.loggedIn && (
+          {rsvp.loggedIn && !event.festivalDay && (
             <div
               className="flex flex-[1_1_100%] flex-wrap items-center gap-3 sm:flex-none"
               onClick={(clickEvent) => clickEvent.stopPropagation()}
