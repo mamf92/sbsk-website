@@ -2,13 +2,18 @@ import { createSchema } from 'sanity';
 import { describe, expect, it } from 'vitest';
 import { eventType } from './eventType';
 import { sharedObjectTypes } from './objects';
+import { festivalTypes } from './festivalType';
+import { gameType } from './gameType';
 
 // A schema mistake (a field pointing at an unregistered type, a bad option) only shows up when
 // an editor opens the Studio, which no other test does. This compiles the types the way the
 // Studio does and fails on any error-level problem.
 describe('Studio schema', () => {
-  it('compiles the event type and the shared objects without errors', () => {
-    const schema = createSchema({ name: 'test', types: [eventType, ...sharedObjectTypes] });
+  it('compiles the event and festival types and the shared objects without errors', () => {
+    const schema = createSchema({
+      name: 'test',
+      types: [eventType, gameType, ...festivalTypes, ...sharedObjectTypes],
+    });
     const validation =
       (
         schema as unknown as {

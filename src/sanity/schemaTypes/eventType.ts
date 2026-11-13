@@ -1,5 +1,6 @@
 import { defineField, defineType } from 'sanity';
 import { richTextBlocks } from './objects/richText';
+import { isUniqueAcrossEvents } from './slugAcrossEvents';
 
 export const eventType = defineType({
   name: 'event',
@@ -15,7 +16,7 @@ export const eventType = defineType({
     defineField({
       name: 'slug',
       type: 'slug',
-      options: { source: 'title' },
+      options: { source: 'title', isUnique: isUniqueAcrossEvents },
       validation: (rule) => rule.required(),
     }),
     defineField({
