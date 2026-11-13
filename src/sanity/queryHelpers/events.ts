@@ -5,6 +5,8 @@ import {
   SIGNUP_PROJECTION,
   SPONSOR_PROJECTION,
   VENUE_PROJECTION,
+  RELATED_POSTS_PROJECTION,
+  type RelatedPostTypes,
   type SignupTypes,
   type SponsorTypes,
   type VenueTypes,
@@ -46,6 +48,8 @@ export interface CalendarEventTypes {
   pricingInfo?: PortableTextBlock[];
   programInfo?: PortableTextBlock[];
   schedule?: EventScheduleEntryTypes[];
+  /** Detail page only. */
+  relatedPosts?: RelatedPostTypes[];
 }
 
 // Fields every list/calendar row needs — including `hasDetailPage`, which decides whether the
@@ -113,7 +117,8 @@ const EVENT_DETAIL_PROJECTION = `{
   sponsors[]${SPONSOR_PROJECTION},
   pricingInfo,
   programInfo,
-  schedule[]{ _key, label, startTime, endTime, location }
+  schedule[]{ _key, label, startTime, endTime, location },
+  ${RELATED_POSTS_PROJECTION}
 }`;
 
 export const EVENT_BY_SLUG_QUERY = `*[

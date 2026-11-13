@@ -7,6 +7,7 @@ import { HeroImage } from '../../ui/HeroImage';
 import { Link, linkClassesInherit } from '../../ui/Link';
 import { SignupBlock } from '../../ui/SignupBlock';
 import { SponsorGrid, SponsorStrip } from '../../ui/Sponsors';
+import { RelatedPosts } from '../../ui/RelatedPosts';
 import { Tag } from '../../ui/Tag';
 import { VenueCard } from '../../ui/VenueCard';
 import { Program, DAY_PARAM } from './Program';
@@ -286,6 +287,8 @@ export default function FestivalPage({ festival }: { festival: FestivalTypes }) 
             <Carousel images={gallery} label={t('festival.gallery')} />
           </section>
         )}
+
+        <RelatedPosts posts={festival.relatedPosts} className="print:hidden" />
 
         {contact && (
           <section className="font-body flex flex-col gap-2" aria-labelledby="contact-heading">

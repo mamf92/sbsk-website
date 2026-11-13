@@ -180,5 +180,18 @@ export const postType = defineType({
       ],
       validation: (rule) => rule.max(12),
     }),
+    defineField({
+      title: 'Hører til arrangement',
+      name: 'relatedEvent',
+      type: 'reference',
+      description:
+        'Valgfritt. Velg arrangementet innlegget handler om. Da vises innlegget på arrangementets ' +
+        'side, og innlegget får en lenke tilbake dit. Bare arrangementer med egen side kan velges.',
+      to: [{ type: 'event' }, { type: 'festival' }],
+      // Only events with a page of their own can show the post and be linked back to.
+      options: { filter: '_type == "festival" || hasDetailPage == true' },
+      // A post must never stop an editor from deleting an old event; the page copes with a gap.
+      weak: true,
+    }),
   ],
 });

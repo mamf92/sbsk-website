@@ -139,6 +139,7 @@ export const POSTS = [
     publishedAt: daysFromNow(-16, 9),
     category: 'arrangementer',
     content: [block('b6', 'Meld fra i Facebook-gruppa hvis du kan ta en vakt.')],
+    relatedEvent: { _type: 'reference', _ref: 'festival-bgm' },
   },
 ];
 

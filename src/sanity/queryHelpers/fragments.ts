@@ -53,3 +53,17 @@ export const SIGNUP_PROJECTION = `{ method, url, label, opens, closes, price, pr
 export const SPONSOR_PROJECTION = `{ _key, logo, logoOnDark, altText, "tier": coalesce(tier, "sponsor"), link, ctaLabel, ctaLink }`;
 
 export const VENUE_PROJECTION = `{ name, address, meetingPoint, doorsOpen, directions, accessibility, contact }`;
+
+/** A post as a link card on an event or festival page. */
+export interface RelatedPostTypes {
+  _id: string;
+  title: string;
+  subtitle?: string;
+  slug: string;
+  publishedAt: string;
+}
+
+/** Up to three posts about the document in scope (`^`), newest first. */
+export const RELATED_POSTS_PROJECTION = `"relatedPosts": *[
+  _type == "post" && relatedEvent._ref == ^._id && defined(slug.current)
+] | order(publishedAt desc)[0...3]{ _id, title, subtitle, "slug": slug.current, publishedAt }`;

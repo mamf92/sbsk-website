@@ -9,18 +9,18 @@ import { Input } from '../ui/Input';
 import EmptyState from '../ui/EmptyState';
 import { groupByMonth } from '../../utils/groupByMonth';
 import { useState } from 'react';
-import Clock from '../../assets/icons/symbols/clock.svg?react';
 import { getThumbnail, type PostTypes } from '../../sanity/queryHelpers/posts';
 import { hotspotPosition } from '../../utils/sanityImage';
 import type { PostsHeroTypes } from '../../sanity/queryHelpers/posts-hero';
 import { PortableText, toPlainText } from '@portabletext/react';
 import { components } from '../../sanity/editors/portableTextComponents';
 import type { PortableTextBlock } from '@portabletext/types';
-import { useNavigate } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
+import { linkClassesInherit } from '../ui/Link';
+import { PostDate } from '../ui/PostDate';
+import { PostLinkButtons } from '../ui/PostLinkButtons';
+import { resolvePostLinks } from '../../utils/postLinks';
 import { urlFor } from '../../sanity/sanityImageUrl';
-import { isInternalLink, internalLinkPath } from '../../utils/internalLinks';
-import { TIME_ZONE } from '../../utils/eventDateFormat';
-import { safeExternalUrl } from '../../utils/safeUrl';
 
 interface PostsProps {
   postsHero?: PostsHeroTypes;
@@ -301,27 +301,6 @@ function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) 
   );
 }
 
-function PostDate({ publishedAt }: { publishedAt: Date }) {
-  return (
-    <span className="inline-flex flex-wrap items-center gap-1">
-      <Clock className="h-4 w-4 fill-current" aria-hidden="true" />
-      <span className="capitalize">
-        {publishedAt.toLocaleString('no-NO', { weekday: 'long', timeZone: TIME_ZONE })}
-      </span>
-      <span>
-        {publishedAt.toLocaleString('no-NO', {
-          day: 'numeric',
-          month: 'short',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-          timeZone: TIME_ZONE,
-        })}
-      </span>
-    </span>
-  );
-}
-
 function PostCard({
   post,
   expanded,
@@ -331,39 +310,15 @@ function PostCard({
   expanded: boolean;
   onToggle: () => void;
 }) {
-  const navigate = useNavigate();
   const publishedAt = new Date(post.publishedAt);
-  // Only links that will work: trimmed, and either ours or a safe http(s) URL. A CMS URL that
-  // is neither gets no button, and a post whose links are all unsafe gets no actions column.
-  type PostLink = { label: string; internal: string | null; external: string | null };
-  const links = (post.links ?? []).flatMap((link): PostLink[] => {
-    if (typeof link?.url !== 'string') return [];
-    const url = link.url.trim();
-    if (isInternalLink(url)) return [{ label: link.label, internal: url, external: null }];
-    const external = safeExternalUrl(url);
-    return external ? [{ label: link.label, internal: null, external }] : [];
-  });
-  const hasLinks = links.length > 0;
+  // A post whose links are all unsafe gets no actions column.
+  const links = resolvePostLinks(post.links);
   const thumbnail = getThumbnail(post);
 
-  const actions = hasLinks
-    ? links.map((link, index) => {
-        return (
-          <Button
-            key={index}
-            variant={linkVariants[post.category]}
-            size="sm"
-            icon="right"
-            onClick={() => {
-              if (link.internal) navigate(internalLinkPath(link.internal));
-              else if (link.external) window.location.href = link.external;
-            }}
-          >
-            {link.label}
-          </Button>
-        );
-      })
-    : undefined;
+  const actions =
+    links.length > 0 ? (
+      <PostLinkButtons links={links} variant={linkVariants[post.category]} />
+    ) : undefined;
 
   return (
     <Card
@@ -389,6 +344,16 @@ function PostCard({
         />
       )}
       {post.content && <PortableText value={post.content} components={components} />}
+      {post.slug?.current && (
+        <p className="clear-both pt-2">
+          <RouterLink
+            to={`/innlegg/${post.slug.current}`}
+            className={`${linkClassesInherit} font-bold underline`}
+          >
+            Les hele innlegget
+          </RouterLink>
+        </p>
+      )}
     </Card>
   );
 }

@@ -7,6 +7,8 @@ import {
   SIGNUP_PROJECTION,
   SPONSOR_PROJECTION,
   VENUE_PROJECTION,
+  RELATED_POSTS_PROJECTION,
+  type RelatedPostTypes,
   type LocaleBlock,
   type LocaleString,
   type LocaleText,
@@ -73,6 +75,7 @@ export interface FestivalTypes {
   rules?: LocaleBlock;
   contactEmail?: string;
   gallery?: (SanityImageSource & { _key: string; alt?: string })[];
+  relatedPosts?: RelatedPostTypes[];
 }
 
 // Sessions come back in start order (rooms are ordered in `groupByStart`, with Norwegian collation); editors may enter them in any order. A session without a
@@ -122,7 +125,8 @@ export const FESTIVAL_PROJECTION = `{
   faq[]{ _key, question, answer },
   rules,
   contactEmail,
-  gallery
+  gallery,
+  ${RELATED_POSTS_PROJECTION}
 }`;
 
 export const FESTIVAL_BY_SLUG_QUERY = `*[_type == "festival" && slug.current == $slug][0]${FESTIVAL_PROJECTION}`;
