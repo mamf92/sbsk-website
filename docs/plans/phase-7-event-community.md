@@ -320,9 +320,9 @@ alter table public.event_message_reports enable row level security;
 alter table public.event_chat_reads enable row level security;
 alter table public.chat_posting_pauses enable row level security;
 
--- Read messages: active members while the chat is open or read-only. Hidden messages are
--- returned only to admins and the author; everyone else gets them through the
--- event_messages_visible view below, which blanks the body.
+-- Read messages: active members while the chat is open or read-only. A hidden or deleted
+-- message has body = '' in this table (see event_message_moderation below), so a direct
+-- API select or a realtime payload can never carry text a member is not allowed to see.
 create policy "Members read event chat" on public.event_messages
   for select to authenticated using (
     public.admin_session()
@@ -348,18 +348,41 @@ revoke all on public.event_messages, public.event_message_reports,
 revoke insert, update, delete on public.event_messages, public.event_message_reports,
   public.chat_posting_pauses from authenticated;
 revoke all on public.event_chat_reads from anon;
+
+-- Hidden text lives here, never in event_messages. Admin-only, and not in the realtime
+-- publication.
+create table public.event_message_moderation (
+  message_id uuid primary key references public.event_messages (id) on delete cascade,
+  original_body text not null check (char_length(original_body) <= 500),
+  reason text not null check (char_length(reason) between 1 and 200),
+  hidden_at timestamptz not null default now(),
+  hidden_by uuid references auth.users (id) on delete set null
+);
+alter table public.event_message_moderation enable row level security;
+create policy "Admins read moderation" on public.event_message_moderation
+  for select to authenticated using (public.admin_session());
+revoke all on public.event_message_moderation from anon;
+revoke insert, update, delete on public.event_message_moderation from authenticated;
 ```
 
+**Redaction happens in the database, at write time.** Hiding a message moves its text out of
+`event_messages`, in one transaction, into `event_message_moderation` (admin-only), and sets
+`event_messages.body = ''`. Deleting your own message sets `body = ''` with no copy kept. So the
+member-readable table never holds text a member must not see. That holds for direct PostgREST
+selects, for realtime `postgres_changes` payloads (which carry the row as stored) and for
+exports, without relying on the client. The author also sees "Skjult av styret" rather than
+their original text; the board explains the decision through its usual channels if asked.
+Un-hiding (`admin_message_unhide`) copies the text back and deletes the moderation row.
+
 **`event_messages_visible` view** (`security_invoker = true`, so the policy above still
-applies). This is what the client selects. It returns `body = ''` and a flag `hidden = true`
-for hidden messages unless the caller is an admin or the author, and `deleted = true` with
-`body = ''` for deleted ones. The author's name and avatar are joined from `member_directory`,
+applies). This is what the client selects. It adds `hidden = hidden_at is not null`,
+`deleted = deleted_at is not null`, and the author's name and avatar from `member_directory`,
 so a deleted account's messages are gone (cascade) and a renamed member shows the new name.
-Realtime subscribes to the base table, and the client re-reads the changed row through the view
-by id, so a change event never carries a hidden body to a member. Realtime change payloads
-contain the row: test that a hidden row's update event is not delivered to a non-admin, or, if
-it is, that the client does not render `payload.new.body` (the hook uses the payload only as a
-"something changed" signal).
+It does no redaction of its own: there is nothing left to redact. Admins load original text
+for hidden messages from `event_message_moderation` in the moderation queue only.
+Realtime subscribes to the base table. The client re-reads the changed row through the view by
+id to get the joined name, but even the raw payload is safe because the stored body is already
+empty.
 
 **RPCs** (all `language plpgsql security definer set search_path = public`. Each starts with
 `if not public.member_is_active() then raise exception 'not_member'`, and raises stable
@@ -374,7 +397,7 @@ error codes that the client maps in `communityErrors.ts`):
 | `event_chat_accept_rules()`                                                                   | Sets `profiles.chat_rules_accepted_at = now()` for the caller.                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `event_chat_mark_read(p_event_id text)`                                                       | Upserts `event_chat_reads.last_read_at = now()`.                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `event_chat_unread(p_event_ids text[]) returns table(event_id text, unread int)`              | Counts visible `text`/`table` messages by others newer than the caller's marker, capped at 99. Used by the calendar and Min side.                                                                                                                                                                                                                                                                                                                                           |
-| `admin_message_hide(p_message_id uuid, p_reason text)`                                        | `admin_session()` only (`forbidden`). Sets `hidden_at`, `hidden_by`. Resolves open reports as `hidden`. Writes `admin_audit_log` (action `chat_hide`, reason).                                                                                                                                                                                                                                                                                                              |
+| `admin_message_hide(p_message_id uuid, p_reason text)`                                        | `admin_session()` only (`forbidden`). In one transaction: inserts `event_message_moderation(message_id, original_body = body, reason)`, sets `body = ''`, `hidden_at`, `hidden_by`. Resolves open reports as `hidden`. Writes `admin_audit_log` (action `chat_hide`, reason; not the text). `admin_message_unhide(p_message_id)` reverses it, also audited.                                                                                                                 |
 | `admin_report_dismiss(p_report_id uuid)`                                                      | Admin. Sets `resolution = 'dismissed'`. Audited.                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `admin_posting_pause(p_supabase_id uuid, p_days int, p_reason text)`                          | Admin. `p_days` in (1, 7, 30). Upserts `chat_posting_pauses`. Audited.                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `admin_posting_unpause(p_supabase_id uuid)`                                                   | Admin. Deletes the row. Audited.                                                                                                                                                                                                                                                                                                                                                                                                                                            |
@@ -619,9 +642,11 @@ privacy leaks through realtime, notifications or exports.
       posting from two tabs cannot exceed the rate limit; joining two overlapping tables at once
       gives one `slot_taken`; 10 parallel joins on a table with `seats_max = 4` seat exactly 3
       plus the host and waitlist 7; `table_confirmed` fires once under parallel joins.
-- [ ] **Hidden content does not leak**: a non-admin never gets a hidden or deleted body from
-      the view, from a realtime payload the client renders, from a notification, or from the
-      export of another member.
+- [ ] **Hidden content does not leak**: after hide or delete, no row a non-admin can select
+      (base table or view) contains the original text. pgTAP asserts it from the member role
+      with a direct `select body from event_messages`. `event_message_moderation` is not in the
+      `supabase_realtime` publication, and a realtime test (WP4) shows the hide update arrives
+      with an empty body. Notifications and other members' exports never include it.
 - [ ] **XSS**: chat bodies, table titles, notes and report notes are React text children. The
       `linkifyText()` tests cover hostile URLs. `react/no-danger` lint is on (event-pages §8).
       A Playwright spec posts `<img src=x onerror=alert(1)>` and `javascript:alert(1)` and
@@ -659,6 +684,7 @@ for this reason as well as the moderation load.
 | -------------------------------- | --------------------------------- | ---------------------------------------------- | ----------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
 | Event chat messages              | `event_messages`                  | Arranging an event with other members          | (b) membership    | Active members while the chat is readable; board      | Event end + 90 days                                                                              | Deleted (cascade)                                                                                                 |
 | Reports filed                    | `event_message_reports`           | Moderation                                     | (f)               | Board; the reporter sees their own                    | 12 months after resolution                                                                       | Reporter set null; reports on your own messages deleted with the messages                                         |
+| Text of hidden messages          | `event_message_moderation`        | Moderation evidence                            | (f)               | Board only                                            | Same as the message: event end + 90 days                                                         | Deleted with the message (cascade)                                                                                |
 | Read markers and per-event mutes | `event_chat_reads`                | Unread counts, notification preference         | (b)               | Only you                                              | Event end + 90 days                                                                              | Deleted                                                                                                           |
 | Posting pauses                   | `chat_posting_pauses`             | Moderation                                     | (f)               | You (own); board                                      | Until it expires + 30 days                                                                       | Deleted                                                                                                           |
 | Chat rules accepted at           | `profiles.chat_rules_accepted_at` | Showing the rules once                         | (b)               | You; board                                            | With the profile                                                                                 | Deleted with the profile                                                                                          |
@@ -673,7 +699,7 @@ for this reason as well as the moderation load.
 - **Export** (gdpr.md step 2): add `event_chat` (your messages: event title, time, text, edited
   or deleted state; not other people's messages), `reports_filed`, `tables_hosted`,
   `table_seats`, `chat_posting_pauses`, `chat_rules_accepted_at`.
-- **Retention job** (gdpr.md step 4, nightly): delete `event_messages`, `game_tables` (and so
+- **Retention job** (gdpr.md step 4, nightly): delete `event_messages` (and so `event_message_moderation`), `game_tables` (and so
   seats) and `event_chat_reads` for events where `ends_at < now() - 90 days`; delete resolved
   reports older than 12 months; delete expired pauses older than 30 days; delete
   `event_windows` older than 1 year. Delete in batches of 1,000 to keep the job short.
