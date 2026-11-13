@@ -19,6 +19,8 @@ export default defineConfig({
       // and its validation stay covered. `ContactSection.test.tsx` mocks the flag off to
       // cover the email-only state the site actually ships.
       VITE_ENABLE_CONTACT_FORM: 'true',
+      // The language toggle is hidden in production until the event pages are translated.
+      VITE_ENABLE_I18N: 'true',
     },
     setupFiles: ['./src/test/setup.ts'],
     // Setting `exclude` replaces vitest's defaults rather than extending them,

@@ -3,8 +3,10 @@ import { Outlet, ScrollRestoration } from 'react-router-dom';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import RouteFallback from './components/sections/RouteFallback';
+import { useDocumentLang } from './hooks/locale/useLocale';
 
 export default function App() {
+  useDocumentLang();
   return (
     <div className="flex min-h-dvh flex-col">
       {/* Nothing reset the scroll position on navigation, so going home from the bottom of a
