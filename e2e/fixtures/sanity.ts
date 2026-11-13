@@ -215,11 +215,92 @@ export const BOARD_MEMBER = {
   order: 1,
 };
 
+/** A date `days` from today as Sanity stores a `date` field: "YYYY-MM-DD". */
+function dateFromNow(days: number): string {
+  return daysFromNow(days, 12).slice(0, 10);
+}
+
+export const FESTIVAL_BGM = {
+  _id: 'festival-bgm',
+  _type: 'festival',
+  series: 'bgm',
+  edition: 'XIX',
+  title: { nb: 'Board Game Masters', en: 'Board Game Masters' },
+  slug: slug('board-game-masters-test'),
+  tagline: { nb: 'Tre dager med turneringer og fri spilling.', en: 'Three days of tournaments.' },
+  venue: { name: 'Tasta bydelshus', address: 'Tastaveden 2, Stavanger' },
+  signup: {
+    method: 'spond',
+    url: 'https://spond.com/landing/event/bgm',
+    price: { nb: '200 kr for alle dager' },
+  },
+  days: [
+    {
+      _key: 'fre',
+      date: dateFromNow(30),
+      opens: '17:00',
+      closes: '23:00',
+      label: { nb: 'Åpningskveld' },
+      sessions: [
+        {
+          _key: 's-catan',
+          start: '18:00',
+          end: '21:00',
+          format: 'turnering',
+          title: { nb: 'Innledende runder: Catan', en: 'Qualifiers: Catan' },
+          room: 'Sal A',
+          seats: 32,
+        },
+        {
+          _key: 's-learn',
+          start: '18:00',
+          end: '19:00',
+          format: 'laer-a-spille',
+          title: { nb: 'Lær å spille Azul' },
+          room: 'Sal B',
+        },
+        {
+          _key: 's-free',
+          start: '19:00',
+          end: '23:00',
+          format: 'fri-spilling',
+          title: { nb: 'Fri spilling' },
+        },
+      ],
+    },
+    {
+      _key: 'lor',
+      date: dateFromNow(31),
+      opens: '10:00',
+      closes: '22:00',
+      sessions: [
+        {
+          _key: 's-final',
+          start: '14:00',
+          end: '17:00',
+          format: 'finale',
+          title: { nb: 'Finale: Catan' },
+        },
+      ],
+    },
+    { _key: 'son', date: dateFromNow(32), opens: '11:00', closes: '18:00' },
+  ],
+  faq: [
+    {
+      _key: 'faq-1',
+      question: { nb: 'Må jeg kunne spillene fra før?' },
+      answer: { nb: [block('faq-1-a', 'Nei, vi har egne økter for å lære.')] },
+    },
+  ],
+  contactEmail: 'styret@example.test',
+};
+
 /** The dataset the queries run against, in the same shape Sanity stores documents. */
 export const DATASET = [
   UPCOMING_EVENT,
   UPCOMING_TOURNAMENT,
   PAST_EVENT,
+  FESTIVAL_BGM,
   ...POSTS,
   HOME_HERO,
   CALENDAR_HERO,

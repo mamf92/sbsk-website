@@ -1,4 +1,3 @@
-import type { LoaderFunctionArgs } from 'react-router-dom';
 import { type SanityImageSource } from '@sanity/image-url';
 import { client } from '../client';
 import type { PortableTextBlock } from 'sanity';
@@ -129,14 +128,4 @@ export async function calendarEventsLoader() {
   // An empty archive is a legitimate state — the calendar renders its own empty copy — so
   // this resolves to `[]` rather than throwing the way the upcoming-only list does.
   return { events: events ?? [] };
-}
-
-export async function eventDetailLoader({ params }: LoaderFunctionArgs) {
-  const slug = params.id;
-  if (!slug) throw new Response('Missing event slug', { status: 400 });
-
-  const event = await client.fetch<CalendarEventTypes>(EVENT_BY_SLUG_QUERY, { slug });
-  if (!event) throw new Response('Event not found', { status: 404 });
-
-  return { event };
 }

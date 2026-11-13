@@ -169,8 +169,18 @@ export async function arrangementLoader({ params }: LoaderFunctionArgs): Promise
  * the page keeps its placeholder. Never a 404: the footer links here.
  */
 export async function boardGameMastersLoader(): Promise<{ festival: FestivalTypes | null }> {
-  const festival = await client.fetch<FestivalTypes | null>(CURRENT_BGM_QUERY, {
-    today: osloDateKey(new Date()),
-  });
-  return { festival: festival ?? null };
+  let festival: FestivalTypes | null;
+  try {
+    festival = await client.fetch<FestivalTypes | null>(CURRENT_BGM_QUERY, {
+      today: osloDateKey(new Date()),
+    });
+  } catch (error) {
+    // The nav links here: a Sanity outage shows the placeholder, not the error page.
+    console.error('Board Game Masters query failed:', error);
+    return { festival: null };
+  }
+  // Anything but a document (a malformed answer, or a stub's blanket `[]`) is "no edition yet".
+  return {
+    festival: festival && typeof festival === 'object' && '_id' in festival ? festival : null,
+  };
 }

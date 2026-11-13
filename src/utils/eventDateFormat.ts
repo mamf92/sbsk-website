@@ -142,3 +142,13 @@ export function formatDateRange(start: Date, end: Date, locale: Locale): string 
     year: 'numeric',
   }).formatRange(start, end);
 }
+
+/** "fre. 29." / "Fri 29": a festival day on the day switcher. */
+export function formatDayShort(date: Date, locale: Locale): string {
+  return format(date, dateLocale(locale), { weekday: 'short', day: 'numeric' });
+}
+
+/** "fredag 29. januar" / "Friday 29 January": a festival day's heading. */
+export function formatDayLong(date: Date, locale: Locale): string {
+  return format(date, dateLocale(locale), { weekday: 'long', day: 'numeric', month: 'long' });
+}

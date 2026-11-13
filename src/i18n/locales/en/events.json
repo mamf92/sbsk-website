@@ -37,7 +37,24 @@
     "reset": "Reset",
     "addToCalendar": "Add programme to calendar",
     "print": "Print programme",
-    "emptyDay": "The programme for this day is coming soon"
+    "emptyDay": "The programme for this day is coming soon",
+    "chooseDay": "Choose day",
+    "filterLabel": "Show formats",
+    "sessions_one": "{{count}} session",
+    "sessions_other": "{{count}} sessions",
+    "seats_one": "{{count}} seat",
+    "seats_other": "{{count}} seats",
+    "room": "Where",
+    "showMore": "Show more",
+    "showLess": "Show less",
+    "seeDay": "See the programme for {{day}}",
+    "level": {
+      "nybegynner": "For beginners",
+      "alle": "For everyone",
+      "erfaren": "For experienced players"
+    },
+    "players": "{{min}}–{{max}} players",
+    "printHeading": "Programme"
   },
   "format": {
     "turnering": "Tournament",
@@ -59,8 +76,20 @@
     "title": "Sponsors"
   },
   "faq": "FAQ",
-  "contact": "Questions? Email {{email}}",
   "kicker": "Event",
   "pricing": "Prices",
-  "opensInNewTab": "(opens in a new tab)"
+  "opensInNewTab": "(opens in a new tab)",
+  "festival": {
+    "seeProgram": "See the programme",
+    "days": "The days",
+    "about": "About the event",
+    "signupAndPrices": "Sign-up and prices",
+    "perDaySignup": "Some days and sessions have their own sign-up. You will find it in the programme.",
+    "rules": "Rules and practical info",
+    "gallery": "Photos from earlier years",
+    "contactTitle": "Contact",
+    "elsewhere": "Different venue on {{day}}",
+    "doors": "Doors open {{opens}}, we close {{closes}}",
+    "contactLead": "Questions? Email"
+  }
 }

@@ -3,7 +3,7 @@
  *
  * The point is partial rendering: a route that fetches two things should show the one that
  * arrived. Throwing is still the right move when a route has nothing to show without the data —
- * `eventDetailLoader` throws its 404 so `RouteError` can render one — so this is deliberately
+ * `arrangementLoader` throws its 404 so `RouteError` can render one — so this is deliberately
  * opt-in per source rather than wrapped around every fetch.
  */
 export async function settle<T>(promise: Promise<T>): Promise<{ data: T | null; failed: boolean }> {
