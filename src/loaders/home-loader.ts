@@ -1,5 +1,6 @@
 import { homeHeroLoader } from '../sanity/queryHelpers/home-hero';
 import { postsLoader } from '../sanity/queryHelpers/posts';
+import { upcomingFestivalLoader } from '../sanity/queryHelpers/festivals';
 import { settle } from './settle';
 
 /**
@@ -10,13 +11,16 @@ import { settle } from './settle';
  * Each part resolves to its data or to an error flag, and the page renders what it has.
  */
 export async function homeLoader() {
-  const [hero, posts] = await Promise.all([
+  const [hero, posts, festival] = await Promise.all([
     settle(homeHeroLoader().then((result) => result.homeHero)),
     settle(postsLoader().then((result) => result.posts)),
+    // A teaser nobody misses if it fails.
+    settle(upcomingFestivalLoader()),
   ]);
 
   return {
     homeHero: hero.data ?? null,
+    festival: festival.data ?? null,
     posts: posts.data ?? [],
     // Distinguished from "loaded, and there is nothing" on purpose: telling a visitor there are no
     // posts when the truth is we could not reach Sanity is a lie the empty state cannot tell apart.

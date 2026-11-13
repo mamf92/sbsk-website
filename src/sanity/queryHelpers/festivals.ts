@@ -184,3 +184,70 @@ export async function boardGameMastersLoader(): Promise<{ festival: FestivalType
     festival: festival && typeof festival === 'object' && '_id' in festival ? festival : null,
   };
 }
+
+/** The calendar's view of a festival: one row per day, built by `festivalDayRows`. */
+export interface FestivalCalendarTypes {
+  _id: string;
+  title?: LocaleString;
+  slug: string;
+  venue?: { name?: string } | null;
+  days?: Pick<FestivalDayTypes, '_key' | 'date' | 'label' | 'opens' | 'closes'>[];
+}
+
+export const FESTIVAL_CALENDAR_QUERY = `*[_type == "festival" && defined(slug.current)]{
+  _id,
+  title,
+  "slug": slug.current,
+  venue{ name },
+  days[]{ _key, date, label, opens, closes }
+}`;
+
+export async function calendarFestivalsLoader(): Promise<FestivalCalendarTypes[]> {
+  const festivals = await client.fetch<FestivalCalendarTypes[] | null>(FESTIVAL_CALENDAR_QUERY);
+  return Array.isArray(festivals) ? festivals : [];
+}
+
+/** What the home page teaser needs about the next festival. */
+export interface FestivalTeaserTypes {
+  _id: string;
+  title?: LocaleString;
+  slug: string;
+  edition?: string;
+  tagline?: LocaleText;
+  heroImage?: (SanityImageSource & { alt?: string }) | null;
+  startDate: string;
+  endDate: string;
+}
+
+/**
+ * The festival the home page points to: one that is running, or starts within `$until` (an
+ * Oslo date about 60 days out). Dates compare as "YYYY-MM-DD" strings.
+ */
+export const UPCOMING_FESTIVAL_QUERY = `*[
+  _type == "festival"
+  && defined(slug.current)
+  && days[-1].date >= $today
+  && days[0].date <= $until
+] | order(days[0].date asc)[0]{
+  _id,
+  title,
+  "slug": slug.current,
+  edition,
+  tagline,
+  heroImage,
+  "startDate": days[0].date,
+  "endDate": days[-1].date
+}`;
+
+const TEASER_DAYS = 60;
+
+export async function upcomingFestivalLoader(
+  now = new Date(),
+): Promise<FestivalTeaserTypes | null> {
+  const until = new Date(now.getTime() + TEASER_DAYS * 86_400_000);
+  const festival = await client.fetch<FestivalTeaserTypes | null>(UPCOMING_FESTIVAL_QUERY, {
+    today: osloDateKey(now),
+    until: osloDateKey(until),
+  });
+  return festival && typeof festival === 'object' && '_id' in festival ? festival : null;
+}

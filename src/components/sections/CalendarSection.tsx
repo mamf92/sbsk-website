@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { eventDetailPath } from '../../utils/eventLinks';
 import { Link, useNavigate } from 'react-router-dom';
 import { PortableText, toPlainText } from '@portabletext/react';
 import { Reveal } from '../ui/Reveal';
@@ -619,8 +620,7 @@ function EventRow({
 
   // Whether the event has a page of its own is a content decision (`hasDetailPage` in Sanity),
   // never inferred from category, size, or whether there happens to be inline content.
-  const detailPath =
-    event.hasDetailPage && event.eventSlug ? `/arrangementer/${event.eventSlug}` : null;
+  const detailPath = eventDetailPath(event);
   // The chevron is now driven by whether there is anything to open, not by the category —
   // a turnering with a description expands like any other event, and reaches its own page
   // through the "Se arrangementet" button in the panel.

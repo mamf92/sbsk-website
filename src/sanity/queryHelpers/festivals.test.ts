@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { evaluate, parse } from 'groq-js';
-import { ARRANGEMENT_BY_SLUG_QUERY, CURRENT_BGM_QUERY, FESTIVAL_BY_SLUG_QUERY } from './festivals';
+import {
+  ARRANGEMENT_BY_SLUG_QUERY,
+  CURRENT_BGM_QUERY,
+  FESTIVAL_BY_SLUG_QUERY,
+  FESTIVAL_CALENDAR_QUERY,
+  UPCOMING_FESTIVAL_QUERY,
+} from './festivals';
 
 // The queries run against a small dataset with the real GROQ engine, so the edition choice and
 // the projection's ordering and fallbacks are pinned without a live Sanity project.
@@ -107,5 +113,40 @@ describe('ARRANGEMENT_BY_SLUG_QUERY', () => {
       { slug: 'kalender' },
     );
     expect(calendarOnly).toEqual({ event: null, festival: null });
+  });
+});
+
+describe('UPCOMING_FESTIVAL_QUERY', () => {
+  it('picks a festival that is running or starts before the cut-off', async () => {
+    const soon = await run<{ _id: string; startDate: string }>(UPCOMING_FESTIVAL_QUERY, {
+      today: '2026-12-15',
+      until: '2027-02-13',
+    });
+    expect(soon).toMatchObject({ _id: 'annet-2027', startDate: '2027-01-01' });
+
+    const running = await run<{ _id: string }>(UPCOMING_FESTIVAL_QUERY, {
+      today: '2027-01-30',
+      until: '2027-03-31',
+    });
+    expect(running._id).toBe('bgm-2027');
+  });
+
+  it('is null when nothing starts before the cut-off', async () => {
+    expect(
+      await run(UPCOMING_FESTIVAL_QUERY, { today: '2027-03-01', until: '2027-04-30' }),
+    ).toBeNull();
+  });
+});
+
+describe('FESTIVAL_CALENDAR_QUERY', () => {
+  it('returns every festival with its days for the calendar', async () => {
+    const result = await run<{ _id: string; slug: string; days: { _key: string }[] }[]>(
+      FESTIVAL_CALENDAR_QUERY,
+      {},
+    );
+    expect(result.map((festival) => festival._id)).toContain('bgm-2027');
+    expect(result.find((festival) => festival._id === 'bgm-2027')?.days.map((d) => d._key)).toEqual(
+      ['fre', 'son'],
+    );
   });
 });

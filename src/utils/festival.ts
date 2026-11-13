@@ -3,8 +3,10 @@ import type {
   FestivalSessionTypes,
   FestivalTypes,
   SessionFormat,
+  FestivalCalendarTypes,
 } from '../sanity/queryHelpers/festivals';
-import { TIME_ZONE, osloDateKey } from './eventDateFormat';
+import type { CalendarEventTypes } from '../sanity/queryHelpers/events';
+import { TIME_ZONE, formatDayLong, osloDateKey } from './eventDateFormat';
 import type { IcsEventInput } from './ics';
 import type { Locale } from './locale';
 import { pickLocale } from '../i18n/pickLocale';
@@ -241,3 +243,30 @@ const SESSION_FORMAT_ORDER: SessionFormat[] = [
   'pause',
   'annet',
 ];
+
+/**
+ * A festival as calendar rows, one per day, linking to that day of the programme. The calendar
+ * is Norwegian, so titles are too: «Board Game Masters – fredag 29. januar».
+ */
+export function festivalDayRows(festival: FestivalCalendarTypes): CalendarEventTypes[] {
+  const name = festival.title?.nb?.trim() || 'Storarrangement';
+  return (festival.days ?? [])
+    .filter((day) => /^\d{4}-\d{2}-\d{2}$/.test(day.date ?? ''))
+    .map((day, index) => {
+      const hours = dayDateTimes(day as FestivalDayTypes) ?? {
+        start: osloTime(day.date, '00:00'),
+        end: osloTime(day.date, '23:59'),
+      };
+      const label = day.label?.nb?.trim();
+      return {
+        _id: `${festival._id}:${day._key}`,
+        title: `${name} – ${label || formatDayLong(festivalDate(day.date), 'nb')}`,
+        eventStartTime: hours.start,
+        eventEndTime: hours.end,
+        category: 'turnering',
+        location: festival.venue?.name,
+        hasDetailPage: true,
+        detailPath: `/arrangementer/${festival.slug}?dag=${index + 1}`,
+      };
+    });
+}

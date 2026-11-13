@@ -32,6 +32,9 @@ export interface CalendarEventTypes {
   /** Whether the event has its own page at `/arrangementer/:slug` — a content decision, not
    *  something inferred from category or from having inline content. */
   hasDetailPage?: boolean;
+  /** Where the row links, when it is not `/arrangementer/{eventSlug}`: a festival day's
+   *  `/arrangementer/{slug}?dag=N`. Set in TypeScript, never by a query. */
+  detailPath?: string;
   /** Detail page only. Falls back to the deprecated `signupUrl` field in the query. */
   signup?: SignupTypes | null;
   venue?: VenueTypes | null;
