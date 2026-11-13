@@ -50,6 +50,9 @@ export const SessionCard = React.forwardRef<HTMLElement, SessionCardProps>(
 
     const title = pickLocale(session.title, locale);
     const description = pickLocale(session.description, locale);
+    // Only the editor's title and the game's name are Norwegian content; the format fallback is
+    // our own translated label, so it carries no `lang` of its own.
+    const headingLang = title ? title.lang : session.game?.name ? 'nb' : undefined;
     const heading = title?.value ?? session.game?.name ?? t(`format.${session.format ?? 'annet'}`);
     const tone = session.format ? FORMAT_TONE[session.format] : undefined;
     const long = (description?.value.length ?? 0) > LONG_DESCRIPTION;
@@ -92,7 +95,7 @@ export const SessionCard = React.forwardRef<HTMLElement, SessionCardProps>(
             )}
           </div>
 
-          <h4 className="font-heading text-h4 font-bold" lang={langOf(title?.lang ?? 'nb')}>
+          <h4 className="font-heading text-h4 font-bold" lang={langOf(headingLang)}>
             {heading}
           </h4>
 

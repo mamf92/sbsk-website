@@ -47,11 +47,14 @@ export function Program({ festival }: { festival: FestivalTypes }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const days = festival.days ?? [];
 
+  // Chosen once: a page left open past midnight must not switch day (and drop the filter) on
+  // its own. The minute clock only moves the «Nå / Neste» markers.
+  const [initialDay] = React.useState(() => defaultDayIndex(festival, new Date()));
   const requested = Number(searchParams.get(DAY_PARAM));
   const dayIndex =
     Number.isInteger(requested) && requested >= 1 && requested <= days.length
       ? requested - 1
-      : defaultDayIndex(festival, now);
+      : initialDay;
   const day = days[dayIndex];
 
   // A filter chosen for one day means nothing on the next, so it is stored with its day.

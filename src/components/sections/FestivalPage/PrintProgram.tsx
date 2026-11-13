@@ -34,7 +34,9 @@ export function PrintProgram({ festival }: { festival: FestivalTypes }) {
                 {sessions.map((session) => (
                   <li key={session._key}>
                     {session.start}–{session.end} ·{' '}
-                    {pickLocale(session.title, locale)?.value ?? session.game?.name ?? ''}
+                    {pickLocale(session.title, locale)?.value ??
+                      session.game?.name ??
+                      t(`format.${session.format ?? 'annet'}`)}
                     {session.format && ` · ${t(`format.${session.format}`)}`}
                     {session.room && ` · ${session.room}`}
                   </li>

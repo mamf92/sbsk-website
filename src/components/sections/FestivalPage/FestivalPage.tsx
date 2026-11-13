@@ -148,9 +148,15 @@ export default function FestivalPage({ festival }: { festival: FestivalTypes }) 
           )}
           <div className="flex flex-wrap items-start gap-4 print:hidden">
             <SignupBlock signup={festival.signup} now={now} />
-            <a href="#program" className={`${linkClassesInherit} self-center underline`}>
-              {t('festival.seeProgram')}
-            </a>
+            {days.length > 0 && (
+              <RouterLink
+                to={{ hash: '#program' }}
+                preventScrollReset
+                className={`${linkClassesInherit} self-center underline`}
+              >
+                {t('festival.seeProgram')}
+              </RouterLink>
+            )}
           </div>
         </div>
       </section>
@@ -170,7 +176,8 @@ export default function FestivalPage({ festival }: { festival: FestivalTypes }) 
                 const dayName = formatDayLong(festivalDate(day.date), locale);
                 const label = pickLocale(day.label, locale);
                 const summary = pickLocale(day.summary, locale);
-                const count = (day.sessions ?? []).length;
+                // Same rule as the programme: a session without both times is not shown yet.
+                const count = (day.sessions ?? []).filter((s) => s.start && s.end).length;
                 return (
                   <li key={day._key} className={`${panel} gap-2`}>
                     <h3 className="font-heading text-h4 font-bold first-letter:uppercase">
@@ -208,7 +215,7 @@ export default function FestivalPage({ festival }: { festival: FestivalTypes }) 
         )}
 
         <Program festival={festival} />
-        <PrintProgram festival={festival} />
+        {days.length > 0 && <PrintProgram festival={festival} />}
 
         {pickLocale(festival.intro, locale) && (
           <section className={`${panel} print:hidden`} aria-labelledby="about-heading">

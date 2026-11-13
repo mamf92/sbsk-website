@@ -261,7 +261,7 @@ export const festivalType = defineType({
   title: 'Storarrangement',
   type: 'document',
   description:
-    'Arrangementer over flere dager med eget program, som Board Game Masters. Siden for storarrangementer er under arbeid: innholdet vises ikke på nettsiden ennå.',
+    'Arrangementer over flere dager med eget program, som Board Game Masters. Får sin egen side under /arrangementer når det er publisert, og den nyeste Board Game Masters vises på /board-game-masters.',
   groups: [
     { name: 'basics', title: 'Grunninfo', default: true },
     { name: 'program', title: 'Program' },

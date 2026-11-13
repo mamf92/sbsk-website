@@ -56,10 +56,11 @@ test('the day switcher is kept in ?dag=N, and an empty day says so', async ({ pa
 test('a festival also has its page under /arrangementer', async ({ page }) => {
   await page.goto(`/arrangementer/${FESTIVAL_BGM.slug.current}`);
   await expect(page.getByRole('heading', { level: 1, name: 'Board Game Masters' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Se programmet', exact: true })).toHaveAttribute(
-    'href',
-    '#program',
-  );
+  const link = page.getByRole('link', { name: 'Se programmet', exact: true });
+  await expect(link).toHaveAttribute('href', /#program$/);
+  await link.click();
+  await expect(page).toHaveURL(/#program$/);
+  await expect(page.locator('#program')).toBeInViewport();
 });
 
 test('FAQ answers open from their question', async ({ page }) => {

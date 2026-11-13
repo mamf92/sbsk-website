@@ -82,6 +82,12 @@ describe('SessionCard', () => {
     expect(screen.getByRole('heading', { name: 'Fri spilling' })).toHaveAttribute('lang', 'nb');
   });
 
+  it('does not mark the translated format fallback as Norwegian', () => {
+    act(() => setLocale('en'));
+    render(<SessionCard session={session({ format: 'pause' })} start={start} end={end} />);
+    expect(screen.getByRole('heading', { name: 'Break' })).not.toHaveAttribute('lang');
+  });
+
   it('forwards its ref', () => {
     const ref = createRef<HTMLElement>();
     render(<SessionCard ref={ref} session={session()} start={start} end={end} />);

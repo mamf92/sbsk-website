@@ -68,6 +68,12 @@ describe('boardGameMastersLoader', () => {
     }
   });
 
+  it('falls back to the placeholder when Sanity fails, instead of the error page', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    fetch.mockRejectedValue(new Error('timeout'));
+    await expect(boardGameMastersLoader()).resolves.toEqual({ festival: null });
+  });
+
   it('returns null rather than a 404 when no edition is published', async () => {
     fetch.mockResolvedValue(null);
     await expect(boardGameMastersLoader()).resolves.toEqual({ festival: null });
