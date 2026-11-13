@@ -12,17 +12,20 @@ import { pickLocale } from '../i18n/pickLocale';
 /* Oslo wall-clock times to instants                                           */
 /* -------------------------------------------------------------------------- */
 
+// Built once: a programme of a hundred sessions converts several hundred times per render.
+const wallClock = new Intl.DateTimeFormat('en-GB', {
+  timeZone: TIME_ZONE,
+  hourCycle: 'h23',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+});
+
 /** Minutes Oslo is ahead of UTC at `instant` (60 in winter, 120 in summer). */
 function osloOffsetMinutes(instant: Date): number {
-  const parts = new Intl.DateTimeFormat('en-GB', {
-    timeZone: TIME_ZONE,
-    hourCycle: 'h23',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).formatToParts(instant);
+  const parts = wallClock.formatToParts(instant);
   const get = (type: string) => Number(parts.find((part) => part.type === type)?.value);
   const asUtc = Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'));
   return Math.round((asUtc - instant.getTime()) / 60000);
@@ -76,23 +79,37 @@ export function dayDateTimes(day: FestivalDayTypes): { start: Date; end: Date } 
 /* Programme helpers                                                           */
 /* -------------------------------------------------------------------------- */
 
-/** Today's index while the festival runs (Oslo date), else the first day. */
+/**
+ * The day to open on: the one whose doors are open now (a night that runs past midnight still
+ * counts as its own day), else today by the Oslo date, else the first day.
+ */
 export function defaultDayIndex(festival: Pick<FestivalTypes, 'days'>, now: Date): number {
+  const days = festival.days ?? [];
+  const time = now.getTime();
+  const open = days.findIndex((day) => {
+    const hours = dayDateTimes(day);
+    return !!hours && hours.start.getTime() <= time && time < hours.end.getTime();
+  });
+  if (open !== -1) return open;
   const today = osloDateKey(now);
-  const index = (festival.days ?? []).findIndex((day) => day.date === today);
+  const index = days.findIndex((day) => day.date === today);
   return index === -1 ? 0 : index;
 }
 
 /**
  * Which sessions are on now, and which one starts next, for the «Nå / Neste» markers. Only
- * meaningful on the day itself; on any other day both are empty.
+ * meaningful while the day runs: before it opens and after its last session both are empty, and
+ * a session past midnight still counts.
  */
 export function nowAndNext(
   day: FestivalDayTypes,
   now: Date,
 ): { nowKeys: string[]; nextKey?: string } {
-  if (day.date !== osloDateKey(now)) return { nowKeys: [] };
   const time = now.getTime();
+  const hours = dayDateTimes(day);
+  // Before the doors open, nothing is "next" yet: the day has not started.
+  if (hours && time < hours.start.getTime()) return { nowKeys: [] };
+  if (!hours && day.date !== osloDateKey(now)) return { nowKeys: [] };
   const sessions = (day.sessions ?? [])
     .filter((session) => session.start && session.end)
     .map((session) => ({ session, ...sessionDateTimes(day, session) }));
@@ -105,7 +122,10 @@ export function nowAndNext(
   return { nowKeys, nextKey: upcoming[0]?.session._key };
 }
 
-/** Sessions grouped under their start time, in time order, rooms sorted within a group. */
+/**
+ * Sessions grouped under their start time, in time order, rooms sorted within a group. The
+ * room order lives here (Norwegian collation, so «Øvre sal» sorts last), not in the query.
+ */
 export function groupByStart(
   sessions: FestivalSessionTypes[],
 ): { start: string; sessions: FestivalSessionTypes[] }[] {
@@ -185,10 +205,10 @@ export function festivalIcs(
       continue;
     }
     for (const session of sessions) {
-      const title = pickLocale(session.title, locale)?.value ?? session.game?.name ?? name;
+      const title = pickLocale(session.title, locale)?.value ?? session.game?.name;
       entries.push({
         ...sessionDateTimes(day, session),
-        title: `${title} · ${name}`,
+        title: title ? `${title} · ${name}` : name,
         description: pickLocale(session.description, locale)?.value,
         location:
           session.room && location ? `${session.room}, ${location}` : (session.room ?? location),

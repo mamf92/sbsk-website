@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { evaluate, parse } from 'groq-js';
-import { CURRENT_BGM_QUERY, FESTIVAL_BY_SLUG_QUERY } from './festivals';
-import { ARRANGEMENT_BY_SLUG_QUERY } from '../../loaders/festival-loader';
+import { ARRANGEMENT_BY_SLUG_QUERY, CURRENT_BGM_QUERY, FESTIVAL_BY_SLUG_QUERY } from './festivals';
 
 // The queries run against a small dataset with the real GROQ engine, so the edition choice and
 // the projection's ordering and fallbacks are pinned without a live Sanity project.

@@ -84,6 +84,19 @@ describe('defaultDayIndex', () => {
     expect(defaultDayIndex(festival, new Date('2027-01-29T23:30:00Z'))).toBe(1);
   });
 
+  it('stays on a night that runs past midnight while its doors are open', () => {
+    const late = {
+      days: [
+        { _key: 'fre', date: '2027-01-29', opens: '18:00', closes: '02:00' },
+        { _key: 'lor', date: '2027-01-30', opens: '10:00', closes: '23:00' },
+      ],
+    };
+    // 00:30 Oslo on the 30th: Friday's doors are still open.
+    expect(defaultDayIndex(late, new Date('2027-01-29T23:30:00Z'))).toBe(0);
+    // 03:00 Oslo: Friday has closed, so Saturday by date.
+    expect(defaultDayIndex(late, new Date('2027-01-30T02:00:00Z'))).toBe(1);
+  });
+
   it('opens on the first day before and after the festival', () => {
     expect(defaultDayIndex(festival, new Date('2026-12-01T12:00:00Z'))).toBe(0);
     expect(defaultDayIndex(festival, new Date('2027-02-10T12:00:00Z'))).toBe(0);
@@ -114,6 +127,18 @@ describe('nowAndNext', () => {
   it('treats the end as exclusive', () => {
     // 12:00 Oslo: a has just ended.
     expect(nowAndNext(day, new Date('2027-01-30T11:00:00Z')).nowKeys).toEqual(['b']);
+  });
+
+  it('marks a session past midnight as on, and nothing before the doors open', () => {
+    const night: FestivalDayTypes = {
+      _key: 'fre',
+      date: '2027-01-29',
+      opens: '18:00',
+      closes: '02:00',
+      sessions: [session('n', '22:00', '01:00')],
+    };
+    expect(nowAndNext(night, new Date('2027-01-29T23:30:00Z')).nowKeys).toEqual(['n']);
+    expect(nowAndNext(night, new Date('2027-01-29T12:00:00Z'))).toEqual({ nowKeys: [] });
   });
 
   it('marks nothing on another day', () => {
@@ -205,6 +230,14 @@ describe('festivalIcs', () => {
     });
     expect(entries[0].start.toISOString()).toBe('2027-01-29T17:00:00.000Z');
     expect(entries[1].title).toBe('Brass · Board Game Masters 2027');
+  });
+
+  it('names an untitled session after the festival once, not twice', () => {
+    const untitled: FestivalTypes = {
+      ...festival,
+      days: [{ _key: 'd', date: '2027-01-29', sessions: [session('p', '12:00', '12:30')] }],
+    };
+    expect(festivalIcs(untitled, 'nb')[0].title).toBe('Board Game Masters 2027');
   });
 
   it('makes a day without sessions one entry for its opening hours, and skips a day with neither', () => {

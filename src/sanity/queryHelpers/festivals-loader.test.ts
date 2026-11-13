@@ -2,11 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { LoaderFunctionArgs } from 'react-router-dom';
 
 const fetch = vi.fn();
-vi.mock('../sanity/client', () => ({ client: { fetch: (...args: unknown[]) => fetch(...args) } }));
+vi.mock('../client', () => ({ client: { fetch: (...args: unknown[]) => fetch(...args) } }));
 
-const { arrangementLoader, boardGameMastersLoader, ARRANGEMENT_BY_SLUG_QUERY } =
-  await import('./festival-loader');
-const { CURRENT_BGM_QUERY } = await import('../sanity/queryHelpers/festivals');
+const { arrangementLoader, boardGameMastersLoader, ARRANGEMENT_BY_SLUG_QUERY, CURRENT_BGM_QUERY } =
+  await import('./festivals');
 
 const args = (id?: string) => ({ params: { id } }) as unknown as LoaderFunctionArgs;
 const event = { _id: 'event-1', title: 'Spillkveld' };

@@ -1,4 +1,8 @@
 import type { SanityImageSource } from '@sanity/image-url';
+import type { LoaderFunctionArgs } from 'react-router-dom';
+import { client } from '../client';
+import { osloDateKey } from '../../utils/eventDateFormat';
+import { EVENT_BY_SLUG_QUERY, type CalendarEventTypes } from './events';
 import {
   SIGNUP_PROJECTION,
   SPONSOR_PROJECTION,
@@ -12,13 +16,7 @@ import {
 } from './fragments';
 
 export type SessionFormat =
-  | 'turnering'
-  | 'finale'
-  | 'laer-a-spille'
-  | 'fri-spilling'
-  | 'demo'
-  | 'pause'
-  | 'annet';
+  'turnering' | 'finale' | 'laer-a-spille' | 'fri-spilling' | 'demo' | 'pause' | 'annet';
 
 export interface FestivalSessionTypes {
   _key: string;
@@ -77,7 +75,7 @@ export interface FestivalTypes {
   gallery?: (SanityImageSource & { _key: string; alt?: string })[];
 }
 
-// Sessions come back in start order; editors may enter them in any order. A session without a
+// Sessions come back in start order (rooms are ordered in `groupByStart`, with Norwegian collation); editors may enter them in any order. A session without a
 // `game` reference falls back to the free-text name.
 export const FESTIVAL_PROJECTION = `{
   _id,
@@ -99,7 +97,7 @@ export const FESTIVAL_PROJECTION = `{
     summary,
     venue${VENUE_PROJECTION},
     signup${SIGNUP_PROJECTION},
-    sessions[] | order(start asc, room asc){
+    sessions[] | order(start asc){
       _key,
       start,
       end,
@@ -138,3 +136,41 @@ export const CURRENT_BGM_QUERY = `coalesce(
   *[_type == "festival" && series == "bgm" && days[-1].date >= $today] | order(days[0].date asc)[0],
   *[_type == "festival" && series == "bgm" && defined(days[0].date)] | order(days[0].date desc)[0]
 )${FESTIVAL_PROJECTION}`;
+
+// One round trip for both kinds of page under /arrangementer/:slug, composed from the two
+// single-kind queries so each keeps one definition of what may have a page.
+export const ARRANGEMENT_BY_SLUG_QUERY = `{
+  "event": ${EVENT_BY_SLUG_QUERY},
+  "festival": ${FESTIVAL_BY_SLUG_QUERY}
+}`;
+
+export type ArrangementData =
+  { kind: 'event'; event: CalendarEventTypes } | { kind: 'festival'; festival: FestivalTypes };
+
+/** `/arrangementer/:id`: an event with its own page, or a festival. 404 when neither. */
+export async function arrangementLoader({ params }: LoaderFunctionArgs): Promise<ArrangementData> {
+  const slug = params.id;
+  if (!slug) throw new Response('Missing slug', { status: 400 });
+
+  const result = await client.fetch<{
+    event: CalendarEventTypes | null;
+    festival: FestivalTypes | null;
+  }>(ARRANGEMENT_BY_SLUG_QUERY, { slug });
+
+  // Studio keeps slugs unique across both types; if that is ever bypassed, the festival wins,
+  // since it is the bigger page and the one people are sent to.
+  if (result?.festival) return { kind: 'festival', festival: result.festival };
+  if (result?.event) return { kind: 'event', event: result.event };
+  throw new Response('Not found', { status: 404 });
+}
+
+/**
+ * `/board-game-masters`: the current edition, or `null` until one is published, in which case
+ * the page keeps its placeholder. Never a 404: the footer links here.
+ */
+export async function boardGameMastersLoader(): Promise<{ festival: FestivalTypes | null }> {
+  const festival = await client.fetch<FestivalTypes | null>(CURRENT_BGM_QUERY, {
+    today: osloDateKey(new Date()),
+  });
+  return { festival: festival ?? null };
+}

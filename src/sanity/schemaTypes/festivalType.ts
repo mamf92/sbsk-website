@@ -54,20 +54,15 @@ export const festivalSessionType = defineType({
       name: 'end',
       title: 'Slutter',
       type: 'string',
-      description: 'Klokkeslett som TT:MM, samme dag.',
-      validation: (rule) =>
-        rule
-          .required()
-          .regex(HHMM, { name: 'klokkeslett' })
-          .error(HHMM_ERROR)
-          .custom((end, context) => {
-            const start = (context.parent as SessionValue | undefined)?.start;
-            if (!start || typeof end !== 'string' || !HHMM.test(start) || !HHMM.test(end))
-              return true;
-            return end > start
-              ? true
-              : 'Må slutte etter at den starter. Går den over midnatt, del den i to dager.';
-          }),
+      description: 'Klokkeslett som TT:MM. Et klokkeslett før starten betyr etter midnatt.',
+      // Two rules, not one chain: `.error()` would replace the custom check's own message.
+      validation: (rule) => [
+        rule.required().regex(HHMM, { name: 'klokkeslett' }).error(HHMM_ERROR),
+        rule.custom((end, context) => {
+          const start = (context.parent as SessionValue | undefined)?.start;
+          return end && end === start ? 'Kan ikke slutte samme minutt som den starter.' : true;
+        }),
+      ],
     }),
     defineField({
       name: 'title',
@@ -201,7 +196,7 @@ export const festivalDayType = defineType({
       name: 'closes',
       title: 'Vi stenger',
       type: 'string',
-      description: 'Klokkeslett som TT:MM.',
+      description: 'Klokkeslett som TT:MM. Et klokkeslett før åpning betyr etter midnatt.',
       validation: (rule) => rule.required().regex(HHMM, { name: 'klokkeslett' }).error(HHMM_ERROR),
     }),
     defineField({
@@ -266,7 +261,7 @@ export const festivalType = defineType({
   title: 'Storarrangement',
   type: 'document',
   description:
-    'Arrangementer over flere dager med eget program, som Board Game Masters. Vises på nettsiden først når det er publisert.',
+    'Arrangementer over flere dager med eget program, som Board Game Masters. Siden for storarrangementer er under arbeid: innholdet vises ikke på nettsiden ennå.',
   groups: [
     { name: 'basics', title: 'Grunninfo', default: true },
     { name: 'program', title: 'Program' },
@@ -356,22 +351,21 @@ export const festivalType = defineType({
       group: 'program',
       description: `Én rad per dag, i rekkefølge. ${STABLE_KEYS}`,
       of: [defineArrayMember({ type: 'festivalDay' })],
-      validation: (rule) =>
-        rule
-          .required()
-          .min(1)
-          .error('Legg til minst én dag.')
-          .max(7)
-          .custom((days) => {
-            const dates = ((days as DayValue[] | undefined) ?? [])
-              .map((day) => day.date)
-              .filter((date): date is string => !!date);
-            for (let i = 1; i < dates.length; i++) {
-              if (dates[i] <= dates[i - 1])
-                return 'Dagene må komme i rekkefølge, og samme dato kan ikke stå to ganger.';
-            }
-            return true;
-          }),
+      // Separate rules so each keeps its own message; `.error()` applies to a whole chain.
+      validation: (rule) => [
+        rule.required().min(1).error('Legg til minst én dag.'),
+        rule.max(7).error('Høyst sju dager.'),
+        rule.custom((days) => {
+          const dates = ((days as DayValue[] | undefined) ?? [])
+            .map((day) => day.date)
+            .filter((date): date is string => !!date);
+          for (let i = 1; i < dates.length; i++) {
+            if (dates[i] <= dates[i - 1])
+              return 'Dagene må komme i rekkefølge, og samme dato kan ikke stå to ganger.';
+          }
+          return true;
+        }),
+      ],
     }),
     defineField({
       name: 'signup',

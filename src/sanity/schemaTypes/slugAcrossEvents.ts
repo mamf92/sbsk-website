@@ -1,4 +1,4 @@
-import type { SlugIsUniqueValidator } from 'sanity';
+import { getPublishedId, type SlugIsUniqueValidator } from 'sanity';
 
 /**
  * Events and festivals share the URL space `/arrangementer/:slug`, so a slug must be unique
@@ -7,11 +7,12 @@ import type { SlugIsUniqueValidator } from 'sanity';
 export const isUniqueAcrossEvents: SlugIsUniqueValidator = async (slug, context) => {
   const { document, getClient } = context;
   if (!document?._id) return true;
-  const id = document._id.replace(/^drafts\./, '');
-  const client = getClient({ apiVersion: '2024-01-01' });
+  // Every version of this same document (published, draft, or inside a release) is not a clash.
+  const published = getPublishedId(document._id);
+  const client = getClient({ apiVersion: '2025-02-19' });
   const count = await client.fetch<number>(
-    `count(*[_type in ["event", "festival"] && slug.current == $slug && !(_id in [$draft, $published])])`,
-    { slug, draft: `drafts.${id}`, published: id },
+    `count(*[_type in ["event", "festival"] && slug.current == $slug && !sanity::versionOf($published)])`,
+    { slug, published },
   );
   return count === 0;
 };
