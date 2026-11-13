@@ -24,7 +24,7 @@ import {
 import { signupState } from '../utils/signup';
 import { useEventsT } from '../i18n';
 import { pickLocale } from '../i18n/pickLocale';
-import { useLocale } from '../hooks/locale/useLocale';
+import { useLocale, useTranslatedContent } from '../hooks/locale/useLocale';
 
 const FestivalPage = lazy(() => import('../components/sections/FestivalPage/FestivalPage'));
 
@@ -44,6 +44,7 @@ export default function SingleEventPage() {
 }
 
 function EventPage({ event }: { event: CalendarEventTypes }) {
+  useTranslatedContent();
   const t = useEventsT();
   const { locale } = useLocale();
   const nbLang = locale === 'nb' ? undefined : 'nb';
@@ -141,10 +142,11 @@ function EventPage({ event }: { event: CalendarEventTypes }) {
         )}
 
         <EventScheduleCard
-          day={dayLabel(start, end)}
-          month={monthAbbreviation(start)}
+          day={dayLabel(start, end, locale)}
+          month={monthAbbreviation(start, locale)}
           title={event.title}
-          meta={`${timeRange(start, end)}${place ? ` · ${place}` : ''}`}
+          meta={`${timeRange(start, end, locale)}${place ? ` · ${place}` : ''}`}
+          addLabel={t('addEventToCalendar', { title: event.title })}
           tone={tone}
           lang={nbLang}
           ics={{
@@ -188,10 +190,11 @@ function EventPage({ event }: { event: CalendarEventTypes }) {
               return (
                 <EventScheduleCard
                   key={entry._key}
-                  day={dayLabel(entryStart, entryEnd)}
-                  month={monthAbbreviation(entryStart)}
+                  day={dayLabel(entryStart, entryEnd, locale)}
+                  month={monthAbbreviation(entryStart, locale)}
                   title={entry.label}
-                  meta={`${timeRange(entryStart, entryEnd)}${location ? ` · ${location}` : ''}`}
+                  meta={`${timeRange(entryStart, entryEnd, locale)}${location ? ` · ${location}` : ''}`}
+                  addLabel={t('addEventToCalendar', { title: entry.label })}
                   tone={tone}
                   lang={nbLang}
                   ics={{

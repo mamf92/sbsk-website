@@ -58,7 +58,7 @@ export default defineConfig({
       // The Kontakt oss form is hidden in production (#254); the smoke suite keeps it on so
       // its send-and-succeed path stays exercised.
       VITE_ENABLE_CONTACT_FORM: 'true',
-      // Off in production until the event pages are translated; on here so it stays covered.
+      // On in production too, since the event pages were translated (#185).
       VITE_ENABLE_I18N: 'true',
     },
   },

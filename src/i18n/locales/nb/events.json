@@ -92,5 +92,6 @@
     "doors": "Dørene åpner {{opens}}, vi stenger {{closes}}",
     "contactLead": "Spørsmål? Send e-post til"
   },
-  "relatedPosts": "Innlegg om arrangementet"
+  "relatedPosts": "Innlegg om arrangementet",
+  "addEventToCalendar": "Legg til {{title}} i kalenderen"
 }

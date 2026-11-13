@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import type { Profile } from '../../supabase/queryHelpers/getProfile';
 import Header from './Header';
+import { useTranslatedContent } from '../../hooks/locale/useLocale';
 
 const auth = {
   isAuthenticated: false,
@@ -31,10 +32,17 @@ vi.mock('../../hooks/theme/ThemeContext', () => ({
   }),
 }));
 
-function renderHeader(path = '/') {
+/** Stands in for a translated page's real content, which is what turns the toggle on. */
+function TranslatedContent() {
+  useTranslatedContent();
+  return null;
+}
+
+function renderHeader(path = '/', { translated = path !== '/' } = {}) {
   return render(
     <MemoryRouter initialEntries={[path]}>
       <Header />
+      {translated && <TranslatedContent />}
     </MemoryRouter>,
   );
 }
@@ -63,6 +71,11 @@ describe('Header — language toggle', () => {
 
   it('is absent on a page that only exists in Norwegian', () => {
     renderHeader('/om-oss');
+    expect(screen.queryAllByRole('button', { name: /^EN\b/ })).toHaveLength(0);
+  });
+
+  it('is absent on a translated route showing its Norwegian 404 or placeholder', () => {
+    renderHeader('/arrangementer/finnes-ikke', { translated: false });
     expect(screen.queryAllByRole('button', { name: /^EN\b/ })).toHaveLength(0);
   });
 });

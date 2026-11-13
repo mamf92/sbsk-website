@@ -28,8 +28,11 @@ interface EventScheduleCardProps {
   tone?: EventScheduleCardTone;
   /** Powers the trailing "add to calendar" button. */
   ics: IcsEventInput;
+  /** The button's accessible name, in the page's language: «Legg til {title} i kalenderen». */
+  addLabel: string;
   className?: string;
-  /** Language of the card's text when it differs from the page's, e.g. `nb` on an English page. */
+  /** Language of the title and description when it differs from the page's, e.g. `nb` content
+   *  on an English page. The date block, meta line and button follow the page. */
   lang?: string;
 }
 
@@ -46,6 +49,7 @@ export function EventScheduleCard({
   description,
   tone = 'blue',
   ics,
+  addLabel,
   className = '',
   lang,
 }: EventScheduleCardProps) {
@@ -53,7 +57,6 @@ export function EventScheduleCard({
 
   return (
     <div
-      lang={lang}
       className={['flex border border-black dark:border-white', styles.surface, className]
         .filter(Boolean)
         .join(' ')}
@@ -74,14 +77,20 @@ export function EventScheduleCard({
 
       <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 p-4">
         <span className="font-body text-xs opacity-85">{meta}</span>
-        <h3 className="font-heading text-h3 font-bold">{title}</h3>
-        {description && <p className="font-body text-sm opacity-90">{description}</p>}
+        <h3 className="font-heading text-h3 font-bold" lang={lang}>
+          {title}
+        </h3>
+        {description && (
+          <p className="font-body text-sm opacity-90" lang={lang}>
+            {description}
+          </p>
+        )}
       </div>
 
       <button
         type="button"
         onClick={() => downloadIcs(ics, `${title}.ics`)}
-        aria-label={`Legg til ${title} i kalenderen`}
+        aria-label={addLabel}
         // `lift`, like every other pressable surface — this was the one interactive control in
         // the system that did not respond to the pointer at all. It owns the transition outright,
         // so no `transition-*` utility may join it here.

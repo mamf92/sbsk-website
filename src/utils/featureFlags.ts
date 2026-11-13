@@ -25,8 +25,9 @@ export const contactFormEnabled = import.meta.env.VITE_ENABLE_CONTACT_FORM === '
 
 /**
  * The language toggle and English event pages (phase 1, `docs/plans/01-event-pages.md` WP2).
- * Off in production until the event pages are fully translated, so visitors never get a
- * toggle that switches half a page. With the flag off the site is always Norwegian, whatever
- * is stored or whatever the browser asks for. Unit tests and the Playwright config set it on.
+ * On in production since the event pages were fully translated (#185); the toggle only shows on
+ * pages that exist in English, so it never switches half a page. With the flag off the site is
+ * always Norwegian, whatever is stored or whatever the browser asks for. Unit tests and the
+ * Playwright config set it on.
  */
 export const i18nEnabled = import.meta.env.VITE_ENABLE_I18N === 'true';

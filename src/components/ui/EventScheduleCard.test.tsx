@@ -21,6 +21,7 @@ describe('EventScheduleCard', () => {
         meta="Torsdag 23. januar 2026 · 17:00–23:45"
         description="Kveldens hovedøkt."
         ics={ics_event}
+        addLabel="Legg til Dag 1 av BGM i kalenderen"
       />,
     );
 
@@ -32,7 +33,16 @@ describe('EventScheduleCard', () => {
   });
 
   it('omits the description when none is given', () => {
-    render(<EventScheduleCard day="23." month="JAN" title="Dag 1" meta="17:00" ics={ics_event} />);
+    render(
+      <EventScheduleCard
+        day="23."
+        month="JAN"
+        title="Dag 1"
+        meta="17:00"
+        ics={ics_event}
+        addLabel="Legg til Dag 1 av BGM i kalenderen"
+      />,
+    );
     expect(screen.queryByText('Kveldens hovedøkt.')).not.toBeInTheDocument();
   });
 
@@ -40,7 +50,14 @@ describe('EventScheduleCard', () => {
     const downloadIcsSpy = vi.spyOn(ics, 'downloadIcs').mockImplementation(() => {});
 
     render(
-      <EventScheduleCard day="23." month="JAN" title="Dag 1 av BGM" meta="17:00" ics={ics_event} />,
+      <EventScheduleCard
+        day="23."
+        month="JAN"
+        title="Dag 1 av BGM"
+        meta="17:00"
+        ics={ics_event}
+        addLabel="Legg til Dag 1 av BGM i kalenderen"
+      />,
     );
 
     await userEvent.click(
@@ -49,5 +66,24 @@ describe('EventScheduleCard', () => {
 
     expect(downloadIcsSpy).toHaveBeenCalledWith(ics_event, 'Dag 1 av BGM.ics');
     downloadIcsSpy.mockRestore();
+  });
+
+  it('marks only the content with its own language, not the date block or the button', () => {
+    render(
+      <EventScheduleCard
+        day="23"
+        month="JAN"
+        title="Dag 1"
+        meta="Fri 17:00–23:45"
+        ics={ics_event}
+        addLabel="Add Dag 1 to your calendar"
+        lang="nb"
+      />,
+    );
+    expect(screen.getByRole('heading', { name: 'Dag 1' })).toHaveAttribute('lang', 'nb');
+    expect(screen.getByText('JAN').closest('[lang]')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Add Dag 1 to your calendar' })).not.toHaveAttribute(
+      'lang',
+    );
   });
 });

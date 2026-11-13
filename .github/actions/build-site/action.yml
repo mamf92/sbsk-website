@@ -33,9 +33,13 @@ runs:
         # Nothing reads the messages the Kontakt oss form writes yet (#254) — the page
         # publishes the club's address instead until #133 or portal access lands.
         VITE_ENABLE_CONTACT_FORM: 'false'
+        # The language toggle and English event pages (phase 1, #185): only /board-game-masters
+        # and /arrangementer/:id are translated, and the toggle shows only there.
+        VITE_ENABLE_I18N: 'true'
 
     - name: Build redesign preview
-      # Same flags as the live build, so the preview shows what would ship. Only the root
+      # Same flags as the live build, so the preview shows what would ship (the redesign branch
+      # has no VITE_ENABLE_I18N to read, so it is left out). Only the root
       # 404.html is ever served by Pages; it routes /<repo>/redesign/* deep links here.
       shell: bash
       env:

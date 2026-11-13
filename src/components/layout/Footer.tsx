@@ -12,7 +12,10 @@ export default function Footer() {
   const { reduced, toggleReducedMotion } = useMotion();
 
   return (
-    <footer className="bg-darkblue surface-dark font-body max-xs:p-4 flex w-full flex-col p-8 text-white print:hidden">
+    <footer
+      lang="nb"
+      className="bg-darkblue surface-dark font-body max-xs:p-4 flex w-full flex-col p-8 text-white print:hidden"
+    >
       <div className="bg-darkestblue max-xs:px-4 flex justify-center px-6 py-16">
         <div className="max-w-shell flex w-full flex-col gap-6">
           <div className="flex flex-col gap-8 md:flex-row md:flex-wrap lg:flex-nowrap lg:gap-10">

@@ -1,12 +1,13 @@
 import { expect, test } from '@playwright/test';
-import { stubSanityEmpty } from './fixtures/sanity';
+import { stubSanityEmpty, stubSanityWithContent } from './fixtures/sanity';
 
 // The toggle ships behind VITE_ENABLE_I18N, which the Playwright build turns on. The config's
 // browser locale is nb-NO. Only routes that exist in English show the toggle or switch
-// <html lang>; /board-game-masters is one of them.
+// <html lang>, and only while they show their real content: /board-game-masters is one of
+// them once a festival is published.
 
 test.beforeEach(async ({ page }) => {
-  await stubSanityEmpty(page);
+  await stubSanityWithContent(page);
   await page.route('**://*.supabase.co/**', (route) =>
     route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }),
   );
@@ -59,4 +60,25 @@ test('on a 320px phone the toggle moves into the menu instead of widening the ba
   await page.getByRole('button', { name: /meny/i }).click();
   await page.getByRole('button', { name: /^EN\b/ }).click();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+});
+
+test('the Norwegian placeholder and 404 under a translated route stay Norwegian', async ({
+  browser,
+}) => {
+  const context = await browser.newContext({ locale: 'en-GB' });
+  const page = await context.newPage();
+  await stubSanityEmpty(page);
+  await page.route('**://*.supabase.co/**', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }),
+  );
+
+  await page.goto('/board-game-masters');
+  await expect(page.getByText('siden om den er under arbeid')).toBeVisible();
+  await expect(page.locator('html')).toHaveAttribute('lang', 'nb');
+  await expect(page.getByRole('button', { name: /^EN\b|^NO\b/ })).toHaveCount(0);
+
+  await page.goto('/arrangementer/finnes-ikke');
+  await expect(page.getByRole('heading', { name: 'Denne siden mangler i esken' })).toBeVisible();
+  await expect(page.locator('html')).toHaveAttribute('lang', 'nb');
+  await context.close();
 });

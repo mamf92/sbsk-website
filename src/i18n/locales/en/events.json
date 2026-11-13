@@ -92,5 +92,6 @@
     "doors": "Doors open {{opens}}, we close {{closes}}",
     "contactLead": "Questions? Email"
   },
-  "relatedPosts": "Posts about this event"
+  "relatedPosts": "Posts about this event",
+  "addEventToCalendar": "Add {{title}} to your calendar"
 }
