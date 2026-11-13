@@ -107,6 +107,33 @@ test('in English the chrome is translated and the programme follows', async ({ p
   );
 });
 
+test('each festival day is a calendar row that opens that day of the programme', async ({
+  page,
+}) => {
+  await page.goto('/kalender');
+  const link = page.getByRole('link', { name: 'Les mer om Board Game Masters – Åpningskveld' });
+  await expect(link).toHaveAttribute('href', /\/arrangementer\/board-game-masters-test\?dag=1$/);
+
+  await page
+    .getByRole('link', {
+      name: /^Les mer om Board Game Masters – (søndag|mandag|tirsdag|onsdag|torsdag|fredag|lørdag)/,
+    })
+    .first()
+    .click();
+  await expect(page).toHaveURL(/\?dag=2$/);
+  await expect(page.getByRole('heading', { name: 'Finale: Catan' })).toBeVisible();
+});
+
+test('the home page points to a festival that starts within two months', async ({ page }) => {
+  await page.goto('/');
+  const teaser = page.locator('section', {
+    has: page.getByRole('heading', { level: 2, name: 'Board Game Masters' }),
+  });
+  await expect(teaser.getByText('XIX')).toBeVisible();
+  await teaser.getByRole('link', { name: 'Se programmet' }).click();
+  await expect(page).toHaveURL(/\/arrangementer\/board-game-masters-test#program$/);
+});
+
 test("a one-day festival still shows its day, with the day's own sign-up", async ({ page }) => {
   const oneDay = {
     ...FESTIVAL_BGM,

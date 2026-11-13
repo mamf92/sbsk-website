@@ -1,4 +1,5 @@
 import { Link, useLoaderData } from 'react-router-dom';
+import { eventDetailPath } from '../utils/eventLinks';
 import type { CalendarEventTypes } from '../sanity/queryHelpers/events';
 import { linkClassesInherit } from '../components/ui/Link';
 import { TIME_ZONE } from '../utils/eventDateFormat';
@@ -19,8 +20,7 @@ export default function Events() {
           // Only events flagged with `hasDetailPage` in Sanity have a page to link to — that
           // is a content decision, independent of category or event size, so it is never
           // inferred from `eventSlug` alone.
-          const detailPath =
-            event.hasDetailPage && event.eventSlug ? `/arrangementer/${event.eventSlug}` : null;
+          const detailPath = eventDetailPath(event);
           const body = (
             <>
               <h2 className="text-h2 font-semibold">{event.title}</h2>

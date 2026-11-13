@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { eventDetailPath } from '../../utils/eventLinks';
 import { Link, useNavigate } from 'react-router-dom';
 import { PortableText, toPlainText } from '@portabletext/react';
 import { Reveal } from '../ui/Reveal';
@@ -165,7 +166,11 @@ function useRsvp(events: CalendarEventTypes[]) {
   // `event._id` values, joined into a string so the effect's dependency is stable across
   // re-renders that pass an equal-but-new `events` array — an array itself would never satisfy
   // `Object.is` and would re-fetch on every render.
-  const eventIdsKey = events.map((event) => event._id).join(',');
+  // Festival days are not event documents and have no participants to fetch.
+  const eventIdsKey = events
+    .filter((event) => !event.festivalDay)
+    .map((event) => event._id)
+    .join(',');
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -619,8 +624,7 @@ function EventRow({
 
   // Whether the event has a page of its own is a content decision (`hasDetailPage` in Sanity),
   // never inferred from category, size, or whether there happens to be inline content.
-  const detailPath =
-    event.hasDetailPage && event.eventSlug ? `/arrangementer/${event.eventSlug}` : null;
+  const detailPath = eventDetailPath(event);
   // The chevron is now driven by whether there is anything to open, not by the category —
   // a turnering with a description expands like any other event, and reaches its own page
   // through the "Se arrangementet" button in the panel.
@@ -683,7 +687,7 @@ function EventRow({
           </div>
 
           {/* Members-only. Kept as one block so avatars and the RSVP wrap together. */}
-          {rsvp.loggedIn && (
+          {rsvp.loggedIn && !event.festivalDay && (
             <div
               className="flex flex-[1_1_100%] flex-wrap items-center gap-3 sm:flex-none"
               onClick={(clickEvent) => clickEvent.stopPropagation()}

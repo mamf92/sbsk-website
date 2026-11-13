@@ -183,7 +183,8 @@ export const festivalDayType = defineType({
       name: 'label',
       title: 'Navn på dagen',
       type: 'localeString',
-      description: 'Valgfritt, f.eks. «Fredag – oppvarming». Tomt gir «Dag 1», «Dag 2» …',
+      description:
+        'Valgfritt, f.eks. «Fredag – oppvarming». Tomt gir ukedag og dato, f.eks. «fredag 29. januar».',
     }),
     defineField({
       name: 'opens',

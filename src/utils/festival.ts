@@ -3,8 +3,10 @@ import type {
   FestivalSessionTypes,
   FestivalTypes,
   SessionFormat,
+  FestivalCalendarTypes,
 } from '../sanity/queryHelpers/festivals';
-import { TIME_ZONE, osloDateKey } from './eventDateFormat';
+import type { CalendarEventTypes } from '../sanity/queryHelpers/events';
+import { TIME_ZONE, formatDateRange, formatDayLong, osloDateKey } from './eventDateFormat';
 import type { IcsEventInput } from './ics';
 import type { Locale } from './locale';
 import { pickLocale } from '../i18n/pickLocale';
@@ -241,3 +243,52 @@ const SESSION_FORMAT_ORDER: SessionFormat[] = [
   'pause',
   'annet',
 ];
+
+/** The festival's Norwegian name, for the Norwegian-only calendar and home page. */
+export function festivalNameNb(title: { nb?: string } | undefined): string {
+  return title?.nb?.trim() || 'Board Game Masters';
+}
+
+/** «fredag 29. januar» for a one-day festival, else the range. Null without both dates. */
+export function festivalDateLabel(
+  startDate: string | undefined,
+  endDate: string | undefined,
+  locale: Locale,
+): string | null {
+  if (!startDate || !endDate) return null;
+  return startDate === endDate
+    ? formatDayLong(festivalDate(startDate), locale)
+    : formatDateRange(festivalDate(startDate), festivalDate(endDate), locale);
+}
+
+/**
+ * A festival as calendar rows, one per day, linking to that day of the programme. The calendar
+ * is Norwegian, so titles are too: «Board Game Masters – fredag 29. januar».
+ */
+export function festivalDayRows(festival: FestivalCalendarTypes): CalendarEventTypes[] {
+  const name = festivalNameNb(festival.title);
+  return (
+    (festival.days ?? [])
+      // `?dag=N` is a position in the whole `days` array, so the index is taken before filtering.
+      .map((day, index) => ({ day, index }))
+      .filter(({ day }) => /^\d{4}-\d{2}-\d{2}$/.test(day.date ?? ''))
+      .map(({ day, index }) => {
+        const hours = dayDateTimes(day as FestivalDayTypes) ?? {
+          start: osloTime(day.date, '00:00'),
+          end: osloTime(day.date, '23:59'),
+        };
+        const label = day.label?.nb?.trim();
+        return {
+          _id: `${festival._id}:${day._key}`,
+          title: `${name} – ${label || formatDayLong(festivalDate(day.date), 'nb')}`,
+          eventStartTime: hours.start,
+          eventEndTime: hours.end,
+          category: festival.series === 'annet' ? 'annet' : 'turnering',
+          // A day held elsewhere names its own venue.
+          location: day.venue?.name ?? festival.venue?.name,
+          festivalDay: true,
+          detailPath: `/arrangementer/${festival.slug}?dag=${index + 1}`,
+        };
+      })
+  );
+}

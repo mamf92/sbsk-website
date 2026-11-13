@@ -12,6 +12,7 @@ import { buildIcsCalendar } from './ics';
 import {
   dayDateTimes,
   defaultDayIndex,
+  festivalDayRows,
   festivalIcs,
   festivalScopeId,
   groupByStart,
@@ -250,5 +251,76 @@ describe('festivalIcs', () => {
     const ics = buildIcsCalendar(festivalIcs(festival, 'nb'));
     expect(ics.match(/BEGIN:VEVENT/g)).toHaveLength(3);
     expect(ics).toContain('UID:bgm-2027-fre-s1@sbsk.no');
+  });
+});
+
+describe('festivalDayRows', () => {
+  const festival = {
+    _id: 'bgm-2027',
+    slug: 'bgm-2027',
+    title: { nb: 'Board Game Masters' },
+    venue: { name: 'Tasta bydelshus' },
+    days: [
+      {
+        _key: 'fre',
+        date: '2027-01-29',
+        opens: '17:00',
+        closes: '23:00',
+        label: { nb: 'Åpningskveld' },
+      },
+      { _key: 'lor', date: '2027-01-30', opens: '10:00', closes: '02:00' },
+      { _key: 'son', date: '2027-01-31' },
+      { _key: 'bad', date: 'snart' },
+    ],
+  };
+
+  it('makes one calendar row per day, linking to that day of the programme', () => {
+    const rows = festivalDayRows(festival);
+    expect(rows.map((row) => row._id)).toEqual(['bgm-2027:fre', 'bgm-2027:lor', 'bgm-2027:son']);
+    expect(rows.map((row) => row.detailPath)).toEqual([
+      '/arrangementer/bgm-2027?dag=1',
+      '/arrangementer/bgm-2027?dag=2',
+      '/arrangementer/bgm-2027?dag=3',
+    ]);
+    expect(rows[0]).toMatchObject({
+      title: 'Board Game Masters – Åpningskveld',
+      category: 'turnering',
+      location: 'Tasta bydelshus',
+      festivalDay: true,
+    });
+  });
+
+  it('keeps ?dag=N pointing at the right day when an earlier day is skipped', () => {
+    const rows = festivalDayRows({
+      ...festival,
+      days: [festival.days[0], { _key: 'bad', date: 'snart' }, festival.days[2]],
+    });
+    expect(rows.map((row) => row.detailPath)).toEqual([
+      '/arrangementer/bgm-2027?dag=1',
+      '/arrangementer/bgm-2027?dag=3',
+    ]);
+  });
+
+  it("names a day's own venue when it is held elsewhere", () => {
+    const [, saturday] = festivalDayRows({
+      ...festival,
+      days: [festival.days[0], { ...festival.days[1], venue: { name: 'Sølvberget' } }],
+    });
+    expect(saturday.location).toBe('Sølvberget');
+  });
+
+  it('files a festival outside the BGM series under «annet»', () => {
+    const [row] = festivalDayRows({ ...festival, series: 'annet' });
+    expect(row.category).toBe('annet');
+  });
+
+  it('names an unlabelled day by its date, and times the row by the doors', () => {
+    const [, saturday, sunday] = festivalDayRows(festival);
+    expect(saturday.title).toBe('Board Game Masters – lørdag 30. januar');
+    expect(new Date(saturday.eventStartTime).toISOString()).toBe('2027-01-30T09:00:00.000Z');
+    // Closing at 02:00 is the next morning.
+    expect(new Date(saturday.eventEndTime).toISOString()).toBe('2027-01-31T01:00:00.000Z');
+    // No hours: the whole day.
+    expect(new Date(sunday.eventStartTime).toISOString()).toBe('2027-01-30T23:00:00.000Z');
   });
 });
