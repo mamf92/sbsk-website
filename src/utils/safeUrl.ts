@@ -6,13 +6,15 @@
 const ALLOWED_PROTOCOLS = new Set(['http:', 'https:']);
 
 /** The URL if it is absolute http(s), else null. Never trust CMS URLs at render time. */
-export function safeExternalUrl(url: unknown): string | null {
-  if (typeof url !== 'string') return null;
-  // An absolute http(s) URL never starts with whitespace or a control character. Browsers
-  // strip those before parsing (`' javascript:'`, `'java\tscript:'`), so refuse them rather
-  // than trying to normalise the same way every browser does.
+export function safeExternalUrl(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  // Editors paste URLs with stray spaces at either end, so those are trimmed. A control
+  // character anywhere is refused rather than normalised: browsers silently drop tabs and
+  // newlines while parsing (`'java\tscript:'`), and matching every browser's rules is not a
+  // game worth playing.
+  const url = value.trim();
   // eslint-disable-next-line no-control-regex
-  if (/[\u0000- \u007f]/.test(url)) return null;
+  if (/[\u0000-\u001f\u007f]/.test(url)) return null;
   // Protocol-relative (`//evil.example`) would inherit our scheme, but it also has no explicit
   // protocol for us to check, so it is refused.
   if (!/^https?:\/\//i.test(url)) return null;
@@ -26,13 +28,6 @@ export function safeExternalUrl(url: unknown): string | null {
   if (!ALLOWED_PROTOCOLS.has(parsed.protocol)) return null;
   if (!parsed.hostname) return null;
   return url;
-}
-
-/** The host to name in "opens spond.com in a new tab", or null for an unsafe URL. */
-export function externalHost(url: unknown): string | null {
-  const safe = safeExternalUrl(url);
-  if (!safe) return null;
-  return new URL(safe).hostname.replace(/^www\./, '');
 }
 
 /** Opens a safe external URL in a new tab with no opener. A no-op for anything unsafe. */

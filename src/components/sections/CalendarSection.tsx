@@ -622,7 +622,12 @@ function EventRow({
   // The chevron is now driven by whether there is anything to open, not by the category —
   // a turnering with a description expands like any other event, and reaches its own page
   // through the "Se arrangementet" button in the panel.
-  const expandable = !!event.content?.length || !!event.image || !!event.links?.length;
+  // Only links that will actually render a button count: an unsafe CMS URL is dropped below.
+  const links = (event.links ?? []).filter(
+    (link) =>
+      typeof link?.url === 'string' && (isInternalLink(link.url) || !!safeExternalUrl(link.url)),
+  );
+  const expandable = !!event.content?.length || !!event.image || links.length > 0;
   // Nothing to open, but a page of its own: link straight out instead of expanding.
   const linksOut = !expandable && !!detailPath;
 
@@ -790,7 +795,7 @@ function EventRow({
                 />
               )}
 
-              {(event.links?.length || detailPath) && (
+              {(links.length > 0 || detailPath) && (
                 <div className="flex flex-row flex-wrap gap-2">
                   {detailPath && (
                     <Button
@@ -802,12 +807,8 @@ function EventRow({
                       Se arrangementet
                     </Button>
                   )}
-                  {event.links?.map((link, index) => {
-                    if (typeof link?.url !== 'string') return null;
+                  {links.map((link, index) => {
                     const isInternal = isInternalLink(link.url);
-                    // A CMS URL that is neither ours nor plain http(s) gets no button at all,
-                    // rather than one that silently does nothing.
-                    if (!isInternal && !safeExternalUrl(link.url)) return null;
                     return (
                       <Button
                         key={index}

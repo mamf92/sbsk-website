@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { externalHost, openExternal, safeExternalUrl } from './safeUrl';
+import { openExternal, safeExternalUrl } from './safeUrl';
 
 describe('safeExternalUrl', () => {
   it.each(['https://spond.com/landing/event/abc', 'http://example.com', 'HTTPS://EXAMPLE.COM/x'])(
@@ -22,25 +22,21 @@ describe('safeExternalUrl', () => {
     ['/relative/path'],
     ['mailto:someone@example.com'],
     ['https://'],
-    ['https:// example.com'],
     [''],
   ])('rejects %j', (url) => {
     expect(safeExternalUrl(url)).toBeNull();
   });
 
+  it('trims stray whitespace an editor pasted around a URL', () => {
+    expect(safeExternalUrl('  https://spond.com/x \n')).toBe('https://spond.com/x');
+  });
+
+  it('keeps a URL with a space in its path', () => {
+    expect(safeExternalUrl('https://example.com/a b')).toBe('https://example.com/a b');
+  });
+
   it.each([undefined, null, 42, {}, ['https://example.com']])('rejects non-string %j', (value) => {
     expect(safeExternalUrl(value)).toBeNull();
-  });
-});
-
-describe('externalHost', () => {
-  it('returns the host without www', () => {
-    expect(externalHost('https://www.spond.com/x')).toBe('spond.com');
-    expect(externalHost('https://club.spond.com/x')).toBe('club.spond.com');
-  });
-
-  it('returns null for an unsafe URL', () => {
-    expect(externalHost('javascript:alert(1)')).toBeNull();
   });
 });
 
