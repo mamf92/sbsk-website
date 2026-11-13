@@ -31,9 +31,9 @@ vi.mock('../../hooks/theme/ThemeContext', () => ({
   }),
 }));
 
-function renderHeader() {
+function renderHeader(path = '/') {
   return render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[path]}>
       <Header />
     </MemoryRouter>,
   );
@@ -51,11 +51,19 @@ describe('Header — theme toggle name', () => {
 });
 
 describe('Header — language toggle', () => {
-  it('switches the page language from the header', async () => {
-    renderHeader();
-    await userEvent.click(screen.getByRole('button', { name: /^EN\b/ }));
-    expect(document.documentElement.lang).toBe('en');
-    expect(screen.getByRole('button', { name: /^NO\b/ })).toBeInTheDocument();
+  it('switches language on a page that exists in English', async () => {
+    renderHeader('/board-game-masters');
+    // One in the bar (sm and up) and one in the mobile menu (below sm); CSS picks which shows.
+    const toggles = screen.getAllByRole('button', { name: /^EN\b/ });
+    expect(toggles).toHaveLength(2);
+    await userEvent.click(toggles[0]);
+    expect(screen.getAllByRole('button', { name: /^NO\b/ })).toHaveLength(2);
+    expect(localStorage.getItem('sbsk-locale')).toBe('en');
+  });
+
+  it('is absent on a page that only exists in Norwegian', () => {
+    renderHeader('/om-oss');
+    expect(screen.queryAllByRole('button', { name: /^EN\b/ })).toHaveLength(0);
   });
 });
 

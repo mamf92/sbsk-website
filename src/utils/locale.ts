@@ -5,6 +5,9 @@
  * Deliberately free of i18next: the header's toggle needs the choice on every page, but the
  * translations are only needed by the (lazy) event pages, so i18next stays out of the entry
  * chunk. `src/i18n/index.ts` subscribes here and follows along.
+ *
+ * Only some pages are translated (`isTranslatedPath`). Everywhere else the page stays
+ * Norwegian and `<html lang>` says so, whatever the visitor chose; see `useDocumentLang`.
  */
 import { i18nEnabled } from './featureFlags';
 
@@ -17,7 +20,18 @@ export const DEFAULT_LOCALE: Locale = 'nb';
 export const LOCALE_STORAGE_KEY = 'sbsk-locale';
 
 export function isLocale(value: unknown): value is Locale {
-  return value === 'nb' || value === 'en';
+  return (LOCALES as readonly unknown[]).includes(value);
+}
+
+/**
+ * The routes that exist in English. The language toggle only shows on these, and only these
+ * set `<html lang>` to the visitor's choice. Paths are router paths (no basename), decoded.
+ * Grows as pages are translated; the full-site phase replaces it with "everything".
+ */
+const TRANSLATED_PATHS = [/^\/board-game-masters\/?$/, /^\/arrangementer\/[^/]+\/?$/];
+
+export function isTranslatedPath(pathname: string): boolean {
+  return TRANSLATED_PATHS.some((pattern) => pattern.test(pathname));
 }
 
 /** Wrapped because `localStorage` throws instead of returning null in some private modes. */
@@ -30,7 +44,7 @@ function getStoredLocale(): Locale | null {
   }
 }
 
-export function storeLocale(locale: Locale) {
+function storeLocale(locale: Locale) {
   try {
     localStorage.setItem(LOCALE_STORAGE_KEY, locale);
   } catch {
@@ -45,21 +59,18 @@ export function storeLocale(locale: Locale) {
 export function detectLocale(languages: readonly string[] | undefined): Locale {
   const first = languages?.find((language) => typeof language === 'string' && language);
   if (!first) return DEFAULT_LOCALE;
-  return /^(nb|nn|no)\b/i.test(first) ? 'nb' : 'en';
+  // `nb-NO`, `nb_NO` (some embedded browsers), `no`, `nn`.
+  return /^(nb|nn|no)([-_]|$)/i.test(first) ? 'nb' : 'en';
+}
+
+function browserLanguages(): readonly string[] {
+  // An empty `languages` list is not "no preference": fall back to the single value.
+  return navigator.languages?.length ? navigator.languages : [navigator.language];
 }
 
 export function getInitialLocale(): Locale {
   if (!i18nEnabled) return DEFAULT_LOCALE;
-  return getStoredLocale() ?? detectLocale(navigator.languages ?? [navigator.language]);
-}
-
-export function applyLocale(locale: Locale) {
-  document.documentElement.lang = locale;
-}
-
-/** The BCP 47 tag `Intl` date and number formatting should use for a locale. */
-export function dateLocale(locale: Locale): string {
-  return locale === 'en' ? 'en-GB' : 'nb-NO';
+  return getStoredLocale() ?? detectLocale(browserLanguages());
 }
 
 /* -------------------------------------------------------------------------- */
@@ -74,11 +85,10 @@ export function getLocale(): Locale {
   return current;
 }
 
-/** Switches language: persists it, updates `<html lang>` and tells every subscriber. */
+/** Switches language: persists it and tells every subscriber. */
 export function setLocale(next: Locale) {
   storeLocale(next);
-  applyLocale(next);
-  if (next === current) return;
+  if (next === getLocale()) return;
   current = next;
   listeners.forEach((listener) => listener(next));
 }
@@ -90,14 +100,13 @@ export function subscribeLocale(listener: (locale: Locale) => void) {
   };
 }
 
-/** Runs next to `initTheme()` in `main.tsx`, so `<html lang>` is right before first paint. */
-export function initLocale() {
-  applyLocale(getLocale());
-}
-
-/** Test-only: forget the in-memory choice so the next read starts from storage again. */
-export function resetLocaleForTests(locale: Locale = DEFAULT_LOCALE) {
-  current = locale;
-  applyLocale(locale);
-  listeners.forEach((listener) => listener(locale));
+/**
+ * Test-only. With an argument, pins the choice to that locale; without, forgets it so the
+ * next `getLocale()` seeds itself from storage and the browser again. Notifies subscribers
+ * either way, so i18next follows.
+ */
+export function resetLocaleForTests(locale?: Locale) {
+  current = locale ?? null;
+  const next = getLocale();
+  listeners.forEach((listener) => listener(next));
 }

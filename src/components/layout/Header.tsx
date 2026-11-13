@@ -7,9 +7,9 @@ import { useTheme } from '../../hooks/theme/ThemeContext';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../hooks/authContext/authContext';
 import { useGoHome } from '../../hooks/useGoHome';
-import { i18nEnabled, memberPortalEnabled } from '../../utils/featureFlags';
+import { memberPortalEnabled } from '../../utils/featureFlags';
 import { LanguageToggle } from '../ui/LanguageToggle';
-import { useLocale } from '../../hooks/locale/useLocale';
+import { useIsTranslatedRoute, useLocale } from '../../hooks/locale/useLocale';
 
 const desktopNavLink = `${navLinkClasses} text-sm`;
 
@@ -28,6 +28,7 @@ const mobileNavLink =
 export default function Header() {
   const { isDarkMode, toggleDarkMode } = useTheme();
   const { locale, setLocale } = useLocale();
+  const showLanguageToggle = useIsTranslatedRoute();
   const navigate = useNavigate();
   const { goHome, handleHomeLinkClick } = useGoHome();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -126,8 +127,14 @@ export default function Header() {
             {isDarkMode ? 'LM' : 'DM'}
           </Button>
 
-          {/* Hidden until the event pages are fully translated (VITE_ENABLE_I18N). */}
-          {i18nEnabled && <LanguageToggle locale={locale} onChange={setLocale} />}
+          {/* Only on pages that exist in English, and only with VITE_ENABLE_I18N on: a toggle
+              that changes nothing on the page would read as broken. Below `sm` the bar has no
+              room for a third control at 320px, so there it lives at the top of the menu. */}
+          {showLanguageToggle && (
+            <span className="hidden sm:contents">
+              <LanguageToggle locale={locale} onChange={setLocale} />
+            </span>
+          )}
 
           {/* Login / profile — desktop only. Gated behind #213: no member/board portal for the
               MVP launch, so there is no login option to show at all. */}
@@ -251,6 +258,11 @@ export default function Header() {
               >
                 Logg ut
               </Button>
+            </div>
+          )}
+          {showLanguageToggle && (
+            <div className="flex border-t border-white/12 px-6 py-[15px] sm:hidden">
+              <LanguageToggle locale={locale} onChange={setLocale} />
             </div>
           )}
           <NavLink to="/" end className={mobileNavLink} onClick={closeMobileMenu}>

@@ -1,7 +1,6 @@
 import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
 import { afterEach, beforeEach, vi } from 'vitest';
-import '../i18n';
 import { resetLocaleForTests } from '../utils/locale';
 
 // jsdom does not implement matchMedia, which src/utils/theme.ts relies on.

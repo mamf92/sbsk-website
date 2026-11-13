@@ -2,7 +2,7 @@ import i18n from 'i18next';
 import { initReactI18next, useTranslation } from 'react-i18next';
 import nbEvents from './locales/nb/events.json';
 import enEvents from './locales/en/events.json';
-import { DEFAULT_LOCALE, getLocale, subscribeLocale } from '../utils/locale';
+import { DEFAULT_LOCALE, LOCALES, getLocale, subscribeLocale } from '../utils/locale';
 
 /**
  * Translations for the event pages. Import this module only from lazily loaded pages and
@@ -23,7 +23,7 @@ if (!i18n.isInitialized) {
     resources,
     lng: getLocale(),
     fallbackLng: DEFAULT_LOCALE,
-    supportedLngs: ['nb', 'en'],
+    supportedLngs: [...LOCALES],
     ns: ['events'],
     defaultNS: 'events',
     // React escapes what it renders; escaping here as well would double-encode `&` and `<`.
@@ -35,7 +35,10 @@ if (!i18n.isInitialized) {
   subscribeLocale((locale) => void i18n.changeLanguage(locale));
 }
 
-/** `t` for the event pages. */
+/**
+ * `t` for the event pages. Always use this rather than `useTranslation` directly: importing it
+ * is what initialises i18next, so a page that forgets the import cannot render raw keys.
+ */
 export function useEventsT() {
   return useTranslation('events').t;
 }

@@ -1,8 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { useTranslation } from 'react-i18next';
 import { describe, expect, it } from 'vitest';
-import { resources } from './index';
+import { resources, useEventsT } from './index';
 import { useLocale } from '../hooks/locale/useLocale';
 import { LanguageToggle } from '../components/ui/LanguageToggle';
 import { LOCALE_STORAGE_KEY } from '../utils/locale';
@@ -52,7 +51,7 @@ describe('locale files', () => {
 });
 
 function Harness() {
-  const { t } = useTranslation('events');
+  const t = useEventsT();
   const { locale, setLocale } = useLocale();
   return (
     <>
@@ -64,21 +63,18 @@ function Harness() {
 }
 
 describe('switching language', () => {
-  it('changes the visible copy, <html lang> and the stored choice', async () => {
+  it('changes the visible copy and the stored choice', async () => {
     render(<Harness />);
-    expect(document.documentElement.lang).toBe('nb');
     expect(screen.getByRole('heading', { name: 'Program' })).toBeInTheDocument();
     expect(screen.getByText('Åpner spond.com i en ny fane')).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /Change language to English/ }));
 
-    expect(document.documentElement.lang).toBe('en');
     expect(screen.getByRole('heading', { name: 'Programme' })).toBeInTheDocument();
     expect(screen.getByText('Opens spond.com in a new tab')).toBeInTheDocument();
     expect(localStorage.getItem(LOCALE_STORAGE_KEY)).toBe('en');
 
     await userEvent.click(screen.getByRole('button', { name: /Bytt språk til norsk/ }));
-    expect(document.documentElement.lang).toBe('nb');
     expect(screen.getByRole('heading', { name: 'Program' })).toBeInTheDocument();
   });
 
@@ -94,7 +90,7 @@ describe('switching language', () => {
 
   it('does not double-escape interpolated text (React escapes it)', () => {
     function Probe() {
-      const { t } = useTranslation('events');
+      const t = useEventsT();
       return <p>{t('contact', { email: 'a&b@example.com' })}</p>;
     }
     render(<Probe />);
