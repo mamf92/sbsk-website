@@ -9,7 +9,8 @@
     "signupNotYetOpen": "Åpner {{date}}",
     "signupClosed": "Stengt",
     "signupDropIn": "Bare møt opp",
-    "capacity": "{{count}} plasser"
+    "capacity_one": "{{count}} plass",
+    "capacity_other": "{{count}} plasser"
   },
   "signup": {
     "default": "Meld deg på",

@@ -4,7 +4,7 @@ import { useEventsT } from '../../i18n';
 import { pickLocale } from '../../i18n/pickLocale';
 import { useLocale } from '../../hooks/locale/useLocale';
 import type { SignupTypes } from '../../sanity/queryHelpers/fragments';
-import { formatDateTime } from '../../utils/eventDateFormat';
+import { formatDateTime, parseInstant } from '../../utils/eventDateFormat';
 import { openExternal, safeExternalUrl } from '../../utils/safeUrl';
 import { signupState } from '../../utils/signup';
 
@@ -36,7 +36,8 @@ export const SignupBlock = React.forwardRef<HTMLDivElement, SignupBlockProps>(
     const note = pickLocale(signup.note, locale);
     const url = safeExternalUrl(signup.url);
     const host = url ? new URL(url).hostname.replace(/^www\./, '') : '';
-    const at = (iso: string | undefined) => (iso ? formatDateTime(new Date(iso), locale) : '');
+    const opens = parseInstant(signup.opens);
+    const closes = parseInstant(signup.closes);
 
     let body: React.ReactNode;
     switch (state) {
@@ -57,7 +58,7 @@ export const SignupBlock = React.forwardRef<HTMLDivElement, SignupBlockProps>(
             {!compact && (
               <p id={hintId} className={`${textClass} opacity-80`}>
                 {t('signup.opensInNewTab', { host })}
-                {signup.closes && <> · {t('signup.deadline', { date: at(signup.closes) })}</>}
+                {closes && <> · {t('signup.deadline', { date: formatDateTime(closes, locale) })}</>}
               </p>
             )}
           </>
@@ -71,7 +72,11 @@ export const SignupBlock = React.forwardRef<HTMLDivElement, SignupBlockProps>(
                 {label?.value ?? t('signup.default')}
               </Button>
             )}
-            <p className={textClass}>{t('signup.notYetOpen', { date: at(signup.opens) })}</p>
+            {opens && (
+              <p className={textClass}>
+                {t('signup.notYetOpen', { date: formatDateTime(opens, locale) })}
+              </p>
+            )}
           </>
         );
         break;
