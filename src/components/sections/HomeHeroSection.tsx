@@ -3,13 +3,14 @@ import { urlFor } from '../../sanity/sanityImageUrl';
 import { HeroImage } from '../ui/HeroImage';
 import { HeroLinks, type HeroLink } from '../ui/HeroLinks';
 import { Link } from '../ui/Link';
+import { safeExternalUrl } from '../../utils/safeUrl';
 
 const FALLBACK_HERO = {
   title: 'Stavanger Brettspillklubb',
   subtitle:
     'Bli med på ukentlige brettspillkvelder og prøv ut ny og kjente spill sammen med andre spilleglade folk.',
   imageSourceName: 'Designed by Freepik',
-  imageSourceUrl: 'www.freepik.com',
+  imageSourceUrl: 'https://www.freepik.com',
 };
 
 const HOME_HERO_LINKS: HeroLink[] = [
@@ -28,7 +29,9 @@ export default function HomeHero({
   const resolvedTitle = title || FALLBACK_HERO.title;
   const resolvedSubtitle = subtitle || FALLBACK_HERO.subtitle;
   const resolvedImageSource = imageSource?.imageSourceName || FALLBACK_HERO.imageSourceName;
-  const resolvedImageSourceUrl = imageSource?.imageSourceUrl || FALLBACK_HERO.imageSourceUrl;
+  const resolvedImageSourceUrl = safeExternalUrl(
+    imageSource?.imageSourceUrl || FALLBACK_HERO.imageSourceUrl,
+  );
   const sponsorsExist = sponsors && sponsors.length > 0;
 
   return (
@@ -64,22 +67,30 @@ export default function HomeHero({
                 Vi samarbeider med:
               </h2>
               <div className="flex w-full flex-col items-start justify-between gap-2 self-baseline rounded-none p-4 sm:flex-row md:gap-0 dark:bg-white/50">
-                {sponsors.map((sponsor, index) => (
-                  <Link
-                    key={index}
-                    href={sponsor.websiteUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    variant="inherit"
-                    aria-label={`${sponsor.name} (åpnes i ny fane)`}
-                  >
+                {sponsors.map((sponsor, index) => {
+                  const logo = (
                     <img
                       src={urlFor(sponsor.logoImage).url()}
                       alt={sponsor.name}
                       className="h-14 w-auto lg:h-20"
                     />
-                  </Link>
-                ))}
+                  );
+                  const website = safeExternalUrl(sponsor.websiteUrl);
+                  // No safe website: the logo on its own, not a link that goes nowhere.
+                  if (!website) return <span key={index}>{logo}</span>;
+                  return (
+                    <Link
+                      key={index}
+                      href={website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      variant="inherit"
+                      aria-label={`${sponsor.name} (åpnes i ny fane)`}
+                    >
+                      {logo}
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           )}

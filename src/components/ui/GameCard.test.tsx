@@ -103,4 +103,18 @@ describe('GameCard', () => {
     expect(screen.queryByRole('link', { name: /BoardGameGeek/ })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Se reglene' })).toBeInTheDocument();
   });
+
+  it('renders no link for a CMS URL that is not http(s)', () => {
+    render(
+      <GameCard
+        {...baseProps}
+        buyUrl="javascript:alert(1)"
+        bggUrl="data:text/html,x"
+        videoUrl="https://example.com/video"
+      />,
+    );
+    for (const link of screen.getAllByRole('link')) {
+      expect(link.getAttribute('href')).toMatch(/^https:/);
+    }
+  });
 });

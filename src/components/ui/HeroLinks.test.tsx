@@ -32,6 +32,23 @@ function renderLinks(links?: HeroLink[]) {
 }
 
 describe('HeroLinks', () => {
+  it('drops a link whose URL is not safe, and keeps mailto/https ones', () => {
+    renderLinks([
+      { label: 'Ond', url: 'javascript:alert(1)' },
+      { label: 'Skriv til oss', url: 'mailto:post@example.com' },
+      { label: 'Spond', url: 'https://spond.com/x' },
+    ]);
+    expect(screen.queryByText('Ond')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Skriv til oss' })).toHaveAttribute(
+      'href',
+      'mailto:post@example.com',
+    );
+    expect(screen.getByRole('link', { name: 'Spond' })).toHaveAttribute(
+      'href',
+      'https://spond.com/x',
+    );
+  });
+
   it('falls back to the page default when the Studio has nothing set', () => {
     renderLinks();
     expect(screen.getByRole('button', { name: /Se kalender/ })).toBeInTheDocument();

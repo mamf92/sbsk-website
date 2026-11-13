@@ -22,3 +22,11 @@ export const memberPortalEnabled = import.meta.env.VITE_ENABLE_MEMBER_PORTAL ===
  * gated code keeps being exercised while production hides it.
  */
 export const contactFormEnabled = import.meta.env.VITE_ENABLE_CONTACT_FORM === 'true';
+
+/**
+ * The language toggle and English event pages (phase 1, `docs/plans/01-event-pages.md` WP2).
+ * Off in production until the event pages are fully translated, so visitors never get a
+ * toggle that switches half a page. With the flag off the site is always Norwegian, whatever
+ * is stored or whatever the browser asks for. Unit tests and the Playwright config set it on.
+ */
+export const i18nEnabled = import.meta.env.VITE_ENABLE_I18N === 'true';
