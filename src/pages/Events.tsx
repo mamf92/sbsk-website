@@ -1,6 +1,7 @@
 import { Link, useLoaderData } from 'react-router-dom';
 import type { CalendarEventTypes } from '../sanity/queryHelpers/events';
 import { linkClassesInherit } from '../components/ui/Link';
+import { TIME_ZONE } from '../utils/eventDateFormat';
 
 export default function Events() {
   const { events } = useLoaderData() as { events: CalendarEventTypes[] };
@@ -23,7 +24,11 @@ export default function Events() {
           const body = (
             <>
               <h2 className="text-h2 font-semibold">{event.title}</h2>
-              <p>{new Date(event.eventStartTime).toLocaleDateString('nb-NO')}</p>
+              <p>
+                {new Date(event.eventStartTime).toLocaleDateString('nb-NO', {
+                  timeZone: TIME_ZONE,
+                })}
+              </p>
             </>
           );
 

@@ -20,8 +20,14 @@ import ArrowRight from '../../assets/icons/arrows/arrowright.svg?react';
 import type { CalendarEventTypes } from '../../sanity/queryHelpers/events';
 import type { CalendarHeroTypes } from '../../sanity/queryHelpers/calendar-hero';
 import { components } from '../../sanity/editors/portableTextComponents';
-import { monthAbbreviation, timeRange } from '../../utils/eventDateFormat';
+import {
+  dayOfMonth,
+  monthAbbreviation,
+  osloDaysBetween,
+  timeRange,
+} from '../../utils/eventDateFormat';
 import { isInternalLink, internalLinkPath } from '../../utils/internalLinks';
+import { openExternal, safeExternalUrl } from '../../utils/safeUrl';
 import { useAuth } from '../../hooks/authContext/authContext';
 import {
   createParticipantFromProfile,
@@ -134,15 +140,8 @@ const SORT_OPTIONS: { value: Sort; label: string }[] = [
 /* Formatting                                                                  */
 /* -------------------------------------------------------------------------- */
 
-/** Whole calendar days between two instants, ignoring the time of day. */
-function daysBetween(from: Date, to: Date): number {
-  const startOfDay = (date: Date) =>
-    new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
-  return Math.round((startOfDay(to) - startOfDay(from)) / 86400000);
-}
-
 function countdown(start: Date, now: Date): string {
-  const days = daysBetween(now, start);
+  const days = osloDaysBetween(now, start);
   if (days === 0) return 'I dag';
   if (days === 1) return 'I morgen';
   if (days > 0) return `Om ${days} dager`;
@@ -623,7 +622,12 @@ function EventRow({
   // The chevron is now driven by whether there is anything to open, not by the category —
   // a turnering with a description expands like any other event, and reaches its own page
   // through the "Se arrangementet" button in the panel.
-  const expandable = !!event.content?.length || !!event.image || !!event.links?.length;
+  // Only links that will actually render a button count: an unsafe CMS URL is dropped below.
+  const links = (event.links ?? []).filter(
+    (link) =>
+      typeof link?.url === 'string' && (isInternalLink(link.url) || !!safeExternalUrl(link.url)),
+  );
+  const expandable = !!event.content?.length || !!event.image || links.length > 0;
   // Nothing to open, but a page of its own: link straight out instead of expanding.
   const linksOut = !expandable && !!detailPath;
 
@@ -660,7 +664,7 @@ function EventRow({
           ].join(' ')}
         >
           <span className="font-heading sm:text-daymark text-5xl leading-[0.78] font-extrabold">
-            {start.getDate()}
+            {dayOfMonth(start)}
           </span>
           <span className="font-heading text-base font-bold tracking-[0.18em] uppercase">
             {monthAbbreviation(start)}
@@ -791,7 +795,7 @@ function EventRow({
                 />
               )}
 
-              {(event.links?.length || detailPath) && (
+              {(links.length > 0 || detailPath) && (
                 <div className="flex flex-row flex-wrap gap-2">
                   {detailPath && (
                     <Button
@@ -803,7 +807,7 @@ function EventRow({
                       Se arrangementet
                     </Button>
                   )}
-                  {event.links?.map((link, index) => {
+                  {links.map((link, index) => {
                     const isInternal = isInternalLink(link.url);
                     return (
                       <Button
@@ -812,9 +816,7 @@ function EventRow({
                         size="sm"
                         icon="right"
                         onClick={() =>
-                          isInternal
-                            ? navigate(internalLinkPath(link.url))
-                            : window.open(link.url, '_blank', 'noopener,noreferrer')
+                          isInternal ? navigate(internalLinkPath(link.url)) : openExternal(link.url)
                         }
                       >
                         {link.label}
