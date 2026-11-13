@@ -91,9 +91,9 @@ describe('switching language', () => {
   it('does not double-escape interpolated text (React escapes it)', () => {
     function Probe() {
       const t = useEventsT();
-      return <p>{t('contact', { email: 'a&b@example.com' })}</p>;
+      return <p>{t('venue.contact', { name: 'Kari & Ola' })}</p>;
     }
     render(<Probe />);
-    expect(screen.getByText('Spørsmål? Send e-post til a&b@example.com')).toBeInTheDocument();
+    expect(screen.getByText('Kontaktperson på stedet: Kari & Ola')).toBeInTheDocument();
   });
 });

@@ -15,7 +15,8 @@ import StudioRoute from './pages/StudioRoute';
 import RouteError from './components/sections/RouteError';
 import RouteFallback from './components/sections/RouteFallback';
 import { homeLoader } from './loaders/home-loader';
-import { eventsListLoader, eventDetailLoader } from './sanity/queryHelpers/events';
+import { eventsListLoader } from './sanity/queryHelpers/events';
+import { arrangementLoader, boardGameMastersLoader } from './sanity/queryHelpers/festivals';
 import { calendarLoader } from './loaders/calendar-loader';
 import { ourGamesLoader } from './loaders/our-games-loader';
 import { aboutUsLoader } from './loaders/about-us-loader';
@@ -84,13 +85,17 @@ const router = createBrowserRouter(
           children: [
             { index: true, element: <Home />, loader: homeLoader },
             { path: 'kalender', element: <Calendar />, loader: calendarLoader },
-            { path: 'board-game-masters', element: <BoardGameMasters /> },
+            {
+              path: 'board-game-masters',
+              element: <BoardGameMasters />,
+              loader: boardGameMastersLoader,
+            },
             { path: 'våre-spill', element: <OurGames />, loader: ourGamesLoader },
             { path: 'om-oss', element: <AboutUs />, loader: aboutUsLoader },
             { path: 'kontakt-oss', element: <ContactUs /> },
             { path: 'bli-medlem', element: <BecomeAMember /> },
             { path: 'arrangementer', element: <Events />, loader: eventsListLoader },
-            { path: 'arrangementer/:id', element: <Event />, loader: eventDetailLoader },
+            { path: 'arrangementer/:id', element: <Event />, loader: arrangementLoader },
             { path: 'våre-partnere', element: <OurPartners /> },
             // Gated behind #213: no member/board portal for the MVP launch, so these four
             // routes are absent from the production build and fall through to the catch-all

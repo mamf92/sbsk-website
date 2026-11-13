@@ -2,6 +2,7 @@ import type {
   FestivalDayTypes,
   FestivalSessionTypes,
   FestivalTypes,
+  SessionFormat,
 } from '../sanity/queryHelpers/festivals';
 import { TIME_ZONE, osloDateKey } from './eventDateFormat';
 import type { IcsEventInput } from './ics';
@@ -219,3 +220,24 @@ export function festivalIcs(
   }
   return entries;
 }
+
+/** Midday on a festival date, as an instant: safe to format as that date in Oslo. */
+export function festivalDate(date: string): Date {
+  return osloTime(date, '12:00');
+}
+
+/** The formats present on a day, in the order the Studio lists them. */
+export function formatsOf(sessions: FestivalSessionTypes[]): SessionFormat[] {
+  const present = new Set(sessions.map((session) => session.format).filter(Boolean));
+  return SESSION_FORMAT_ORDER.filter((format) => present.has(format));
+}
+
+const SESSION_FORMAT_ORDER: SessionFormat[] = [
+  'turnering',
+  'finale',
+  'laer-a-spille',
+  'fri-spilling',
+  'demo',
+  'pause',
+  'annet',
+];

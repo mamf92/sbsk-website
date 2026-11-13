@@ -172,5 +172,8 @@ export async function boardGameMastersLoader(): Promise<{ festival: FestivalType
   const festival = await client.fetch<FestivalTypes | null>(CURRENT_BGM_QUERY, {
     today: osloDateKey(new Date()),
   });
-  return { festival: festival ?? null };
+  // Anything but a document (a stub's `[]`, a malformed answer) is "no edition yet".
+  return {
+    festival: festival && typeof festival === 'object' && '_id' in festival ? festival : null,
+  };
 }

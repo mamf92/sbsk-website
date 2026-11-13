@@ -37,7 +37,24 @@
     "reset": "Nullstill",
     "addToCalendar": "Legg programmet i kalenderen",
     "print": "Skriv ut programmet",
-    "emptyDay": "Programmet for denne dagen kommer snart"
+    "emptyDay": "Programmet for denne dagen kommer snart",
+    "chooseDay": "Velg dag",
+    "filterLabel": "Vis formater",
+    "sessions_one": "{{count}} programpost",
+    "sessions_other": "{{count}} programposter",
+    "seats_one": "{{count}} plass",
+    "seats_other": "{{count}} plasser",
+    "room": "Sted",
+    "showMore": "Vis mer",
+    "showLess": "Vis mindre",
+    "seeDay": "Se programmet for {{day}}",
+    "level": {
+      "nybegynner": "For nybegynnere",
+      "alle": "For alle",
+      "erfaren": "For erfarne"
+    },
+    "players": "{{min}}–{{max}} spillere",
+    "printHeading": "Program"
   },
   "format": {
     "turnering": "Turnering",
@@ -59,8 +76,20 @@
     "title": "Sponsorer"
   },
   "faq": "Spørsmål og svar",
-  "contact": "Spørsmål? Send e-post til {{email}}",
   "kicker": "Arrangement",
   "pricing": "Priser",
-  "opensInNewTab": "(åpnes i ny fane)"
+  "opensInNewTab": "(åpnes i ny fane)",
+  "festival": {
+    "seeProgram": "Se programmet",
+    "days": "Dagene",
+    "about": "Om arrangementet",
+    "signupAndPrices": "Påmelding og priser",
+    "perDaySignup": "Noen dager og programposter har egen påmelding. Den finner du i programmet.",
+    "rules": "Regler og praktisk",
+    "gallery": "Bilder fra tidligere år",
+    "contactTitle": "Kontakt",
+    "elsewhere": "Annet sted på {{day}}",
+    "doors": "Dørene åpner {{opens}}, vi stenger {{closes}}",
+    "contactLead": "Spørsmål? Send e-post til"
+  }
 }

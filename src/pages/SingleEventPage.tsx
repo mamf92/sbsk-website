@@ -1,6 +1,8 @@
 import { Link as RouterLink, useLoaderData } from 'react-router-dom';
 import { PortableText, toPlainText } from '@portabletext/react';
+import { lazy } from 'react';
 import type { CalendarEventTypes } from '../sanity/queryHelpers/events';
+import type { ArrangementData } from '../sanity/queryHelpers/festivals';
 import { urlFor } from '../sanity/sanityImageUrl';
 import { components } from '../sanity/editors/portableTextComponents';
 import { EventScheduleCard, type EventScheduleCardTone } from '../components/ui/EventScheduleCard';
@@ -23,6 +25,8 @@ import { useEventsT } from '../i18n';
 import { pickLocale } from '../i18n/pickLocale';
 import { useLocale } from '../hooks/locale/useLocale';
 
+const FestivalPage = lazy(() => import('../components/sections/FestivalPage/FestivalPage'));
+
 /**
  * One template for every event that has `hasDetailPage` set, from a biweekly spillkveld with
  * nothing but a title and a description to a multi-day tournament — every section below is
@@ -32,7 +36,13 @@ import { useLocale } from '../hooks/locale/useLocale';
  * English they carry `lang="nb"`.
  */
 export default function SingleEventPage() {
-  const { event } = useLoaderData() as { event: CalendarEventTypes };
+  const data = useLoaderData() as ArrangementData | { event: CalendarEventTypes };
+  // A festival shares the URL space; its page is its own chunk, loaded only when one is opened.
+  if ('kind' in data && data.kind === 'festival') return <FestivalPage festival={data.festival} />;
+  return <EventPage event={data.event} />;
+}
+
+function EventPage({ event }: { event: CalendarEventTypes }) {
   const t = useEventsT();
   const { locale } = useLocale();
   const nbLang = locale === 'nb' ? undefined : 'nb';
