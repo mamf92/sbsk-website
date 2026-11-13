@@ -38,7 +38,8 @@ runs:
         VITE_ENABLE_I18N: 'true'
 
     - name: Build redesign preview
-      # Same flags as the live build, so the preview shows what would ship. Only the root
+      # Same flags as the live build, so the preview shows what would ship (the redesign branch
+      # has no VITE_ENABLE_I18N to read, so it is left out). Only the root
       # 404.html is ever served by Pages; it routes /<repo>/redesign/* deep links here.
       shell: bash
       env:
@@ -47,7 +48,6 @@ runs:
         VITE_SUPABASE_PUBLISHABLE_KEY: ${{ inputs.supabase-publishable-key }}
         VITE_ENABLE_MEMBER_PORTAL: 'false'
         VITE_ENABLE_CONTACT_FORM: 'false'
-        VITE_ENABLE_I18N: 'true'
       run: |
         if ! git ls-remote --exit-code --heads origin redesign >/dev/null; then
           echo "No redesign branch; deploying the live site only."

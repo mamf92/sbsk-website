@@ -6,8 +6,10 @@
  * translations are only needed by the (lazy) event pages, so i18next stays out of the entry
  * chunk. `src/i18n/index.ts` subscribes here and follows along.
  *
- * Only some pages are translated (`isTranslatedPath`). Everywhere else the page stays
- * Norwegian and `<html lang>` says so, whatever the visitor chose; see `useDocumentLang`.
+ * Only some pages are translated: a route in `isTranslatedPath` that is showing its real,
+ * translated content (`markTranslatedContent`). Everywhere else, including the 404, error and
+ * placeholder states under those routes, the page stays Norwegian and `<html lang>` says so,
+ * whatever the visitor chose; see `useDocumentLang`.
  */
 import { i18nEnabled } from './featureFlags';
 
@@ -109,4 +111,36 @@ export function resetLocaleForTests(locale?: Locale) {
   current = locale ?? null;
   const next = getLocale();
   listeners.forEach((listener) => listener(next));
+}
+
+/* -------------------------------------------------------------------------- */
+/* Whether translated content is on screen                                    */
+/* -------------------------------------------------------------------------- */
+
+// The path alone is not enough: `/arrangementer/old-slug` renders the Norwegian 404 page, and
+// `/board-game-masters` a Norwegian placeholder until a festival is published. The translated
+// pages say so themselves while they are mounted. A count, not a flag, so the next page
+// mounting before the last one unmounts never clears it early.
+let translatedContent = 0;
+const translatedListeners = new Set<() => void>();
+
+/** Called by a translated page while it is mounted; returns the cleanup that unmarks it. */
+export function markTranslatedContent(): () => void {
+  translatedContent += 1;
+  translatedListeners.forEach((listener) => listener());
+  return () => {
+    translatedContent -= 1;
+    translatedListeners.forEach((listener) => listener());
+  };
+}
+
+export function isTranslatedContentShown(): boolean {
+  return translatedContent > 0;
+}
+
+export function subscribeTranslatedContent(listener: () => void) {
+  translatedListeners.add(listener);
+  return () => {
+    translatedListeners.delete(listener);
+  };
 }

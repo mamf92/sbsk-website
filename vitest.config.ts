@@ -19,7 +19,7 @@ export default defineConfig({
       // and its validation stay covered. `ContactSection.test.tsx` mocks the flag off to
       // cover the email-only state the site actually ships.
       VITE_ENABLE_CONTACT_FORM: 'true',
-      // The language toggle is hidden in production until the event pages are translated.
+      // On in production too, since the event pages were translated (#185).
       VITE_ENABLE_I18N: 'true',
     },
     setupFiles: ['./src/test/setup.ts'],

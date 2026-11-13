@@ -14,7 +14,7 @@ import { Program, DAY_PARAM } from './Program';
 import { PrintProgram } from './PrintProgram';
 import { useEventsT } from '../../../i18n';
 import { pickLocale } from '../../../i18n/pickLocale';
-import { useLocale } from '../../../hooks/locale/useLocale';
+import { useLocale, useTranslatedContent } from '../../../hooks/locale/useLocale';
 import { components } from '../../../sanity/editors/portableTextComponents';
 import type { FestivalTypes } from '../../../sanity/queryHelpers/festivals';
 import type { LocaleBlock } from '../../../sanity/queryHelpers/fragments';
@@ -45,6 +45,7 @@ function LocaleRichText({ value }: { value: LocaleBlock | undefined }) {
  * to contact, built from the same primitives as a single event, so a later reskin reaches both.
  */
 export default function FestivalPage({ festival }: { festival: FestivalTypes }) {
+  useTranslatedContent();
   const t = useEventsT();
   const { locale } = useLocale();
   const langOf = (lang?: string) => (lang && lang !== locale ? lang : undefined);

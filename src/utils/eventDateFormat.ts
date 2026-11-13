@@ -45,14 +45,17 @@ export function dayOfMonth(date: Date): number {
   return Number(format(date, 'en-GB', { day: 'numeric' }));
 }
 
+// The calendar is Norwegian-only, so these default to Norwegian; the translated event page
+// passes the visitor's locale.
+
 /** "AUG". Sliced off the long name because the short one carries a trailing period. */
-export function monthAbbreviation(date: Date): string {
-  return format(date, LOCALE, { month: 'long' }).slice(0, 3).toUpperCase();
+export function monthAbbreviation(date: Date, locale: Locale = 'nb'): string {
+  return format(date, intlLocale(locale), { month: 'long' }).slice(0, 3).toUpperCase();
 }
 
 /** "Man" — likewise stripped of the abbreviating period. */
-export function weekdayAbbreviation(date: Date): string {
-  const weekday = format(date, LOCALE, { weekday: 'short' }).replace('.', '');
+export function weekdayAbbreviation(date: Date, locale: Locale = 'nb'): string {
+  const weekday = format(date, intlLocale(locale), { weekday: 'short' }).replace('.', '');
   return weekday.charAt(0).toUpperCase() + weekday.slice(1);
 }
 
@@ -61,34 +64,41 @@ export function clockTime(date: Date): string {
 }
 
 /** "Man 18:00–22:00", widening to include both dates when the event runs past midnight. */
-export function timeRange(start: Date, end: Date): string {
+export function timeRange(start: Date, end: Date, locale: Locale = 'nb'): string {
   const startKey = osloDateKey(start);
   const endKey = osloDateKey(end);
   if (startKey === endKey) {
-    return `${weekdayAbbreviation(start)} ${clockTime(start)}–${clockTime(end)}`;
+    return `${weekdayAbbreviation(start, locale)} ${clockTime(start)}–${clockTime(end)}`;
   }
 
   // Without the year a range that crosses New Year reads as though it runs backwards
   // ("26. feb. – 25. jan."), so it is spelled out only in that case.
   const crossesYears = startKey.slice(0, 4) !== endKey.slice(0, 4);
   const dayAndMonth = (date: Date) =>
-    format(date, LOCALE, {
+    format(date, intlLocale(locale), {
       day: 'numeric',
       month: 'short',
       ...(crossesYears ? { year: 'numeric' } : {}),
     });
 
   return (
-    `${weekdayAbbreviation(start)} ${dayAndMonth(start)} ${clockTime(start)} – ` +
-    `${weekdayAbbreviation(end)} ${dayAndMonth(end)} ${clockTime(end)}`
+    `${weekdayAbbreviation(start, locale)} ${dayAndMonth(start)} ${clockTime(start)} – ` +
+    `${weekdayAbbreviation(end, locale)} ${dayAndMonth(end)} ${clockTime(end)}`
   );
 }
 
-/** "23." for a single day, "23.–26." for a range — the date block's big number. */
-export function dayLabel(start: Date, end: Date): string {
+/** "23." for a single day, "23.–26." for a range — the date block's big number. English
+ *  writes no ordinal period: "23", "23–26". */
+export function dayLabel(start: Date, end: Date, locale: Locale = 'nb'): string {
+  const dot = locale === 'en' ? '' : '.';
   return osloDateKey(start) === osloDateKey(end)
-    ? `${dayOfMonth(start)}.`
-    : `${dayOfMonth(start)}.–${dayOfMonth(end)}.`;
+    ? `${dayOfMonth(start)}${dot}`
+    : `${dayOfMonth(start)}${dot}–${dayOfMonth(end)}${dot}`;
+}
+
+/** The `Intl` tag for the Norwegian-first helpers above: `no-NO` as before, or `en-GB`. */
+function intlLocale(locale: Locale): string {
+  return locale === 'en' ? 'en-GB' : LOCALE;
 }
 
 /* -------------------------------------------------------------------------- */

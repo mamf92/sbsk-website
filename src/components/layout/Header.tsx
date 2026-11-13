@@ -73,7 +73,10 @@ export default function Header() {
   }, [isDropdownOpen]);
 
   return (
-    <header className="bg-darkblue surface-dark font-heading relative z-1100 w-full text-white print:hidden">
+    <header
+      lang="nb"
+      className="bg-darkblue surface-dark font-heading relative z-1100 w-full text-white print:hidden"
+    >
       <div className="max-w-shell mx-auto flex items-center justify-between gap-5 px-6 py-3.5">
         {/* Logo group — dice + wordmark, both navigate home. Clicking either while already on
             home scrolls back to the top instead of re-navigating; see `useGoHome`. */}

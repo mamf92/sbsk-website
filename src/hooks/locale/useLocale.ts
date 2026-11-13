@@ -3,8 +3,11 @@ import { useLocation } from 'react-router-dom';
 import {
   DEFAULT_LOCALE,
   getLocale,
+  isTranslatedContentShown,
   isTranslatedPath,
+  markTranslatedContent,
   setLocale,
+  subscribeTranslatedContent,
   subscribeLocale,
   type Locale,
 } from '../../utils/locale';
@@ -19,10 +22,20 @@ export function useLocale(): { locale: Locale; setLocale: (next: Locale) => void
   return { locale, setLocale };
 }
 
-/** Whether the current route exists in English, so the toggle has something to switch. */
+/** Whether this page is shown in English when chosen, so the toggle has something to switch. */
 export function useIsTranslatedRoute(): boolean {
   const { pathname } = useLocation();
-  return i18nEnabled && isTranslatedPath(safeDecode(pathname));
+  const shown = useSyncExternalStore(
+    subscribeTranslatedContent,
+    isTranslatedContentShown,
+    isTranslatedContentShown,
+  );
+  return i18nEnabled && shown && isTranslatedPath(safeDecode(pathname));
+}
+
+/** Mount in a translated page's real content, never in its error or placeholder states. */
+export function useTranslatedContent() {
+  useEffect(() => markTranslatedContent(), []);
 }
 
 /**

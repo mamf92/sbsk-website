@@ -43,6 +43,15 @@ describe('event dates are shown in Oslo time, whatever the runtime zone', () => 
     expect(monthAbbreviation(new Date('2027-01-31T23:30:00Z'))).toBe('FEB');
   });
 
+  it('the date block and time range follow the page language when asked', () => {
+    const start = new Date('2027-01-29T17:00:00Z');
+    const end = new Date('2027-01-29T22:30:00Z');
+    expect(timeRange(start, end, 'en')).toBe('Fri 18:00–23:30');
+    expect(monthAbbreviation(start, 'en')).toBe('JAN');
+    expect(dayLabel(start, end, 'en')).toBe('29');
+    expect(dayLabel(start, end)).toBe('29.');
+  });
+
   it('timeRange treats an evening that is one Oslo day as one day', () => {
     // 18:00–23:59 Oslo. In New York the end is still the same day, but in UTC+something
     // zones it would not be; what matters is that both ends are compared in Oslo.
