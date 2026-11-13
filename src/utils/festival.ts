@@ -4,6 +4,9 @@ import type {
   FestivalTypes,
 } from '../sanity/queryHelpers/festivals';
 import { TIME_ZONE, osloDateKey } from './eventDateFormat';
+import type { IcsEventInput } from './ics';
+import type { Locale } from './locale';
+import { pickLocale } from '../i18n/pickLocale';
 
 /* -------------------------------------------------------------------------- */
 /* Oslo wall-clock times to instants                                           */
@@ -39,17 +42,34 @@ export function osloTime(date: string, hhmm: string): Date {
   return new Date(instant);
 }
 
+/** "2027-01-30" for "2027-01-29": the next calendar date, independent of any zone. */
+function nextDate(date: string): string {
+  const [year, month, day] = date.split('-').map(Number);
+  return new Date(Date.UTC(year, month - 1, day + 1)).toISOString().slice(0, 10);
+}
+
+/**
+ * A start and end wall-clock time on `date` as instants. An end at or before the start runs
+ * past midnight («22:00–02:00»), so it lands on the next day rather than before the start.
+ */
+function span(date: string, start: string, end: string): { start: Date; end: Date } {
+  const from = osloTime(date, start);
+  let to = osloTime(date, end);
+  if (to.getTime() <= from.getTime()) to = osloTime(nextDate(date), end);
+  return { start: from, end: to };
+}
+
 export function sessionDateTimes(
   day: Pick<FestivalDayTypes, 'date'>,
   session: Pick<FestivalSessionTypes, 'start' | 'end'>,
 ): { start: Date; end: Date } {
-  return { start: osloTime(day.date, session.start), end: osloTime(day.date, session.end) };
+  return span(day.date, session.start, session.end);
 }
 
 /** The day's opening hours as instants, when both are set. */
 export function dayDateTimes(day: FestivalDayTypes): { start: Date; end: Date } | null {
   if (!day.opens || !day.closes) return null;
-  return { start: osloTime(day.date, day.opens), end: osloTime(day.date, day.closes) };
+  return span(day.date, day.opens, day.closes);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -93,8 +113,7 @@ export function groupByStart(
   const sorted = [...sessions]
     .filter((session) => session.start)
     .sort(
-      (a, b) =>
-        a.start.localeCompare(b.start) || (a.room ?? '').localeCompare(b.room ?? '', 'nb'),
+      (a, b) => a.start.localeCompare(b.start) || (a.room ?? '').localeCompare(b.room ?? '', 'nb'),
     );
   for (const session of sorted) {
     const group = groups.get(session.start);
@@ -127,4 +146,56 @@ export function parseFestivalScopeId(
   const parts = scopeId.split('/');
   if (parts.length > 2 || parts.some((part) => !part)) return null;
   return parts.length === 2 ? { dayKey: parts[0], sessionKey: parts[1] } : { dayKey: parts[0] };
+}
+
+/* -------------------------------------------------------------------------- */
+/* Calendar export                                                             */
+/* -------------------------------------------------------------------------- */
+
+function venueLine(venue: FestivalDayTypes['venue']): string | undefined {
+  return [venue?.name, venue?.address].filter(Boolean).join(', ') || undefined;
+}
+
+/**
+ * Every session of a festival as calendar entries, for the programme's .ics download. A day with
+ * no sessions but opening hours becomes one entry for the day. UIDs are built from the Sanity
+ * keys, so downloading again after the programme changes updates entries instead of adding them.
+ */
+export function festivalIcs(
+  festival: FestivalTypes,
+  locale: Locale,
+  url?: string,
+): IcsEventInput[] {
+  const name = pickLocale(festival.title, locale)?.value ?? 'Board Game Masters';
+  const entries: IcsEventInput[] = [];
+  for (const day of festival.days ?? []) {
+    const location = venueLine(day.venue) ?? venueLine(festival.venue);
+    const sessions = (day.sessions ?? []).filter((session) => session.start && session.end);
+    if (sessions.length === 0) {
+      const hours = dayDateTimes(day);
+      if (hours) {
+        entries.push({
+          ...hours,
+          title: name,
+          location,
+          url,
+          uid: `${festival._id}-${day._key}`,
+        });
+      }
+      continue;
+    }
+    for (const session of sessions) {
+      const title = pickLocale(session.title, locale)?.value ?? session.game?.name ?? name;
+      entries.push({
+        ...sessionDateTimes(day, session),
+        title: `${title} · ${name}`,
+        description: pickLocale(session.description, locale)?.value,
+        location:
+          session.room && location ? `${session.room}, ${location}` : (session.room ?? location),
+        url,
+        uid: `${festival._id}-${day._key}-${session._key}`,
+      });
+    }
+  }
+  return entries;
 }
