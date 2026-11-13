@@ -180,6 +180,13 @@ test('an event links through to its own page', async ({ page }) => {
   expect(errors, `page threw: ${errors.join(', ')}`).toEqual([]);
 });
 
+// Every event has a slug, so without the `hasDetailPage` guard in the query a calendar-only
+// event would still get a page at its slug. The tournament fixture has no detail page.
+test('a calendar-only event has no page of its own', async ({ page }) => {
+  await page.goto(`/arrangementer/${UPCOMING_TOURNAMENT.slug.current}`);
+  await expect(page.getByRole('heading', { name: 'Denne siden mangler i esken' })).toBeVisible();
+});
+
 // --- #63: what a visitor gets when something goes wrong -----------------------------------
 
 test('an event slug that does not resolve renders the 404 page inside the shell', async ({

@@ -3,13 +3,10 @@ import { Link } from 'react-router-dom';
 import { PostImageComponent } from './postsImageComponent';
 // Aliased: this module already imports React Router's `Link` for internal routes.
 import { Link as ExternalTextLink, linkClassesInherit } from '../../components/ui/Link';
-
 // Sanity's Studio-side `rule.uri()` validation (eventType.ts, postType.ts) does not reach
 // documents written directly against the Content Lake API, so a `javascript:` URL is only
-// stopped here, at render time.
-function isSafeExternalUrl(url: unknown): url is string {
-  return typeof url === 'string' && /^https?:\/\//i.test(url);
-}
+// stopped at render time, by `safeExternalUrl`.
+import { safeExternalUrl } from '../../utils/safeUrl';
 
 // Every route the site actually serves — see the router in `src/main.tsx`. Kept in sync by
 // hand, the same way CLAUDE.md asks every Norwegian-slug link to be.
@@ -80,10 +77,11 @@ export const components: PortableTextComponents = {
     em: ({ children }) => <em className="italic">{children}</em>,
     underline: ({ children }) => <u className="underline">{children}</u>,
     link: ({ value, children }) => {
-      if (!isSafeExternalUrl(value?.url)) return <>{children}</>;
+      const href = safeExternalUrl(value?.url);
+      if (!href) return <>{children}</>;
       return (
         <ExternalTextLink
-          href={value.url}
+          href={href}
           target="_blank"
           rel="noopener noreferrer"
           variant="inherit"

@@ -20,8 +20,14 @@ import ArrowRight from '../../assets/icons/arrows/arrowright.svg?react';
 import type { CalendarEventTypes } from '../../sanity/queryHelpers/events';
 import type { CalendarHeroTypes } from '../../sanity/queryHelpers/calendar-hero';
 import { components } from '../../sanity/editors/portableTextComponents';
-import { monthAbbreviation, timeRange } from '../../utils/eventDateFormat';
+import {
+  dayOfMonth,
+  monthAbbreviation,
+  osloDaysBetween,
+  timeRange,
+} from '../../utils/eventDateFormat';
 import { isInternalLink, internalLinkPath } from '../../utils/internalLinks';
+import { openExternal, safeExternalUrl } from '../../utils/safeUrl';
 import { useAuth } from '../../hooks/authContext/authContext';
 import {
   createParticipantFromProfile,
@@ -134,15 +140,8 @@ const SORT_OPTIONS: { value: Sort; label: string }[] = [
 /* Formatting                                                                  */
 /* -------------------------------------------------------------------------- */
 
-/** Whole calendar days between two instants, ignoring the time of day. */
-function daysBetween(from: Date, to: Date): number {
-  const startOfDay = (date: Date) =>
-    new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
-  return Math.round((startOfDay(to) - startOfDay(from)) / 86400000);
-}
-
 function countdown(start: Date, now: Date): string {
-  const days = daysBetween(now, start);
+  const days = osloDaysBetween(now, start);
   if (days === 0) return 'I dag';
   if (days === 1) return 'I morgen';
   if (days > 0) return `Om ${days} dager`;
@@ -660,7 +659,7 @@ function EventRow({
           ].join(' ')}
         >
           <span className="font-heading sm:text-daymark text-5xl leading-[0.78] font-extrabold">
-            {start.getDate()}
+            {dayOfMonth(start)}
           </span>
           <span className="font-heading text-base font-bold tracking-[0.18em] uppercase">
             {monthAbbreviation(start)}
@@ -804,7 +803,11 @@ function EventRow({
                     </Button>
                   )}
                   {event.links?.map((link, index) => {
+                    if (typeof link?.url !== 'string') return null;
                     const isInternal = isInternalLink(link.url);
+                    // A CMS URL that is neither ours nor plain http(s) gets no button at all,
+                    // rather than one that silently does nothing.
+                    if (!isInternal && !safeExternalUrl(link.url)) return null;
                     return (
                       <Button
                         key={index}
@@ -812,9 +815,7 @@ function EventRow({
                         size="sm"
                         icon="right"
                         onClick={() =>
-                          isInternal
-                            ? navigate(internalLinkPath(link.url))
-                            : window.open(link.url, '_blank', 'noopener,noreferrer')
+                          isInternal ? navigate(internalLinkPath(link.url)) : openExternal(link.url)
                         }
                       >
                         {link.label}
