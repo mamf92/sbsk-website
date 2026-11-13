@@ -7,6 +7,7 @@ import Tag from '../../assets/icons/symbols/tag.svg?react';
 import ExternalLink from '../../assets/icons/symbols/external-link.svg?react';
 import BoardGameGeek from '../../assets/icons/brands/boardgamegeek.svg?react';
 import YouTube from '../../assets/icons/brands/youtube.svg?react';
+import { safeExternalUrl } from '../../utils/safeUrl';
 
 export interface BuyInfo {
   title: string;
@@ -67,12 +68,17 @@ export function GameCard({
   onBuy,
 }: GameCardProps) {
   const difficultyLabel = DIFFICULTY_LABEL[difficulty];
+  // CMS URLs, checked at render time: Studio validation does not cover API writes.
+  const buyHref = safeExternalUrl(buyUrl);
+  const bggHref = safeExternalUrl(bggUrl);
+  const videoHref = safeExternalUrl(videoUrl);
   const buyLabel = member ? `Kjøp med −${discountPercent} % rabatt` : `Kjøp hos ${sponsor}`;
 
   function handleBuy(event: React.MouseEvent<HTMLAnchorElement>) {
     if (member && onBuy) {
       event.preventDefault();
-      onBuy({ title, sponsor, discountCode, buyUrl });
+      // Only reachable from the buy link, which only renders with a safe `buyHref`.
+      if (buyHref) onBuy({ title, sponsor, discountCode, buyUrl: buyHref });
     }
   }
 
@@ -150,21 +156,23 @@ export function GameCard({
         </div>
 
         <div className="mt-auto flex flex-col gap-2.5">
-          <a
-            href={buyUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={handleBuy}
-            className={buttonClasses({
-              variant: 'primary',
-              size: 'md',
-              className: 'border-orange w-full border font-bold tracking-[0.02em]',
-            })}
-          >
-            {member && <Tag aria-hidden="true" className="h-[15px] w-[15px]" />}
-            {buyLabel}
-            <ExternalLink aria-hidden="true" className="h-3.5 w-3.5 fill-current" />
-          </a>
+          {buyHref && (
+            <a
+              href={buyHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={handleBuy}
+              className={buttonClasses({
+                variant: 'primary',
+                size: 'md',
+                className: 'border-orange w-full border font-bold tracking-[0.02em]',
+              })}
+            >
+              {member && <Tag aria-hidden="true" className="h-[15px] w-[15px]" />}
+              {buyLabel}
+              <ExternalLink aria-hidden="true" className="h-3.5 w-3.5 fill-current" />
+            </a>
+          )}
           <p className="m-0 text-center text-sm text-gray-500 dark:text-gray-300">
             {member ? (
               'Rabattkoden legges inn automatisk i kassen'
@@ -183,11 +191,11 @@ export function GameCard({
               for its label. Both `flex-1`, so one on its own still spans the row rather than
               sitting off to one side. The BGG mark is a wordmark and needs no label; the video
               link takes one, because a bare play button does not say what it plays. */}
-          {(bggUrl || videoUrl) && (
+          {(bggHref || videoHref) && (
             <div className="mt-1 flex gap-2">
-              {bggUrl && (
+              {bggHref && (
                 <a
-                  href={bggUrl}
+                  href={bggHref}
                   target="_blank"
                   rel="noopener noreferrer"
                   title="Se på BoardGameGeek"
@@ -201,9 +209,9 @@ export function GameCard({
                   <BoardGameGeek aria-hidden="true" className="h-5 w-auto fill-current" />
                 </a>
               )}
-              {videoUrl && (
+              {videoHref && (
                 <a
-                  href={videoUrl}
+                  href={videoHref}
                   target="_blank"
                   rel="noopener noreferrer"
                   title="Se reglene forklart på video"

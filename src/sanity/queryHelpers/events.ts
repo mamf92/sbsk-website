@@ -11,9 +11,6 @@ import {
   type VenueTypes,
 } from './fragments';
 
-/** @deprecated Use `SponsorTypes` from `./fragments`. */
-export type EventSponsorTypes = SponsorTypes;
-
 export interface EventScheduleEntryTypes {
   _key: string;
   label: string;
@@ -102,13 +99,13 @@ export const EVENT_BY_SLUG_QUERY = `*[
   location,
   links,
   hasDetailPage,
-  "signup": coalesce(
-    signup${SIGNUP_PROJECTION},
-    select(defined(signupUrl.url) => {
+  "signup": select(
+    defined(signup.method) => signup${SIGNUP_PROJECTION},
+    defined(signupUrl.url) => {
       "method": "lenke",
       "url": signupUrl.url,
       "label": { "nb": signupUrl.label }
-    })
+    }
   ),
   venue${VENUE_PROJECTION},
   showSponsors,

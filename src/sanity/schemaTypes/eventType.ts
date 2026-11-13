@@ -78,7 +78,7 @@ export const eventType = defineType({
       name: 'hasDetailPage',
       type: 'boolean',
       description:
-        'Av: arrangementet vises bare i kalenderen, og åpnes der det står. På: arrangementet får sin egen side med påmelding, oppmøte og sponsorer, lenket fra kalenderen. Store arrangementer over flere dager med eget program, som Board Game Masters, lages under «Storarrangement» i stedet.',
+        'Av: arrangementet vises bare i kalenderen, og åpnes der det står. På: arrangementet får sin egen side med påmelding, oppmøte og sponsorer, lenket fra kalenderen.',
       initialValue: false,
     }),
     defineField({

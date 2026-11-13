@@ -55,11 +55,3 @@ export const localeBlockType = defineType({
     }),
   ],
 });
-
-/** Validation for a required locale field: the Norwegian text must be filled in. */
-export function requireNorwegian(value: unknown): true | string {
-  const nb = (value as { nb?: unknown } | undefined)?.nb;
-  const present =
-    typeof nb === 'string' ? nb.trim().length > 0 : Array.isArray(nb) && nb.length > 0;
-  return present || 'Fyll inn den norske teksten.';
-}

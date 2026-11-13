@@ -39,11 +39,15 @@ export const signupType = defineType({
       type: 'url',
       description: 'Lim inn lenken fra Spond eller nettsiden der man melder seg på.',
       hidden: ({ parent }) => !needsUrl(parent),
+      // Every rule returns early when the field is hidden: a value left behind after switching
+      // method must not block publishing from a field the editor can no longer see.
       validation: (rule) => [
-        rule.uri({ scheme: ['https'] }).error('Lenken må starte med https://'),
         rule.custom((url, context) => {
           if (!needsUrl(context.parent)) return true;
-          return url ? true : 'Lim inn lenken til påmeldingen.';
+          if (!url) return 'Lim inn lenken til påmeldingen.';
+          return typeof url === 'string' && /^https:\/\/[^\s/]+/i.test(url)
+            ? true
+            : 'Lenken må starte med https://';
         }),
         rule
           .custom((url, context) => {
@@ -83,6 +87,7 @@ export const signupType = defineType({
       hidden: ({ parent }) => !needsUrl(parent),
       validation: (rule) =>
         rule.custom((closes, context) => {
+          if (!needsUrl(context.parent)) return true;
           const opens = (context.parent as SignupParent | undefined)?.opens;
           if (!opens || typeof closes !== 'string') return true;
           return closes > opens ? true : 'Fristen må være etter at påmeldingen åpner.';

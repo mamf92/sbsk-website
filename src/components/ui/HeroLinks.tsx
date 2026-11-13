@@ -3,6 +3,7 @@ import ArrowRight from '../../assets/icons/arrows/arrowright.svg?react';
 import { Button } from './Buttons';
 import { buttonClasses } from './buttonClasses';
 import { isInternalLink, internalLinkPath } from '../../utils/internalLinks';
+import { safeLinkUrl } from '../../utils/safeUrl';
 
 export interface HeroLink {
   label: string;
@@ -28,6 +29,16 @@ const MAX_LINKS = 3;
 
 const isWebUrl = (url: string) => /^https?:\/\//i.test(url);
 
+type ResolvedLink = { label: string; url: string; internal: boolean; href: string };
+
+function resolveLink(link: HeroLink | undefined): ResolvedLink[] {
+  if (!link?.label || typeof link.url !== 'string') return [];
+  const url = link.url.trim();
+  if (isInternalLink(url)) return [{ label: link.label, url, internal: true, href: url }];
+  const href = safeLinkUrl(url);
+  return href ? [{ label: link.label, url, internal: false, href }] : [];
+}
+
 export function HeroLinks({
   links,
   fallback,
@@ -45,14 +56,21 @@ export function HeroLinks({
   // filled in. Both matter here. An over-long row pushes the hero off its own image, and a
   // row with no `url` would reach `isInternalLink` as `undefined` during render — which is
   // not a broken button but a `TypeError` that takes the whole page to the error boundary.
-  const authored = (links ?? []).filter((link) => link?.label && link?.url);
-  const resolved = (authored.length > 0 ? authored : fallback).slice(0, MAX_LINKS);
+  // A link whose URL is neither ours nor a safe http(s)/mailto/tel URL is dropped: Studio
+  // validation does not cover API writes, so `javascript:` can arrive here.
+  // Resolved once: trimmed (editors paste stray spaces), then either an internal path or a safe
+  // external href. Relative values like `./kalender` are not supported and are dropped.
+  const authored = (links ?? []).flatMap((link) => resolveLink(link));
+  const resolved = (authored.length > 0 ? authored : fallback.flatMap(resolveLink)).slice(
+    0,
+    MAX_LINKS,
+  );
   if (resolved.length === 0) return null;
 
   return (
     <div className={['flex flex-row flex-wrap gap-4', className].filter(Boolean).join(' ')}>
       {resolved.map((link, index) =>
-        isInternalLink(link.url) ? (
+        link.internal ? (
           <Button
             key={index}
             onClick={() => navigate(internalLinkPath(link.url))}
@@ -66,10 +84,10 @@ export function HeroLinks({
         ) : (
           <a
             key={index}
-            href={link.url}
+            href={link.href}
             // A new tab is right for another website and wrong for `mailto:`/`tel:`, which the
             // schema also allows: the handler opens elsewhere and the blank tab is left behind.
-            {...(isWebUrl(link.url) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+            {...(isWebUrl(link.href) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
             className={buttonClasses({ variant: 'primary', size: 'lg', className: 'flex-none' })}
           >
             {link.label}
