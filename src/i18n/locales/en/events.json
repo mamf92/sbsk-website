@@ -1,0 +1,52 @@
+{
+  "back": "All events",
+  "facts": {
+    "when": "When",
+    "where": "Where",
+    "price": "Price",
+    "signup": "Sign-up"
+  },
+  "signup": {
+    "default": "Sign up",
+    "opensInNewTab": "Opens {{host}} in a new tab",
+    "deadline": "Deadline {{date}}",
+    "notYetOpen": "Sign-up opens {{date}}",
+    "closed": "Sign-up is closed",
+    "dropIn": "No sign-up needed – just show up"
+  },
+  "venue": {
+    "title": "Getting there",
+    "doorsOpen": "Doors open {{time}}",
+    "showMap": "Show on map"
+  },
+  "program": {
+    "title": "Programme",
+    "now": "Now",
+    "next": "Next",
+    "showing": "Showing {{shown}} of {{total}} sessions",
+    "reset": "Reset",
+    "addToCalendar": "Add programme to calendar",
+    "print": "Print programme",
+    "emptyDay": "The programme for this day is coming soon"
+  },
+  "format": {
+    "turnering": "Tournament",
+    "finale": "Final",
+    "laer-a-spille": "Learn to play",
+    "fri-spilling": "Open play",
+    "demo": "Demo",
+    "pause": "Break",
+    "annet": "Other"
+  },
+  "sponsors": {
+    "supportedBy": "Supported by",
+    "presentedBy": "Presented by",
+    "tier": {
+      "hovedsponsor": "Main sponsor",
+      "sponsor": "Sponsors",
+      "partner": "Partners"
+    }
+  },
+  "faq": "FAQ",
+  "contact": "Questions? Email {{email}}"
+}
