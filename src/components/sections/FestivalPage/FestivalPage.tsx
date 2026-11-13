@@ -166,7 +166,8 @@ export default function FestivalPage({ festival }: { festival: FestivalTypes }) 
 
         <EventFacts facts={facts} className="print:hidden" />
 
-        {days.length > 1 && (
+        {/* Shown for a single day too: a day's own sign-up and opening hours live only here. */}
+        {days.length > 0 && (
           <section aria-labelledby="days-heading" className="flex flex-col gap-4 print:hidden">
             <h2 id="days-heading" className={h2}>
               {t('festival.days')}

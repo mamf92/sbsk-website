@@ -106,3 +106,24 @@ test('in English the chrome is translated and the programme follows', async ({ p
     'nb',
   );
 });
+
+test("a one-day festival still shows its day, with the day's own sign-up", async ({ page }) => {
+  const oneDay = {
+    ...FESTIVAL_BGM,
+    signup: undefined,
+    days: [
+      {
+        ...FESTIVAL_BGM.days[0],
+        signup: {
+          method: 'lenke',
+          url: 'https://example.test/dag1',
+          label: { nb: 'Meld deg på dagen' },
+        },
+      },
+    ],
+  };
+  await stubSanityWithContent(page, [oneDay]);
+  await page.goto('/board-game-masters');
+  await expect(page.getByRole('heading', { level: 2, name: 'Dagene' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Meld deg på dagen' })).toBeVisible();
+});
