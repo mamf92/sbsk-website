@@ -196,7 +196,7 @@ export interface FestivalCalendarTypes {
   slug: string;
   series?: 'bgm' | 'annet';
   venue?: { name?: string } | null;
-  days?: (Pick<FestivalDayTypes, '_key' | 'date' | 'label' | 'opens' | 'closes'> & {
+  days?: (Pick<FestivalDayTypes, '_key' | 'date' | 'label' | 'opens' | 'closes' | 'sessions'> & {
     venue?: { name?: string } | null;
   })[];
 }
@@ -207,7 +207,7 @@ export const FESTIVAL_CALENDAR_QUERY = `*[_type == "festival" && defined(slug.cu
   "slug": slug.current,
   series,
   venue{ name },
-  days[]{ _key, date, label, opens, closes, venue{ name } }
+  days[]{ _key, date, label, opens, closes, venue{ name }, sessions[]{ _key, start, end } }
 }`;
 
 export async function calendarFestivalsLoader(): Promise<FestivalCalendarTypes[]> {

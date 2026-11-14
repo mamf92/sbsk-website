@@ -20,7 +20,7 @@ import type { FestivalTypes } from '../../../sanity/queryHelpers/festivals';
 import type { LocaleBlock } from '../../../sanity/queryHelpers/fragments';
 import type { SanityImageValue } from '../../ui/SanityImage';
 import { formatDateTime, formatDayLong, parseInstant } from '../../../utils/eventDateFormat';
-import { festivalDate, festivalDateLabel } from '../../../utils/festival';
+import { festivalDate, festivalDateLabel, scheduledSessions } from '../../../utils/festival';
 import { safeLinkUrl } from '../../../utils/safeUrl';
 import { signupState } from '../../../utils/signup';
 
@@ -170,7 +170,7 @@ export default function FestivalPage({ festival }: { festival: FestivalTypes }) 
                 const label = pickLocale(day.label, locale);
                 const summary = pickLocale(day.summary, locale);
                 // Same rule as the programme: a session without both times is not shown yet.
-                const count = (day.sessions ?? []).filter((s) => s.start && s.end).length;
+                const count = scheduledSessions(day).length;
                 return (
                   <li key={day._key} className={`${panel} gap-2`}>
                     <h3 className="font-heading text-h4 font-bold first-letter:uppercase">

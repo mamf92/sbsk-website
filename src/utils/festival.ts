@@ -72,10 +72,26 @@ export function sessionDateTimes(
   return span(day.date, session.start, session.end);
 }
 
-/** The day's opening hours as instants, when both are set. */
-export function dayDateTimes(day: FestivalDayTypes): { start: Date; end: Date } | null {
-  if (!day.opens || !day.closes) return null;
-  return span(day.date, day.opens, day.closes);
+/** The sessions that have both times. The rest are not shown, exported or counted yet. */
+export function scheduledSessions(day: Pick<FestivalDayTypes, 'sessions'>): FestivalSessionTypes[] {
+  return (day.sessions ?? []).filter((session) => session.start && session.end);
+}
+
+/**
+ * When the day runs, as instants: its opening hours when both are set, else from its first
+ * session to its last (so a night past midnight still counts as its day), else null for a day
+ * announced with its date only.
+ */
+export function dayDateTimes(
+  day: Pick<FestivalDayTypes, 'date' | 'opens' | 'closes' | 'sessions'>,
+): { start: Date; end: Date } | null {
+  if (day.opens && day.closes) return span(day.date, day.opens, day.closes);
+  const spans = scheduledSessions(day).map((session) => sessionDateTimes(day, session));
+  if (spans.length === 0) return null;
+  return {
+    start: new Date(Math.min(...spans.map((s) => s.start.getTime()))),
+    end: new Date(Math.max(...spans.map((s) => s.end.getTime()))),
+  };
 }
 
 /* -------------------------------------------------------------------------- */
@@ -113,9 +129,10 @@ export function nowAndNext(
   // Before the doors open, nothing is "next" yet: the day has not started.
   if (hours && time < hours.start.getTime()) return { nowKeys: [] };
   if (!hours && day.date !== osloDateKey(now)) return { nowKeys: [] };
-  const sessions = (day.sessions ?? [])
-    .filter((session) => session.start && session.end)
-    .map((session) => ({ session, ...sessionDateTimes(day, session) }));
+  const sessions = scheduledSessions(day).map((session) => ({
+    session,
+    ...sessionDateTimes(day, session),
+  }));
   const nowKeys = sessions
     .filter(({ start, end }) => start.getTime() <= time && time < end.getTime())
     .map(({ session }) => session._key);
@@ -193,18 +210,22 @@ export function festivalIcs(
   const entries: IcsEventInput[] = [];
   for (const day of festival.days ?? []) {
     const location = venueLine(day.venue) ?? venueLine(festival.venue);
-    const sessions = (day.sessions ?? []).filter((session) => session.start && session.end);
+    const sessions = scheduledSessions(day);
     if (sessions.length === 0) {
+      // A day with no programme yet is still a day of the festival: timed by its hours, or
+      // all day when only the date is known, as its calendar row on the site is.
       const hours = dayDateTimes(day);
-      if (hours) {
-        entries.push({
-          ...hours,
-          title: name,
-          location,
-          url,
-          uid: `${festival._id}-${day._key}`,
-        });
-      }
+      entries.push({
+        ...(hours ?? {
+          start: osloTime(day.date, '00:00'),
+          end: osloTime(nextDate(day.date), '00:00'),
+        }),
+        allDayDate: hours ? undefined : day.date,
+        title: name,
+        location,
+        url,
+        uid: `${festival._id}-${day._key}`,
+      });
       continue;
     }
     for (const session of sessions) {
@@ -273,7 +294,8 @@ export function festivalDayRows(festival: FestivalCalendarTypes): CalendarEventT
       .map((day, index) => ({ day, index }))
       .filter(({ day }) => /^\d{4}-\d{2}-\d{2}$/.test(day.date ?? ''))
       .map(({ day, index }) => {
-        const hours = dayDateTimes(day as FestivalDayTypes) ?? {
+        const known = dayDateTimes(day);
+        const hours = known ?? {
           start: osloTime(day.date, '00:00'),
           end: osloTime(day.date, '23:59'),
         };
@@ -287,6 +309,8 @@ export function festivalDayRows(festival: FestivalCalendarTypes): CalendarEventT
           // A day held elsewhere names its own venue.
           location: day.venue?.name ?? festival.venue?.name,
           festivalDay: true,
+          // Only the date is known: the calendar shows the day without made-up times.
+          allDay: !known || undefined,
           detailPath: `/arrangementer/${festival.slug}?dag=${index + 1}`,
         };
       })

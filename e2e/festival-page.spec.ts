@@ -170,6 +170,12 @@ test('an announced festival with only its dates says the programme is coming', a
   await expect(
     page.locator('#program').getByText('Programmet for denne dagen kommer snart'),
   ).toBeVisible();
-  // Nothing to download or print yet.
-  await expect(page.getByRole('button', { name: 'Legg programmet i kalenderen' })).toHaveCount(0);
+  // Nothing to print yet, but the dates already go in a calendar, as all-day entries.
+  await expect(page.getByRole('button', { name: 'Skriv ut' })).toHaveCount(0);
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByRole('button', { name: 'Legg programmet i kalenderen' }).click(),
+  ]);
+  const ics = Buffer.concat(await (await download.createReadStream()).toArray()).toString('utf8');
+  expect(ics.match(/DTSTART;VALUE=DATE:/g)).toHaveLength(3);
 });

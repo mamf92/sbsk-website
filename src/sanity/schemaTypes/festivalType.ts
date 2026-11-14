@@ -204,12 +204,13 @@ export const festivalDayType = defineType({
       validation: (rule) => [
         rule.regex(HHMM, { name: 'klokkeslett' }).error(HHMM_ERROR),
         // Hours are shown only as a pair, so one without the other would silently vanish.
-        rule.custom((closes, context) => {
-          const opens = (context.parent as { opens?: string } | undefined)?.opens;
-          return !!opens === !!closes
-            ? true
-            : 'Fyll inn både når dørene åpner og når dere stenger, eller ingen av dem.';
-        }),
+        rule.custom(
+          (closes, context) =>
+            dayHoursProblem(
+              (context.parent as { opens?: string } | undefined)?.opens,
+              closes as string | undefined,
+            ) ?? true,
+        ),
       ],
     }),
     defineField({
@@ -479,5 +480,16 @@ export const festivalType = defineType({
     }),
   },
 });
+
+/**
+ * What is wrong with a day's opening hours, if anything. They are shown only as a pair, so one
+ * without the other would silently vanish; and the same minute twice would read as 24 hours.
+ */
+export function dayHoursProblem(opens?: string, closes?: string): string | null {
+  if (!opens !== !closes)
+    return 'Fyll inn både når dørene åpner og når dere stenger, eller ingen av dem.';
+  if (opens && opens === closes) return 'Kan ikke stenge samme minutt som dørene åpner.';
+  return null;
+}
 
 export const festivalTypes = [festivalSessionType, festivalDayType, festivalType];

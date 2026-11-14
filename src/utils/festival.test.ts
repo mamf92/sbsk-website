@@ -223,6 +223,7 @@ describe('festivalIcs', () => {
       'bgm-2027-fre-s1',
       'bgm-2027-fre-s2',
       'bgm-2027-lor',
+      'bgm-2027-son',
     ]);
     expect(entries[0]).toMatchObject({
       title: 'Opening tournament · Board Game Masters 2027',
@@ -241,16 +242,47 @@ describe('festivalIcs', () => {
     expect(festivalIcs(untitled, 'nb')[0].title).toBe('Board Game Masters 2027');
   });
 
-  it('makes a day without sessions one entry for its opening hours, and skips a day with neither', () => {
+  it('makes a day without sessions one entry: timed by its hours, or all day with only a date', () => {
     const entries = festivalIcs(festival, 'nb');
     expect(entries[2]).toMatchObject({ title: 'Board Game Masters 2027', uid: 'bgm-2027-lor' });
-    expect(entries).toHaveLength(3);
+    expect(entries[2].allDayDate).toBeUndefined();
+    expect(entries[3]).toMatchObject({ uid: 'bgm-2027-son', allDayDate: '2027-01-31' });
+    expect(entries).toHaveLength(4);
   });
 
   it('builds one calendar holding every entry', () => {
     const ics = buildIcsCalendar(festivalIcs(festival, 'nb'));
-    expect(ics.match(/BEGIN:VEVENT/g)).toHaveLength(3);
+    expect(ics.match(/BEGIN:VEVENT/g)).toHaveLength(4);
     expect(ics).toContain('UID:bgm-2027-fre-s1@sbsk.no');
+    // The date-only day is an all-day entry; DTEND is the exclusive next day.
+    expect(ics).toContain('DTSTART;VALUE=DATE:20270131\r\nDTEND;VALUE=DATE:20270201');
+  });
+});
+
+describe('dayDateTimes without opening hours', () => {
+  it('runs from the first session to the last, past midnight included', () => {
+    const hours = dayDateTimes({
+      date: '2027-01-29',
+      sessions: [session('a', '18:00', '20:00'), session('b', '22:00', '02:00')],
+    });
+    expect(hours?.start.toISOString()).toBe('2027-01-29T17:00:00.000Z');
+    expect(hours?.end.toISOString()).toBe('2027-01-30T01:00:00.000Z');
+  });
+
+  it('is null for a day known only by its date', () => {
+    expect(dayDateTimes({ date: '2027-01-29' })).toBeNull();
+  });
+
+  it('keeps a session past midnight «Nå» on its own day', () => {
+    const day = { _key: 'fre', date: '2027-01-29', sessions: [session('late', '22:00', '02:00')] };
+    // 00:30 on Saturday in Oslo.
+    expect(nowAndNext(day, new Date('2027-01-29T23:30:00Z')).nowKeys).toEqual(['late']);
+    expect(
+      defaultDayIndex(
+        { days: [day, { _key: 'lor', date: '2027-01-30' }] },
+        new Date('2027-01-29T23:30:00Z'),
+      ),
+    ).toBe(0);
   });
 });
 
@@ -288,6 +320,9 @@ describe('festivalDayRows', () => {
       location: 'Tasta bydelshus',
       festivalDay: true,
     });
+    expect(rows[0].allDay).toBeUndefined();
+    // Sunday has neither hours nor sessions: the calendar shows its date without times.
+    expect(rows[2].allDay).toBe(true);
   });
 
   it('keeps ?dag=N pointing at the right day when an earlier day is skipped', () => {
