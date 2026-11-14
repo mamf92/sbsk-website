@@ -190,15 +190,27 @@ export const festivalDayType = defineType({
       name: 'opens',
       title: 'Dørene åpner',
       type: 'string',
-      description: 'Klokkeslett som TT:MM.',
-      validation: (rule) => rule.required().regex(HHMM, { name: 'klokkeslett' }).error(HHMM_ERROR),
+      description: 'Klokkeslett som TT:MM. Kan stå tomt til dere vet det.',
+      // Optional: a festival is announced before its hours are set. The page then shows the
+      // day without opening hours, and the calendar row covers the whole day.
+      validation: (rule) => rule.regex(HHMM, { name: 'klokkeslett' }).error(HHMM_ERROR),
     }),
     defineField({
       name: 'closes',
       title: 'Vi stenger',
       type: 'string',
-      description: 'Klokkeslett som TT:MM. Et klokkeslett før åpning betyr etter midnatt.',
-      validation: (rule) => rule.required().regex(HHMM, { name: 'klokkeslett' }).error(HHMM_ERROR),
+      description:
+        'Klokkeslett som TT:MM. Et klokkeslett før åpning betyr etter midnatt. Kan stå tomt til dere vet det.',
+      validation: (rule) => [
+        rule.regex(HHMM, { name: 'klokkeslett' }).error(HHMM_ERROR),
+        // Hours are shown only as a pair, so one without the other would silently vanish.
+        rule.custom((closes, context) => {
+          const opens = (context.parent as { opens?: string } | undefined)?.opens;
+          return !!opens === !!closes
+            ? true
+            : 'Fyll inn både når dørene åpner og når dere stenger, eller ingen av dem.';
+        }),
+      ],
     }),
     defineField({
       name: 'summary',

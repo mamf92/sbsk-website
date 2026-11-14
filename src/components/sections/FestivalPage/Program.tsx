@@ -77,6 +77,10 @@ export function Program({ festival }: { festival: FestivalTypes }) {
   const groups = groupByStart(shown);
   const { nowKeys, nextKey } = nowAndNext(day, now);
   const sponsorByName = new Map((festival.sponsors ?? []).map((s) => [s.altText, s]));
+  // Before the programme is out there is nothing to put in a calendar file or on paper.
+  const hasProgramme = days.some((d) =>
+    (d.sessions ?? []).some((session) => session.start && session.end),
+  );
 
   const chooseDay = (value: string) => {
     const next = new URLSearchParams(searchParams);
@@ -142,24 +146,26 @@ export function Program({ festival }: { festival: FestivalTypes }) {
             t('program.showing', { shown: shown.length, total: sessions.length })}
         </p>
 
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            icon="add"
-            onClick={() =>
-              downloadIcs(
-                festivalIcs(festival, locale, window.location.href),
-                `${festival.slug}.ics`,
-              )
-            }
-          >
-            {t('program.addToCalendar')}
-          </Button>
-          <Button variant="tertiary" size="sm" onClick={() => window.print()}>
-            {t('program.print')}
-          </Button>
-        </div>
+        {hasProgramme && (
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              icon="add"
+              onClick={() =>
+                downloadIcs(
+                  festivalIcs(festival, locale, window.location.href),
+                  `${festival.slug}.ics`,
+                )
+              }
+            >
+              {t('program.addToCalendar')}
+            </Button>
+            <Button variant="tertiary" size="sm" onClick={() => window.print()}>
+              {t('program.print')}
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-6 print:hidden">
