@@ -190,15 +190,28 @@ export const festivalDayType = defineType({
       name: 'opens',
       title: 'Dørene åpner',
       type: 'string',
-      description: 'Klokkeslett som TT:MM.',
-      validation: (rule) => rule.required().regex(HHMM, { name: 'klokkeslett' }).error(HHMM_ERROR),
+      description: 'Klokkeslett som TT:MM. Kan stå tomt til dere vet det.',
+      // Optional: a festival is announced before its hours are set. The page then shows the
+      // day without opening hours, and the calendar row covers the whole day.
+      validation: (rule) => rule.regex(HHMM, { name: 'klokkeslett' }).error(HHMM_ERROR),
     }),
     defineField({
       name: 'closes',
       title: 'Vi stenger',
       type: 'string',
-      description: 'Klokkeslett som TT:MM. Et klokkeslett før åpning betyr etter midnatt.',
-      validation: (rule) => rule.required().regex(HHMM, { name: 'klokkeslett' }).error(HHMM_ERROR),
+      description:
+        'Klokkeslett som TT:MM. Et klokkeslett før åpning betyr etter midnatt. Kan stå tomt til dere vet det.',
+      validation: (rule) => [
+        rule.regex(HHMM, { name: 'klokkeslett' }).error(HHMM_ERROR),
+        // Hours are shown only as a pair, so one without the other would silently vanish.
+        rule.custom(
+          (closes, context) =>
+            dayHoursProblem(
+              (context.parent as { opens?: string } | undefined)?.opens,
+              closes as string | undefined,
+            ) ?? true,
+        ),
+      ],
     }),
     defineField({
       name: 'summary',
@@ -467,5 +480,16 @@ export const festivalType = defineType({
     }),
   },
 });
+
+/**
+ * What is wrong with a day's opening hours, if anything. They are shown only as a pair, so one
+ * without the other would silently vanish; and the same minute twice would read as 24 hours.
+ */
+export function dayHoursProblem(opens?: string, closes?: string): string | null {
+  if (!opens !== !closes)
+    return 'Fyll inn både når dørene åpner og når dere stenger, eller ingen av dem.';
+  if (opens && opens === closes) return 'Kan ikke stenge samme minutt som dørene åpner.';
+  return null;
+}
 
 export const festivalTypes = [festivalSessionType, festivalDayType, festivalType];

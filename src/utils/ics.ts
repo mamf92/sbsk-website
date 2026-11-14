@@ -7,6 +7,15 @@ export interface IcsEventInput {
   url?: string;
   /** A stable id, for entries a title and start time cannot tell apart (festival sessions). */
   uid?: string;
+  /** `YYYY-MM-DD` for an all-day entry, written as a date rather than as `start`/`end` times. */
+  allDayDate?: string;
+}
+
+/** The day after a `YYYY-MM-DD` date, as `YYYYMMDD`: an all-day DTEND is exclusive. */
+function nextIcsDate(date: string): string {
+  const next = new Date(`${date}T00:00:00Z`);
+  next.setUTCDate(next.getUTCDate() + 1);
+  return next.toISOString().slice(0, 10).replace(/-/g, '');
 }
 
 function escapeIcsText(value: string): string {
@@ -39,8 +48,12 @@ function vevent(event: IcsEventInput, stamp: string): string[] {
     'BEGIN:VEVENT',
     `UID:${event.uid ? `${event.uid}@sbsk.no` : icsUid(event.title, event.start)}`,
     `DTSTAMP:${stamp}`,
-    `DTSTART:${toIcsUtc(event.start)}`,
-    `DTEND:${toIcsUtc(event.end)}`,
+    ...(event.allDayDate
+      ? [
+          `DTSTART;VALUE=DATE:${event.allDayDate.replace(/-/g, '')}`,
+          `DTEND;VALUE=DATE:${nextIcsDate(event.allDayDate)}`,
+        ]
+      : [`DTSTART:${toIcsUtc(event.start)}`, `DTEND:${toIcsUtc(event.end)}`]),
     `SUMMARY:${escapeIcsText(event.title)}`,
   ];
   if (event.description) lines.push(`DESCRIPTION:${escapeIcsText(event.description)}`);

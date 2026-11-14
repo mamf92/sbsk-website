@@ -3,7 +3,7 @@ import { pickLocale } from '../../../i18n/pickLocale';
 import { useLocale } from '../../../hooks/locale/useLocale';
 import type { FestivalTypes } from '../../../sanity/queryHelpers/festivals';
 import { formatDayLong } from '../../../utils/eventDateFormat';
-import { festivalDate, groupByStart } from '../../../utils/festival';
+import { festivalDate, groupByStart, scheduledSessions } from '../../../utils/festival';
 
 /**
  * The whole programme as compact rows, every day one after another, for paper. Hidden on screen;
@@ -19,9 +19,7 @@ export function PrintProgram({ festival }: { festival: FestivalTypes }) {
     <section className="font-body hidden flex-col gap-4 text-black print:flex">
       <h2 className="font-heading text-h3 font-bold">{t('program.printHeading')}</h2>
       {(festival.days ?? []).map((day) => {
-        const sessions = groupByStart(
-          (day.sessions ?? []).filter((session) => session.start && session.end),
-        ).flatMap((group) => group.sessions);
+        const sessions = groupByStart(scheduledSessions(day)).flatMap((group) => group.sessions);
         return (
           <div key={day._key} className="flex break-inside-avoid flex-col gap-1">
             <h3 className="font-heading font-bold first-letter:uppercase">

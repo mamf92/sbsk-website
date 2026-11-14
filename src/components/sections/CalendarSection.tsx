@@ -26,6 +26,7 @@ import {
   monthAbbreviation,
   osloDaysBetween,
   timeRange,
+  weekdayAbbreviation,
 } from '../../utils/eventDateFormat';
 import { isInternalLink, internalLinkPath } from '../../utils/internalLinks';
 import { openExternal, safeExternalUrl } from '../../utils/safeUrl';
@@ -680,7 +681,7 @@ function EventRow({
         <div className="relative flex flex-1 flex-wrap items-center gap-4 p-4 pr-12 sm:flex-nowrap sm:gap-5">
           <div className="flex min-w-0 flex-[1_1_100%] flex-col gap-1 sm:flex-1">
             <span className="font-body text-xs opacity-85">
-              {timeRange(start, end)}
+              {event.allDay ? weekdayAbbreviation(start) : timeRange(start, end)}
               {event.location ? ` · ${event.location}` : ''}
             </span>
             <h3 className="font-heading text-h3 font-bold">{event.title}</h3>

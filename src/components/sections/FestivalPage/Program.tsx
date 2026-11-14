@@ -16,6 +16,7 @@ import {
   formatsOf,
   groupByStart,
   nowAndNext,
+  scheduledSessions,
   sessionDateTimes,
 } from '../../../utils/festival';
 import { downloadIcs } from '../../../utils/ics';
@@ -68,7 +69,7 @@ export function Program({ festival }: { festival: FestivalTypes }) {
 
   if (!day) return null;
 
-  const sessions = (day.sessions ?? []).filter((session) => session.start && session.end);
+  const sessions = scheduledSessions(day);
   const available = formatsOf(sessions);
   const shown =
     formats.size === 0
@@ -77,6 +78,9 @@ export function Program({ festival }: { festival: FestivalTypes }) {
   const groups = groupByStart(shown);
   const { nowKeys, nextKey } = nowAndNext(day, now);
   const sponsorByName = new Map((festival.sponsors ?? []).map((s) => [s.altText, s]));
+  // Before the programme is out there is nothing to print. The calendar file is always there:
+  // `festivalIcs` gives every day an entry, all day when only its date is known.
+  const hasProgramme = days.some((d) => scheduledSessions(d).length > 0);
 
   const chooseDay = (value: string) => {
     const next = new URLSearchParams(searchParams);
@@ -156,9 +160,11 @@ export function Program({ festival }: { festival: FestivalTypes }) {
           >
             {t('program.addToCalendar')}
           </Button>
-          <Button variant="tertiary" size="sm" onClick={() => window.print()}>
-            {t('program.print')}
-          </Button>
+          {hasProgramme && (
+            <Button variant="tertiary" size="sm" onClick={() => window.print()}>
+              {t('program.print')}
+            </Button>
+          )}
         </div>
       </div>
 

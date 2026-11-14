@@ -154,3 +154,28 @@ test("a one-day festival still shows its day, with the day's own sign-up", async
   await expect(page.getByRole('heading', { level: 2, name: 'Dagene' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Meld deg på dagen' })).toBeVisible();
 });
+
+test('an announced festival with only its dates says the programme is coming', async ({ page }) => {
+  const announced = {
+    ...FESTIVAL_BGM,
+    signup: undefined,
+    venue: undefined,
+    faq: undefined,
+    days: FESTIVAL_BGM.days.map(({ _key, date }) => ({ _key, date })),
+  };
+  await stubSanityWithContent(page, [announced]);
+  await page.goto('/board-game-masters');
+  await expect(page.getByRole('heading', { level: 1, name: 'Board Game Masters' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 2, name: 'Dagene' })).toBeVisible();
+  await expect(
+    page.locator('#program').getByText('Programmet for denne dagen kommer snart'),
+  ).toBeVisible();
+  // Nothing to print yet, but the dates already go in a calendar, as all-day entries.
+  await expect(page.getByRole('button', { name: 'Skriv ut' })).toHaveCount(0);
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByRole('button', { name: 'Legg programmet i kalenderen' }).click(),
+  ]);
+  const ics = Buffer.concat(await (await download.createReadStream()).toArray()).toString('utf8');
+  expect(ics.match(/DTSTART;VALUE=DATE:/g)).toHaveLength(3);
+});
