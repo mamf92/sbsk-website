@@ -168,7 +168,7 @@ export default function OurGamesSection({ gamesHero, games }: OurGamesProps) {
           />
         ) : (
           <div className="grid grid-cols-[repeat(auto-fill,minmax(290px,1fr))] items-stretch gap-5">
-            {/* No scroll reveal here (it was a `Reveal` per card): a grid of seventeen cards
+            {/* No scroll reveal here: a grid of seventeen cards
                 arriving one by one read as the page still loading, not as polish. */}
             {filteredGames.map((game) => (
               <GameCard

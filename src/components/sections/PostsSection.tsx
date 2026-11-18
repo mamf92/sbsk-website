@@ -1,5 +1,4 @@
 import { Button } from '../ui/Buttons';
-import { Reveal } from '../ui/Reveal';
 import { Card, type CardCategory } from '../ui/Card';
 import { Carousel } from '../ui/Carousel';
 import { Chip, type ChipCategory } from '../ui/Chip';
@@ -260,21 +259,20 @@ function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) 
         // 14px between cards, per the design library — enough that the 6px hover shadow of
         // one card never touches the next.
         <div className="flex w-full flex-col gap-3.5">
-          {displayedPosts.map((post, index) => (
-            <Reveal key={post._id} index={index}>
-              <PostCard
-                post={post}
-                expanded={expandedIds.has(post._id)}
-                onToggle={() =>
-                  setExpandedIds((prev) => {
-                    const next = new Set(prev);
-                    // `delete` reports whether it removed anything, so this is toggle in one step.
-                    if (!next.delete(post._id)) next.add(post._id);
-                    return next;
-                  })
-                }
-              />
-            </Reveal>
+          {displayedPosts.map((post) => (
+            <PostCard
+              key={post._id}
+              post={post}
+              expanded={expandedIds.has(post._id)}
+              onToggle={() =>
+                setExpandedIds((prev) => {
+                  const next = new Set(prev);
+                  // `delete` reports whether it removed anything, so this is toggle in one step.
+                  if (!next.delete(post._id)) next.add(post._id);
+                  return next;
+                })
+              }
+            />
           ))}
         </div>
       )}
@@ -285,20 +283,19 @@ function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) 
               <Divider>
                 <span>{group.label}</span>
               </Divider>
-              {group.items.map((post, index) => (
-                <Reveal key={post._id} index={index}>
-                  <PostCard
-                    post={post}
-                    expanded={expandedIds.has(post._id)}
-                    onToggle={() =>
-                      setExpandedIds((prev) => {
-                        const next = new Set(prev);
-                        if (!next.delete(post._id)) next.add(post._id);
-                        return next;
-                      })
-                    }
-                  />
-                </Reveal>
+              {group.items.map((post) => (
+                <PostCard
+                  key={post._id}
+                  post={post}
+                  expanded={expandedIds.has(post._id)}
+                  onToggle={() =>
+                    setExpandedIds((prev) => {
+                      const next = new Set(prev);
+                      if (!next.delete(post._id)) next.add(post._id);
+                      return next;
+                    })
+                  }
+                />
               ))}
             </div>
           ))}

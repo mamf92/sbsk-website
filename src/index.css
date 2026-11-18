@@ -648,56 +648,13 @@
   }
 }
 
-/* The scroll reveal (`src/components/ui/Reveal.tsx`). The one piece of motion here that a
-   pointer did not ask for, so it is built out of what the language already says rather than
-   out of anything new: an item is held at the card hover offset on `--shadow-3` and settles
-   flat, which is the gesture a card already makes when you stop hovering it. No scale, no
-   blur, no soft shadow — the same rules as everything else.
-
-   The shadow is why `surface-dark`/`surface-light` on a panel is load-bearing rather than
-   cosmetic once a reveal lands inside it: the offset is painted onto the fill behind it for
-   280ms, and a `darkblue` panel that declares no tone casts the default darkestblue at 1.24:1.
-   `e2e/shadow-contrast.spec.ts` cannot catch this the way it catches lifts, because it reads
-   resting style and this shadow only exists mid-transition — so the tone declaration is the
-   guard.
-
-   Opacity is not the "soft gradient sliding under a surface" the loading section rules out:
-   nothing is sliding and nothing is a gradient, the element is simply not painted yet. */
-.sbsk-reveal {
-  opacity: 0;
-  transform: var(--lift-card-hover);
-  box-shadow: var(--shadow-3);
-  transition:
-    opacity var(--duration-slow) var(--ease-out),
-    transform var(--duration-slow) var(--ease-out),
-    box-shadow var(--duration-slow) var(--ease-out);
-}
-
-.sbsk-reveal[data-revealed='true'] {
-  opacity: 1;
-  transform: none;
-  box-shadow: none;
-}
-
-/* The finished state outright, not a shorter version of the journey — and stated as its own
-   rule rather than `transition: none` so it holds for an element that was already revealed.
-   `transition-delay` is cleared because the stagger is set inline and would otherwise survive
-   into a state that has nothing left to delay. */
-.reduce-motion .sbsk-reveal {
-  opacity: 1;
-  transform: none;
-  box-shadow: none;
-  transition: none;
-  transition-delay: 0s;
-}
-
 /* The hero photo drifts down at a quarter of the scroll speed as the page scrolls away from it,
    so the band reads as a window onto something behind the page rather than a flat sticker.
 
    It is a CSS scroll-driven animation (`animation-timeline: scroll()`), not a scroll listener:
    the browser runs it on the compositor, it is tied to the finger rather than to a clock, so it
    works the same on a phone as with a mouse, and there is no JavaScript to make it feel late.
-   Only `translate` moves, so nothing around it reflows. The image's container must clip
+   Only `translate` moves, so nothing around it reflows. The range starts at 200px, once the hero's top edge has scrolled out of view under the header, because a photo translating down would otherwise expose an unpainted strip above it. The image's container must clip
    (`overflow-clip`), or the drifted photo would paint over the section below.
 
    No `scale()` (the language bans it), so the photo travels rather than zooms. Browsers without
@@ -707,7 +664,7 @@
     @variant motion-safe {
       animation: sbsk-hero-drift linear both;
       animation-timeline: scroll(root block);
-      animation-range: 0 100svh;
+      animation-range: 200px 100svh;
     }
   }
 }

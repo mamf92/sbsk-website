@@ -34,23 +34,23 @@ no longer means motionless: surfaces you can press now respond.
 All of it lives in the `@theme` block of `src/index.css`. Add to it rather than hardcoding a
 value in a class.
 
-| Token                      | Value                                          | Purpose                       |
-| -------------------------- | ---------------------------------------------- | ----------------------------- |
-| `--duration-fast`          | `120ms`                                        | Colour swaps                  |
-| `--duration-base`          | `180ms`                                        | Travel                        |
-| `--ease-standard`          | `cubic-bezier(0.2, 0, 0, 1)`                   | Colour curve                  |
-| `--ease-out`               | `cubic-bezier(0.16, 1, 0.3, 1)`                | Travel curve                  |
-| `--transition-fast`        | `var(--duration-fast) var(--ease-standard)`    | Colour, as a fragment         |
-| `--transition-snappy`      | `var(--duration-base) var(--ease-out)`         | Travel, as a fragment         |
-| `--hard-shadow-color`      | `darkestblue`; `white` in dark mode            | The offset shadow's colour    |
-| `--shadow-1` / `-2` / `-3` | `2px` / `4px` / `6px` hard offset              | Press / hover / raised        |
-| `--lift-hover`             | `translate(-2px, -2px)`                        | Hover offset                  |
-| `--lift-card-hover`        | `translate(-3px, -3px)`                        | Hover offset, cards           |
-| `--lift-press`             | `translate(1px, 1px)`                          | Press offset                  |
-| `--shadow-overlay`         | `0 12px 32px -8px` on `--overlay-shadow-color` | The modal panel's shadow      |
-| `--duration-slow`          | `280ms`                                        | Panels, the scroll reveal     |
-| `--duration-instant`       | `80ms`                                         | The reveal's per-item stagger |
-| `--color-overlay-scrim`    | `white/0.7`; `darkblue/0.7` in dark mode       | The modal scrim               |
+| Token                      | Value                                          | Purpose                    |
+| -------------------------- | ---------------------------------------------- | -------------------------- |
+| `--duration-fast`          | `120ms`                                        | Colour swaps               |
+| `--duration-base`          | `180ms`                                        | Travel                     |
+| `--ease-standard`          | `cubic-bezier(0.2, 0, 0, 1)`                   | Colour curve               |
+| `--ease-out`               | `cubic-bezier(0.16, 1, 0.3, 1)`                | Travel curve               |
+| `--transition-fast`        | `var(--duration-fast) var(--ease-standard)`    | Colour, as a fragment      |
+| `--transition-snappy`      | `var(--duration-base) var(--ease-out)`         | Travel, as a fragment      |
+| `--hard-shadow-color`      | `darkestblue`; `white` in dark mode            | The offset shadow's colour |
+| `--shadow-1` / `-2` / `-3` | `2px` / `4px` / `6px` hard offset              | Press / hover / raised     |
+| `--lift-hover`             | `translate(-2px, -2px)`                        | Hover offset               |
+| `--lift-card-hover`        | `translate(-3px, -3px)`                        | Hover offset, cards        |
+| `--lift-press`             | `translate(1px, 1px)`                          | Press offset               |
+| `--shadow-overlay`         | `0 12px 32px -8px` on `--overlay-shadow-color` | The modal panel's shadow   |
+| `--duration-slow`          | `280ms`                                        | Panels                     |
+| `--duration-instant`       | `80ms`                                         | Instant feedback           |
+| `--color-overlay-scrim`    | `white/0.7`; `darkblue/0.7` in dark mode       | The modal scrim            |
 
 The full set — the whole duration and easing scale, the accent and overlay shadows, the
 category colours, the disabled and focus states, and the exact heading type scale — is in
@@ -479,60 +479,13 @@ it follows the finger on a phone the same way it follows a wheel, runs off the m
 moves only `translate`. Its container needs `overflow-clip`. No support, or reduced motion,
 means the still photo.
 
-## The scroll reveal
+## No scroll reveal
 
-Not on `/våre-spill`: a seventeen-card grid arriving card by card read as the page still
-loading.
-
-`src/components/ui/Reveal.tsx` is the one piece of motion here that a pointer did not ask for,
-which is why it is assembled entirely out of what the language already says. An item arrives
-held at `--lift-card-hover` on `--shadow-3` and settles flat — the same gesture a card makes
-when you stop hovering it, played on arrival. No scale, no blur, no soft shadow.
-
-Three rules keep it from being decoration:
-
-- **It reveals once.** Content that re-animates every time it scrolls past is what makes a page
-  feel restless rather than alive.
-- **The stagger has to survive the reveal.** `transition-delay` is taken from the _after-change_
-  style, so clearing the delay in the same commit that flips `data-revealed` means every item
-  transitions with `0s` and the stagger never plays at all. That is what this shipped doing,
-  with a test pinning it as the intended behaviour.
-- **The stagger caps at six.** `index` delays each item by `--duration-instant`; past the sixth
-  every item shares the last delay, so a forty-post feed does not take three seconds to arrive.
-- **Reduced motion gets the finished state, not a faster version of it.** Stated as its own
-  rule rather than `transition: none`, so it holds for an element that was already revealed.
-
-**It is a scroll sweep, not an `IntersectionObserver`, and that is the whole point.** The
-obvious build — observe each element, reveal on first intersection, disconnect — has a failure
-mode that is unacceptable for something starting at `opacity: 0`, and it is not hypothetical:
-it shipped in the first version of this component and was caught on `/våre-spill`. An observer
-reports _threshold crossings_, so an element that goes from below the fold to above it inside a
-single frame — Cmd+End, a scrollbar drag, an anchor jump — never reports a crossing at all. It
-sits at ratio 0 throughout, no callback fires, and that item stays invisible for the rest of the
-session. One jump to the bottom of the seventeen-card grid left twelve cards blank.
-
-A sweep asks where things _are_, not when they crossed, so it has no such gap. It runs on
-scroll, on resize, on a `ResizeObserver` watching the document element — an image or a font
-landing above an item moves it with no scroll at all — and on every render, because a list that
-filters or re-sorts _reorders_ its items rather than remounting them: same key, same instance, so
-the registration effect never re-runs and nothing else would fire. The cost is a
-rect read per pending item per animation frame while scrolling — nothing at these counts — and
-it stops entirely once the last item has been revealed, because the listeners detach themselves.
-Correctness is worth more here than the observer's efficiency. Anything already on screen at
-mount is revealed without waiting for a scroll that may never come.
-
-`e2e/smoke.spec.ts` pins the assertion that has to hold however this is built: after scrolling,
-nothing is invisible.
-
-**The shadow is why a panel's `surface-*` is load-bearing wherever a reveal lands in one.** The
-offset is painted onto the fill behind it for 280ms, and a `darkblue` panel that declares no
-tone casts the default `darkestblue` at 1.24:1. `e2e/shadow-contrast.spec.ts` cannot catch this
-the way it catches lifts: it reads resting computed style, and this shadow exists only
-mid-transition. The tone declaration is the guard, which is what `PostsSection`,
-`CalendarSection` and `AboutUsSection`'s panels gained when the reveal arrived.
-
-Opacity here is not the "soft gradient sliding under a surface" that **Loading, empty, error**
-rules out. Nothing slides and nothing is a gradient; the element is simply not painted yet.
+Content does not animate in as it scrolls into view. `Reveal` existed for a while (cards settling
+from the hover offset onto the page, staggered) and was removed: on a phone it read as the page
+still loading, and a card that is not painted yet is a card that is not there. Motion that a
+pointer did not ask for is limited to the hero drift above. Do not reintroduce a per-item reveal
+without an answer to that.
 
 ## Field state
 
