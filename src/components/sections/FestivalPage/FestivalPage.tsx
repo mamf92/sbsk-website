@@ -2,8 +2,12 @@ import * as React from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { PortableText } from '@portabletext/react';
 import { Carousel } from '../../ui/Carousel';
-import { EventFacts, type EventFact } from '../../ui/EventFacts';
-import { HeroImage } from '../../ui/HeroImage';
+import type { EventFact } from '../../ui/EventFacts';
+import { EventHero } from '../../ui/EventHero';
+import { EventKeyInfo } from '../../ui/EventKeyInfo';
+import { EventPageLayout } from '../../ui/EventPageLayout';
+import { EventScheduleCard } from '../../ui/EventScheduleCard';
+import { Panel } from '../../ui/Panel';
 import { Link, linkClassesInherit } from '../../ui/Link';
 import { SignupBlock } from '../../ui/SignupBlock';
 import { SponsorGrid, SponsorStrip } from '../../ui/Sponsors';
@@ -19,13 +23,23 @@ import { components } from '../../../sanity/editors/portableTextComponents';
 import type { FestivalTypes } from '../../../sanity/queryHelpers/festivals';
 import type { LocaleBlock } from '../../../sanity/queryHelpers/fragments';
 import type { SanityImageValue } from '../../ui/SanityImage';
-import { formatDateTime, formatDayLong, parseInstant } from '../../../utils/eventDateFormat';
-import { festivalDate, festivalDateLabel, scheduledSessions } from '../../../utils/festival';
+import {
+  dayOfMonth,
+  formatDateTime,
+  formatDayLong,
+  monthAbbreviation,
+  parseInstant,
+} from '../../../utils/eventDateFormat';
+import {
+  festivalDate,
+  festivalDateLabel,
+  festivalDayIcs,
+  scheduledSessions,
+} from '../../../utils/festival';
 import { safeLinkUrl } from '../../../utils/safeUrl';
 import { signupState } from '../../../utils/signup';
 
 const SITE = 'Stavanger Brettspillklubb';
-const panel = 'bg-darkblue font-body flex flex-col gap-4 p-6 text-white sm:p-8';
 const h2 = 'font-heading text-h3 font-bold';
 
 /** Portable Text in the visitor's language, marked with its own when it fell back. */
@@ -110,200 +124,213 @@ export default function FestivalPage({ festival }: { festival: FestivalTypes }) 
   const faq = (festival.faq ?? []).filter((item) => pickLocale(item.question, locale));
   const gallery = (festival.gallery ?? []) as SanityImageValue[];
 
+  const venueLabel = festival.venue?.name;
+  const hasPricing = !!pickLocale(festival.pricing, locale) || state !== 'none';
+  const hasRules = !!pickLocale(festival.rules, locale);
+
+  const keyInfo = (
+    <EventKeyInfo
+      label={t('keyInfo')}
+      facts={facts}
+      actions={
+        <>
+          <SignupBlock signup={festival.signup} now={now} />
+          {hasOwnSignups && <p className="font-body text-sm">{t('festival.perDaySignup')}</p>}
+          {days.length > 0 && (
+            <RouterLink
+              to={{ hash: '#program' }}
+              preventScrollReset
+              className={`${linkClassesInherit} font-body underline`}
+            >
+              {t('festival.seeProgram')}
+            </RouterLink>
+          )}
+        </>
+      }
+    />
+  );
+
   return (
     <div className="dark:bg-darkestblue min-h-[60vh] bg-white pb-16 dark:text-white print:bg-white print:text-black">
-      {/* Hero */}
-      <section className="bg-darkblue surface-dark relative isolate text-white print:bg-white print:text-black">
-        <div className="absolute inset-0 -z-10 print:hidden">
-          <HeroImage image={festival.heroImage} priority />
-          <div className="bg-darkestblue/70 absolute inset-0" />
+      <div className="max-w-shell mx-auto flex w-full flex-col gap-8 px-3 pt-6 sm:px-6">
+        <div className="flex flex-col gap-0">
+          <EventHero
+            image={festival.heroImage}
+            title={titleText}
+            titleLang={langOf(title?.lang)}
+            kicker={festival.edition ? <Tag tone="orange">{festival.edition}</Tag> : undefined}
+            lead={tagline?.value}
+            leadLang={langOf(tagline?.lang)}
+            meta={
+              dateRange || venueLabel ? (
+                <>
+                  {dateRange}
+                  {dateRange && venueLabel && ' · '}
+                  {venueLabel && <span lang={langOf('nb')}>{venueLabel}</span>}
+                </>
+              ) : undefined
+            }
+          />
+          <SponsorStrip sponsors={sponsors} className="print:hidden" />
         </div>
-        <div className="max-w-content content-gutter:px-0 mx-auto flex flex-col items-start gap-4 px-3 py-12 sm:py-16">
-          {festival.edition && <Tag tone="orange">{festival.edition}</Tag>}
-          <h1
-            className="font-heading text-h1 tracking-heading font-bold"
-            lang={langOf(title?.lang)}
-          >
-            {titleText}
-          </h1>
-          {tagline && (
-            <p className="font-body max-w-form text-lg" lang={langOf(tagline.lang)}>
-              {tagline.value}
-            </p>
+
+        <EventPageLayout aside={keyInfo}>
+          {pickLocale(festival.intro, locale) && (
+            <Panel title={t('festival.about')} className="print:hidden">
+              <LocaleRichText value={festival.intro} />
+            </Panel>
           )}
-          {(dateRange || festival.venue?.name) && (
-            <p className="font-body font-bold">
-              {dateRange}
-              {dateRange && festival.venue?.name && ' · '}
-              {festival.venue?.name && <span lang={langOf('nb')}>{festival.venue.name}</span>}
-            </p>
+
+          {/* One dated card per day, as in the Figma design. Shown for a single day too: a
+              day's own sign-up and opening hours live only here. */}
+          {days.length > 0 && (
+            <section aria-labelledby="days-heading" className="flex flex-col gap-4 print:hidden">
+              <h2 id="days-heading" className="font-heading text-h2 font-bold">
+                {t('festival.days')}
+              </h2>
+              <ul className="flex flex-col gap-4">
+                {days.map((day, index) => {
+                  const date = festivalDate(day.date);
+                  const dayName = formatDayLong(date, locale);
+                  const label = pickLocale(day.label, locale);
+                  const summary = pickLocale(day.summary, locale);
+                  // Same rule as the programme: a session without both times is not shown yet.
+                  const count = scheduledSessions(day).length;
+                  const place = day.venue?.name ?? venueLabel;
+                  const dayTitle = label?.value ?? t('festival.dayN', { n: index + 1 });
+                  const meta = [
+                    dayName.charAt(0).toUpperCase() + dayName.slice(1),
+                    day.opens && day.closes ? `${day.opens}–${day.closes}` : null,
+                    place,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ');
+                  const ics = festivalDayIcs(
+                    festival,
+                    day,
+                    `${titleText} · ${dayTitle}`,
+                    window.location.href,
+                  );
+                  return (
+                    <li key={day._key}>
+                      <EventScheduleCard
+                        size="lg"
+                        day={`${dayOfMonth(date)}.`}
+                        month={monthAbbreviation(date, locale)}
+                        title={dayTitle}
+                        lang={label ? langOf(label.lang) : undefined}
+                        meta={meta}
+                        ics={ics}
+                        addLabel={t('addEventToCalendar', { title: dayTitle })}
+                      >
+                        {summary && (
+                          <p className="font-body text-sm" lang={langOf(summary.lang)}>
+                            {summary.value}
+                          </p>
+                        )}
+                        <SignupBlock signup={day.signup} now={now} compact />
+                        <RouterLink
+                          to={{ search: `?${DAY_PARAM}=${index + 1}`, hash: '#program' }}
+                          className={`${linkClassesInherit} font-body text-sm underline`}
+                          preventScrollReset
+                        >
+                          {count > 0
+                            ? `${t('program.seeDay', { day: dayName })} (${t('program.sessions', { count })})`
+                            : t('program.seeDay', { day: dayName })}
+                        </RouterLink>
+                      </EventScheduleCard>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
           )}
-          <div className="flex flex-wrap items-start gap-4 print:hidden">
-            <SignupBlock signup={festival.signup} now={now} />
-            {days.length > 0 && (
-              <RouterLink
-                to={{ hash: '#program' }}
-                preventScrollReset
-                className={`${linkClassesInherit} self-center underline`}
-              >
-                {t('festival.seeProgram')}
-              </RouterLink>
-            )}
-          </div>
-        </div>
-      </section>
 
-      <div className="max-w-content content-gutter:px-0 mx-auto flex w-full flex-col gap-10 px-3 pt-8">
-        <SponsorStrip sponsors={sponsors} className="print:hidden" />
+          <Program festival={festival} />
+          {days.length > 0 && <PrintProgram festival={festival} />}
 
-        <EventFacts facts={facts} className="print:hidden" />
+          {(hasPricing || hasRules) && (
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 print:hidden">
+              {hasPricing && (
+                <Panel title={t('festival.signupAndPrices')}>
+                  <LocaleRichText value={festival.pricing} />
+                  <SignupBlock signup={festival.signup} now={now} compact />
+                </Panel>
+              )}
+              {hasRules && (
+                <Panel title={t('festival.rules')}>
+                  <LocaleRichText value={festival.rules} />
+                </Panel>
+              )}
+            </div>
+          )}
 
-        {/* Shown for a single day too: a day's own sign-up and opening hours live only here. */}
-        {days.length > 0 && (
-          <section aria-labelledby="days-heading" className="flex flex-col gap-4 print:hidden">
-            <h2 id="days-heading" className={h2}>
-              {t('festival.days')}
-            </h2>
-            <ul className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              {days.map((day, index) => {
-                const dayName = formatDayLong(festivalDate(day.date), locale);
-                const label = pickLocale(day.label, locale);
-                const summary = pickLocale(day.summary, locale);
-                // Same rule as the programme: a session without both times is not shown yet.
-                const count = scheduledSessions(day).length;
+          <VenueCard venue={festival.venue} className="print:hidden" />
+          {elsewhere.map((day) => (
+            <VenueCard
+              key={day._key}
+              venue={day.venue}
+              className="print:hidden"
+              title={t('festival.elsewhere', {
+                day: formatDayLong(festivalDate(day.date), locale),
+              })}
+            />
+          ))}
+
+          {faq.length > 0 && (
+            <section className="flex flex-col gap-3 print:hidden" aria-labelledby="faq-heading">
+              <h2 id="faq-heading" className={h2}>
+                {t('faq')}
+              </h2>
+              {faq.map((item) => {
+                const question = pickLocale(item.question, locale)!;
                 return (
-                  <li key={day._key} className={`${panel} gap-2`}>
-                    <h3 className="font-heading text-h4 font-bold first-letter:uppercase">
-                      {dayName}
-                    </h3>
-                    {label && (
-                      <p className="font-bold" lang={langOf(label.lang)}>
-                        {label.value}
-                      </p>
-                    )}
-                    {day.opens && day.closes && (
-                      <p className="text-sm">
-                        {t('festival.doors', { opens: day.opens, closes: day.closes })}
-                      </p>
-                    )}
-                    {summary && (
-                      <p className="line-clamp-2 text-sm" lang={langOf(summary.lang)}>
-                        {summary.value}
-                      </p>
-                    )}
-                    {count > 0 && <p className="text-sm">{t('program.sessions', { count })}</p>}
-                    <SignupBlock signup={day.signup} now={now} compact />
-                    <RouterLink
-                      to={{ search: `?${DAY_PARAM}=${index + 1}`, hash: '#program' }}
-                      className={`${linkClassesInherit} mt-auto underline`}
-                      preventScrollReset
+                  <details
+                    key={item._key}
+                    className="font-body border border-black p-4 dark:border-white"
+                  >
+                    <summary
+                      className="focus-visible:outline-focus-ring cursor-pointer font-bold focus-visible:outline-2 focus-visible:outline-offset-2"
+                      lang={langOf(question.lang)}
                     >
-                      {t('program.seeDay', { day: dayName })}
-                    </RouterLink>
-                  </li>
+                      {question.value}
+                    </summary>
+                    <div className="pt-3">
+                      <LocaleRichText value={item.answer} />
+                    </div>
+                  </details>
                 );
               })}
-            </ul>
-          </section>
-        )}
+            </section>
+          )}
 
-        <Program festival={festival} />
-        {days.length > 0 && <PrintProgram festival={festival} />}
+          <SponsorGrid sponsors={sponsors} className="print:hidden" />
 
-        {pickLocale(festival.intro, locale) && (
-          <section className={`${panel} print:hidden`} aria-labelledby="about-heading">
-            <h2 id="about-heading" className={h2}>
-              {t('festival.about')}
-            </h2>
-            <LocaleRichText value={festival.intro} />
-          </section>
-        )}
+          {gallery.length > 0 && (
+            <section className="flex flex-col gap-4 print:hidden" aria-labelledby="gallery-heading">
+              <h2 id="gallery-heading" className={h2}>
+                {t('festival.gallery')}
+              </h2>
+              <Carousel images={gallery} label={t('festival.gallery')} />
+            </section>
+          )}
 
-        {(pickLocale(festival.pricing, locale) || state !== 'none') && (
-          <section className={`${panel} print:hidden`} aria-labelledby="signup-heading">
-            <h2 id="signup-heading" className={h2}>
-              {t('festival.signupAndPrices')}
-            </h2>
-            <LocaleRichText value={festival.pricing} />
-            <SignupBlock signup={festival.signup} now={now} />
-            {hasOwnSignups && <p className="text-sm">{t('festival.perDaySignup')}</p>}
-          </section>
-        )}
+          <RelatedPosts posts={festival.relatedPosts} className="print:hidden" />
 
-        <VenueCard venue={festival.venue} className="print:hidden" />
-        {elsewhere.map((day) => (
-          <VenueCard
-            key={day._key}
-            venue={day.venue}
-            className="print:hidden"
-            title={t('festival.elsewhere', {
-              day: formatDayLong(festivalDate(day.date), locale),
-            })}
-          />
-        ))}
-
-        {pickLocale(festival.rules, locale) && (
-          <section className={`${panel} print:hidden`} aria-labelledby="rules-heading">
-            <h2 id="rules-heading" className={h2}>
-              {t('festival.rules')}
-            </h2>
-            <LocaleRichText value={festival.rules} />
-          </section>
-        )}
-
-        {faq.length > 0 && (
-          <section className="flex flex-col gap-3 print:hidden" aria-labelledby="faq-heading">
-            <h2 id="faq-heading" className={h2}>
-              {t('faq')}
-            </h2>
-            {faq.map((item) => {
-              const question = pickLocale(item.question, locale)!;
-              return (
-                <details
-                  key={item._key}
-                  className="font-body border border-black p-4 dark:border-white"
-                >
-                  <summary
-                    className="focus-visible:outline-focus-ring cursor-pointer font-bold focus-visible:outline-2 focus-visible:outline-offset-2"
-                    lang={langOf(question.lang)}
-                  >
-                    {question.value}
-                  </summary>
-                  <div className="pt-3">
-                    <LocaleRichText value={item.answer} />
-                  </div>
-                </details>
-              );
-            })}
-          </section>
-        )}
-
-        <SponsorGrid sponsors={sponsors} className="print:hidden" />
-
-        {gallery.length > 0 && (
-          <section className="flex flex-col gap-4 print:hidden" aria-labelledby="gallery-heading">
-            <h2 id="gallery-heading" className={h2}>
-              {t('festival.gallery')}
-            </h2>
-            <Carousel images={gallery} label={t('festival.gallery')} />
-          </section>
-        )}
-
-        <RelatedPosts posts={festival.relatedPosts} className="print:hidden" />
-
-        {contact && (
-          <section className="font-body flex flex-col gap-2" aria-labelledby="contact-heading">
-            <h2 id="contact-heading" className={h2}>
-              {t('festival.contactTitle')}
-            </h2>
-            <p>
-              {t('festival.contactLead')}{' '}
-              <Link href={contact} className="underline">
-                {festival.contactEmail}
-              </Link>
-            </p>
-          </section>
-        )}
+          {contact && (
+            <section className="font-body flex flex-col gap-2" aria-labelledby="contact-heading">
+              <h2 id="contact-heading" className={h2}>
+                {t('festival.contactTitle')}
+              </h2>
+              <p>
+                {t('festival.contactLead')}{' '}
+                <Link href={contact} className="underline">
+                  {festival.contactEmail}
+                </Link>
+              </p>
+            </section>
+          )}
+        </EventPageLayout>
       </div>
     </div>
   );

@@ -654,6 +654,30 @@ on his behalf without a go).
 
 ---
 
+### WP9 — Layout redesign (18 Nov 2026)
+
+Martin found the WP4/WP6 pages unstructured, with a lot of empty space on desktop, and shared
+Figma frames for the big event page (banner, sponsor strip, sign-up, intro, summary card,
+Priser | Program side by side, one dated card per day). Both the single-event page and the
+festival page now follow one structure, built from shared primitives so the redesign stays a
+reskin:
+
+1. `EventHero`: the banner shown whole (16:9, never cropped or darkened, since festival art
+   carries its own lettering), then a title band with the page's `<h1>`, lead and when · where.
+2. `SponsorStrip` straight under it, as in the Figma.
+3. `EventPageLayout`: a content column plus, from `lg`, a sticky aside (`--container-aside`)
+   holding `EventKeyInfo`: the key facts, the sign-up button, add to calendar / see programme.
+   This is the Figma's summary card, moved to where it stays in view, which is the common
+   event-page pattern and what fills the desktop width. On a phone it comes right after the
+   title.
+4. Content column: intro `Panel`, the days as large dated `EventScheduleCard`s (`size="lg"`,
+   with the day's sign-up and a link to its programme), the programme, then «Påmelding og
+   priser» | «Regler og praktisk» (event: «Priser» | «Program») two-up, Oppmøte, FAQ,
+   sponsors, gallery, posts, contact.
+
+The single event page drops its separate one-row summary card: the aside carries the same
+facts and the add-to-calendar button.
+
 ## 5. Data model summary
 
 ```

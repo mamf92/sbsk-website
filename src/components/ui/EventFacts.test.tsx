@@ -32,3 +32,13 @@ describe('EventFacts', () => {
     expect(ref.current).toHaveClass('extra');
   });
 });
+
+describe('EventFacts layouts', () => {
+  it('gives row and stack distinct classes', () => {
+    const facts = [{ id: 'a', label: 'A', value: 'B' }];
+    const { rerender, container } = render(<EventFacts facts={facts} />);
+    const row = (container.firstChild as HTMLElement).className;
+    rerender(<EventFacts facts={facts} layout="stack" />);
+    expect((container.firstChild as HTMLElement).className).not.toBe(row);
+  });
+});

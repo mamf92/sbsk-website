@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { PortableText } from '@portabletext/react';
 import { Link } from './Link';
+import { Panel } from './Panel';
 import { useEventsT } from '../../i18n';
 import { pickLocale } from '../../i18n/pickLocale';
 import { useLocale } from '../../hooks/locale/useLocale';
@@ -25,7 +26,6 @@ export const VenueCard = React.forwardRef<HTMLElement, VenueCardProps>(
     const { locale } = useLocale();
     if (!venue?.name) return null;
 
-    const Heading = headingLevel;
     const SubHeading = headingLevel === 'h2' ? 'h3' : 'h4';
     const langOf = (lang: string) => (lang !== locale ? lang : undefined);
     const meetingPoint = pickLocale(venue.meetingPoint, locale);
@@ -33,15 +33,13 @@ export const VenueCard = React.forwardRef<HTMLElement, VenueCardProps>(
     const accessibility = pickLocale(venue.accessibility, locale);
 
     return (
-      <section
+      <Panel
         ref={ref}
-        className={[
-          'bg-darkblue font-body flex flex-col gap-4 p-6 text-white sm:p-8',
-          className,
-        ].join(' ')}
+        title={title ?? t('venue.title')}
+        headingLevel={headingLevel}
+        className={className}
         {...props}
       >
-        <Heading className="font-heading text-h3 font-bold">{title ?? t('venue.title')}</Heading>
         <div className="flex flex-col gap-1">
           <p className="font-bold">{venue.name}</p>
           {venue.address && (
@@ -82,7 +80,7 @@ export const VenueCard = React.forwardRef<HTMLElement, VenueCardProps>(
           </div>
         )}
         {venue.contact && <p>{t('venue.contact', { name: venue.contact })}</p>}
-      </section>
+      </Panel>
     );
   },
 );
