@@ -1,5 +1,4 @@
 import { Button } from '../ui/Buttons';
-import { Reveal } from '../ui/Reveal';
 import { Card, type CardCategory } from '../ui/Card';
 import { Carousel } from '../ui/Carousel';
 import { Chip, type ChipCategory } from '../ui/Chip';
@@ -118,22 +117,34 @@ function PostsHero({ title, subtitle }: PostsHeroTypes = {}) {
   );
 }
 
+/** The post the feed opens on: the latest `publishedAt`, the same order the default sort uses. */
+function newestPost(posts: PostWithExtras[]): PostWithExtras | undefined {
+  let newest: PostWithExtras | undefined;
+  for (const post of posts) {
+    if (!newest || new Date(post.publishedAt) > new Date(newest.publishedAt)) newest = post;
+  }
+  return newest;
+}
+
 function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<'all' | PostCategory>('all');
   const [sortBy, setSelectedSort] = useState<SortOption>('date-desc');
   const [visibleItemCount, setVisibleItemCount] = useState(5);
-  // Each card opens and closes on its own, and the page loads with every one of them closed
-  // (#223). Seeding the newest post open meant the list arrived already scrolled past by one
-  // article's worth of body copy, which is not what a list of headlines is for.
+  // Each card opens and closes on its own, and the page loads with the newest post open, so the
+  // feed starts with something to read rather than a stack of headlines (reversing #223 at the
+  // club's request). Only the seed is newest-first: changing the sort later does not move it.
   //
   // Deliberately not an accordion, even though the design library specifies one. Auto-closing
   // the previously open card moves everything below it up by that card's full height, so the
   // header you just clicked jumps out from under the pointer — worst exactly when the open
   // card was long, which is when the reader is most likely to be mid-article. Nothing here
-  // opens or closes without the reader asking for it, so the only content shift is one they
-  // caused.
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
+  // opens or closes without the reader asking for it, apart from that first seed, so the only
+  // content shift is one they caused.
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => {
+    const newest = newestPost(posts as PostWithExtras[]);
+    return new Set(newest ? [newest._id] : []);
+  });
   const postItems = posts as PostWithExtras[];
 
   const filteredPosts = postItems.filter((post) => {
@@ -248,21 +259,20 @@ function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) 
         // 14px between cards, per the design library — enough that the 6px hover shadow of
         // one card never touches the next.
         <div className="flex w-full flex-col gap-3.5">
-          {displayedPosts.map((post, index) => (
-            <Reveal key={post._id} index={index}>
-              <PostCard
-                post={post}
-                expanded={expandedIds.has(post._id)}
-                onToggle={() =>
-                  setExpandedIds((prev) => {
-                    const next = new Set(prev);
-                    // `delete` reports whether it removed anything, so this is toggle in one step.
-                    if (!next.delete(post._id)) next.add(post._id);
-                    return next;
-                  })
-                }
-              />
-            </Reveal>
+          {displayedPosts.map((post) => (
+            <PostCard
+              key={post._id}
+              post={post}
+              expanded={expandedIds.has(post._id)}
+              onToggle={() =>
+                setExpandedIds((prev) => {
+                  const next = new Set(prev);
+                  // `delete` reports whether it removed anything, so this is toggle in one step.
+                  if (!next.delete(post._id)) next.add(post._id);
+                  return next;
+                })
+              }
+            />
           ))}
         </div>
       )}
@@ -273,20 +283,19 @@ function PostsList({ posts, failed }: { posts: PostTypes[]; failed?: boolean }) 
               <Divider>
                 <span>{group.label}</span>
               </Divider>
-              {group.items.map((post, index) => (
-                <Reveal key={post._id} index={index}>
-                  <PostCard
-                    post={post}
-                    expanded={expandedIds.has(post._id)}
-                    onToggle={() =>
-                      setExpandedIds((prev) => {
-                        const next = new Set(prev);
-                        if (!next.delete(post._id)) next.add(post._id);
-                        return next;
-                      })
-                    }
-                  />
-                </Reveal>
+              {group.items.map((post) => (
+                <PostCard
+                  key={post._id}
+                  post={post}
+                  expanded={expandedIds.has(post._id)}
+                  onToggle={() =>
+                    setExpandedIds((prev) => {
+                      const next = new Set(prev);
+                      if (!next.delete(post._id)) next.add(post._id);
+                      return next;
+                    })
+                  }
+                />
               ))}
             </div>
           ))}

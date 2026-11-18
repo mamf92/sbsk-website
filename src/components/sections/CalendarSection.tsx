@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { eventDetailPath } from '../../utils/eventLinks';
 import { Link, useNavigate } from 'react-router-dom';
 import { PortableText, toPlainText } from '@portabletext/react';
-import { Reveal } from '../ui/Reveal';
 // Aliased: this module already imports React Router's `Link` for in-app navigation.
 import { Link as ExternalTextLink } from '../ui/Link';
 import { Button } from '../ui/Buttons';
@@ -540,30 +539,28 @@ function EventList({ events, failed }: { events: CalendarEventTypes[]; failed?: 
       )}
 
       {sort === 'title-asc'
-        ? visible.map((event, index) => (
-            <Reveal key={event._id} index={index}>
-              <EventRow
-                event={event}
-                rsvp={rsvp}
-                expanded={expandedId === event._id}
-                onToggle={() => setExpandedId(expandedId === event._id ? null : event._id)}
-              />
-            </Reveal>
+        ? visible.map((event) => (
+            <EventRow
+              key={event._id}
+              event={event}
+              rsvp={rsvp}
+              expanded={expandedId === event._id}
+              onToggle={() => setExpandedId(expandedId === event._id ? null : event._id)}
+            />
           ))
         : groups.map((group) => (
             <div key={group.key} className="flex flex-col gap-3">
               <Divider>
                 <span>{group.label}</span>
               </Divider>
-              {group.items.map((event, index) => (
-                <Reveal key={event._id} index={index}>
-                  <EventRow
-                    event={event}
-                    rsvp={rsvp}
-                    expanded={expandedId === event._id}
-                    onToggle={() => setExpandedId(expandedId === event._id ? null : event._id)}
-                  />
-                </Reveal>
+              {group.items.map((event) => (
+                <EventRow
+                  key={event._id}
+                  event={event}
+                  rsvp={rsvp}
+                  expanded={expandedId === event._id}
+                  onToggle={() => setExpandedId(expandedId === event._id ? null : event._id)}
+                />
               ))}
             </div>
           ))}

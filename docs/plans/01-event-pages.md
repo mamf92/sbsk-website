@@ -57,7 +57,7 @@ are shaped so that phase adds a method rather than rewriting the page.
 - `src/components/ui/` — `Segmented` (same props as the redesign's `Tabs`), `Chip`
   (`aria-pressed`), `Card`, `EventScheduleCard` (with .ics download), `Button` (`primary` |
   `secondary` | `tertiary` | `toggle` | `disabled`, sizes `xs`–`lg`), `Link`, `SanityImage`,
-  `EmptyState`, `Alert`, `Divider`, `Carousel`, `HeroImage`, `Dropdown`, `Reveal`. There is no
+  `EmptyState`, `Alert`, `Divider`, `Carousel`, `HeroImage`, `Dropdown`. There is no
   `Tag`, `Tabs`, `Skeleton` or `Select` on `main`.
 - Styling: flat brand tokens (`bg-darkblue`, `text-orange`, `bg-darkestblue`), category tokens
   (`--color-category-*`), and the `lift` / `lift-card` / `lift-chip` utilities.

@@ -61,12 +61,23 @@ const openTitles = () =>
     .map((el) => el.textContent?.match(/\w[\wåøæÅØÆ ]*innlegg/)?.[0]);
 
 describe('PostsSection expand behaviour', () => {
-  it('leaves every post closed on load, the newest one included', () => {
+  it('opens the newest post on load and leaves the rest closed', () => {
     renderList();
 
-    expect(toggle('Nyeste innlegg')).toHaveAttribute('aria-expanded', 'false');
+    expect(toggle('Nyeste innlegg')).toHaveAttribute('aria-expanded', 'true');
     expect(toggle('Midterste innlegg')).toHaveAttribute('aria-expanded', 'false');
     expect(toggle('Eldste innlegg')).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('opens the newest post even when the data does not arrive newest-first', () => {
+    render(
+      <MemoryRouter>
+        <Posts posts={[posts[2], posts[0], posts[1]]} />
+      </MemoryRouter>,
+    );
+
+    expect(openTitles()).toHaveLength(1);
+    expect(toggle('Nyeste innlegg')).toHaveAttribute('aria-expanded', 'true');
   });
 
   it('opening a post leaves the already-open ones open', async () => {
@@ -74,7 +85,6 @@ describe('PostsSection expand behaviour', () => {
     // below it up by that post's full height, yanking the header out from under the pointer.
     renderList();
 
-    await userEvent.click(toggle('Nyeste innlegg'));
     await userEvent.click(toggle('Midterste innlegg'));
     expect(openTitles()).toHaveLength(2);
 
@@ -88,7 +98,6 @@ describe('PostsSection expand behaviour', () => {
   it('closes only the post that was clicked', async () => {
     renderList();
 
-    await userEvent.click(toggle('Nyeste innlegg'));
     await userEvent.click(toggle('Midterste innlegg'));
     await userEvent.click(toggle('Nyeste innlegg'));
 
@@ -96,10 +105,8 @@ describe('PostsSection expand behaviour', () => {
     expect(toggle('Midterste innlegg')).toHaveAttribute('aria-expanded', 'true');
   });
 
-  it('can close every post, leaving nothing open', async () => {
+  it('can close the post it opened on, leaving nothing open', async () => {
     renderList();
-
-    await userEvent.click(toggle('Nyeste innlegg'));
     expect(screen.queryAllByRole('button', { expanded: true })).toHaveLength(1);
 
     await userEvent.click(toggle('Nyeste innlegg'));
@@ -134,11 +141,11 @@ describe('PostsSection month grouping', () => {
 describe('PostsSection links', () => {
   it('shows a post’s link buttons only while it is open', async () => {
     const withLinks: PostTypes[] = [
+      posts[0],
       {
-        ...posts[0],
+        ...posts[1],
         links: [{ label: 'Meld deg på', url: 'https://example.com/paamelding' }],
       },
-      posts[1],
       posts[2],
     ];
     render(
@@ -147,13 +154,13 @@ describe('PostsSection links', () => {
       </MemoryRouter>,
     );
 
-    // Every post loads closed (#223), so the link is not reachable until one is opened.
+    // Only the newest post loads open, so an older post's link is not reachable until it is.
     expect(screen.queryByRole('button', { name: /Meld deg på/ })).not.toBeInTheDocument();
 
-    await userEvent.click(toggle('Nyeste innlegg'));
+    await userEvent.click(toggle('Midterste innlegg'));
     expect(screen.getByRole('button', { name: /Meld deg på/ })).toBeInTheDocument();
 
-    await userEvent.click(toggle('Nyeste innlegg'));
+    await userEvent.click(toggle('Midterste innlegg'));
     expect(screen.queryByRole('button', { name: /Meld deg på/ })).not.toBeInTheDocument();
   });
 
@@ -176,8 +183,7 @@ describe('PostsSection links', () => {
       </MemoryRouter>,
     );
 
-    await userEvent.click(toggle('Nyeste innlegg'));
-
+    // The newest post loads open, so its links are there without a click.
     expect(screen.getByRole('button', { name: /Første lenke/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Andre lenke/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Tredje lenke/ })).toBeInTheDocument();

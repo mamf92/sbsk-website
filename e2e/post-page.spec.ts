@@ -11,10 +11,9 @@ test.beforeEach(async ({ page }) => {
 test('a post has its own page, reached from the feed', async ({ page }) => {
   const post = POSTS[0];
   await page.goto('/');
-  await page
-    .getByRole('button', { name: new RegExp(post.title) })
-    .first()
-    .click();
+  // The newest post loads open; any other has to be opened first.
+  const header = page.getByRole('button', { name: new RegExp(post.title) }).first();
+  if ((await header.getAttribute('aria-expanded')) !== 'true') await header.click();
   await page.getByRole('link', { name: 'Les hele innlegget' }).first().click();
 
   await expect(page).toHaveURL(new RegExp(`/innlegg/${post.slug.current}$`));
