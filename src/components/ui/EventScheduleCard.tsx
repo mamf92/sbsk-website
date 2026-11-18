@@ -1,3 +1,4 @@
+import type * as React from 'react';
 import CalendarAddIcon from '../../assets/icons/symbols/calendar-add.svg?react';
 import { downloadIcs, type IcsEventInput } from '../../utils/ics';
 
@@ -19,6 +20,12 @@ const TONE_STYLES: Record<EventScheduleCardTone, { surface: string; accent: stri
   blue: { surface: 'bg-darkblue surface-dark text-white', accent: 'bg-darkestblue text-white' },
 };
 
+// `lg` is the Figma day card: the date as a large numeral, for a page's list of days.
+const SIZE_STYLES = {
+  md: { block: 'w-20 sm:w-25', day: 'text-3xl sm:text-4xl', month: 'text-xs' },
+  lg: { block: 'w-20 sm:w-32', day: 'text-4xl sm:text-daymark', month: 'text-sm sm:text-base' },
+} as const;
+
 interface EventScheduleCardProps {
   day: string;
   month: string;
@@ -26,6 +33,9 @@ interface EventScheduleCardProps {
   meta: string;
   description?: string;
   tone?: EventScheduleCardTone;
+  size?: keyof typeof SIZE_STYLES;
+  /** Extra lines under the description: a day's sign-up, a link to its programme. */
+  children?: React.ReactNode;
   /** Powers the trailing "add to calendar" button. */
   ics: IcsEventInput;
   /** The button's accessible name, in the page's language: «Legg til {title} i kalenderen». */
@@ -48,29 +58,39 @@ export function EventScheduleCard({
   meta,
   description,
   tone = 'blue',
+  size = 'md',
+  children,
   ics,
   addLabel,
   className = '',
   lang,
 }: EventScheduleCardProps) {
   const styles = TONE_STYLES[tone];
+  const sizes = SIZE_STYLES[size];
 
   return (
     <div
-      className={['flex border border-black dark:border-white', styles.surface, className]
+      // A grid rather than a row so `children` can drop to a full-width line under the date block
+      // on a phone: squeezed between the two fixed side columns, a sign-up button's label (which
+      // never wraps) overran the calendar button at 320px.
+      className={[
+        'grid grid-cols-[auto_minmax(0,1fr)_auto] border border-black dark:border-white',
+        styles.surface,
+        className,
+      ]
         .filter(Boolean)
         .join(' ')}
     >
       <div
         className={[
-          'flex w-20 flex-none flex-col items-center justify-center p-1 sm:w-25',
+          'flex flex-none flex-col items-center justify-center p-1',
+          children ? 'sm:row-span-2' : '',
+          sizes.block,
           styles.accent,
         ].join(' ')}
       >
-        <span className="font-heading text-3xl leading-[0.85] font-extrabold sm:text-4xl">
-          {day}
-        </span>
-        <span className="font-heading mt-1 text-xs font-bold tracking-[0.14em] uppercase">
+        <span className={`font-heading leading-[0.85] font-extrabold ${sizes.day}`}>{day}</span>
+        <span className={`font-heading mt-1 font-bold tracking-[0.14em] uppercase ${sizes.month}`}>
           {month}
         </span>
       </div>
@@ -94,10 +114,16 @@ export function EventScheduleCard({
         // `lift`, like every other pressable surface — this was the one interactive control in
         // the system that did not respond to the pointer at all. It owns the transition outright,
         // so no `transition-*` utility may join it here.
-        className="lift focus-visible:outline-focus-ring flex w-14 flex-none cursor-pointer items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        className={`lift focus-visible:outline-focus-ring col-start-3 row-start-1 flex w-14 flex-none cursor-pointer items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${children ? 'sm:row-span-2' : ''}`}
       >
         <CalendarAddIcon className="h-5 w-5 fill-current" />
       </button>
+
+      {children && (
+        <div className="col-span-3 flex flex-col items-start gap-2 px-4 pb-4 sm:col-span-1 sm:col-start-2 sm:-mt-2">
+          {children}
+        </div>
+      )}
     </div>
   );
 }

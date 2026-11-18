@@ -20,6 +20,7 @@ import {
   osloTime,
   parseFestivalScopeId,
   sessionDateTimes,
+  festivalDayIcs,
 } from './festival';
 
 const session = (
@@ -357,5 +358,27 @@ describe('festivalDayRows', () => {
     expect(new Date(saturday.eventEndTime).toISOString()).toBe('2027-01-31T01:00:00.000Z');
     // No hours: the whole day.
     expect(new Date(sunday.eventStartTime).toISOString()).toBe('2027-01-30T23:00:00.000Z');
+  });
+});
+
+describe('festivalDayIcs', () => {
+  const festival = { _id: 'f1', venue: { name: 'Tasta bydelshus', address: 'Tastaveden 2' } };
+
+  it('times a day by its hours, at the festival venue, with a stable uid', () => {
+    const entry = festivalDayIcs(
+      festival,
+      { _key: 'd1', date: '2027-01-28', opens: '17:00', closes: '23:00' },
+      'BGM · Dag 1',
+    );
+    expect(entry.start.toISOString()).toBe('2027-01-28T16:00:00.000Z');
+    expect(entry.end.toISOString()).toBe('2027-01-28T22:00:00.000Z');
+    expect(entry.allDayDate).toBeUndefined();
+    expect(entry.location).toBe('Tasta bydelshus, Tastaveden 2');
+    expect(entry.uid).toBe('f1-d1');
+  });
+
+  it('makes a date-only day an all-day entry', () => {
+    const entry = festivalDayIcs(festival, { _key: 'd2', date: '2027-01-29' }, 'BGM');
+    expect(entry.allDayDate).toBe('2027-01-29');
   });
 });

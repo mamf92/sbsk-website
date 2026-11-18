@@ -168,6 +168,9 @@
   --container-content: 64rem; /* 1024 */
   /* Forms, login, and single-column reading measures. */
   --container-form: 37.5rem; /* 600 */
+  /* Not a page width: the key-facts column beside an event page's main column
+     (`EventPageLayout`). Only ever the second track of that grid. */
+  --container-aside: 21rem; /* 336 */
 
   /* ---------------------------------------------------------------------
      Motion. The brand is still flat — sharp corners, no blur, no scale — but not

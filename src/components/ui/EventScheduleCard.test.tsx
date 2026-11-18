@@ -86,4 +86,24 @@ describe('EventScheduleCard', () => {
       'lang',
     );
   });
+
+  it('renders extra content under the title, and the lg size changes the date block', () => {
+    const props = {
+      day: '28.',
+      month: 'JAN',
+      title: 'Dag 1',
+      meta: 'Torsdag 28. januar',
+      ics: ics_event,
+      addLabel: 'Legg til Dag 1 i kalenderen',
+    };
+    const { rerender } = render(
+      <EventScheduleCard {...props}>
+        <a href="#program">Se programmet</a>
+      </EventScheduleCard>,
+    );
+    expect(screen.getByRole('link', { name: 'Se programmet' })).toBeInTheDocument();
+    const md = screen.getByText('28.').className;
+    rerender(<EventScheduleCard {...props} size="lg" />);
+    expect(screen.getByText('28.').className).not.toBe(md);
+  });
 });

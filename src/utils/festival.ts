@@ -197,6 +197,31 @@ function venueLine(venue: FestivalDayTypes['venue']): string | undefined {
 }
 
 /**
+ * One festival day as a single calendar entry, for the add-to-calendar button on its day card:
+ * timed by its hours, or all day when only the date is known. Same UID as `festivalIcs`'s entry
+ * for a day without a programme, so the two downloads update rather than duplicate each other.
+ */
+export function festivalDayIcs(
+  festival: Pick<FestivalTypes, '_id' | 'venue'>,
+  day: FestivalDayTypes,
+  title: string,
+  url?: string,
+): IcsEventInput {
+  const hours = dayDateTimes(day);
+  return {
+    ...(hours ?? {
+      start: osloTime(day.date, '00:00'),
+      end: osloTime(nextDate(day.date), '00:00'),
+    }),
+    allDayDate: hours ? undefined : day.date,
+    title,
+    location: venueLine(day.venue) ?? venueLine(festival.venue),
+    url,
+    uid: `${festival._id}-${day._key}`,
+  };
+}
+
+/**
  * Every session of a festival as calendar entries, for the programme's .ics download. A day with
  * no sessions but opening hours becomes one entry for the day. UIDs are built from the Sanity
  * keys, so downloading again after the programme changes updates entries instead of adding them.

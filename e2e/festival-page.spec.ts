@@ -153,6 +153,16 @@ test("a one-day festival still shows its day, with the day's own sign-up", async
   await page.goto('/board-game-masters');
   await expect(page.getByRole('heading', { level: 2, name: 'Dagene' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Meld deg på dagen' })).toBeVisible();
+
+  // At 320px the day card's fixed date block and calendar button leave too little room beside
+  // them for a sign-up button that never wraps; it drops to its own line instead of overlapping.
+  await page.setViewportSize({ width: 320, height: 800 });
+  const signup = await page.getByRole('button', { name: 'Meld deg på dagen' }).boundingBox();
+  const calendar = await page
+    .getByRole('button', { name: /^Legg til .* i kalenderen$/ })
+    .first()
+    .boundingBox();
+  expect(signup!.y).toBeGreaterThanOrEqual(calendar!.y + calendar!.height);
 });
 
 test('an announced festival with only its dates says the programme is coming', async ({ page }) => {

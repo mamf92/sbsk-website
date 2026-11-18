@@ -87,15 +87,18 @@ const renderPage = (event: CalendarEventTypes) => {
 };
 
 describe('SingleEventPage', () => {
-  it('always shows the title and a summary card, even for a minimal event', () => {
+  it('always shows the title and the key-info card, even for a minimal event', () => {
     renderPage(minimalEvent);
 
     expect(
       screen.getByRole('heading', { level: 1, name: 'Ukentlig spillkveld' }),
     ).toBeInTheDocument();
-    // The summary card repeats the title as its own heading.
-    expect(screen.getAllByText('Ukentlig spillkveld').length).toBeGreaterThanOrEqual(2);
-    expect(screen.getByRole('button', { name: /Legg til .* i kalenderen/ })).toBeInTheDocument();
+    // The key-info card stands in for the Figma summary card: facts and add-to-calendar.
+    const keyInfo = screen.getByRole('complementary', { name: 'Nøkkelinfo' });
+    expect(keyInfo).toHaveTextContent('Når');
+    expect(
+      screen.getByRole('button', { name: 'Legg til Ukentlig spillkveld i kalenderen' }),
+    ).toBeInTheDocument();
   });
 
   it('omits sections a minimal event has no data for', () => {
@@ -141,8 +144,9 @@ describe('SingleEventPage', () => {
     );
   });
 
-  it('gives the multi-day summary card a date range', () => {
+  it('gives a multi-day event a date range in its key facts', () => {
     renderPage(fullEvent);
-    expect(screen.getByText('23.–26.')).toBeInTheDocument();
+    const when = screen.getAllByRole('definition')[0];
+    expect(when).toHaveTextContent(/23\..*26\./);
   });
 });

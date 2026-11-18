@@ -109,11 +109,12 @@ smaller than an `<h2>` two components away.
 
 Three container tokens, and a page section picks one of them:
 
-| Token                 | Value           | Takes it                                             |
-| --------------------- | --------------- | ---------------------------------------------------- |
-| `--container-shell`   | `75rem` (1200)  | `Header`, `Footer`, full-page sections               |
-| `--container-content` | `64rem` (1024)  | Card lists, calendar, posts, the two portals         |
-| `--container-form`    | `37.5rem` (600) | Forms, login, dialogs, single-column reading measure |
+| Token                 | Value           | Takes it                                                |
+| --------------------- | --------------- | ------------------------------------------------------- |
+| `--container-shell`   | `75rem` (1200)  | `Header`, `Footer`, full-page sections                  |
+| `--container-content` | `64rem` (1024)  | Card lists, calendar, posts, the two portals            |
+| `--container-form`    | `37.5rem` (600) | Forms, login, dialogs, single-column reading measure    |
+| `--container-aside`   | `21rem` (336)   | Only the aside track of `EventPageLayout`, never a page |
 
 Tailwind v4 mints the utilities from the `--container-*` namespace, so these are written
 `max-w-shell` / `max-w-content` / `max-w-form`. Pick by what the section holds, not by how wide
