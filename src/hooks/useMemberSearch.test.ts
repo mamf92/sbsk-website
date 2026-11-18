@@ -8,22 +8,25 @@ function member(overrides: Partial<Member>): Member {
     id: crypto.randomUUID(),
     supabase_id: crypto.randomUUID(),
     email: 'test@example.com',
-    name: null,
-    surname: null,
-    address: null,
-    postcode: null,
+    name: '',
+    surname: '',
     phone: null,
-    city: null,
     is_admin: false,
+    status: 'active',
+    member_since: '2026-02-01',
+    disabled_at: null,
+    disabled_reason: null,
+    birth_year: null,
+    notes: null,
     created_at: '2026-01-01T00:00:00Z',
     ...overrides,
   };
 }
 
 const members: Member[] = [
-  member({ name: 'Åse', surname: 'Berg', address: 'Storgata 1', city: 'Stavanger' }),
-  member({ name: 'Bjørn', surname: 'Aas', address: 'Kirkegata 4', city: 'Sandnes' }),
-  member({ name: 'Anne', surname: 'Ødegård', address: 'Havnegata 9', city: 'Bergen' }),
+  member({ name: 'Åse', surname: 'Berg', email: 'ase@stavanger.no', phone: '40000003' }),
+  member({ name: 'Bjørn', surname: 'Aas', email: 'bjorn@sandnes.no', phone: '40000001' }),
+  member({ name: 'Anne', surname: 'Ødegård', email: 'anne@bergen.no', phone: '40000002' }),
 ];
 
 const names = (list: Member[]) => list.map((m) => m.name);
@@ -34,13 +37,13 @@ describe('useMemberSearch filtering', () => {
     expect(result.current.filteredMembers).toHaveLength(3);
   });
 
-  it('matches case-insensitively across name, surname, address and city', () => {
+  it('matches case-insensitively across name, surname, email and phone', () => {
     const { result } = renderHook(() => useMemberSearch(members));
 
     act(() => result.current.setSearchTerm('SANDNES'));
     expect(names(result.current.filteredMembers)).toEqual(['Bjørn']);
 
-    act(() => result.current.setSearchTerm('havnegata'));
+    act(() => result.current.setSearchTerm('40000002'));
     expect(names(result.current.filteredMembers)).toEqual(['Anne']);
 
     act(() => result.current.setSearchTerm('aas'));
@@ -54,7 +57,7 @@ describe('useMemberSearch filtering', () => {
   });
 
   it('does not throw on members with null fields', () => {
-    const { result } = renderHook(() => useMemberSearch([member({ name: null })]));
+    const { result } = renderHook(() => useMemberSearch([member({ phone: null })]));
     act(() => result.current.setSearchTerm('anything'));
     expect(result.current.filteredMembers).toHaveLength(0);
   });
@@ -84,10 +87,11 @@ describe('useMemberSearch sorting', () => {
     act(() => result.current.handleSortClick('name'));
     expect(result.current.sortOrder).toBe('desc');
 
-    act(() => result.current.handleSortClick('city'));
-    expect(result.current.selectedSortField).toBe('city');
+    act(() => result.current.handleSortClick('email'));
+    expect(result.current.selectedSortField).toBe('email');
     expect(result.current.sortOrder).toBe('asc');
-    expect(names(result.current.sortedMembers)).toEqual(['Anne', 'Bjørn', 'Åse']);
+    // anne@ < ase@ < bjorn@
+    expect(names(result.current.sortedMembers)).toEqual(['Anne', 'Åse', 'Bjørn']);
   });
 
   it('applies Norwegian collation rules to surnames, including Aa as Å', () => {

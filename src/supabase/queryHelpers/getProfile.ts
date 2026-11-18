@@ -7,9 +7,7 @@ export interface Profile {
   email: string;
   name: string | null;
   surname: string | null;
-  address: string | null;
-  postcode: string | null;
-  city: string | null;
+  locale: 'nb' | 'en';
   created_at: string;
   /** Signed, browser-loadable URL resolved fresh on every fetch — do not persist it. */
   photo_url: string | null;

@@ -11,9 +11,6 @@ type MemberFormValues = {
   name: string;
   surname: string;
   phone: string;
-  address: string;
-  postcode: string;
-  city: string;
   email: string;
   is_admin: boolean;
 };
@@ -26,9 +23,6 @@ type MemberFormProps = {
 
 const NAME_PATTERN = "^[a-zA-ZÀ-ÿ\\-\\s'’]{2,}$";
 const PHONE_PATTERN = '^(0047|\\+47|47)?[2-9]\\d{7}$';
-const ADDRESS_PATTERN = "^[a-zA-ZÀ-ÿ\\-\\s'’]{2,}\\s?[0-9]{1,4}\\s?[a-zA-ZÀ-ÿ\\-\\s'’]{0,1}$";
-const POSTAL_CODE_PATTERN = '^[0-9]{4,4}$';
-const CITY_PATTERN = "^[a-zA-ZÀ-ÿ\\-\\s'’]{1,}$";
 const EMAIL_PATTERN = '^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$';
 
 export default function MemberForm({ member, onSubmitMember, onClose }: MemberFormProps) {
@@ -44,9 +38,6 @@ export default function MemberForm({ member, onSubmitMember, onClose }: MemberFo
       name: String(formData.get('name') ?? ''),
       surname: String(formData.get('surname') ?? ''),
       phone: String(formData.get('phone') ?? ''),
-      address: String(formData.get('address') ?? ''),
-      postcode: String(formData.get('postcode') ?? ''),
-      city: String(formData.get('city') ?? ''),
       email: String(formData.get('email') ?? ''),
       is_admin: formData.get('is_admin') === 'on',
     };
@@ -89,42 +80,12 @@ export default function MemberForm({ member, onSubmitMember, onClose }: MemberFo
     {
       id: 'phone',
       name: 'phone',
-      label: 'Telefon',
+      label: 'Telefon (valgfritt)',
       placeholder: 'Telefonnummer',
       defaultValue: member?.phone ?? '',
       pattern: PHONE_PATTERN,
       title: 'Norsk telefonnummer uten mellomrom med eller uten +47 eller 0047 foran',
-      required: true,
-    },
-    {
-      id: 'address',
-      name: 'address',
-      label: 'Adresse',
-      placeholder: 'Adresse',
-      defaultValue: member?.address ?? '',
-      pattern: ADDRESS_PATTERN,
-      title: 'Gatenavn og nummer må inneholde minst 3 bokstaver',
-      required: true,
-    },
-    {
-      id: 'postcode',
-      name: 'postcode',
-      label: 'Postnr',
-      placeholder: 'Postnummer',
-      defaultValue: member?.postcode ?? '',
-      pattern: POSTAL_CODE_PATTERN,
-      title: 'Postnummeret må være på 4 siffer',
-      required: true,
-    },
-    {
-      id: 'city',
-      name: 'city',
-      label: 'Sted',
-      placeholder: 'Sted',
-      defaultValue: member?.city ?? '',
-      pattern: CITY_PATTERN,
-      title: 'Stedet må inneholde minst 2 bokstaver',
-      required: true,
+      required: false,
     },
     {
       id: 'email',

@@ -67,6 +67,31 @@ jobs:
           VITE_SUPABASE_URL: http://localhost:54321
           VITE_SUPABASE_PUBLISHABLE_KEY: test-anon-key
 
+  # The migrations built from scratch on a plain Postgres 16 (with a stand-in for Supabase's auth
+  # and storage schemas) and the pgTAP suites run against them: RLS, the admin_session()
+  # boundary, triggers. Same runner script agents use locally; see supabase/tests/local/run.sh.
+  # Not `supabase start`: it pulls several GB of images for what these tests need.
+  db:
+    name: Database tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install pgTAP
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-16-pgtap libtap-parser-sourcehandler-pgtap-perl
+      - name: Start Postgres
+        run: |
+          sudo systemctl start postgresql
+          sudo -u postgres psql -qc "alter user postgres password 'postgres'"
+      - name: Migrate and run pgTAP
+        env:
+          PGHOST: localhost
+          PGUSER: postgres
+          PGPASSWORD: postgres
+        run: supabase/tests/local/run.sh
+
   audit:
     name: Dependency audit
     runs-on: ubuntu-latest

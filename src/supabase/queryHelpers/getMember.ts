@@ -2,17 +2,25 @@ import { supabase } from '../client';
 
 export interface Member {
   id: string;
-  supabase_id: string;
+  /** Null until the member has created an account. */
+  supabase_id: string | null;
   email: string;
-  name: string | null;
-  surname: string | null;
-  address: string | null;
-  postcode: string | null;
+  name: string;
+  surname: string;
   phone: string | null;
-  city: string | null;
   is_admin: boolean;
+  status: MemberStatus;
+  /** ISO date (yyyy-mm-dd). */
+  member_since: string;
+  disabled_at: string | null;
+  disabled_reason: string | null;
+  birth_year: number | null;
+  /** Board-only note. Never shown to the member. */
+  notes: string | null;
   created_at: string;
 }
+
+export type MemberStatus = 'active' | 'disabled';
 
 export async function getMember(supabaseId: string): Promise<Member> {
   const { data, error } = await supabase

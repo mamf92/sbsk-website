@@ -2,11 +2,8 @@ import { supabase } from '../client';
 
 export interface MemberData {
   id: string;
-  name: string | null;
-  surname: string | null;
-  address: string | null;
-  postcode: string | null;
-  city: string | null;
+  name: string;
+  surname: string;
   phone: string | null;
   email: string;
   is_admin: boolean;
@@ -18,10 +15,7 @@ export async function editMember(member: MemberData) {
     .update({
       name: member.name,
       surname: member.surname,
-      address: member.address,
-      postcode: member.postcode,
-      city: member.city,
-      phone: member.phone,
+      phone: member.phone || null,
       email: member.email,
       is_admin: member.is_admin,
     })

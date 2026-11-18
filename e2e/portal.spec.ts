@@ -79,10 +79,10 @@ test('the board portal renders real member rows in Norwegian order', async ({ pa
   const cellsFor = (surnames: string[]) =>
     surnames
       .map((surname) => MEMBERS.find((member) => member.surname === surname)!)
-      .flatMap((member) => [member.name, member.surname, member.address, member.city]);
+      .flatMap((member) => [member.name, member.surname, member.email, member.phone]);
 
   // The list opens sorted by first name: Bjørn, Silje, Trygve.
-  const cells = page.locator('p[lang="no"]');
+  const cells = page.locator('li[role="button"] p');
   await expect(cells).toHaveText(cellsFor(['Aasen', 'Ødegård', 'Dahl']));
 
   await page.getByRole('button', { name: 'Etternavn' }).click();
@@ -138,14 +138,11 @@ test('retrying after a blip re-runs the loader and shows the portal', async ({ p
   await expect(page.getByRole('heading', { level: 1, name: 'Velkommen, Ingrid!' })).toBeVisible();
 });
 
-// The board portal has a second tier the member portal does not: a session that cannot read the
-// member registry is not a login problem, so it falls back to the member portal instead of the
-// fault screen. Collapsing the two would send a signed-in member back to a login page they are
-// already past.
-test('a board portal that cannot read the registry falls back to the member portal', async ({
-  page,
-}) => {
-  await stubSupabase(page, { fail: { members: 403 } });
+// The board portal's gate (src/loaders/requireAdminSession.ts). A signed-in member is not a login
+// problem, so they fall back to the member portal with a reason; an admin who has not entered
+// their second-factor code is sent to enter it.
+test('a member who is not an admin falls back to the member portal', async ({ page }) => {
+  await stubSupabase(page, { isAdmin: false });
 
   await page.goto(BOARD_PORTAL);
 
@@ -158,11 +155,19 @@ test('a board portal that cannot read the registry falls back to the member port
   );
 });
 
-// #82's other tier: a registry failure that is *not* permission-related (an outage, say) must
-// not be mislabelled as "you're not an admin" — it is a fault like any other loader failure.
-test('a board portal registry failure that is not a permission denial is a fault, not a fallback', async ({
-  page,
-}) => {
+test('an admin who has not entered their code is asked for it', async ({ page }) => {
+  await stubSupabase(page, { aal: 'aal1', hasFactor: true });
+
+  await page.goto(BOARD_PORTAL);
+
+  await expect(page).toHaveURL(/\/to-faktor\?neste=%2Fstyreportal$/);
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Bekreft at det er deg' }),
+  ).toBeVisible();
+  await expect(page.getByRole('textbox', { name: 'Sekssifret kode' })).toBeFocused();
+});
+
+test('a board portal registry failure is a fault, not a fallback', async ({ page }) => {
   await stubSupabase(page, { fail: { members: 500 } });
 
   await page.goto(BOARD_PORTAL);

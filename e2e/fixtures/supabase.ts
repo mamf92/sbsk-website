@@ -36,10 +36,9 @@ export const AUTH_USER = {
 };
 
 /**
- * `public.profiles`, with the columns the table actually has. Note what is *not* here: no
- * `created_at`, and `id` is the table's bigint identity, so it arrives as a JSON number. The
- * `Profile` interface in src claims both otherwise. That mismatch is real and predates this
- * fixture; the fixture follows the database.
+ * `public.profiles`, with the columns the table has after 20261118180100 (no address, no
+ * is_admin). `id` is the table's bigint identity, so it arrives as a JSON number although the
+ * `Profile` interface in src says string; the fixture follows the database.
  */
 export const PROFILES = [
   {
@@ -48,12 +47,9 @@ export const PROFILES = [
     name: 'Ingrid',
     surname: 'Hetland',
     email: AUTH_USER.email,
-    address: 'Byhaugveien 3',
-    postcode: '4022',
-    city: 'Stavanger',
     bio: 'Styremedlem og turneringsansvarlig.',
     photo_url: null,
-    is_admin: true,
+    locale: 'nb',
   },
 ];
 
@@ -67,12 +63,15 @@ export const MEMBERS = [
     name: 'Trygve',
     surname: 'Dahl',
     phone: '40000001',
-    address: 'Madlaveien 12',
-    postcode: '4009',
-    city: 'Stavanger',
     email: 'trygve@example.test',
     is_admin: false,
     supabase_id: null,
+    status: 'active',
+    member_since: '2026-02-01',
+    disabled_at: null,
+    disabled_reason: null,
+    birth_year: null,
+    notes: null,
     created_at: '2026-02-01T09:00:00Z',
   },
   {
@@ -80,12 +79,15 @@ export const MEMBERS = [
     name: 'Silje',
     surname: 'Ødegård',
     phone: '40000002',
-    address: 'Tastagata 5',
-    postcode: '4007',
-    city: 'Stavanger',
     email: 'silje@example.test',
     is_admin: false,
     supabase_id: null,
+    status: 'active',
+    member_since: '2026-02-01',
+    disabled_at: null,
+    disabled_reason: null,
+    birth_year: null,
+    notes: null,
     created_at: '2026-02-02T09:00:00Z',
   },
   {
@@ -93,12 +95,15 @@ export const MEMBERS = [
     name: 'Bjørn',
     surname: 'Aasen',
     phone: '40000003',
-    address: 'Hillevågsveien 9',
-    postcode: '4016',
-    city: 'Stavanger',
     email: 'bjorn@example.test',
     is_admin: true,
     supabase_id: null,
+    status: 'active',
+    member_since: '2026-02-01',
+    disabled_at: null,
+    disabled_reason: null,
+    birth_year: null,
+    notes: null,
     created_at: '2026-02-03T09:00:00Z',
   },
 ];
@@ -116,6 +121,13 @@ export interface SupabaseStubOptions {
   fail?: Record<string, number>;
   /** What the `member_is_admin()` RPC reports; the header probes it on every load. */
   isAdmin?: boolean;
+  /**
+   * The session's assurance level, carried in the JWT's `aal` claim, and whether the user has
+   * a verified TOTP factor. supabase-js computes `getAuthenticatorAssuranceLevel()` from these
+   * two without a request. Defaults to an admin who has entered their code.
+   */
+  aal?: 'aal1' | 'aal2';
+  hasFactor?: boolean;
 }
 
 /** Thrown when the app asks for something the stub cannot honestly answer. */
@@ -129,7 +141,7 @@ function base64url(value: object): string {
  * A structurally valid JWT with a real `exp`. Nothing verifies the signature — the server that
  * would is stubbed — but supabase-js decodes the payload, so the claims have to be there.
  */
-function accessToken(expiresAt: number): string {
+function accessToken(expiresAt: number, aal: 'aal1' | 'aal2'): string {
   const header = base64url({ alg: 'HS256', typ: 'JWT' });
   const payload = base64url({
     sub: AUTH_USER.id,
@@ -139,6 +151,8 @@ function accessToken(expiresAt: number): string {
     iss: `${SUPABASE_URL}/auth/v1`,
     iat: expiresAt - 3600,
     exp: expiresAt,
+    aal,
+    amr: aal === 'aal2' ? [{ method: 'totp', timestamp: expiresAt - 3600 }] : [],
   });
   return `${header}.${payload}.e2e-signature-is-never-verified`;
 }
@@ -202,7 +216,25 @@ export async function stubSupabase(page: Page, options: SupabaseStubOptions = {}
     members = MEMBERS,
     fail = {},
     isAdmin = true,
+    aal = 'aal2',
+    hasFactor = aal === 'aal2',
   } = options;
+
+  const user = {
+    ...AUTH_USER,
+    factors: hasFactor
+      ? [
+          {
+            id: '22222222-2222-4222-8222-222222222222',
+            friendly_name: 'Autentiseringsapp 1',
+            factor_type: 'totp',
+            status: 'verified',
+            created_at: '2026-01-01T09:00:00Z',
+            updated_at: '2026-01-01T09:00:00Z',
+          },
+        ]
+      : [],
+  };
 
   const tables: Record<string, Row[]> = { profiles, members };
 
@@ -281,31 +313,31 @@ export async function stubSupabase(page: Page, options: SupabaseStubOptions = {}
     if (authStatus !== 200) {
       return json(route, authStatus, { message: 'invalid claim: missing sub claim' });
     }
-    return json(route, 200, AUTH_USER);
+    return json(route, 200, user);
   });
 
   if (!signedIn) return;
 
   const expiresAt = Math.floor(Date.now() / 1000) + 3600;
   const session = {
-    access_token: accessToken(expiresAt),
+    access_token: accessToken(expiresAt, aal),
     token_type: 'bearer',
     expires_in: 3600,
     expires_at: expiresAt,
     refresh_token: 'e2e-refresh-token',
-    user: AUTH_USER,
+    user,
   };
 
   await page.addInitScript(
-    ({ key, session: stored, profile }) => {
+    ({ key, session: stored, profile, admin }) => {
       window.localStorage.setItem(key, JSON.stringify(stored));
       // The app keeps its own mirror of the session for the header (see authProvider). A real
       // login writes these three, so a seeded session that omits them would render a signed-out
       // header over a signed-in page.
       window.localStorage.setItem('authToken', stored.access_token);
       window.localStorage.setItem('userData', JSON.stringify(profile));
-      window.localStorage.setItem('isAdmin', JSON.stringify(Boolean(profile?.is_admin)));
+      window.localStorage.setItem('isAdmin', JSON.stringify(admin));
     },
-    { key: AUTH_STORAGE_KEY, session, profile: profiles[0] },
+    { key: AUTH_STORAGE_KEY, session, profile: profiles[0], admin: isAdmin },
   );
 }
