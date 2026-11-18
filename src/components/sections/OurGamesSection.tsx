@@ -4,7 +4,6 @@ import { Chip } from '../ui/Chip';
 import { Input } from '../ui/Input';
 import { Dialog } from '../ui/Dialog';
 import EmptyState from '../ui/EmptyState';
-import { Reveal } from '../ui/Reveal';
 import { GameCard, type BuyInfo } from '../ui/GameCard';
 import { HeroImage } from '../ui/HeroImage';
 import { HeroLinks, type HeroLink } from '../ui/HeroLinks';
@@ -169,26 +168,27 @@ export default function OurGamesSection({ gamesHero, games }: OurGamesProps) {
           />
         ) : (
           <div className="grid grid-cols-[repeat(auto-fill,minmax(290px,1fr))] items-stretch gap-5">
-            {filteredGames.map((game, index) => (
-              <Reveal key={game._id} index={index} className="flex">
-                <GameCard
-                  title={game.title}
-                  genre={game.genre}
-                  description={game.description}
-                  image={game.image}
-                  difficulty={game.difficulty}
-                  time={game.time}
-                  players={game.players}
-                  buyUrl={safeExternalUrl(game.buyUrl) ?? SPONSOR.url}
-                  bggUrl={game.bggUrl}
-                  videoUrl={game.videoUrl}
-                  sponsor={SPONSOR.name}
-                  discountPercent={SPONSOR.discountPercent}
-                  discountCode={SPONSOR.discountCode}
-                  member={isAuthenticated}
-                  onBuy={handleBuy}
-                />
-              </Reveal>
+            {/* No scroll reveal here (it was a `Reveal` per card): a grid of seventeen cards
+                arriving one by one read as the page still loading, not as polish. */}
+            {filteredGames.map((game) => (
+              <GameCard
+                key={game._id}
+                title={game.title}
+                genre={game.genre}
+                description={game.description}
+                image={game.image}
+                difficulty={game.difficulty}
+                time={game.time}
+                players={game.players}
+                buyUrl={safeExternalUrl(game.buyUrl) ?? SPONSOR.url}
+                bggUrl={game.bggUrl}
+                videoUrl={game.videoUrl}
+                sponsor={SPONSOR.name}
+                discountPercent={SPONSOR.discountPercent}
+                discountCode={SPONSOR.discountCode}
+                member={isAuthenticated}
+                onBuy={handleBuy}
+              />
             ))}
           </div>
         )}
@@ -234,9 +234,9 @@ function GamesHero({ gamesHero }: { gamesHero?: GamesHeroTypes | null }) {
     'Sjekk ut spillene i samlingen vår. Som medlem får du rabatt hos vår samarbeidspartner Outland.';
   return (
     <div className="relative flex h-[calc(62vh)] flex-col items-center justify-center p-4">
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 overflow-clip">
         {/* LCP element on /våre-spill, the same way the home hero is on / (#222). */}
-        <HeroImage image={gamesHero?.image} priority />
+        <HeroImage image={gamesHero?.image} priority className="hero-drift" />
       </div>
       <div className="absolute inset-0 flex h-[calc(62vh)] flex-col justify-center bg-white/50 p-4 dark:bg-black/50">
         <div className="max-w-content mx-auto flex w-full flex-col items-start gap-6">

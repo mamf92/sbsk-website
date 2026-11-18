@@ -283,6 +283,12 @@ lift-chip   chips — hover onto shadow-1, press onto no shadow, and no lift whe
 lift-card   cards — hover 3px onto shadow-3, and stay raised on shadow-2 while expanded
 ```
 
+**Hover is for a real pointer.** `hover` is redefined in `src/index.css` to
+`(hover: hover) and (pointer: fine)`, and the lift utilities use `@variant hover`, so every
+`hover:` class and every lift skips touchscreens. On a phone `:hover` sticks to whatever was
+last tapped, which made cards jump 3px and stay there. Touch keeps the press (`:active`). Never
+write a bare `:hover` selector; nest it in `@variant hover` instead.
+
 Each owns the hover offset, the press offset, the shadows, and the colour transition — on a
 single `transition` declaration. That last part matters: an element takes one of these
 **instead of** `transition-colors` or `transition`, never both, because the last
@@ -465,7 +471,18 @@ colour swaps and shadows — "a shadow is not motion" is the rule the `lift-*` u
 already built on, and it holds everywhere. A reduced branch is therefore almost never
 `transition: none` on its own; it states the resting result.
 
+## The hero drift
+
+`hero-drift` on a hero's `HeroImage` lets the photo drift down at a quarter of the scroll speed
+over the first screen. It is a CSS scroll-driven animation (`animation-timeline: scroll()`), so
+it follows the finger on a phone the same way it follows a wheel, runs off the main thread, and
+moves only `translate`. Its container needs `overflow-clip`. No support, or reduced motion,
+means the still photo.
+
 ## The scroll reveal
+
+Not on `/våre-spill`: a seventeen-card grid arriving card by card read as the page still
+loading.
 
 `src/components/ui/Reveal.tsx` is the one piece of motion here that a pointer did not ask for,
 which is why it is assembled entirely out of what the language already says. An item arrives

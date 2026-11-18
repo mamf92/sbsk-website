@@ -40,9 +40,9 @@ export default function HomeHero({
         'relative flex h-[calc(80vh)] flex-col items-center justify-center p-4 text-center'
       }
     >
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 overflow-clip">
         {/* The home hero is the LCP element on the route every visitor lands on first (#222). */}
-        <HeroImage image={image} priority />
+        <HeroImage image={image} priority className="hero-drift" />
       </div>
       <div className="absolute inset-0 flex h-[calc(80vh)] flex-col items-center justify-center bg-white/50 p-4 text-center dark:bg-black/50">
         <div className="flex flex-1 flex-col justify-center gap-12 md:w-[calc(60%)]">

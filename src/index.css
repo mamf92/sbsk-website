@@ -18,6 +18,21 @@
 @custom-variant motion-reduce (&:where(.reduce-motion, .reduce-motion *));
 @custom-variant motion-safe (&:not(:where(.reduce-motion, .reduce-motion *)));
 
+/* Hover belongs to a real pointer. On a touchscreen `:hover` sticks to whatever was last
+   tapped, so a lift fired on tap and stayed there: the card jumped 3px, its neighbour did not,
+   and the page read as shifting under the finger. Tailwind's own `hover:` already checks
+   `(hover: hover)`, but some Android browsers report that for a touchscreen, so `pointer: fine`
+   is added, and redefining the variant (rather than adding a second name) means every
+   `hover:` class, `group-hover:` and the `@variant hover` blocks in the lift utilities below
+   all read the same condition. Touch keeps `:active` — the press is its feedback. */
+@custom-variant hover {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      @slot;
+    }
+  }
+}
+
 @font-face {
   font-family: 'Noto Sans';
   src: url('/fonts/NotoSans-Regular.ttf') format('truetype');
@@ -363,8 +378,10 @@
   display: block;
   transition: transform var(--transition-snappy);
 }
-.sbsk-dice:hover svg {
-  transform: translateY(-2px) rotate(-8deg);
+@media (hover: hover) and (pointer: fine) {
+  .sbsk-dice:hover svg {
+    transform: translateY(-2px) rotate(-8deg);
+  }
 }
 .sbsk-dice:active svg {
   transform: translateY(0) rotate(0);
@@ -498,7 +515,7 @@
     border-color var(--transition-fast),
     color var(--transition-fast);
 
-  &:hover {
+  @variant hover {
     transform: var(--lift-hover);
     box-shadow: var(--shadow-2);
   }
@@ -524,8 +541,11 @@
       border-color var(--transition-fast),
       color var(--transition-fast);
 
-    &:hover,
     &:active {
+      transform: none;
+    }
+
+    @variant hover {
       transform: none;
     }
   }
@@ -555,7 +575,7 @@
 
   /* Below the expanded rule on purpose — equal specificity, last one wins, so hovering an
      already-open card still lifts it the rest of the way. */
-  &:hover {
+  @variant hover {
     transform: var(--lift-card-hover);
     box-shadow: var(--shadow-3);
   }
@@ -564,7 +584,7 @@
   @variant motion-reduce {
     transition: box-shadow var(--transition-fast);
 
-    &:hover {
+    @variant hover {
       transform: none;
     }
   }
@@ -582,14 +602,16 @@
     border-color var(--transition-fast),
     color var(--transition-fast);
 
-  &:hover {
+  @variant hover {
     transform: var(--lift-hover);
     box-shadow: var(--shadow-1);
   }
 
-  &[aria-pressed='true']:hover {
-    transform: none;
-    box-shadow: none;
+  &[aria-pressed='true'] {
+    @variant hover {
+      transform: none;
+      box-shadow: none;
+    }
   }
 
   /* `:active:active` is (0,3,0), matching the `aria-pressed`/`:hover` rule above rather than
@@ -616,8 +638,11 @@
       border-color var(--transition-fast),
       color var(--transition-fast);
 
-    &:hover,
     &:active {
+      transform: none;
+    }
+
+    @variant hover {
       transform: none;
     }
   }
@@ -664,6 +689,33 @@
   box-shadow: none;
   transition: none;
   transition-delay: 0s;
+}
+
+/* The hero photo drifts down at a quarter of the scroll speed as the page scrolls away from it,
+   so the band reads as a window onto something behind the page rather than a flat sticker.
+
+   It is a CSS scroll-driven animation (`animation-timeline: scroll()`), not a scroll listener:
+   the browser runs it on the compositor, it is tied to the finger rather than to a clock, so it
+   works the same on a phone as with a mouse, and there is no JavaScript to make it feel late.
+   Only `translate` moves, so nothing around it reflows. The image's container must clip
+   (`overflow-clip`), or the drifted photo would paint over the section below.
+
+   No `scale()` (the language bans it), so the photo travels rather than zooms. Browsers without
+   scroll timelines get the still photo they always had, and reduced motion gets it too. */
+@utility hero-drift {
+  @supports (animation-timeline: scroll()) {
+    @variant motion-safe {
+      animation: sbsk-hero-drift linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 100svh;
+    }
+  }
+}
+
+@keyframes sbsk-hero-drift {
+  to {
+    translate: 0 25%;
+  }
 }
 
 /* The shadow colour is a property of the *surface*, not of the theme.

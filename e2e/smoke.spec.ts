@@ -272,14 +272,15 @@ test('reduced motion keeps the shadow and drops only the travel', async ({ page 
  * The scroll reveal starts items at `opacity: 0`, so anything that fails to reveal is content
  * the visitor simply never sees. The first build used an IntersectionObserver and had exactly
  * that bug: an observer reports threshold crossings, so an item that goes from below the fold
- * to above it inside one frame never reports anything. One Cmd+End on this grid left twelve of
- * seventeen cards blank for the rest of the session.
+ * to above it inside one frame never reports anything. One Cmd+End on the games grid left twelve
+ * of seventeen cards blank for the rest of the session. The games grid no longer reveals, so this
+ * runs on the board list on /om-oss, which renders from its fallback with no backend.
  *
  * This is the assertion that has to hold no matter how the reveal is implemented: after
  * scrolling, nothing is invisible.
  */
 test('a single jump to the bottom leaves no revealed content invisible', async ({ page }) => {
-  await page.goto('/våre-spill');
+  await page.goto('/om-oss');
   await expect(page.locator('.sbsk-reveal').first()).toBeAttached();
 
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
@@ -297,7 +298,7 @@ test('reduced motion shows revealed content straight away, with no reveal to wai
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/våre-spill');
+  await page.goto('/om-oss');
 
   const first = page.locator('.sbsk-reveal').first();
   await expect(first).toBeAttached();
@@ -305,6 +306,36 @@ test('reduced motion shows revealed content straight away, with no reveal to wai
   // Not a shortened transition — the finished state, before any scroll at all.
   await expect.poll(() => first.evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
   expect(await first.evaluate((el) => getComputedStyle(el).transitionDuration)).toBe('0s');
+});
+
+// Cards arriving one by one made the games grid feel like it was still loading.
+test('the games grid is on screen at once, with no scroll reveal', async ({ page }) => {
+  await page.goto('/våre-spill');
+  await expect(page.getByRole('article').first()).toBeVisible();
+  await expect(page.locator('.sbsk-reveal')).toHaveCount(0);
+});
+
+// On a touchscreen `:hover` sticks to the last thing tapped, so a lift fired on tap and left the
+// element offset. Hover effects are for a fine pointer only; see the `hover` variant in index.css.
+// The desktop half proves the touch half is not passing for some other reason.
+const transformAfterHover = async (page: Page) => {
+  await page.goto('/våre-spill');
+  const chip = page.getByRole('button', { name: 'Lett' });
+  await chip.hover();
+  await page.waitForTimeout(400);
+  return chip.evaluate((el) => getComputedStyle(el).transform);
+};
+
+test('a chip still lifts under a mouse', async ({ page }) => {
+  expect(await transformAfterHover(page)).not.toBe('none');
+});
+
+test.describe('on a touchscreen', () => {
+  test.use({ hasTouch: true, isMobile: true, viewport: { width: 390, height: 844 } });
+
+  test('a chip does not lift on hover', async ({ page }) => {
+    expect(await transformAfterHover(page)).toBe('none');
+  });
 });
 
 test('the hero preload names a file that exists, and the page picks a modern format', async ({
