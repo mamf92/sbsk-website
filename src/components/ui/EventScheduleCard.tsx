@@ -70,13 +70,21 @@ export function EventScheduleCard({
 
   return (
     <div
-      className={['flex border border-black dark:border-white', styles.surface, className]
+      // A grid rather than a row so `children` can drop to a full-width line under the date block
+      // on a phone: squeezed between the two fixed side columns, a sign-up button's label (which
+      // never wraps) overran the calendar button at 320px.
+      className={[
+        'grid grid-cols-[auto_minmax(0,1fr)_auto] border border-black dark:border-white',
+        styles.surface,
+        className,
+      ]
         .filter(Boolean)
         .join(' ')}
     >
       <div
         className={[
           'flex flex-none flex-col items-center justify-center p-1',
+          children ? 'sm:row-span-2' : '',
           sizes.block,
           styles.accent,
         ].join(' ')}
@@ -97,7 +105,6 @@ export function EventScheduleCard({
             {description}
           </p>
         )}
-        {children && <div className="mt-2 flex flex-col items-start gap-2">{children}</div>}
       </div>
 
       <button
@@ -107,10 +114,16 @@ export function EventScheduleCard({
         // `lift`, like every other pressable surface — this was the one interactive control in
         // the system that did not respond to the pointer at all. It owns the transition outright,
         // so no `transition-*` utility may join it here.
-        className="lift focus-visible:outline-focus-ring flex w-14 flex-none cursor-pointer items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        className={`lift focus-visible:outline-focus-ring col-start-3 row-start-1 flex w-14 flex-none cursor-pointer items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${children ? 'sm:row-span-2' : ''}`}
       >
         <CalendarAddIcon className="h-5 w-5 fill-current" />
       </button>
+
+      {children && (
+        <div className="col-span-3 flex flex-col items-start gap-2 px-4 pb-4 sm:col-span-1 sm:col-start-2 sm:-mt-2">
+          {children}
+        </div>
+      )}
     </div>
   );
 }
