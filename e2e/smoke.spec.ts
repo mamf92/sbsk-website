@@ -192,12 +192,10 @@ test('theme toggle flips the dark class and survives a reload', async ({ page })
   const html = page.locator('html');
   const startedDark = await html.evaluate((el) => el.classList.contains('dark'));
 
-  // The accessible name leads with the visible "DM"/"LM" — WCAG 2.5.3 Label in Name, see the
-  // comment on the toggle in Header.tsx (#222).
-  await page
-    .getByRole('button', { name: /^(DM|LM) – bytt til (lys|mørk) modus$/ })
-    .first()
-    .click();
+  // Icon only, with a stable name and the state in aria-pressed — see Header.tsx.
+  const toggle = page.getByRole('button', { name: 'Mørk modus', exact: true }).first();
+  await expect(toggle).toHaveAttribute('aria-pressed', startedDark ? 'true' : 'false');
+  await toggle.click();
   await expect(html).toHaveClass(startedDark ? /^(?!.*\bdark\b).*$/ : /\bdark\b/);
 
   await page.reload();

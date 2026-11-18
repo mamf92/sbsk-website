@@ -10,10 +10,9 @@ const TARGET: Record<Locale, { next: Locale; label: string; ariaLabel: string }>
 
 /**
  * Switches between Norwegian and English. Sits beside the theme toggle and wears the same
- * `toggle` button. Controlled: the caller owns the locale (`useLocale()` in the header).
+ * `toggle` fill. Controlled: the caller owns the locale (`useLocale()` in the header).
  *
- * The accessible name starts with the visible text (WCAG 2.5.3 Label in Name), as the theme
- * toggle's does.
+ * The accessible name starts with the visible text (WCAG 2.5.3 Label in Name).
  */
 export function LanguageToggle({
   locale,

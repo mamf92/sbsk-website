@@ -112,10 +112,10 @@ export default function Footer() {
           </div>
           {/* The motion preference lives here rather than beside the theme toggle in the
               header for two reasons. The header's right cluster already carries three controls
-              at 320px, and — the deciding one — WCAG 2.5.3 forces a control there into a
-              two-letter abbreviation the accessible name then has to start with, which is what
-              `Header.tsx`'s LM/DM comment is about. A footer control can say what it does, so
-              its visible label and its accessible name are simply the same string.
+              at 320px, and — the deciding one — a control there has room only for an icon, and
+              motion has no icon anyone would read without a label. A footer control can say
+              what it does, so its visible label and its accessible name are simply the same
+              string.
 
               `secondary` rather than `toggle`: the footer's inner panel is `darkestblue` in
               both themes, and `toggle`'s own fill is `darkestblue` in light mode — the button

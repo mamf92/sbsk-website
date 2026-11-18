@@ -89,6 +89,9 @@ function EventPage({ event }: { event: CalendarEventTypes }) {
     ...(place
       ? [{ id: 'where', label: t('facts.where'), value: <span lang={nbLang}>{place}</span> }]
       : []),
+    ...(event.venue?.doorsOpen
+      ? [{ id: 'doors', label: t('facts.doors'), value: event.venue.doorsOpen }]
+      : []),
     ...(price
       ? [
           {
@@ -135,8 +138,8 @@ function EventPage({ event }: { event: CalendarEventTypes }) {
 
   return (
     <div className="dark:bg-darkestblue min-h-[60vh] bg-white pb-16 dark:text-white">
-      <div className="max-w-shell mx-auto flex w-full flex-col gap-8 px-3 pt-6 sm:px-6">
-        <RouterLink to="/kalender" className={`${linkClassesInherit} w-fit underline`}>
+      <div className="max-w-shell gap-stack mx-auto flex w-full flex-col px-3 pt-4 sm:px-6">
+        <RouterLink to="/kalender" className={`${linkClassesInherit} mb-2 w-fit underline`}>
           ← {t('back')}
         </RouterLink>
 
@@ -173,7 +176,7 @@ function EventPage({ event }: { event: CalendarEventTypes }) {
           )}
 
           {hasSchedule && (
-            <div className="flex flex-col gap-4">
+            <div className="gap-stack flex flex-col">
               {event.schedule!.map((entry) => {
                 const entryStart = new Date(entry.startTime);
                 const entryEnd = new Date(entry.endTime);
@@ -203,7 +206,9 @@ function EventPage({ event }: { event: CalendarEventTypes }) {
           )}
 
           {(hasPricing || hasProgram) && (
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+            <div
+              className={`gap-stack grid grid-cols-1 ${hasPricing && hasProgram ? 'md:grid-cols-2' : ''}`}
+            >
               {hasPricing && (
                 <Panel title={t('pricing')}>
                   <div className="sbsk-rt" lang={nbLang}>
@@ -221,11 +226,11 @@ function EventPage({ event }: { event: CalendarEventTypes }) {
             </div>
           )}
 
-          <VenueCard venue={event.venue} />
+          <VenueCard venue={event.venue} inKeyFacts />
 
-          <SponsorGrid sponsors={sponsors} />
+          <SponsorGrid sponsors={sponsors} className="pt-4" />
 
-          <RelatedPosts posts={event.relatedPosts} className="print:hidden" />
+          <RelatedPosts posts={event.relatedPosts} className="pt-4 print:hidden" />
         </EventPageLayout>
       </div>
     </div>
