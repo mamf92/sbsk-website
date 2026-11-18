@@ -71,7 +71,6 @@ export const MEMBERS = [
     disabled_at: null,
     disabled_reason: null,
     birth_year: null,
-    notes: null,
     created_at: '2026-02-01T09:00:00Z',
   },
   {
@@ -87,7 +86,6 @@ export const MEMBERS = [
     disabled_at: null,
     disabled_reason: null,
     birth_year: null,
-    notes: null,
     created_at: '2026-02-02T09:00:00Z',
   },
   {
@@ -103,7 +101,6 @@ export const MEMBERS = [
     disabled_at: null,
     disabled_reason: null,
     birth_year: null,
-    notes: null,
     created_at: '2026-02-03T09:00:00Z',
   },
 ];

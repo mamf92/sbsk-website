@@ -121,7 +121,9 @@ alter table public.members
   add column disabled_at timestamptz,
   add column disabled_reason text check (char_length(disabled_reason) <= 500),
   add column birth_year smallint check (birth_year between 1900 and extract(year from now())::int),
-  add column notes text check (char_length(notes) <= 2000),      -- admin-only note
+  -- (no `notes` column: board-only notes live in `member_notes`, readable only in an admin
+  -- session, because a member can read their own row and RLS cannot hide a column.
+  -- See 20261118190000.)
   add constraint members_email_unique unique (email),
   add constraint members_supabase_id_unique unique (supabase_id),
   add constraint members_email_format check (email ~ '^[^\s@]+@[^\s@]+\.[^\s@]+$'),
