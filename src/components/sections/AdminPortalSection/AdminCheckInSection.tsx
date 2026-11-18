@@ -50,8 +50,14 @@ export default function AdminCheckInSection({
   const [guests, setGuests] = useState(initialGuests);
   const [query, setQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
-  // Guest taps are written in order, so a slow first write cannot land after a second one.
+  // Members with a write in flight. Their button is disabled until it settles, so an undo
+  // cannot race the check-in it undoes.
+  const [pending, setPending] = useState<ReadonlySet<string>>(() => new Set());
+  // Guest taps are written in order, each with the absolute count, so the last write wins. Only
+  // when the last queued write fails does the counter fall back to the last saved value.
   const guestWrites = useRef<Promise<void>>(Promise.resolve());
+  const guestsQueued = useRef(0);
+  const guestsSaved = useRef(initialGuests);
 
   const signedUp = useMemo(
     () => new Set(signups.map((s) => s.memberId).filter((id): id is string => Boolean(id))),
@@ -67,7 +73,15 @@ export default function AdminCheckInSection({
   }, [members, query, signedUp]);
 
   const toggle = async (member: Member) => {
+    if (pending.has(member.id)) return;
     const wasIn = checkedIn.has(member.id);
+    const setBusy = (busy: boolean) =>
+      setPending((prev) => {
+        const next = new Set(prev);
+        if (busy) next.add(member.id);
+        else next.delete(member.id);
+        return next;
+      });
     const flip = (on: boolean) =>
       setCheckedIn((prev) => {
         const next = new Set(prev);
@@ -77,6 +91,7 @@ export default function AdminCheckInSection({
       });
 
     setError(null);
+    setBusy(true);
     flip(!wasIn);
     try {
       if (wasIn) await undoCheckIn(target.id, member.id);
@@ -86,6 +101,8 @@ export default function AdminCheckInSection({
       setError(
         `Kunne ikke ${wasIn ? 'angre innsjekken for' : 'sjekke inn'} ${member.name}. Sjekk nettet og prøv igjen.`,
       );
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -95,12 +112,21 @@ export default function AdminCheckInSection({
     if (after === before) return;
     setError(null);
     setGuests(after);
-    guestWrites.current = guestWrites.current.then(() =>
-      setGuestCount(target, after).catch(() => {
-        setGuests(before);
-        setError('Kunne ikke lagre antall gjester. Prøv igjen.');
-      }),
-    );
+    guestsQueued.current += 1;
+    guestWrites.current = guestWrites.current.then(async () => {
+      try {
+        await setGuestCount(target, after);
+        guestsSaved.current = after;
+      } catch {
+        // A later queued write still carries the newest count; only the last one decides.
+        if (guestsQueued.current === 1) {
+          setGuests(guestsSaved.current);
+          setError('Kunne ikke lagre antall gjester. Prøv igjen.');
+        }
+      } finally {
+        guestsQueued.current -= 1;
+      }
+    });
   };
 
   return (
@@ -190,6 +216,7 @@ export default function AdminCheckInSection({
                   variant={isIn ? 'secondary' : 'primary'}
                   size="md"
                   aria-label={isIn ? `Angre innsjekk for ${fullName}` : `Sjekk inn ${fullName}`}
+                  disabled={pending.has(member.id)}
                   onClick={() => void toggle(member)}
                   className="flex-none"
                 >

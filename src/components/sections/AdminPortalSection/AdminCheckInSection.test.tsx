@@ -102,6 +102,21 @@ describe('AdminCheckInSection', () => {
     expect(screen.getByRole('button', { name: 'Sjekk inn Anna Berg' })).toBeVisible();
   });
 
+  it('locks a member while their check-in is saving, so an undo cannot race it', async () => {
+    let finish: () => void = () => {};
+    checkInMember.mockReturnValueOnce(new Promise<void>((resolve) => (finish = resolve)));
+    const user = userEvent.setup();
+    renderSection();
+
+    await user.click(screen.getByRole('button', { name: 'Sjekk inn Anna Berg' }));
+    const undo = screen.getByRole('button', { name: 'Angre innsjekk for Anna Berg' });
+    expect(undo).toBeDisabled();
+
+    finish();
+    await vi.waitFor(() => expect(undo).toBeEnabled());
+    expect(undoCheckIn).not.toHaveBeenCalled();
+  });
+
   it('undoes a check-in', async () => {
     const user = userEvent.setup();
     renderSection({ checkedIn: ['ola'] });
@@ -123,6 +138,39 @@ describe('AdminCheckInSection', () => {
     expect(screen.getByRole('button', { name: 'Én gjest færre' })).toBeDisabled();
     await vi.waitFor(() => expect(setGuestCount).toHaveBeenCalledTimes(3));
     expect(setGuestCount.mock.calls.map((call) => call[1])).toEqual([2, 1, 0]);
+  });
+
+  it('keeps the newest guest count when an earlier queued write fails', async () => {
+    let failFirst: () => void = () => {};
+    setGuestCount
+      .mockReturnValueOnce(
+        new Promise<void>((_, reject) => (failFirst = () => reject(new Error('offline')))),
+      )
+      .mockResolvedValueOnce(undefined);
+    const user = userEvent.setup();
+    renderSection();
+
+    await user.click(screen.getByRole('button', { name: 'Én gjest til' }));
+    await user.click(screen.getByRole('button', { name: 'Én gjest til' }));
+    failFirst();
+
+    await vi.waitFor(() => expect(setGuestCount).toHaveBeenCalledTimes(2));
+    expect(setGuestCount.mock.calls[1][1]).toBe(2);
+    expect(screen.getByText('Gjester').previousSibling).toHaveTextContent('2');
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('falls back to the last saved guest count when the last write fails', async () => {
+    setGuestCount.mockResolvedValueOnce(undefined).mockRejectedValueOnce(new Error('offline'));
+    const user = userEvent.setup();
+    renderSection({ guests: 3 });
+
+    await user.click(screen.getByRole('button', { name: 'Én gjest til' }));
+    await vi.waitFor(() => expect(setGuestCount).toHaveBeenCalledTimes(1));
+    await user.click(screen.getByRole('button', { name: 'Én gjest til' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Kunne ikke lagre antall gjester');
+    expect(screen.getByText('Gjester').previousSibling).toHaveTextContent('4');
   });
 
   it('suggests counting a non-member as a guest when search finds nobody', async () => {

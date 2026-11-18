@@ -117,7 +117,8 @@ describe('AdminMembersSection', () => {
   });
 
   it('explains the last-admin refusal when deactivating', async () => {
-    setMemberStatus.mockRejectedValueOnce(new Error('last_admin'));
+    // What supabase-js really rejects with: a plain PostgrestError object, not an Error.
+    setMemberStatus.mockRejectedValueOnce({ code: 'P0001', message: 'last_admin', details: null });
     const user = userEvent.setup();
     renderAt();
 

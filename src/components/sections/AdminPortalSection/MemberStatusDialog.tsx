@@ -13,7 +13,11 @@ type MemberStatusDialogProps = {
 
 /** Postgres raises `last_admin` when the change would leave the club without an active admin. */
 function messageFor(error: unknown): string {
-  const text = error instanceof Error ? error.message : String(error ?? '');
+  // supabase-js returns a plain PostgrestError object, not an Error instance.
+  const text =
+    typeof error === 'object' && error !== null && 'message' in error
+      ? String((error as { message: unknown }).message)
+      : String(error ?? '');
   if (text.includes('last_admin')) {
     return 'Klubben må ha minst én aktiv administrator. Gjør en annen til administrator først.';
   }
