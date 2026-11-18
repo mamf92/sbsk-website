@@ -1,5 +1,10 @@
 import { expect, test, type Page } from '@playwright/test';
-import { stubSanityEmpty } from './fixtures/sanity';
+import {
+  FESTIVAL_BGM,
+  stubSanityEmpty,
+  stubSanityWithContent,
+  UPCOMING_EVENT,
+} from './fixtures/sanity';
 import { MEMBERS, stubSupabase } from './fixtures/supabase';
 
 // The two portal routes, in a real browser, with a real session.
@@ -66,34 +71,81 @@ test('the member portal renders the signed-in member profile', async ({ page }) 
 // #162 closed this hole for Sanity and left it open for Supabase: `getMembers()` was stubbed `[]`,
 // so the list body never ran. An empty list renders nothing and cannot throw — which is exactly
 // how #160 shipped a page that crashed on every real row while CI stayed green.
-test('the board portal renders real member rows in Norwegian order', async ({ page }) => {
+test('the board portal opens on the overview, with the register summarised', async ({ page }) => {
   const errors = collectPageErrors(page);
+  // Real content, so the festival's localised title reaches the events panel.
+  await stubSanityWithContent(page);
   await stubSupabase(page);
 
   await page.goto(BOARD_PORTAL);
 
-  await expect(page.getByRole('heading', { level: 1, name: 'Velkommen, Ingrid!' })).toBeVisible();
-  await expect(page.getByRole('heading', { level: 2, name: 'Medlemsliste' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Hei, Ingrid!' })).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Styreportal' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Oversikt' })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
+  const events = page.getByRole('region', { name: 'Kommende arrangementer' });
+  await expect(events.getByText(FESTIVAL_BGM.title.nb).first()).toBeVisible();
+  await expect(events.getByText(UPCOMING_EVENT.title).first()).toBeVisible();
+  // Three active members, one of whom (Trygve) has paid this season.
+  const summary = page.getByRole('region', { name: 'Medlemmer' });
+  await expect(summary.getByRole('link', { name: /^3\s*Aktive$/ })).toBeVisible();
+  await expect(summary.getByRole('link', { name: /^2\s*Ikke betalt/ })).toBeVisible();
+  await expect(summary.getByRole('link', { name: 'Send betalingspåminnelse (2)' })).toBeVisible();
+  await expect(page.locator('main')).toHaveCount(1);
+  await expect(page.locator('h1')).toHaveCount(1);
+  expect(errors, `page threw: ${errors.join(', ')}`).toEqual([]);
+});
 
-  /** One row is four cells; asserting all of them catches a column the query stopped returning. */
-  const cellsFor = (surnames: string[]) =>
-    surnames
-      .map((surname) => MEMBERS.find((member) => member.surname === surname)!)
-      .flatMap((member) => [member.name, member.surname, member.email, member.phone]);
+test('the members tab renders real rows in Norwegian order, filtered from the URL', async ({
+  page,
+}) => {
+  const errors = collectPageErrors(page);
+  await stubSupabase(page);
 
-  // The list opens sorted by first name: Bjørn, Silje, Trygve.
-  const cells = page.locator('li[role="button"] p');
-  await expect(cells).toHaveText(cellsFor(['Aasen', 'Ødegård', 'Dahl']));
+  await page.goto(`${BOARD_PORTAL}/medlemmer`);
 
-  await page.getByRole('button', { name: 'Etternavn' }).click();
-  // Å last, and "Aa" collated as "Å" — so Aasen sorts *after* Ødegård, and the order is not the
-  // one above. There is a unit test on the comparator; this is what proves the rendered list uses
-  // it, over rows that came out of a query rather than out of a component's props.
-  await expect(cells).toHaveText(cellsFor(['Dahl', 'Ødegård', 'Aasen']));
+  const rows = page.getByRole('list', { name: 'Medlemmer' }).getByRole('listitem');
+  // By first name, Norwegian collation: Bjørn, Silje, Trygve. Every column the query returns is
+  // on the row, so a column it stops returning shows up here.
+  await expect(rows).toHaveCount(3);
+  for (const [index, surname] of ['Aasen', 'Ødegård', 'Dahl'].entries()) {
+    const member = MEMBERS.find((m) => m.surname === surname)!;
+    const row = rows.nth(index);
+    await expect(row).toHaveAccessibleName(`${member.name} ${member.surname}`);
+    await expect(row).toContainText(member.email);
+    await expect(row).toContainText(member.phone);
+  }
+  await expect(rows.nth(2)).toContainText(`Betalt ${new Date().getFullYear()}`);
 
-  await page.getByRole('button', { name: 'Navn', exact: true }).click();
-  await expect(cells).toHaveText(cellsFor(['Aasen', 'Ødegård', 'Dahl']));
+  // The overview's "Ikke betalt" number links here with the filter in the URL.
+  await page.goto(`${BOARD_PORTAL}/medlemmer?betalt=nei`);
+  await expect(rows).toHaveCount(2);
+  await expect(page.getByRole('button', { name: /^Ikke betalt/ })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
 
+  expect(errors, `page threw: ${errors.join(', ')}`).toEqual([]);
+});
+
+test('door check-in: pick the event, then find members to check in', async ({ page }) => {
+  const errors = collectPageErrors(page);
+  // A later route wins, so this replaces the empty Sanity stub from beforeEach.
+  await stubSanityWithContent(page);
+  await stubSupabase(page);
+
+  await page.goto(`${BOARD_PORTAL}/innsjekk`);
+  await page.getByRole('link', { name: new RegExp(UPCOMING_EVENT.title) }).click();
+
+  await expect(page).toHaveURL(`${BOARD_PORTAL}/innsjekk/${UPCOMING_EVENT._id}`);
+  await expect(page.getByRole('heading', { level: 2, name: UPCOMING_EVENT.title })).toBeVisible();
+  const search = page.getByRole('searchbox', { name: 'Søk etter medlem' });
+  await expect(search).toBeFocused();
+  await search.fill('silje');
+  await expect(page.getByRole('button', { name: 'Sjekk inn Silje Ødegård' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Sjekk inn/ })).toHaveCount(1);
   expect(errors, `page threw: ${errors.join(', ')}`).toEqual([]);
 });
 
@@ -148,7 +200,7 @@ test('a member who is not an admin falls back to the member portal', async ({ pa
 
   await expect(page).toHaveURL(`${MEMBER_PORTAL}?reason=not_admin`);
   await expect(page.getByRole('heading', { level: 1, name: 'Velkommen, Ingrid!' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Medlemsliste' })).toHaveCount(0);
+  await expect(page.getByRole('navigation', { name: 'Styreportal' })).toHaveCount(0);
   // #82: the fallback used to be silent. A non-admin now sees why they landed here.
   await expect(page.getByRole('alert')).toHaveText(
     'Du har ikke administratortilgang til styreportalen.',

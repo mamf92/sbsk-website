@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { initials } from '../../utils/initials';
 
-export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg';
+export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
 type AvatarProps = Omit<React.HTMLAttributes<HTMLSpanElement>, 'children'> & {
   /** Full name. Drives the accessible label and the initials fallback. */
@@ -17,12 +17,13 @@ const base =
   'inline-flex flex-none items-center justify-center overflow-hidden rounded-none border ' +
   'border-black bg-gray-100 font-heading font-bold text-darkblue select-none ';
 
-// 24 / 32 / 44 / 64px, the library's avatar scale.
+// 24 / 32 / 44 / 64px, the library's avatar scale; `xl` (96px) is the portal band's.
 const sizes = {
   xs: 'h-6 w-6 text-xs',
   sm: 'h-8 w-8 text-xs',
   md: 'h-11 w-11 text-sm',
   lg: 'h-16 w-16 text-base',
+  xl: 'h-24 w-24 text-h3',
 } as const;
 
 export const Avatar = React.forwardRef<HTMLSpanElement, AvatarProps>(

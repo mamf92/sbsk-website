@@ -21,7 +21,13 @@ import { arrangementLoader, boardGameMastersLoader } from './sanity/queryHelpers
 import { calendarLoader } from './loaders/calendar-loader';
 import { ourGamesLoader } from './loaders/our-games-loader';
 import { aboutUsLoader } from './loaders/about-us-loader';
-import { boardPortalLoader } from './loaders/board-portal-loader';
+import {
+  adminCheckInEventLoader,
+  adminCheckInListLoader,
+  adminMembersLoader,
+  adminOverviewLoader,
+  adminPortalLoader,
+} from './loaders/admin-portal-loaders';
 import { memberPortalLoader } from './loaders/member-portal-loader';
 import { twoFactorChallengeLoader, twoFactorSetupLoader } from './loaders/two-factor-loaders';
 import { memberPortalEnabled } from './utils/featureFlags';
@@ -51,6 +57,10 @@ const Register = React.lazy(() => import('./pages/Register'));
 const Login = React.lazy(() => import('./pages/Login'));
 const MemberPortal = React.lazy(() => import('./pages/MemberPortal'));
 const BoardPortal = React.lazy(() => import('./pages/BoardPortal'));
+const AdminOverview = React.lazy(() => import('./pages/AdminOverview'));
+const AdminMembers = React.lazy(() => import('./pages/AdminMembers'));
+const AdminCheckInList = React.lazy(() => import('./pages/AdminCheckInList'));
+const AdminCheckIn = React.lazy(() => import('./pages/AdminCheckIn'));
 const TwoFactorChallenge = React.lazy(() => import('./pages/TwoFactorChallenge'));
 const TwoFactorSetup = React.lazy(() => import('./pages/TwoFactorSetup'));
 const NotFound = React.lazy(() => import('./pages/NotFound'));
@@ -117,7 +127,25 @@ const router = createBrowserRouter(
                     element: <MemberPortal />,
                     loader: memberPortalLoader,
                   },
-                  { path: 'styreportal', element: <BoardPortal />, loader: boardPortalLoader },
+                  {
+                    path: 'styreportal',
+                    element: <BoardPortal />,
+                    loader: adminPortalLoader,
+                    children: [
+                      { index: true, element: <AdminOverview />, loader: adminOverviewLoader },
+                      { path: 'medlemmer', element: <AdminMembers />, loader: adminMembersLoader },
+                      {
+                        path: 'innsjekk',
+                        element: <AdminCheckInList />,
+                        loader: adminCheckInListLoader,
+                      },
+                      {
+                        path: 'innsjekk/:eventId',
+                        element: <AdminCheckIn />,
+                        loader: adminCheckInEventLoader,
+                      },
+                    ],
+                  },
                   {
                     path: 'to-faktor',
                     element: <TwoFactorChallenge />,

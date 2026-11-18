@@ -122,7 +122,7 @@ vi.mock('../supabase/queryHelpers/getMembers', () => ({
 }));
 ```
 
-Test the pure logic directly — `useMemberSearch` is covered without any network because
+Test the pure logic directly — `src/utils/membership.ts` (filter, search, sort) is covered without any network because
 filtering and sorting are separated from fetching. Prefer that split in new code.
 
 Norwegian collation matters for member lists: sorting uses

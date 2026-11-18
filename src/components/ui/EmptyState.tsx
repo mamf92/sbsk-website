@@ -26,7 +26,7 @@ const titleSizes = {
 
 /**
  * Heading, body, optional action — the shape `PostsSection` already had and the other three
- * empty screens did not. `MemberSearchList` in particular rendered two bare `<p>` tags.
+ * empty screens did not. The old board member list in particular rendered two bare `<p>` tags.
  *
  * Deliberately colour-neutral: it inherits from whatever surface it lands on, because it
  * lands on the white page in `PostsSection` and on a `darkblue` panel in the board portal.
