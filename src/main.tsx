@@ -30,7 +30,7 @@ import {
 } from './loaders/admin-portal-loaders';
 import { memberPortalLoader } from './loaders/member-portal-loader';
 import { twoFactorChallengeLoader, twoFactorSetupLoader } from './loaders/two-factor-loaders';
-import { memberPortalEnabled } from './utils/featureFlags';
+import { portalRoutesEnabled } from './utils/featureFlags';
 
 // Every page below the home page is its own chunk. Lighthouse measured ~58% of the entry bundle
 // unused on the home page (#222) — that was thirteen other pages' markup and component trees,
@@ -117,8 +117,9 @@ const router = createBrowserRouter(
             // routes are absent from the production build and fall through to the catch-all
             // 404 below. `memberPortalEnabled` is true in unit tests and the Playwright config
             // so the pages stay covered while hidden. Re-enable by setting
-            // VITE_ENABLE_MEMBER_PORTAL=true at build time.
-            ...(memberPortalEnabled
+            // VITE_ENABLE_MEMBER_PORTAL=true at build time; VITE_ENABLE_PORTAL_ROUTES=true
+            // makes them reachable by URL only, with no header link (board sign-in, phase 2).
+            ...(portalRoutesEnabled
               ? [
                   { path: 'lag-medlemsprofil', element: <Register /> },
                   { path: 'login', element: <Login /> },

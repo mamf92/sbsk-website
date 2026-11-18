@@ -30,6 +30,9 @@ runs:
         VITE_SUPABASE_PUBLISHABLE_KEY: ${{ inputs.supabase-publishable-key }}
         # No member/board portal on MVP launch (#213) — Studio is the only sign-in this round.
         VITE_ENABLE_MEMBER_PORTAL: 'false'
+        # ...but the portal routes answer by URL (no header link), so the board can sign in,
+        # enrol 2FA and use /styreportal before members are invited (phase 2).
+        VITE_ENABLE_PORTAL_ROUTES: 'true'
         # Nothing reads the messages the Kontakt oss form writes yet (#254) — the page
         # publishes the club's address instead until #133 or portal access lands.
         VITE_ENABLE_CONTACT_FORM: 'false'
