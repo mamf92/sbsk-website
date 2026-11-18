@@ -99,7 +99,7 @@ export function Program({ festival }: { festival: FestivalTypes }) {
     <section
       id="program"
       aria-labelledby="program-heading"
-      className="flex scroll-mt-4 flex-col gap-6"
+      className="flex scroll-mt-4 flex-col gap-4"
     >
       <h2 id="program-heading" className="font-heading text-h2 font-bold">
         {t('program.title')}
@@ -168,7 +168,7 @@ export function Program({ festival }: { festival: FestivalTypes }) {
         </div>
       </div>
 
-      <div className="flex flex-col gap-6 print:hidden">
+      <div className="flex flex-col gap-4 print:hidden">
         {sessions.length === 0 ? (
           <EmptyState variant="inline" headingLevel={3} title={t('program.emptyDay')} />
         ) : (

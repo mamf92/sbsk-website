@@ -8,7 +8,7 @@ import { stubSupabase } from './fixtures/supabase';
  * in a real browser. jsdom implements none of it (`src/test/setup.ts` polyfills just enough
  * of the element to mount), so the contract that actually matters is checked here.
  *
- * The board portal is the shortest route to a live dialog. It is behind a Supabase session,
+ * The board portal's members tab is the shortest route to a live dialog. It is behind a Supabase session,
  * which `stubSupabase` seeds — this spec used to carry its own copy of that machinery, and the
  * shared fixture grew out of it when the portal routes got tests of their own.
  */
@@ -19,7 +19,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('the member dialog traps focus, closes on Escape and restores focus', async ({ page }) => {
-  await page.goto('/styreportal');
+  await page.goto('/styreportal/medlemmer');
 
   const opener = page.getByRole('button', { name: 'Legg til medlem' }).first();
   await expect(opener).toBeVisible();
@@ -72,7 +72,7 @@ test('the member dialog traps focus, closes on Escape and restores focus', async
 });
 
 test('the page behind the dialog does not scroll', async ({ page }) => {
-  await page.goto('/styreportal');
+  await page.goto('/styreportal/medlemmer');
 
   await page.getByRole('button', { name: 'Legg til medlem' }).first().click();
   await expect(page.getByRole('dialog')).toBeVisible();

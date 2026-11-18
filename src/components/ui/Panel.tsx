@@ -11,7 +11,7 @@ type PanelProps = Omit<React.HTMLAttributes<HTMLElement>, 'title'> & {
 
 // Fixed brand fills in both themes, like the calendar's category cards. Each tone declares the
 // hard-shadow colour its fill can carry, so a button lifting inside it casts a visible edge.
-const base = 'font-body flex flex-col gap-4 p-6 sm:p-8';
+const base = 'font-body flex flex-col gap-3 p-4 sm:p-6';
 const tones = {
   blue: 'bg-darkblue surface-dark text-white',
   orange: 'bg-orange surface-light text-darkestblue',

@@ -14,6 +14,12 @@ type VenueCardProps = Omit<React.HTMLAttributes<HTMLElement>, 'children'> & {
   /** Overrides the heading, e.g. for a festival day held somewhere else. */
   title?: React.ReactNode;
   headingLevel?: 'h2' | 'h3';
+  /**
+   * The page already shows the place and the doors-open time in its key facts
+   * (`EventKeyInfo`). The card then leaves out the doors line, and renders nothing at all when
+   * it would only repeat the place's name.
+   */
+  inKeyFacts?: boolean;
 };
 
 /**
@@ -21,7 +27,7 @@ type VenueCardProps = Omit<React.HTMLAttributes<HTMLElement>, 'children'> & {
  * a venue without one renders nothing.
  */
 export const VenueCard = React.forwardRef<HTMLElement, VenueCardProps>(
-  ({ venue, title, headingLevel = 'h2', className = '', ...props }, ref) => {
+  ({ venue, title, headingLevel = 'h2', inKeyFacts = false, className = '', ...props }, ref) => {
     const t = useEventsT();
     const { locale } = useLocale();
     if (!venue?.name) return null;
@@ -31,6 +37,9 @@ export const VenueCard = React.forwardRef<HTMLElement, VenueCardProps>(
     const meetingPoint = pickLocale(venue.meetingPoint, locale);
     const directions = pickLocale(venue.directions, locale);
     const accessibility = pickLocale(venue.accessibility, locale);
+    const hasMore =
+      !!venue.address || !!meetingPoint || !!directions || !!accessibility || !!venue.contact;
+    if (inKeyFacts && !hasMore) return null;
 
     return (
       <Panel
@@ -57,7 +66,9 @@ export const VenueCard = React.forwardRef<HTMLElement, VenueCardProps>(
               </Link>
             </p>
           )}
-          {venue.doorsOpen && <p>{t('venue.doorsOpen', { time: venue.doorsOpen })}</p>}
+          {venue.doorsOpen && !inKeyFacts && (
+            <p>{t('venue.doorsOpen', { time: venue.doorsOpen })}</p>
+          )}
         </div>
         {meetingPoint && (
           <div className="flex flex-col gap-1">

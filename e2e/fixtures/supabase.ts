@@ -71,7 +71,6 @@ export const MEMBERS = [
     disabled_at: null,
     disabled_reason: null,
     birth_year: null,
-    notes: null,
     created_at: '2026-02-01T09:00:00Z',
   },
   {
@@ -87,7 +86,6 @@ export const MEMBERS = [
     disabled_at: null,
     disabled_reason: null,
     birth_year: null,
-    notes: null,
     created_at: '2026-02-02T09:00:00Z',
   },
   {
@@ -103,12 +101,26 @@ export const MEMBERS = [
     disabled_at: null,
     disabled_reason: null,
     birth_year: null,
-    notes: null,
     created_at: '2026-02-03T09:00:00Z',
   },
 ];
 
 type Row = Record<string, unknown>;
+
+/**
+ * `public.member_season_status`, the view the board's payment column reads. Trygve has paid this
+ * season; Silje and Bjørn have not, so the "Ikke betalt" filter and the reminder have rows.
+ */
+export const SEASON_STATUS = [
+  {
+    member_id: MEMBERS[0].id,
+    season: new Date().getFullYear(),
+    paid: true,
+    paid_at: '2026-02-10T12:00:00Z',
+  },
+  { member_id: MEMBERS[1].id, season: new Date().getFullYear(), paid: false, paid_at: null },
+  { member_id: MEMBERS[2].id, season: new Date().getFullYear(), paid: false, paid_at: null },
+];
 
 export interface SupabaseStubOptions {
   /** Seed a session into the browser. False leaves the visitor signed out. */
@@ -117,6 +129,7 @@ export interface SupabaseStubOptions {
   authStatus?: number;
   profiles?: Row[];
   members?: Row[];
+  seasonStatus?: Row[];
   /** Fail a table outright instead of answering it, e.g. `{ members: 500 }`. */
   fail?: Record<string, number>;
   /** What the `member_is_admin()` RPC reports; the header probes it on every load. */
@@ -214,6 +227,7 @@ export async function stubSupabase(page: Page, options: SupabaseStubOptions = {}
     authStatus = 200,
     profiles = PROFILES,
     members = MEMBERS,
+    seasonStatus = SEASON_STATUS,
     fail = {},
     isAdmin = true,
     aal = 'aal2',
@@ -236,7 +250,17 @@ export async function stubSupabase(page: Page, options: SupabaseStubOptions = {}
       : [],
   };
 
-  const tables: Record<string, Row[]> = { profiles, members };
+  // The board portal's other reads. Empty unless a test needs rows: the admin's own activity
+  // counts, sign-ups, and door check-ins.
+  const tables: Record<string, Row[]> = {
+    profiles,
+    members,
+    member_season_status: seasonStatus,
+    admin_event_signups: [],
+    event_participants: [],
+    attendance: [],
+    event_headcounts: [],
+  };
 
   // Registered first on purpose: Playwright hands a request to the most recently added matching
   // route, so this only catches what nothing below claimed — and says so instead of silently
@@ -257,7 +281,7 @@ export async function stubSupabase(page: Page, options: SupabaseStubOptions = {}
       return json(route, 404, { message: `e2e stub has no RPC "${procedure}"` });
     }
 
-    if (request.method() !== 'GET') {
+    if (request.method() !== 'GET' && request.method() !== 'HEAD') {
       // Writes go through their own helpers and would need their own fixture state; nothing in
       // this suite exercises one yet, so say so rather than pretending it succeeded.
       return json(route, 501, { message: `e2e stub does not implement ${request.method()}` });
@@ -285,6 +309,16 @@ export async function stubSupabase(page: Page, options: SupabaseStubOptions = {}
         ),
       );
       const projected = filtered.map((row) => project(row, select));
+
+      // `select(…, { count: 'exact', head: true })` is a HEAD request; supabase-js reads the
+      // count from the total in `Content-Range` and expects no body.
+      if (request.method() === 'HEAD') {
+        return route.fulfill({
+          status: 200,
+          headers: { 'content-range': `*/${filtered.length}` },
+          body: '',
+        });
+      }
 
       // `.single()` asks for one object, and PostgREST answers a count that is not exactly one
       // with PGRST116 rather than an array. supabase-js turns that into `error`, which is how a

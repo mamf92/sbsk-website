@@ -45,4 +45,19 @@ describe('VenueCard', () => {
       screen.getByRole('heading', { level: 3, name: 'Annet sted fredag' }),
     ).toBeInTheDocument();
   });
+
+  it('beside key facts, drops the doors line and renders nothing when it would only repeat the place', () => {
+    const { container, rerender } = render(
+      <VenueCard venue={{ name: 'Tasta bydelshus', doorsOpen: '10:30' }} inKeyFacts />,
+    );
+    expect(container).toBeEmptyDOMElement();
+    rerender(
+      <VenueCard
+        venue={{ name: 'Tasta bydelshus', doorsOpen: '10:30', address: 'Tastaveden 2' }}
+        inKeyFacts
+      />,
+    );
+    expect(screen.getByText(/Tastaveden 2/)).toBeInTheDocument();
+    expect(screen.queryByText('Dørene åpner 10:30')).not.toBeInTheDocument();
+  });
 });

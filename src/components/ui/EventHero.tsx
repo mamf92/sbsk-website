@@ -35,7 +35,7 @@ export const EventHero = React.forwardRef<HTMLElement, EventHeroProps>(
           <HeroImage image={image} priority />
         </div>
       )}
-      <div className="bg-darkblue surface-dark flex flex-col items-start gap-3 p-6 text-white sm:p-8 print:bg-white print:p-0 print:text-black">
+      <div className="bg-darkblue surface-dark flex flex-col items-start gap-2 p-4 text-white sm:p-6 print:bg-white print:p-0 print:text-black">
         {kicker}
         <h1 className="font-heading text-h1 tracking-heading font-bold" lang={titleLang}>
           {title}

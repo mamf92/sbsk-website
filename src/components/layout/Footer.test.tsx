@@ -18,9 +18,8 @@ function renderFooter() {
 const toggle = () => screen.getByRole('button', { name: 'Reduser animasjoner' });
 
 describe('Footer — motion preference toggle', () => {
-  // WCAG 2.5.3 Label in Name, the rule `Header.tsx`'s LM/DM comment is about. The header's
-  // theme toggle has to prefix its name with a two-letter abbreviation; putting this control in
-  // the footer is what buys it a name that is simply its visible label.
+  // WCAG 2.5.3 Label in Name: a visible label the accessible name must contain. Putting this
+  // control in the footer is what buys it room for words rather than an icon.
   it('is named by the words it shows', () => {
     renderFooter();
     expect(toggle()).toHaveTextContent('Reduser animasjoner');

@@ -115,6 +115,11 @@
      field-state note on `--shadow-success-2` below for why it is never asked to sit on
      `darkblue` alone. */
   --color-success: #007124;
+  /* Semantic aliases for the board and member portals (phase 2 plan): pages pick a meaning,
+     not a brand colour, so a reskin repoints the alias instead of editing pages. White text on
+     danger is 6.4:1. */
+  --color-danger: var(--color-error);
+  --color-portal-band: var(--color-darkblue);
 
   /* Flips with the theme — see the `.dark` block below. */
   --color-hero-scrim: rgb(255 255 255 / 0.55);
@@ -186,6 +191,18 @@
   /* Not a page width: the key-facts column beside an event page's main column
      (`EventPageLayout`). Only ever the second track of that grid. */
   --container-aside: 21rem; /* 336 */
+
+  /* The gap between stacked blocks on an event page: the hero, the sponsor strip, each panel
+     and card. The Figma frames stack them almost flush (~8px), and the page reads as one
+     column of blocks rather than islands in white space. `gap-stack` / `mt-stack`.
+     Not `--spacing-block`: Tailwind's `block-*`/`inline-*` size utilities would then turn the
+     `inline-block` display class into `inline-size: 0.5rem` and crush every nav link. */
+  --spacing-stack: 0.5rem; /* 8 */
+
+  /* The one square every icon-only control sits in: the burger, the theme toggle, the
+     add-to-calendar button. 42px clears the 24px target minimum (WCAG 2.5.8) with room to
+     spare and matches the header's other controls. `size-icon-button`. */
+  --spacing-icon-button: 2.625rem; /* 42 */
 
   /* ---------------------------------------------------------------------
      Motion. The brand is still flat — sharp corners, no blur, no scale — but not

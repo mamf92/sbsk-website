@@ -10,7 +10,8 @@
     "signupClosed": "Closed",
     "signupDropIn": "Just show up",
     "capacity_one": "{{count}} place",
-    "capacity_other": "{{count}} places"
+    "capacity_other": "{{count}} places",
+    "doors": "Doors open"
   },
   "signup": {
     "default": "Sign up",

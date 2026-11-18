@@ -15,7 +15,13 @@ test('an event page shows its facts, venue with a map link, and sponsors', async
   await expect(page.getByRole('heading', { level: 1, name: UPCOMING_EVENT.title })).toBeVisible();
 
   const facts = page.locator('dl').first();
-  await expect(facts.getByRole('term')).toHaveText(['Når', 'Hvor', 'Pris', 'Påmelding']);
+  await expect(facts.getByRole('term')).toHaveText([
+    'Når',
+    'Hvor',
+    'Dørene åpner',
+    'Pris',
+    'Påmelding',
+  ]);
   await expect(facts).toContainText('Byhaugkafeen');
   await expect(facts).toContainText('Gratis for medlemmer');
 

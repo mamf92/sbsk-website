@@ -1,6 +1,6 @@
 # Plan — Phase 2: Admin page (styreportal)
 
-Status: in progress (step 0, step 1, step 4 schema and the S2a 2FA pages built, 18 Nov 2026) · Owner: Claude · Depends on: [i18n foundation](i18n.md), the security
+Status: in progress (schema, 2FA pages, overview, members tab and check-in built 18 Nov 2026; still open: `admin-members` edge function for invite/ban/admin role, statistics, i18n strings) · Owner: Claude · Depends on: [i18n foundation](i18n.md), the security
 plan's admin MFA (see "Prerequisites") · Followed by: [phase 3](phase-3-members.md) ·
 Data rules: [gdpr.md](gdpr.md)
 
@@ -121,7 +121,9 @@ alter table public.members
   add column disabled_at timestamptz,
   add column disabled_reason text check (char_length(disabled_reason) <= 500),
   add column birth_year smallint check (birth_year between 1900 and extract(year from now())::int),
-  add column notes text check (char_length(notes) <= 2000),      -- admin-only note
+  -- (no `notes` column: board-only notes live in `member_notes`, readable only in an admin
+  -- session, because a member can read their own row and RLS cannot hide a column.
+  -- See 20261118190000.)
   add constraint members_email_unique unique (email),
   add constraint members_supabase_id_unique unique (supabase_id),
   add constraint members_email_format check (email ~ '^[^\s@]+@[^\s@]+\.[^\s@]+$'),

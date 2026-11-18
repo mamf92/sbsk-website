@@ -47,14 +47,15 @@ function renderHeader(path = '/', { translated = path !== '/' } = {}) {
   );
 }
 
-// WCAG 2.5.3 Label in Name, the same rule `Dropdown` is held to: someone driving the page by
-// voice says the text they can see. A name of only "Bytt til mørk modus" gave "click DM" nothing
-// to match, and Lighthouse failed the page on it (label-content-name-mismatch, #222).
-describe('Header — theme toggle name', () => {
-  it('names the theme toggle with the visible abbreviation it shows', () => {
+// Icon only: a fixed name with the state in `aria-pressed`, so nothing visible has to be
+// matched by the name (the old "DM"/"LM" lettering existed for WCAG 2.5.3, #222).
+describe('Header — theme toggle', () => {
+  it('is an icon-only toggle with a stable name and its state in aria-pressed', () => {
     renderHeader();
-    const toggle = screen.getByRole('button', { name: /^DM\b/ });
-    expect(toggle).toHaveTextContent('DM');
+    const toggle = screen.getByRole('button', { name: 'Mørk modus' });
+    expect(toggle).toHaveTextContent('');
+    expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    expect(toggle).toHaveAttribute('title', 'Bytt til mørk modus');
   });
 });
 

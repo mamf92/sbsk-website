@@ -10,6 +10,15 @@
 export const memberPortalEnabled = import.meta.env.VITE_ENABLE_MEMBER_PORTAL === 'true';
 
 /**
+ * The portal routes without the portal's links: /login, /to-faktor and the two portals answer
+ * by URL, but the header shows no login button. Lets the board sign in, enrol their second
+ * factor and use /styreportal on the live site before members are invited (phase 2), without
+ * advertising a login nobody else can use yet. Always on when the full portal is.
+ */
+export const portalRoutesEnabled =
+  memberPortalEnabled || import.meta.env.VITE_ENABLE_PORTAL_ROUTES === 'true';
+
+/**
  * The Kontakt oss form writes to `public.contact_messages`, and nothing reads that table:
  * the board has no portal access yet (#213) and no forwarding exists yet (#133), so a message
  * sent through the form reaches nobody. A form that silently discards what someone writes is

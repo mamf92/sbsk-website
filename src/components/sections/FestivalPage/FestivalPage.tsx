@@ -41,6 +41,9 @@ import { signupState } from '../../../utils/signup';
 
 const SITE = 'Stavanger Brettspillklubb';
 const h2 = 'font-heading text-h3 font-bold';
+/** A section that opens with its own heading on the page background, not a panel: the extra
+ *  top space separates it from the block above without the old 40px gaps everywhere. */
+const headed = 'pt-4';
 
 /** Portable Text in the visitor's language, marked with its own when it fell back. */
 function LocaleRichText({ value }: { value: LocaleBlock | undefined }) {
@@ -106,6 +109,9 @@ export default function FestivalPage({ festival }: { festival: FestivalTypes }) 
           },
         ]
       : []),
+    ...(festival.venue?.doorsOpen
+      ? [{ id: 'doors', label: t('facts.doors'), value: festival.venue.doorsOpen }]
+      : []),
     ...(price
       ? [
           {
@@ -152,7 +158,7 @@ export default function FestivalPage({ festival }: { festival: FestivalTypes }) 
 
   return (
     <div className="dark:bg-darkestblue min-h-[60vh] bg-white pb-16 dark:text-white print:bg-white print:text-black">
-      <div className="max-w-shell mx-auto flex w-full flex-col gap-8 px-3 pt-6 sm:px-6">
+      <div className="max-w-shell gap-stack mx-auto flex w-full flex-col px-3 pt-4 sm:px-6">
         <div className="flex flex-col gap-0">
           <EventHero
             image={festival.heroImage}
@@ -184,11 +190,14 @@ export default function FestivalPage({ festival }: { festival: FestivalTypes }) 
           {/* One dated card per day, as in the Figma design. Shown for a single day too: a
               day's own sign-up and opening hours live only here. */}
           {days.length > 0 && (
-            <section aria-labelledby="days-heading" className="flex flex-col gap-4 print:hidden">
+            <section
+              aria-labelledby="days-heading"
+              className={`flex flex-col gap-3 print:hidden ${headed}`}
+            >
               <h2 id="days-heading" className="font-heading text-h2 font-bold">
                 {t('festival.days')}
               </h2>
-              <ul className="flex flex-col gap-4">
+              <ul className="gap-stack flex flex-col">
                 {days.map((day, index) => {
                   const date = festivalDate(day.date);
                   const dayName = formatDayLong(date, locale);
@@ -246,11 +255,15 @@ export default function FestivalPage({ festival }: { festival: FestivalTypes }) 
             </section>
           )}
 
-          <Program festival={festival} />
+          <div className={headed}>
+            <Program festival={festival} />
+          </div>
           {days.length > 0 && <PrintProgram festival={festival} />}
 
           {(hasPricing || hasRules) && (
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 print:hidden">
+            <div
+              className={`gap-stack grid grid-cols-1 print:hidden ${hasPricing && hasRules ? 'md:grid-cols-2' : ''}`}
+            >
               {hasPricing && (
                 <Panel title={t('festival.signupAndPrices')}>
                   <LocaleRichText value={festival.pricing} />
@@ -265,7 +278,7 @@ export default function FestivalPage({ festival }: { festival: FestivalTypes }) 
             </div>
           )}
 
-          <VenueCard venue={festival.venue} className="print:hidden" />
+          <VenueCard venue={festival.venue} className="print:hidden" inKeyFacts />
           {elsewhere.map((day) => (
             <VenueCard
               key={day._key}
@@ -278,7 +291,10 @@ export default function FestivalPage({ festival }: { festival: FestivalTypes }) 
           ))}
 
           {faq.length > 0 && (
-            <section className="flex flex-col gap-3 print:hidden" aria-labelledby="faq-heading">
+            <section
+              className={`flex flex-col gap-2 print:hidden ${headed}`}
+              aria-labelledby="faq-heading"
+            >
               <h2 id="faq-heading" className={h2}>
                 {t('faq')}
               </h2>
@@ -304,10 +320,13 @@ export default function FestivalPage({ festival }: { festival: FestivalTypes }) 
             </section>
           )}
 
-          <SponsorGrid sponsors={sponsors} className="print:hidden" />
+          <SponsorGrid sponsors={sponsors} className={`print:hidden ${headed}`} />
 
           {gallery.length > 0 && (
-            <section className="flex flex-col gap-4 print:hidden" aria-labelledby="gallery-heading">
+            <section
+              className={`flex flex-col gap-3 print:hidden ${headed}`}
+              aria-labelledby="gallery-heading"
+            >
               <h2 id="gallery-heading" className={h2}>
                 {t('festival.gallery')}
               </h2>
@@ -315,10 +334,13 @@ export default function FestivalPage({ festival }: { festival: FestivalTypes }) 
             </section>
           )}
 
-          <RelatedPosts posts={festival.relatedPosts} className="print:hidden" />
+          <RelatedPosts posts={festival.relatedPosts} className={`print:hidden ${headed}`} />
 
           {contact && (
-            <section className="font-body flex flex-col gap-2" aria-labelledby="contact-heading">
+            <section
+              className={`font-body flex flex-col gap-2 ${headed}`}
+              aria-labelledby="contact-heading"
+            >
               <h2 id="contact-heading" className={h2}>
                 {t('festival.contactTitle')}
               </h2>

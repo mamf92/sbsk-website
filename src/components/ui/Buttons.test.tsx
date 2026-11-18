@@ -33,7 +33,7 @@ describe('Button', () => {
   });
 
   it('applies a distinct class for every variant', () => {
-    const variants = ['primary', 'secondary', 'tertiary', 'toggle', 'disabled'] as const;
+    const variants = ['primary', 'secondary', 'tertiary', 'toggle', 'disabled', 'danger'] as const;
 
     const classes = variants.map((variant) => {
       const { unmount } = render(<Button variant={variant}>x</Button>);
