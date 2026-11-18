@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { Avatar, type AvatarSize } from './Avatar';
 
-const sizes: AvatarSize[] = ['xs', 'sm', 'md', 'lg'];
+const sizes: AvatarSize[] = ['xs', 'sm', 'md', 'lg', 'xl'];
 
 // Pins the contract, not the class values: the fill and the exact pixel scale move when the
 // design system is re-themed, but the name must stay announced once and the photo must keep

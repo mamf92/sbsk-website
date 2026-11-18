@@ -14,7 +14,6 @@ const member: Member = {
   disabled_at: null,
   disabled_reason: null,
   birth_year: null,
-  notes: null,
   email: 'trygve@example.test',
   is_admin: false,
   supabase_id: 'aaaaaaaa-0000-4000-8000-000000000001',

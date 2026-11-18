@@ -25,6 +25,7 @@ const overlapMargin = {
   sm: '-ml-3',
   md: '-ml-4',
   lg: '-ml-5',
+  xl: '-ml-8',
 } as const;
 
 const counterBase =
@@ -36,6 +37,7 @@ const counterSizes = {
   sm: 'h-8 min-w-8 px-1 text-xs',
   md: 'h-11 min-w-11 px-2 text-sm',
   lg: 'h-16 min-w-16 px-2 text-base',
+  xl: 'h-24 min-w-24 px-2 text-h3',
 } as const;
 
 export const AvatarStack = React.forwardRef<HTMLDivElement, AvatarStackProps>(

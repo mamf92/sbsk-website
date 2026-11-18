@@ -100,6 +100,11 @@
      field-state note on `--shadow-success-2` below for why it is never asked to sit on
      `darkblue` alone. */
   --color-success: #007124;
+  /* Semantic aliases for the board and member portals (phase 2 plan): pages pick a meaning,
+     not a brand colour, so a reskin repoints the alias instead of editing pages. White text on
+     danger is 6.4:1. */
+  --color-danger: var(--color-error);
+  --color-portal-band: var(--color-darkblue);
 
   /* Flips with the theme — see the `.dark` block below. */
   --color-hero-scrim: rgb(255 255 255 / 0.55);

@@ -48,7 +48,7 @@ select is((select amount_nok from public.membership_payments limit 1), 300, 'a m
 select tests.as_owner();
 delete from public.admin_audit_log;
 select tests.authenticate_as('admin@example.no', 'aal2');
-update public.members set phone = '99999999', notes = 'Hemmelig notat' where email = 'b@example.no';
+update public.members set phone = '99999999', disabled_reason = 'Hemmelig' where email = 'b@example.no';
 select tests.as_owner();
 select is((select count(*)::int from public.admin_audit_log), 1, 'one edit writes exactly one audit row');
 select is(
@@ -58,10 +58,10 @@ select is(
 );
 select is(
   (select array(select jsonb_object_keys(new) order by 1) from public.admin_audit_log),
-  array['notes', 'phone'],
+  array['disabled_reason', 'phone'],
   'the audit row holds only the changed columns'
 );
-select is((select new ->> 'notes' from public.admin_audit_log), '[endret]', 'a note is logged as changed, never its text');
+select is((select new ->> 'disabled_reason' from public.admin_audit_log), '[endret]', 'free text is logged as changed, never its content');
 
 select tests.authenticate_as('a@example.no');
 select is_empty('select * from public.admin_audit_log', 'a member cannot read the audit log');

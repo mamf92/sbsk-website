@@ -23,6 +23,7 @@ done
 
 if command -v pg_prove >/dev/null 2>&1; then
   (cd "$root/supabase/tests/database" && pg_prove -d "$db" --ext .sql *.test.sql)
+  "$here/last-admin-race.sh" "$db"
 else
   status=0
   for test in "$root"/supabase/tests/database/*.test.sql; do
@@ -31,5 +32,6 @@ else
     echo "$out"
     if grep -q '^not ok' <<<"$out"; then status=1; fi
   done
+  "$here/last-admin-race.sh" "$db" || status=1
   exit $status
 fi

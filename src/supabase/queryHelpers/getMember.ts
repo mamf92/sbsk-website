@@ -15,8 +15,6 @@ export interface Member {
   disabled_at: string | null;
   disabled_reason: string | null;
   birth_year: number | null;
-  /** Board-only note. Never shown to the member. */
-  notes: string | null;
   created_at: string;
 }
 

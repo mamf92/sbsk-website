@@ -28,6 +28,9 @@ const variants = {
   secondary: 'bg-darkorange text-darkestblue not-disabled:hover:bg-orange',
   tertiary: 'bg-darkblue text-white not-disabled:hover:bg-darkestblue',
   disabled: 'bg-gray-300 text-gray-500 cursor-not-allowed',
+  // Destructive actions (deactivate a member, remove from the board). White on `danger` is
+  // 6.4:1; the hover fill darkens to darkestblue so the colour change never reads as "safe".
+  danger: 'bg-danger text-white not-disabled:hover:bg-darkestblue',
   // No `surface-light` override for the dark-mode fill here, unlike the orange/darkorange
   // fills in `Card.tsx`: those panels are self-contained, so their own fill is what the
   // offset shadow lands on. This button always sits on the header, which is `surface-dark`
@@ -64,6 +67,7 @@ const motion = {
   tertiary: 'lift',
   toggle: 'lift',
   outline: 'lift',
+  danger: 'lift',
   // `--duration-*` is not a Tailwind utility namespace, so this reads the var directly
   // rather than via a `duration-fast` class, which would not compile.
   disabled: 'transition-colors duration-(--duration-fast) ease-standard',
