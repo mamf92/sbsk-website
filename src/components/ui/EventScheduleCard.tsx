@@ -1,5 +1,5 @@
 import type * as React from 'react';
-import CalendarAddIcon from '../../assets/icons/symbols/calendar-add.svg?react';
+import { IconButton } from './IconButton';
 import { downloadIcs, type IcsEventInput } from '../../utils/ics';
 
 export type EventScheduleCardTone = 'orange' | 'blue';
@@ -107,17 +107,17 @@ export function EventScheduleCard({
         )}
       </div>
 
-      <button
-        type="button"
-        onClick={() => downloadIcs(ics, `${title}.ics`)}
-        aria-label={addLabel}
-        // `lift`, like every other pressable surface — this was the one interactive control in
-        // the system that did not respond to the pointer at all. It owns the transition outright,
-        // so no `transition-*` utility may join it here.
-        className={`lift focus-visible:outline-focus-ring col-start-3 row-start-1 flex w-14 flex-none cursor-pointer items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${children ? 'sm:row-span-2' : ''}`}
+      <div
+        className={`col-start-3 row-start-1 flex items-center justify-center px-2 ${children ? 'sm:row-span-2' : ''}`}
       >
-        <CalendarAddIcon className="h-5 w-5 fill-current" />
-      </button>
+        {/* A square of its own, centred in the column, rather than a button the height of the
+            card: stretched, its hover lifted a whole strip of the card instead of a button. */}
+        <IconButton
+          icon="calendarAdd"
+          label={addLabel}
+          onClick={() => downloadIcs(ics, `${title}.ics`)}
+        />
+      </div>
 
       {children && (
         <div className="col-span-3 flex flex-col items-start gap-2 px-4 pb-4 sm:col-span-1 sm:col-start-2 sm:-mt-2">

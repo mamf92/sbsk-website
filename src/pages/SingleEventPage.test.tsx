@@ -132,7 +132,7 @@ describe('SingleEventPage', () => {
   it('shows the key facts under the title', () => {
     renderPage(fullEvent);
     const terms = screen.getAllByRole('term').map((el) => el.textContent);
-    expect(terms).toEqual(['Når', 'Hvor', 'Påmelding']);
+    expect(terms).toEqual(['Når', 'Hvor', 'Dørene åpner', 'Påmelding']);
     expect(screen.getByText('Tasta bydelshus', { selector: 'dd *' })).toBeInTheDocument();
   });
 

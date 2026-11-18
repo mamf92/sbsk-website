@@ -16,13 +16,13 @@ export const EventPageLayout = React.forwardRef<HTMLDivElement, EventPageLayoutP
     <div
       ref={ref}
       className={[
-        'grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_var(--container-aside)] lg:items-start lg:gap-10',
+        'gap-stack grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_var(--container-aside)] lg:items-start',
         className,
       ].join(' ')}
       {...props}
     >
-      <div className="lg:sticky lg:top-6 lg:order-2 print:hidden">{aside}</div>
-      <div className="flex min-w-0 flex-col gap-10 lg:order-1">{children}</div>
+      <div className="lg:sticky lg:top-2 lg:order-2 print:hidden">{aside}</div>
+      <div className="gap-stack flex min-w-0 flex-col lg:order-1">{children}</div>
     </div>
   ),
 );

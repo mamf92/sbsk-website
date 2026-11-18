@@ -22,14 +22,14 @@ export const EventKeyInfo = React.forwardRef<HTMLElement, EventKeyInfoProps>(
         ref={ref}
         aria-label={label}
         className={[
-          'bg-darkblue surface-dark flex flex-col gap-6 border border-black p-6 text-white dark:border-white',
+          'bg-darkblue surface-dark flex flex-col gap-4 border border-black p-4 text-white sm:p-6 dark:border-white',
           className,
         ].join(' ')}
         {...props}
       >
         <EventFacts facts={facts} layout="stack" />
         {actions && (
-          <div className="flex flex-col items-start gap-4 border-t border-white/20 pt-6 first:border-t-0 first:pt-0">
+          <div className="flex flex-col items-start gap-3 border-t border-white/20 pt-4 first:border-t-0 first:pt-0">
             {actions}
           </div>
         )}

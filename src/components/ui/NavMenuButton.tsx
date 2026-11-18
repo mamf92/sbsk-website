@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { iconButtonClasses } from './iconButtonClasses';
 
 type NavMenuButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   open?: boolean;
@@ -6,11 +7,9 @@ type NavMenuButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 
 // Three bars that fold into an X. Built from spans rather than an icon because the bars are
 // the animation — there is no closed-form "menu" and "close" glyph to swap between.
-const base =
-  'inline-flex size-[42px] cursor-pointer flex-col items-center justify-center gap-[5px] ' +
-  'rounded-none border-0 bg-transparent text-current lift ' +
-  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ' +
-  'focus-visible:outline-focus-ring ';
+// The square, the lift and the focus ring are `IconButton`'s, so the burger and the theme
+// toggle beside it cannot drift apart.
+const base = iconButtonClasses({ className: 'flex-col gap-[5px]' });
 
 // 2px bar, 5px gap: the outer bars sit exactly 7px off centre, so that is how far they
 // travel to meet in the middle before rotating.

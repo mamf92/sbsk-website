@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Buttons';
 import { NavMenuButton } from '../ui/NavMenuButton';
+import { IconButton } from '../ui/IconButton';
 import { DiceLogo } from '../ui/DiceLogo';
 import { navLinkClasses } from '../ui/Link';
 import { useTheme } from '../../hooks/theme/ThemeContext';
@@ -116,19 +117,19 @@ export default function Header() {
 
         {/* Right controls */}
         <div className="flex items-center gap-2.5">
-          {/* The accessible name has to start with the visible "LM"/"DM", not replace it. WCAG
-              2.5.3 Label in Name: someone driving the page by voice says what they can see —
-              "click DM" — and a name of only "Bytt til mørk modus" leaves nothing for that to
-              match. Lighthouse flags the same thing as label-content-name-mismatch (#222). */}
-          <Button
+          {/* Icon only. The name stays "Mørk modus" and `aria-pressed` carries the state, so a
+              screen reader hears "Mørk modus, toggle button, pressed" rather than a name that
+              changes under it. `title` gives pointer users the same words as a tooltip. With no
+              visible text there is nothing for WCAG 2.5.3 Label in Name to match against, which
+              is what forced the old "DM"/"LM" lettering (#222). */}
+          <IconButton
             onClick={toggleDarkMode}
             variant="toggle"
-            size="xs"
             icon={isDarkMode ? 'sun' : 'moon'}
-            aria-label={isDarkMode ? 'LM – bytt til lys modus' : 'DM – bytt til mørk modus'}
-          >
-            {isDarkMode ? 'LM' : 'DM'}
-          </Button>
+            label="Mørk modus"
+            aria-pressed={isDarkMode}
+            title={isDarkMode ? 'Bytt til lys modus' : 'Bytt til mørk modus'}
+          />
 
           {/* Only on pages that exist in English, and only with VITE_ENABLE_I18N on: a toggle
               that changes nothing on the page would read as broken. Below `sm` the bar has no
