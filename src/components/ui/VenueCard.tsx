@@ -66,8 +66,12 @@ export const VenueCard = React.forwardRef<HTMLElement, VenueCardProps>(
               </Link>
             </p>
           )}
-          {venue.doorsOpen && !inKeyFacts && (
-            <p>{t('venue.doorsOpen', { time: venue.doorsOpen })}</p>
+          {/* Beside key facts the sidebar shows the doors time, but the sidebar is
+              `print:hidden`, so a printed page keeps it here. */}
+          {venue.doorsOpen && (
+            <p className={inKeyFacts ? 'hidden print:block' : undefined}>
+              {t('venue.doorsOpen', { time: venue.doorsOpen })}
+            </p>
           )}
         </div>
         {meetingPoint && (

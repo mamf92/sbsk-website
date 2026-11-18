@@ -58,6 +58,7 @@ describe('VenueCard', () => {
       />,
     );
     expect(screen.getByText(/Tastaveden 2/)).toBeInTheDocument();
-    expect(screen.queryByText('Dørene åpner 10:30')).not.toBeInTheDocument();
+    // Kept for print only, since the key-facts sidebar is `print:hidden`.
+    expect(screen.getByText('Dørene åpner 10:30')).toHaveClass('hidden', 'print:block');
   });
 });
