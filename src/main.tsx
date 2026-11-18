@@ -23,6 +23,7 @@ import { ourGamesLoader } from './loaders/our-games-loader';
 import { aboutUsLoader } from './loaders/about-us-loader';
 import { boardPortalLoader } from './loaders/board-portal-loader';
 import { memberPortalLoader } from './loaders/member-portal-loader';
+import { twoFactorChallengeLoader, twoFactorSetupLoader } from './loaders/two-factor-loaders';
 import { memberPortalEnabled } from './utils/featureFlags';
 
 // Every page below the home page is its own chunk. Lighthouse measured ~58% of the entry bundle
@@ -50,6 +51,8 @@ const Register = React.lazy(() => import('./pages/Register'));
 const Login = React.lazy(() => import('./pages/Login'));
 const MemberPortal = React.lazy(() => import('./pages/MemberPortal'));
 const BoardPortal = React.lazy(() => import('./pages/BoardPortal'));
+const TwoFactorChallenge = React.lazy(() => import('./pages/TwoFactorChallenge'));
+const TwoFactorSetup = React.lazy(() => import('./pages/TwoFactorSetup'));
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 const Post = React.lazy(() => import('./pages/PostPage'));
 
@@ -115,6 +118,16 @@ const router = createBrowserRouter(
                     loader: memberPortalLoader,
                   },
                   { path: 'styreportal', element: <BoardPortal />, loader: boardPortalLoader },
+                  {
+                    path: 'to-faktor',
+                    element: <TwoFactorChallenge />,
+                    loader: twoFactorChallengeLoader,
+                  },
+                  {
+                    path: 'to-faktor/oppsett',
+                    element: <TwoFactorSetup />,
+                    loader: twoFactorSetupLoader,
+                  },
                 ]
               : []),
             { path: 'studio/*', element: <StudioRoute /> },

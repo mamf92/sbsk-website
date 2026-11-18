@@ -137,15 +137,11 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
                       {member.surname}
                     </p>
                   </div>
-                  <div className="w-[30%]">
-                    <p className="text-sm hyphens-auto capitalize sm:text-base" lang="no">
-                      {member.address}
-                    </p>
+                  <div className="w-[35%]">
+                    <p className="text-sm break-all sm:text-base">{member.email}</p>
                   </div>
-                  <div className="w-[27%]">
-                    <p className="text-sm hyphens-auto capitalize sm:text-base" lang="no">
-                      {member.city}
-                    </p>
+                  <div className="w-[22%]">
+                    <p className="text-sm sm:text-base">{member.phone}</p>
                   </div>
                 </div>
               </li>
@@ -166,9 +162,6 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
                 id: memberData.id,
                 name: memberData.name,
                 surname: memberData.surname,
-                address: memberData.address,
-                postcode: memberData.postcode,
-                city: memberData.city,
                 phone: memberData.phone,
                 email: memberData.email,
                 is_admin: memberData.is_admin,
@@ -177,9 +170,6 @@ function MemberSearchList({ members }: MemberSearchSectionProps) {
               await createMember({
                 name: memberData.name,
                 surname: memberData.surname,
-                address: memberData.address,
-                postcode: memberData.postcode,
-                city: memberData.city,
                 phone: memberData.phone,
                 email: memberData.email,
                 is_admin: memberData.is_admin,

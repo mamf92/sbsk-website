@@ -1,6 +1,6 @@
 # Plan — Phase 2: Admin page (styreportal)
 
-Status: planned · Owner: unassigned · Depends on: [i18n foundation](i18n.md), the security
+Status: in progress (step 0, step 1, step 4 schema and the S2a 2FA pages built, 18 Nov 2026) · Owner: Claude · Depends on: [i18n foundation](i18n.md), the security
 plan's admin MFA (see "Prerequisites") · Followed by: [phase 3](phase-3-members.md) ·
 Data rules: [gdpr.md](gdpr.md)
 

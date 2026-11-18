@@ -3,13 +3,13 @@ import { useEffect, useMemo, useState } from 'react';
 // the import entirely and consumers do not pull in the Supabase client.
 import type { Member } from '../supabase/queryHelpers/getMember';
 
-type SortField = 'name' | 'surname' | 'address' | 'city';
+type SortField = 'name' | 'surname' | 'email' | 'phone';
 
 const sortOptions: { key: SortField; label: string; size: string }[] = [
   { key: 'name', label: 'Navn', size: 'max-xs:w-[17%] w-[19%]' },
   { key: 'surname', label: 'Etternavn', size: 'max-xs:w-[24%] w-[21%]' },
-  { key: 'address', label: 'Adresse', size: 'w-[28%]' },
-  { key: 'city', label: 'Poststed', size: 'w-[22%]' },
+  { key: 'email', label: 'E-post', size: 'w-[32%]' },
+  { key: 'phone', label: 'Telefon', size: 'w-[18%]' },
 ];
 
 export function useMemberSearch(members: Member[]) {
@@ -32,8 +32,8 @@ export function useMemberSearch(members: Member[]) {
     const matches = (member: Member) =>
       (member.name?.toLowerCase().includes(term) ?? false) ||
       (member.surname?.toLowerCase().includes(term) ?? false) ||
-      (member.address?.toLowerCase().includes(term) ?? false) ||
-      (member.city?.toLowerCase().includes(term) ?? false);
+      member.email.toLowerCase().includes(term) ||
+      (member.phone?.toLowerCase().includes(term) ?? false);
 
     return members.filter(matches);
   }, [members, searchTerm]);

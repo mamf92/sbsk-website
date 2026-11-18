@@ -53,6 +53,9 @@
           },
           {
             "context": "Playwright smoke"
+          },
+          {
+            "context": "Database tests"
           }
         ]
       }
