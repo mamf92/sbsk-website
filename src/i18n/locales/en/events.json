@@ -90,8 +90,11 @@
     "contactTitle": "Contact",
     "elsewhere": "Different venue on {{day}}",
     "doors": "Doors open {{opens}}, we close {{closes}}",
-    "contactLead": "Questions? Email"
+    "contactLead": "Questions? Email",
+    "dayN": "Day {{n}}"
   },
   "relatedPosts": "Posts about this event",
-  "addEventToCalendar": "Add {{title}} to your calendar"
+  "addEventToCalendar": "Add {{title}} to your calendar",
+  "keyInfo": "Key information",
+  "addToCalendar": "Add to calendar"
 }

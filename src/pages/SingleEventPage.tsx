@@ -3,10 +3,14 @@ import { PortableText, toPlainText } from '@portabletext/react';
 import { lazy } from 'react';
 import type { CalendarEventTypes } from '../sanity/queryHelpers/events';
 import type { ArrangementData } from '../sanity/queryHelpers/festivals';
-import { urlFor } from '../sanity/sanityImageUrl';
 import { components } from '../sanity/editors/portableTextComponents';
 import { EventScheduleCard, type EventScheduleCardTone } from '../components/ui/EventScheduleCard';
-import { EventFacts, type EventFact } from '../components/ui/EventFacts';
+import type { EventFact } from '../components/ui/EventFacts';
+import { EventHero } from '../components/ui/EventHero';
+import { EventKeyInfo } from '../components/ui/EventKeyInfo';
+import { EventPageLayout } from '../components/ui/EventPageLayout';
+import { Button } from '../components/ui/Buttons';
+import { Panel } from '../components/ui/Panel';
 import { SignupBlock } from '../components/ui/SignupBlock';
 import { SponsorGrid, SponsorStrip } from '../components/ui/Sponsors';
 import { RelatedPosts } from '../components/ui/RelatedPosts';
@@ -22,6 +26,7 @@ import {
   timeRange,
 } from '../utils/eventDateFormat';
 import { signupState } from '../utils/signup';
+import { downloadIcs, type IcsEventInput } from '../utils/ics';
 import { useEventsT } from '../i18n';
 import { pickLocale } from '../i18n/pickLocale';
 import { useLocale, useTranslatedContent } from '../hooks/locale/useLocale';
@@ -98,122 +103,130 @@ function EventPage({ event }: { event: CalendarEventTypes }) {
       : []),
   ];
 
+  const ics: IcsEventInput = {
+    title: event.title,
+    description: event.content ? toPlainText(event.content) : undefined,
+    location: icsLocation,
+    start,
+    end,
+    url: window.location.href,
+  };
+
+  const keyInfo = (
+    <EventKeyInfo
+      label={t('keyInfo')}
+      facts={facts}
+      actions={
+        <>
+          <SignupBlock signup={event.signup} now={now} />
+          <Button
+            variant="secondary"
+            size="sm"
+            icon="add"
+            onClick={() => downloadIcs(ics, `${event.title}.ics`)}
+            aria-label={t('addEventToCalendar', { title: event.title })}
+          >
+            {t('addToCalendar')}
+          </Button>
+        </>
+      }
+    />
+  );
+
   return (
     <div className="dark:bg-darkestblue min-h-[60vh] bg-white pb-16 dark:text-white">
-      <div className="max-w-content content-gutter:px-0 mx-auto flex w-full flex-col gap-8 px-3 pt-6">
+      <div className="max-w-shell mx-auto flex w-full flex-col gap-8 px-3 pt-6 sm:px-6">
         <RouterLink to="/kalender" className={`${linkClassesInherit} w-fit underline`}>
           ← {t('back')}
         </RouterLink>
 
         <div className="flex flex-col gap-0">
-          <div className="bg-darkblue flex flex-col gap-2 p-4 text-white sm:p-6">
-            <Tag tone="orange">{t('kicker')}</Tag>
-            <h1 className="font-heading text-h1 tracking-heading font-bold" lang={nbLang}>
-              {event.title}
-            </h1>
-          </div>
-          <EventFacts facts={facts} className="border-t border-white/20" />
+          <EventHero
+            image={event.image}
+            title={event.title}
+            titleLang={nbLang}
+            kicker={<Tag tone="orange">{t('kicker')}</Tag>}
+            meta={
+              <>
+                <time dateTime={start.toISOString()}>
+                  {formatDateTimeRange(start, end, locale)}
+                </time>
+                {place && (
+                  <>
+                    {' · '}
+                    <span lang={nbLang}>{place}</span>
+                  </>
+                )}
+              </>
+            }
+          />
+          <SponsorStrip sponsors={sponsors} />
         </div>
 
-        {event.image && (
-          <img
-            src={urlFor(event.image).width(1440).fit('crop').auto('format').url()}
-            srcSet={[
-              `${urlFor(event.image).width(400).fit('crop').auto('format').url()} 400w`,
-              `${urlFor(event.image).width(800).fit('crop').auto('format').url()} 800w`,
-              `${urlFor(event.image).width(1024).fit('crop').auto('format').url()} 1024w`,
-            ].join(', ')}
-            sizes="(max-width: 400px) 400px, (max-width: 800px) 800px, 1024px"
-            alt=""
-            className="aspect-video w-full object-cover"
-          />
-        )}
+        <EventPageLayout aside={keyInfo}>
+          {hasContent && (
+            <Panel lang={nbLang}>
+              <div className="sbsk-rt">
+                <PortableText value={event.content!} components={components} />
+              </div>
+            </Panel>
+          )}
 
-        <SignupBlock signup={event.signup} now={now} />
+          {hasSchedule && (
+            <div className="flex flex-col gap-4">
+              {event.schedule!.map((entry) => {
+                const entryStart = new Date(entry.startTime);
+                const entryEnd = new Date(entry.endTime);
+                const location = entry.location ?? place;
 
-        <SponsorStrip sponsors={sponsors} />
-
-        {hasContent && (
-          <div className="bg-darkblue p-6 text-white sm:p-8" lang={nbLang}>
-            <div className="sbsk-rt">
-              <PortableText value={event.content!} components={components} />
+                return (
+                  <EventScheduleCard
+                    key={entry._key}
+                    size="lg"
+                    day={dayLabel(entryStart, entryEnd, locale)}
+                    month={monthAbbreviation(entryStart, locale)}
+                    title={entry.label}
+                    meta={`${timeRange(entryStart, entryEnd, locale)}${location ? ` · ${location}` : ''}`}
+                    addLabel={t('addEventToCalendar', { title: entry.label })}
+                    tone={tone}
+                    lang={nbLang}
+                    ics={{
+                      title: entry.label,
+                      location: entry.location ?? icsLocation,
+                      start: entryStart,
+                      end: entryEnd,
+                    }}
+                  />
+                );
+              })}
             </div>
-          </div>
-        )}
+          )}
 
-        <EventScheduleCard
-          day={dayLabel(start, end, locale)}
-          month={monthAbbreviation(start, locale)}
-          title={event.title}
-          meta={`${timeRange(start, end, locale)}${place ? ` · ${place}` : ''}`}
-          addLabel={t('addEventToCalendar', { title: event.title })}
-          tone={tone}
-          lang={nbLang}
-          ics={{
-            title: event.title,
-            description: event.content ? toPlainText(event.content) : undefined,
-            location: icsLocation,
-            start,
-            end,
-            url: window.location.href,
-          }}
-        />
+          {(hasPricing || hasProgram) && (
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+              {hasPricing && (
+                <Panel title={t('pricing')}>
+                  <div className="sbsk-rt" lang={nbLang}>
+                    <PortableText value={event.pricingInfo!} components={components} />
+                  </div>
+                </Panel>
+              )}
+              {hasProgram && (
+                <Panel title={t('program.title')}>
+                  <div className="sbsk-rt" lang={nbLang}>
+                    <PortableText value={event.programInfo!} components={components} />
+                  </div>
+                </Panel>
+              )}
+            </div>
+          )}
 
-        {(hasPricing || hasProgram) && (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            {hasPricing && (
-              <div className="bg-darkblue flex flex-col gap-3 p-6 text-white">
-                <h2 className="font-heading text-h3 font-bold">{t('pricing')}</h2>
-                <div className="sbsk-rt" lang={nbLang}>
-                  <PortableText value={event.pricingInfo!} components={components} />
-                </div>
-              </div>
-            )}
-            {hasProgram && (
-              <div className="bg-darkblue flex flex-col gap-3 p-6 text-white">
-                <h2 className="font-heading text-h3 font-bold">{t('program.title')}</h2>
-                <div className="sbsk-rt" lang={nbLang}>
-                  <PortableText value={event.programInfo!} components={components} />
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+          <VenueCard venue={event.venue} />
 
-        {hasSchedule && (
-          <div className="flex flex-col gap-4">
-            {event.schedule!.map((entry) => {
-              const entryStart = new Date(entry.startTime);
-              const entryEnd = new Date(entry.endTime);
-              const location = entry.location ?? place;
+          <SponsorGrid sponsors={sponsors} />
 
-              return (
-                <EventScheduleCard
-                  key={entry._key}
-                  day={dayLabel(entryStart, entryEnd, locale)}
-                  month={monthAbbreviation(entryStart, locale)}
-                  title={entry.label}
-                  meta={`${timeRange(entryStart, entryEnd, locale)}${location ? ` · ${location}` : ''}`}
-                  addLabel={t('addEventToCalendar', { title: entry.label })}
-                  tone={tone}
-                  lang={nbLang}
-                  ics={{
-                    title: entry.label,
-                    location: entry.location ?? icsLocation,
-                    start: entryStart,
-                    end: entryEnd,
-                  }}
-                />
-              );
-            })}
-          </div>
-        )}
-
-        <VenueCard venue={event.venue} />
-
-        <SponsorGrid sponsors={sponsors} />
-
-        <RelatedPosts posts={event.relatedPosts} className="print:hidden" />
+          <RelatedPosts posts={event.relatedPosts} className="print:hidden" />
+        </EventPageLayout>
       </div>
     </div>
   );
