@@ -4,11 +4,12 @@ import { NavMenuButton } from '../ui/NavMenuButton';
 import { IconButton } from '../ui/IconButton';
 import { DiceLogo } from '../ui/DiceLogo';
 import { navLinkClasses } from '../ui/Link';
+import { buttonClasses } from '../ui/buttonClasses';
 import { useTheme } from '../../hooks/theme/ThemeContext';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../hooks/authContext/authContext';
 import { useGoHome } from '../../hooks/useGoHome';
-import { memberPortalEnabled } from '../../utils/featureFlags';
+import { memberPortalEnabled, portalRoutesEnabled } from '../../utils/featureFlags';
 import { LanguageToggle } from '../ui/LanguageToggle';
 import { useIsTranslatedRoute, useLocale } from '../../hooks/locale/useLocale';
 
@@ -36,6 +37,9 @@ export default function Header() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { logout, isAuthenticated, isAdmin, user } = useAuth();
+
+  const portalPath = isAdmin ? '/styreportal' : '/medlemsportal';
+  const portalLabel = isAdmin ? 'Styreportal' : 'Min side';
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
@@ -142,63 +146,81 @@ export default function Header() {
 
           {/* Login / profile — desktop only. Gated behind #213: no member/board portal for the
               MVP launch, so there is no login option to show at all. */}
-          {memberPortalEnabled &&
-            (isAuthenticated ? (
-              <div ref={dropdownRef} className="relative z-50 hidden lg:block">
-                <Button
-                  variant="primary"
-                  size="sm"
-                  icon="expand"
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                >
-                  {(user?.name && 'Hi, ' + user.name) || 'Min profil'}
-                </Button>
-                <div
-                  className={`bg-darkestblue absolute top-11 right-0 z-50 flex w-40 flex-col items-start gap-2 p-4 ${isDropdownOpen ? '' : 'hidden'}`}
-                >
-                  {isAdmin && (
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      icon="right"
-                      onClick={() => {
-                        navigate('/styreportal');
-                        setIsDropdownOpen(false);
-                      }}
-                    >
-                      Styreportal
-                    </Button>
-                  )}
+          {/* A signed-in member or board member always gets a direct way back to their portal,
+              from any page. It follows `portalRoutesEnabled`, not `memberPortalEnabled`: the
+              live site runs with the routes on and the login button off, and the board who
+              sign in by URL had no link back once they browsed away. */}
+          {portalRoutesEnabled && isAuthenticated && (
+            <NavLink
+              to={portalPath}
+              className={buttonClasses({
+                variant: 'primary',
+                size: 'sm',
+                className: 'hidden lg:inline-flex',
+              })}
+            >
+              {portalLabel}
+            </NavLink>
+          )}
+
+          {portalRoutesEnabled && isAuthenticated ? (
+            <div ref={dropdownRef} className="relative z-50 hidden lg:block">
+              <Button
+                variant="primary"
+                size="sm"
+                icon="expand"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              >
+                {(user?.name && 'Hi, ' + user.name) || 'Min profil'}
+              </Button>
+              <div
+                className={`bg-darkestblue absolute top-11 right-0 z-50 flex w-40 flex-col items-start gap-2 p-4 ${isDropdownOpen ? '' : 'hidden'}`}
+              >
+                {isAdmin && (
                   <Button
                     variant="primary"
                     size="sm"
                     icon="right"
                     onClick={() => {
-                      navigate('/medlemsportal');
+                      navigate('/styreportal');
                       setIsDropdownOpen(false);
                     }}
                   >
-                    Profil
+                    Styreportal
                   </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    icon="right"
-                    onClick={() => {
-                      logout();
-                      setIsDropdownOpen(false);
-                      navigate('/');
-                    }}
-                  >
-                    Logg ut
-                  </Button>
-                </div>
+                )}
+                <Button
+                  variant="primary"
+                  size="sm"
+                  icon="right"
+                  onClick={() => {
+                    navigate('/medlemsportal');
+                    setIsDropdownOpen(false);
+                  }}
+                >
+                  Min side
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  icon="right"
+                  onClick={() => {
+                    logout();
+                    setIsDropdownOpen(false);
+                    navigate('/');
+                  }}
+                >
+                  Logg ut
+                </Button>
               </div>
-            ) : (
+            </div>
+          ) : (
+            memberPortalEnabled && (
               <Button variant="primary" size="sm" icon="right" onClick={() => navigate('/login')}>
                 Logg inn
               </Button>
-            ))}
+            )
+          )}
 
           <NavMenuButton
             open={isMobileMenuOpen}
@@ -224,7 +246,7 @@ export default function Header() {
         aria-label="Mobilmeny"
       >
         <div className="flex flex-col overflow-hidden">
-          {memberPortalEnabled && isAuthenticated && (
+          {portalRoutesEnabled && isAuthenticated && (
             <div className="flex gap-2 border-t border-white/12 px-6 py-[15px]">
               {isAdmin && (
                 <Button
@@ -248,7 +270,7 @@ export default function Header() {
                   navigate('/medlemsportal');
                 }}
               >
-                Profil
+                Min side
               </Button>
               <Button
                 variant="secondary"
