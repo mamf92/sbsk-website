@@ -119,7 +119,8 @@ jobs:
           exit 1
 
       - name: Record already-live migrations as applied
-        if: steps.secret.outputs.ok == 'true' && inputs.mark_applied != ''
+        # A dry run writes nothing, history included.
+        if: steps.secret.outputs.ok == 'true' && inputs.mark_applied != '' && !inputs.dry_run
         env:
           VERSIONS: ${{ inputs.mark_applied }}
         run: |
