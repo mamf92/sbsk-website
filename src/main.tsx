@@ -30,6 +30,7 @@ import {
 } from './loaders/admin-portal-loaders';
 import { memberPortalLoader } from './loaders/member-portal-loader';
 import { twoFactorChallengeLoader, twoFactorSetupLoader } from './loaders/two-factor-loaders';
+import { newPasswordLoader } from './loaders/new-password-loader';
 import { portalRoutesEnabled } from './utils/featureFlags';
 
 // Every page below the home page is its own chunk. Lighthouse measured ~58% of the entry bundle
@@ -61,6 +62,8 @@ const AdminOverview = React.lazy(() => import('./pages/AdminOverview'));
 const AdminMembers = React.lazy(() => import('./pages/AdminMembers'));
 const AdminCheckInList = React.lazy(() => import('./pages/AdminCheckInList'));
 const AdminCheckIn = React.lazy(() => import('./pages/AdminCheckIn'));
+const ForgotPassword = React.lazy(() => import('./pages/ForgotPassword'));
+const NewPassword = React.lazy(() => import('./pages/NewPassword'));
 const TwoFactorChallenge = React.lazy(() => import('./pages/TwoFactorChallenge'));
 const TwoFactorSetup = React.lazy(() => import('./pages/TwoFactorSetup'));
 const NotFound = React.lazy(() => import('./pages/NotFound'));
@@ -123,6 +126,8 @@ const router = createBrowserRouter(
               ? [
                   { path: 'lag-medlemsprofil', element: <Register /> },
                   { path: 'login', element: <Login /> },
+                  { path: 'glemt-passord', element: <ForgotPassword /> },
+                  { path: 'nytt-passord', element: <NewPassword />, loader: newPasswordLoader },
                   {
                     path: 'medlemsportal',
                     element: <MemberPortal />,
