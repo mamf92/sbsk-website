@@ -1,21 +1,29 @@
-import { useId, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Buttons';
 import { Input } from '../ui/Input';
 import { Alert, FieldError } from '../ui/Alert';
 import { linkClassesInherit } from '../ui/Link';
 import { newPasswordSchema } from '../../schemas/password';
+import { useAutofillSync } from '../../hooks/useAutofillSync';
 import { updatePassword } from '../../supabase/queryHelpers/passwordReset';
 
 /** Set-new-password form (or the expired-link message) behind the recovery email. */
 export default function NewPasswordSection({ linkValid }: { linkValid: boolean }) {
   const navigate = useNavigate();
   const errorId = useId();
+  const formRef = useRef<HTMLFormElement>(null);
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [fieldErrors, setFieldErrors] = useState<{ password?: string; confirm?: string }>({});
   const [apiError, setApiError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Password managers can fill both fields without firing `change`; see LoginSection.
+  useAutofillSync(formRef, ['password', 'confirm'], (filled) => {
+    if (filled.password !== undefined) setPassword(filled.password);
+    if (filled.confirm !== undefined) setConfirm(filled.confirm);
+  });
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -50,7 +58,7 @@ export default function NewPasswordSection({ linkValid }: { linkValid: boolean }
         <h1 className="font-heading text-h1 text-center text-white">Nytt passord</h1>
         <div className="w-full px-8">
           {linkValid ? (
-            <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
+            <form ref={formRef} onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
               <label className="flex w-full flex-col gap-1">
                 <span className="font-body text-white">Nytt passord</span>
                 <Input
