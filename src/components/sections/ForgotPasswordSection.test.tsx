@@ -30,7 +30,7 @@ describe('ForgotPasswordSection', () => {
   });
 
   it('reports a real failure without saying anything about the account', async () => {
-    requestPasswordReset.mockRejectedValue(new Error('rate limit'));
+    requestPasswordReset.mockRejectedValueOnce(new Error('rate limit'));
     await submit();
     expect(await screen.findByRole('alert')).toHaveTextContent('prøv igjen');
     expect(screen.queryByText(RESET_SENT)).not.toBeInTheDocument();
