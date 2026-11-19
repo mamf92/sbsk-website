@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useRevalidator, useSearchParams } from 'react-router-dom';
+import { Alert } from '../../ui/Alert';
 import { Button } from '../../ui/Buttons';
 import { buttonClasses } from '../../ui/buttonClasses';
 import { Chip } from '../../ui/Chip';
@@ -26,9 +27,16 @@ import {
   type MemberFilter,
 } from '../../../utils/membership';
 
+/** Shown instead of payment status when the `member_season_status` read fails. */
+export const PAYMENTS_UNAVAILABLE =
+  'Betalingsstatus kunne ikke hentes akkurat nå. Medlemslisten vises uten den. Prøv å laste siden på nytt.';
+
+const NO_STATUS: Record<string, SeasonStatus> = {};
+
 type AdminMembersSectionProps = {
   members: Member[];
-  seasonStatus: Record<string, SeasonStatus>;
+  /** `null` when the payment view could not be read: payments are then hidden, not guessed. */
+  seasonStatus: Record<string, SeasonStatus> | null;
 };
 
 // The filter lives in the URL (`?status=deaktivert&betalt=nei&styret=ja`) so the overview's
@@ -66,15 +74,20 @@ function downloadCsv(csv: string, filename: string) {
  * member in place: edit, tick as paid, deactivate. The CSV and the reminder use the current
  * filter, so "Ikke betalt" plus "Send påminnelse" is the treasurer's whole routine.
  */
-export default function AdminMembersSection({ members, seasonStatus }: AdminMembersSectionProps) {
+export default function AdminMembersSection({
+  members,
+  seasonStatus: seasonStatusOrNull,
+}: AdminMembersSectionProps) {
   const season = currentSeason();
+  const paymentsKnown = seasonStatusOrNull !== null;
+  const seasonStatus = seasonStatusOrNull ?? NO_STATUS;
   const revalidator = useRevalidator();
   const [params, setParams] = useSearchParams();
   const [query, setQuery] = useState('');
   const [dialog, setDialog] = useState<OpenDialog>(null);
 
   const filter = statusParam[params.get('status') ?? ''] ?? 'active';
-  const unpaidOnly = params.get('betalt') === 'nei';
+  const unpaidOnly = paymentsKnown && params.get('betalt') === 'nei';
   const boardOnly = params.get('styret') === 'ja';
 
   const setParam = (key: string, value: string | null) =>
@@ -96,7 +109,7 @@ export default function AdminMembersSection({ members, seasonStatus }: AdminMemb
     [members, seasonStatus, filter, unpaidOnly, boardOnly, query],
   );
 
-  const unpaidEmails = visible
+  const unpaidEmails = (paymentsKnown ? visible : [])
     .filter((m) => m.status === 'active' && !seasonStatus[m.id]?.paid)
     .map((m) => m.email);
 
@@ -129,7 +142,7 @@ export default function AdminMembersSection({ members, seasonStatus }: AdminMemb
             variant="outline"
             size="sm"
             className="text-darkblue dark:text-white"
-            disabled={visible.length === 0}
+            disabled={visible.length === 0 || !paymentsKnown}
             onClick={() =>
               downloadCsv(membersCsv(visible, seasonStatus, season), `medlemmer-${season}.csv`)
             }
@@ -151,6 +164,8 @@ export default function AdminMembersSection({ members, seasonStatus }: AdminMemb
         </div>
       </div>
 
+      {!paymentsKnown && <Alert>{PAYMENTS_UNAVAILABLE}</Alert>}
+
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-wrap items-center gap-2">
           <Segmented
@@ -159,13 +174,15 @@ export default function AdminMembersSection({ members, seasonStatus }: AdminMemb
             value={filter}
             onChange={(value) => setParam('status', statusValue[value])}
           />
-          <Chip
-            className="normal-case"
-            active={unpaidOnly}
-            onClick={() => setParam('betalt', unpaidOnly ? null : 'nei')}
-          >
-            Ikke betalt {season}
-          </Chip>
+          {paymentsKnown && (
+            <Chip
+              className="normal-case"
+              active={unpaidOnly}
+              onClick={() => setParam('betalt', unpaidOnly ? null : 'nei')}
+            >
+              Ikke betalt {season}
+            </Chip>
+          )}
           <Chip active={boardOnly} onClick={() => setParam('styret', boardOnly ? null : 'ja')}>
             Styret
           </Chip>
@@ -216,9 +233,11 @@ export default function AdminMembersSection({ members, seasonStatus }: AdminMemb
                   </p>
                   <div className="flex flex-wrap gap-1 pt-1">
                     {active ? (
-                      <Tag tone={paid ? 'blue' : 'orange'}>
-                        {paid ? `Betalt ${season}` : 'Ikke betalt'}
-                      </Tag>
+                      paymentsKnown && (
+                        <Tag tone={paid ? 'blue' : 'orange'}>
+                          {paid ? `Betalt ${season}` : 'Ikke betalt'}
+                        </Tag>
+                      )
                     ) : (
                       <Tag tone="orange">Deaktivert</Tag>
                     )}
@@ -238,7 +257,7 @@ export default function AdminMembersSection({ members, seasonStatus }: AdminMemb
                   >
                     Rediger
                   </Button>
-                  {active && !paid && (
+                  {active && paymentsKnown && !paid && (
                     <Button
                       variant="primary"
                       size="xs"

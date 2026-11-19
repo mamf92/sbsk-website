@@ -27,22 +27,44 @@ export async function adminPortalLoader({ request }: LoaderFunctionArgs) {
   return { profile, me, activity };
 }
 
+/**
+ * Payment status and sign-ups come from objects added by later migrations (the
+ * `member_season_status` view, `admin_event_signups`). If the app is deployed ahead of the
+ * database, or one read blips, the register and the events are still useful without them, so
+ * these two degrade to "unavailable" instead of sending the whole portal to the fault screen.
+ * The register itself (`getMembers`) stays fatal: without it there is nothing to show.
+ */
+async function optional<T>(read: Promise<T>): Promise<T | null> {
+  try {
+    return await read;
+  } catch (error) {
+    console.error('Board portal: optional read failed', error);
+    return null;
+  }
+}
+
 /** `/styreportal`: upcoming events with sign-ups, and the register summary. */
 export async function adminOverviewLoader() {
   await requireAdminSession('/styreportal');
   const [events, members, seasonStatus] = await Promise.all([
     getUpcomingEventsForAdmin(5),
     getMembers(),
-    getSeasonStatus(),
+    optional(getSeasonStatus()),
   ]);
-  const signups = await getEventSignupsForAdmin(events.map((e) => e._id));
-  return { events, signups, members, seasonStatus };
+  const signups = await optional(getEventSignupsForAdmin(events.map((e) => e._id)));
+  return {
+    events,
+    signups: signups ?? {},
+    signupsUnavailable: signups === null,
+    members,
+    seasonStatus,
+  };
 }
 
 /** `/styreportal/medlemmer`. */
 export async function adminMembersLoader() {
   await requireAdminSession('/styreportal/medlemmer');
-  const [members, seasonStatus] = await Promise.all([getMembers(), getSeasonStatus()]);
+  const [members, seasonStatus] = await Promise.all([getMembers(), optional(getSeasonStatus())]);
   return { members, seasonStatus };
 }
 
