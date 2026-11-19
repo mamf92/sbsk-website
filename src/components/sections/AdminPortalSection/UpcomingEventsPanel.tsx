@@ -47,6 +47,7 @@ export default function UpcomingEventsPanel({
               event={event}
               signups={signups[event._id] ?? []}
               defaultOpen={index === 0}
+              signupsUnavailable={signupsUnavailable}
             />
           ))}
         </ul>
@@ -59,10 +60,12 @@ function EventRow({
   event,
   signups,
   defaultOpen,
+  signupsUnavailable,
 }: {
   event: AdminEvent;
   signups: AdminSignup[];
   defaultOpen: boolean;
+  signupsUnavailable: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   const listId = useId();
@@ -78,12 +81,14 @@ function EventRow({
         </div>
         <div className="flex items-center gap-3">
           {people.length > 0 && <AvatarStack people={people} max={4} size="sm" overlap />}
-          <p className="font-heading text-h3 font-bold" aria-label={`${signups.length} påmeldt`}>
-            {signups.length}
-            <span className="font-body ml-1 text-xs font-normal text-gray-100" aria-hidden="true">
-              påmeldt
-            </span>
-          </p>
+          {!signupsUnavailable && (
+            <p className="font-heading text-h3 font-bold" aria-label={`${signups.length} påmeldt`}>
+              {signups.length}
+              <span className="font-body ml-1 text-xs font-normal text-gray-100" aria-hidden="true">
+                påmeldt
+              </span>
+            </p>
+          )}
         </div>
       </div>
       <div className="flex flex-wrap gap-2">
