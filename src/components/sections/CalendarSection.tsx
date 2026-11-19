@@ -5,6 +5,7 @@ import { PortableText, toPlainText } from '@portabletext/react';
 // Aliased: this module already imports React Router's `Link` for in-app navigation.
 import { Link as ExternalTextLink } from '../ui/Link';
 import { Button } from '../ui/Buttons';
+import { RsvpButton } from '../ui/RsvpButton';
 import { Chip, type ChipCategory } from '../ui/Chip';
 import { Input } from '../ui/Input';
 import { Segmented } from '../ui/Segmented';
@@ -693,15 +694,16 @@ function EventRow({
               {attendees.length > 0 && (
                 <AvatarStack people={toAvatarPeople(attendees)} max={3} size="sm" />
               )}
-              <Button
-                variant={attending ? 'toggle' : styles.surfaceButtonVariant}
-                size="sm"
+              <RsvpButton
+                attending={attending}
+                joinLabel="Bli med"
+                attendingLabel="Påmeldt!"
+                leaveLabel="Meld av"
+                joinVariant={styles.surfaceButtonVariant}
                 disabled={rsvp.pending[event._id]}
-                aria-label={attending ? `Meld deg av ${event.title}` : `Meld deg på ${event.title}`}
+                ariaLabel={attending ? `Meld deg av ${event.title}` : `Meld deg på ${event.title}`}
                 onClick={() => rsvp.toggle(event._id)}
-              >
-                {attending ? 'Påmeldt!' : 'Bli med'}
-              </Button>
+              />
             </div>
           )}
 

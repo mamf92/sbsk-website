@@ -8,6 +8,7 @@ import { useTranslatedContent } from '../../hooks/locale/useLocale';
 
 const auth = {
   isAuthenticated: false,
+  isAdmin: false,
   user: null as Profile | null,
 };
 
@@ -15,7 +16,7 @@ vi.mock('../../hooks/authContext/authContext', () => ({
   useAuth: () => ({
     isAuthenticated: auth.isAuthenticated,
     user: auth.user,
-    isAdmin: false,
+    isAdmin: auth.isAdmin,
     token: null,
     login: vi.fn(),
     logout: vi.fn(),
@@ -141,5 +142,35 @@ describe('Header — desktop profile dropdown', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Min profil' }));
     await userEvent.click(getDropdownPanel());
     expect(getDropdownPanel()).not.toHaveClass('hidden');
+  });
+});
+
+describe('Header — direct portal link', () => {
+  beforeEach(() => {
+    auth.isAuthenticated = true;
+    auth.isAdmin = false;
+    auth.user = { supabase_id: 'member-1' } as Profile;
+  });
+
+  it('links a signed-in member to Min side', () => {
+    renderHeader('/kalender');
+    const links = screen.getAllByRole('link', { name: 'Min side' });
+    expect(links[0]).toHaveAttribute('href', '/medlemsportal');
+  });
+
+  it('links a signed-in admin to Styreportal', () => {
+    auth.isAdmin = true;
+    renderHeader('/kalender');
+    expect(screen.getAllByRole('link', { name: 'Styreportal' })[0]).toHaveAttribute(
+      'href',
+      '/styreportal',
+    );
+  });
+
+  it('shows no portal link when signed out', () => {
+    auth.isAuthenticated = false;
+    renderHeader('/kalender');
+    expect(screen.queryByRole('link', { name: 'Min side' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Styreportal' })).toBeNull();
   });
 });
