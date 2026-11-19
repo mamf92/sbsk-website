@@ -52,6 +52,11 @@ export default function LoginSection({ reason }: { reason?: string }) {
       <div className="flex w-full flex-col gap-8 py-24">
         <div className="flex flex-col items-center gap-4">
           <h1 className="font-heading text-h1 text-center text-white">Velkommen tilbake!</h1>
+          {reason === 'password_changed' && (
+            <p className="font-body text-orange text-center">
+              Passordet er oppdatert. Logg inn med det nye passordet.
+            </p>
+          )}
           {reason === 'not_authenticated' && (
             <p className="font-body text-orange text-center">
               Det ser ut som at du ikke er logget inn. Logg inn igjen for å fortsette.
@@ -104,6 +109,12 @@ export default function LoginSection({ reason }: { reason?: string }) {
             <Button type="submit" variant="primary" size="md" icon="right" loading={loading}>
               Logg inn
             </Button>
+            <Link
+              to="/glemt-passord"
+              className={`${linkClassesInherit} text-center text-white underline`}
+            >
+              Glemt passord?
+            </Link>
           </form>
         </div>
       </div>
