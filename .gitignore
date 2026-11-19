@@ -44,3 +44,6 @@ yarn-error.log*
 /blob-report
 /playwright/.cache
 /coverage
+
+# Supabase CLI working files (created by `supabase` commands, e.g. the migrations workflow)
+supabase/.temp
