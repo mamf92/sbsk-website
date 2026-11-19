@@ -49,8 +49,20 @@ export async function listTotpFactors(): Promise<TotpFactor[]> {
     }));
 }
 
+/**
+ * The name an authenticator app shows above the code ("Stavanger Brettspillklubb: you@…").
+ * Supabase builds the otpauth URI's issuer from the site URL when none is given, which is how an
+ * entry came to read "localhost:3000". `friendlyName` is only the label in Supabase's own factor
+ * list, never what the app displays.
+ */
+export const TOTP_ISSUER = 'Stavanger Brettspillklubb';
+
 export async function enrollTotp(friendlyName: string): Promise<TotpEnrollment> {
-  const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp', friendlyName });
+  const { data, error } = await supabase.auth.mfa.enroll({
+    factorType: 'totp',
+    friendlyName,
+    issuer: TOTP_ISSUER,
+  });
   if (error) throw error;
   return { factorId: data.id, qrCode: data.totp.qr_code, secret: data.totp.secret };
 }

@@ -1,5 +1,6 @@
 import { useId, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Alert } from '../../ui/Alert';
 import { AvatarStack } from '../../ui/AvatarStack';
 import { Button } from '../../ui/Buttons';
 import { buttonClasses } from '../../ui/buttonClasses';
@@ -12,6 +13,8 @@ import { formatAdminEventDate } from './eventDate';
 type UpcomingEventsPanelProps = {
   events: AdminEvent[];
   signups: Record<string, AdminSignup[]>;
+  /** The sign-up read failed: say so rather than show "0 påmeldt" for every event. */
+  signupsUnavailable?: boolean;
 };
 
 /**
@@ -19,9 +22,16 @@ type UpcomingEventsPanelProps = {
  * open, as Martin asked for "the next event and who is signed up"; the rest collapse to one
  * line each with the count and faces, and expand to the name list.
  */
-export default function UpcomingEventsPanel({ events, signups }: UpcomingEventsPanelProps) {
+export default function UpcomingEventsPanel({
+  events,
+  signups,
+  signupsUnavailable = false,
+}: UpcomingEventsPanelProps) {
   return (
     <Panel title="Kommende arrangementer" className="min-w-0">
+      {signupsUnavailable && (
+        <Alert>Påmeldinger kunne ikke hentes akkurat nå. Prøv å laste siden på nytt.</Alert>
+      )}
       {events.length === 0 ? (
         <EmptyState
           variant="inline"
@@ -37,6 +47,7 @@ export default function UpcomingEventsPanel({ events, signups }: UpcomingEventsP
               event={event}
               signups={signups[event._id] ?? []}
               defaultOpen={index === 0}
+              signupsUnavailable={signupsUnavailable}
             />
           ))}
         </ul>
@@ -49,10 +60,12 @@ function EventRow({
   event,
   signups,
   defaultOpen,
+  signupsUnavailable,
 }: {
   event: AdminEvent;
   signups: AdminSignup[];
   defaultOpen: boolean;
+  signupsUnavailable: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   const listId = useId();
@@ -68,12 +81,14 @@ function EventRow({
         </div>
         <div className="flex items-center gap-3">
           {people.length > 0 && <AvatarStack people={people} max={4} size="sm" overlap />}
-          <p className="font-heading text-h3 font-bold" aria-label={`${signups.length} påmeldt`}>
-            {signups.length}
-            <span className="font-body ml-1 text-xs font-normal text-gray-100" aria-hidden="true">
-              påmeldt
-            </span>
-          </p>
+          {!signupsUnavailable && (
+            <p className="font-heading text-h3 font-bold" aria-label={`${signups.length} påmeldt`}>
+              {signups.length}
+              <span className="font-body ml-1 text-xs font-normal text-gray-100" aria-hidden="true">
+                påmeldt
+              </span>
+            </p>
+          )}
         </div>
       </div>
       <div className="flex flex-wrap gap-2">

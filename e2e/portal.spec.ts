@@ -227,3 +227,102 @@ test('a board portal registry failure is a fault, not a fallback', async ({ page
   await expect(page).toHaveURL(BOARD_PORTAL);
   await expect(page.getByRole('heading', { name: 'Noe gikk galt hos oss' })).toBeVisible();
 });
+
+// The scenario Martin hit on the first real login (19 Nov): the app was ahead of the database, so
+// the `member_season_status` view answered 404, and the whole portal fell to the fault screen
+// after a successful 2FA. Payment status is an enhancement of the register, not the register.
+test('the overview survives a missing payment view and says so', async ({ page }) => {
+  const errors = collectPageErrors(page);
+  await stubSanityWithContent(page);
+  await stubSupabase(page, { fail: { member_season_status: 404 } });
+
+  await page.goto(BOARD_PORTAL);
+
+  await expect(page.getByRole('heading', { level: 1, name: 'Hei, Ingrid!' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Noe gikk galt hos oss' })).toHaveCount(0);
+  const summary = page.getByRole('region', { name: 'Medlemmer' });
+  await expect(summary.getByRole('alert')).toContainText('Betalingsstatus kunne ikke hentes');
+  await expect(summary.getByRole('link', { name: /^3\s*Aktive$/ })).toBeVisible();
+  // No number is better than a wrong one: with no status, "Ikke betalt" would read 3.
+  await expect(summary.getByRole('link', { name: /Ikke betalt/ })).toHaveCount(0);
+
+  await page.goto(`${BOARD_PORTAL}/medlemmer`);
+  await expect(page.getByRole('list', { name: 'Medlemmer' }).getByRole('listitem')).toHaveCount(3);
+  await expect(page.getByRole('alert')).toContainText('Betalingsstatus kunne ikke hentes');
+  expect(errors, `page threw: ${errors.join(', ')}`).toEqual([]);
+});
+
+// Admin first login, end to end: a session with no second factor is sent to enrolment, the
+// enrolment names the club as the issuer (an authenticator app shows "localhost:3000" otherwise),
+// the code is accepted, and the visitor lands on a loading overview.
+test('an admin without a factor enrols, verifies, and reaches the overview', async ({ page }) => {
+  const errors = collectPageErrors(page);
+  await stubSanityWithContent(page);
+  await stubSupabase(page, { aal: 'aal1', hasFactor: false });
+
+  let enrolBody: Record<string, unknown> | null = null;
+  const factorId = '33333333-3333-4333-8333-333333333333';
+  await page.route('**://*.supabase.co/auth/v1/factors', (route) => {
+    enrolBody = route.request().postDataJSON();
+    return route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        id: factorId,
+        type: 'totp',
+        friendly_name: enrolBody?.friendly_name,
+        totp: {
+          qr_code: 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg"/>',
+          secret: 'JBSWY3DPEHPK3PXP',
+          uri: 'otpauth://totp/x',
+        },
+      }),
+    });
+  });
+  await page.route('**://*.supabase.co/auth/v1/factors/*/challenge', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        id: 'c1',
+        type: 'totp',
+        expires_at: Math.floor(Date.now() / 1000) + 300,
+      }),
+    }),
+  );
+  await page.route('**://*.supabase.co/auth/v1/factors/*/verify', async (route) => {
+    // What supabase-js stores as the raised session: the same user, an aal2 token.
+    const raised = await page.evaluate(() => {
+      const key = Object.keys(localStorage).find((k) => k.endsWith('-auth-token'))!;
+      return JSON.parse(localStorage.getItem(key)!);
+    });
+    return route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ...raised, access_token: AAL2_TOKEN(raised.access_token) }),
+    });
+  });
+
+  await page.goto(BOARD_PORTAL);
+
+  await expect(page).toHaveURL(/\/to-faktor\/oppsett\?neste=%2Fstyreportal$/);
+  await expect(page.getByRole('textbox', { name: 'Sekssifret kode' })).toBeVisible();
+  expect(enrolBody).toMatchObject({ factor_type: 'totp', issuer: 'Stavanger Brettspillklubb' });
+
+  await page.getByRole('textbox', { name: 'Sekssifret kode' }).fill('123456');
+  await page.getByRole('button', { name: 'Slå på' }).click();
+
+  await expect(page).toHaveURL(BOARD_PORTAL);
+  await expect(page.getByRole('heading', { level: 1, name: 'Hei, Ingrid!' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Noe gikk galt hos oss' })).toHaveCount(0);
+  expect(errors, `page threw: ${errors.join(', ')}`).toEqual([]);
+});
+
+/** Re-signs the payload of a stub token with `aal: aal2`; nothing verifies the signature. */
+function AAL2_TOKEN(token: string): string {
+  const [header, payload, signature] = token.split('.');
+  const claims = JSON.parse(Buffer.from(payload, 'base64url').toString());
+  claims.aal = 'aal2';
+  claims.amr = [{ method: 'totp', timestamp: claims.iat }];
+  return `${header}.${Buffer.from(JSON.stringify(claims)).toString('base64url')}.${signature}`;
+}
