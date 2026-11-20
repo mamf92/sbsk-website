@@ -9,7 +9,7 @@ import { openExternal, safeExternalUrl } from '../../utils/safeUrl';
 
 // Fixed boxes per tier, so logos of odd shapes line up and the grading reads at a glance.
 const logoBox = {
-  hovedsponsor: 'h-24 w-48',
+  hovedsponsor: 'h-28 w-56 sm:h-32 sm:w-64',
   sponsor: 'h-16 w-32',
   partner: 'h-12 w-24',
 } as const;
@@ -18,7 +18,7 @@ const logoBox = {
  * One sponsor's logo, linked to their site when that link is safe. Many logos are dark on a
  * transparent background. On a surface that follows the theme (`themed`), dark mode shows the
  * editor's light version when there is one, else puts the logo on a white tile. On a fixed
- * light surface such as the orange strip, the normal logo is always right. A sponsor without a
+ * light surface, pass `themed={false}`. A sponsor without a
  * logo gets a text tile with its name.
  */
 export function SponsorLogo({
@@ -110,7 +110,7 @@ export const SponsorStrip = React.forwardRef<HTMLElement, SponsorListProps>(
         ref={ref}
         aria-label={t('sponsors.supportedBy')}
         className={[
-          'bg-darkorange text-darkestblue flex flex-col items-center gap-6 px-4 py-8 sm:px-8',
+          'text-darkestblue dark:bg-darkblue flex flex-col items-center gap-5 bg-gray-100 px-4 py-6 sm:px-8 dark:text-white',
           className,
         ].join(' ')}
         {...props}
@@ -118,10 +118,10 @@ export const SponsorStrip = React.forwardRef<HTMLElement, SponsorListProps>(
         <p className="font-body text-xs font-semibold tracking-[0.14em] uppercase">
           {t('sponsors.supportedBy')}
         </p>
-        <ul className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6">
+        <ul className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
           {main.map((sponsor, index) => (
             <li key={sponsor._key ?? index} className="flex flex-col items-center gap-2">
-              <SponsorLogo sponsor={sponsor} size="hovedsponsor" themed={false} />
+              <SponsorLogo sponsor={sponsor} size="hovedsponsor" />
               <SponsorOffer sponsor={sponsor} />
             </li>
           ))}
