@@ -2,11 +2,12 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Buttons';
 import { NavMenuButton } from '../ui/NavMenuButton';
 import { IconButton } from '../ui/IconButton';
+import { ProfileMenu } from '../ui/ProfileMenu';
 import { DiceLogo } from '../ui/DiceLogo';
 import { navLinkClasses } from '../ui/Link';
 import { buttonClasses } from '../ui/buttonClasses';
 import { useTheme } from '../../hooks/theme/ThemeContext';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../../hooks/authContext/authContext';
 import { useGoHome } from '../../hooks/useGoHome';
 import { portalRoutesEnabled } from '../../utils/featureFlags';
@@ -34,15 +35,10 @@ export default function Header() {
   const navigate = useNavigate();
   const { goHome, handleHomeLinkClick } = useGoHome();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const { logout, isAuthenticated, isAdmin, user } = useAuth();
   // Greeting uses the first name only: the full name ("Martin Andreas Michael") made the button
   // the widest control in the header.
   const firstName = user?.name?.trim().split(/\s+/)[0];
-
-  const portalPath = isAdmin ? '/styreportal' : '/medlemsportal';
-  const portalLabel = isAdmin ? 'Styreportal' : 'Min side';
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
@@ -64,22 +60,6 @@ export default function Header() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isMobileMenuOpen]);
 
-  useEffect(() => {
-    if (!isDropdownOpen) return;
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setIsDropdownOpen(false);
-    };
-    const handlePointerDown = (event: PointerEvent) => {
-      if (!dropdownRef.current?.contains(event.target as Node)) setIsDropdownOpen(false);
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('pointerdown', handlePointerDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('pointerdown', handlePointerDown);
-    };
-  }, [isDropdownOpen]);
-
   return (
     <header
       lang="nb"
@@ -94,9 +74,20 @@ export default function Header() {
             to="/"
             end
             onClick={handleHomeLinkClick}
-            className="font-heading tracking-heading focus-visible:outline-focus-ring text-h4 font-bold text-white no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="font-heading tracking-heading focus-visible:outline-focus-ring font-bold text-white no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           >
-            SBSK
+            {/* Below `xl` the bar is tight (the signed-in profile button joins the six links at `lg`), so only the acronym shows. The full name stays the
+                link's accessible name at every width: the visible text is aria-hidden and a
+                screen-reader-only copy carries the name, which also contains what a voice user
+                sees on desktop. The two-line stack is the height of the 40px dice. */}
+            <span className="sr-only">Stavanger Brettspillklubb</span>
+            <span aria-hidden="true" className="text-h4 xl:hidden">
+              SBSK
+            </span>
+            <span aria-hidden="true" className="hidden text-base leading-tight xl:flex xl:flex-col">
+              <span>Stavanger</span>
+              <span>Brettspillklubb</span>
+            </span>
           </NavLink>
         </div>
 
@@ -149,74 +140,16 @@ export default function Header() {
 
           {/* Login / profile — desktop only. Gated behind #213: no member/board portal for the
               MVP launch, so there is no login option to show at all. */}
-          {/* A signed-in member or board member always gets a direct way back to their portal,
-              from any page. It follows `portalRoutesEnabled`, not `memberPortalEnabled`: the
-              live site runs with the routes on and the login button off, and the board who
-              sign in by URL had no link back once they browsed away. */}
-          {portalRoutesEnabled && isAuthenticated && (
-            <NavLink
-              to={portalPath}
-              className={buttonClasses({
-                variant: 'primary',
-                size: 'md',
-                className: 'hidden lg:inline-flex',
-              })}
-            >
-              {portalLabel}
-            </NavLink>
-          )}
-
           {portalRoutesEnabled && isAuthenticated ? (
-            <div ref={dropdownRef} className="relative z-50 hidden lg:block">
-              <Button
-                variant="primary"
-                size="md"
-                icon="expand"
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              >
-                {firstName ? `Hei, ${firstName}` : 'Min profil'}
-              </Button>
-              <div
-                className={`bg-darkestblue absolute top-full right-0 z-50 mt-2 flex min-w-44 flex-col items-start gap-2 p-4 ${isDropdownOpen ? '' : 'hidden'}`}
-              >
-                {isAdmin && (
-                  <Button
-                    variant="primary"
-                    size="md"
-                    icon="right"
-                    onClick={() => {
-                      navigate('/styreportal');
-                      setIsDropdownOpen(false);
-                    }}
-                  >
-                    Styreportal
-                  </Button>
-                )}
-                <Button
-                  variant="primary"
-                  size="md"
-                  icon="right"
-                  onClick={() => {
-                    navigate('/medlemsportal');
-                    setIsDropdownOpen(false);
-                  }}
-                >
-                  Min side
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="md"
-                  icon="right"
-                  onClick={() => {
-                    logout();
-                    setIsDropdownOpen(false);
-                    navigate('/');
-                  }}
-                >
-                  Logg ut
-                </Button>
-              </div>
-            </div>
+            <ProfileMenu
+              className="hidden lg:block"
+              label={firstName ? `Hei, ${firstName}` : 'Min profil'}
+              isAdmin={isAdmin}
+              onLogout={() => {
+                logout();
+                navigate('/');
+              }}
+            />
           ) : (
             portalRoutesEnabled && (
               <NavLink
