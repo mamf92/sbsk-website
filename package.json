@@ -13,7 +13,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "typecheck": "tsc -b"
+    "typecheck": "tsc -b",
+    "audit:norwegian": "node scripts/audit-norwegian.mjs"
   },
   "dependencies": {
     "@portabletext/react": "^6.2.0",
