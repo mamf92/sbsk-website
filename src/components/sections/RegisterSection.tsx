@@ -1,3 +1,4 @@
+import { norwegianErrorMessage } from '../../utils/errorMessage';
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '../ui/Buttons';
@@ -26,17 +27,11 @@ export default function RegisterSection() {
       const { isAdmin } = await registerWithPassword({ email, password });
       navigate(isAdmin ? '/styreportal' : '/medlemsportal');
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(
-          'Noe gikk galt: ' +
-            err.message +
-            '. Er du nylig blitt medlem av klubben? Det kan ta litt tid før kontoen din er klar til bruk. Prøv igjen senere, eller kontakt oss hvis problemet vedvarer.',
-        );
-      } else {
-        setError(
-          'Noe gikk galt. Er du nylig blitt medlem av klubben? Det kan ta litt tid før kontoen din er klar til bruk. Prøv igjen senere, eller kontakt oss hvis problemet vedvarer.',
-        );
-      }
+      const reason = norwegianErrorMessage(err, '');
+      setError(
+        (reason ? `${reason} ` : 'Noe gikk galt. ') +
+          'Er du nylig blitt medlem av klubben? Det kan ta litt tid før kontoen din er klar til bruk. Prøv igjen senere, eller kontakt oss hvis problemet vedvarer.',
+      );
     } finally {
       setLoading(false);
     }

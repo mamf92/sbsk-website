@@ -1,3 +1,4 @@
+import { norwegianErrorMessage } from '../../../utils/errorMessage';
 import type { Member } from '../../../supabase/queryHelpers/getMember';
 import { Button } from '../../ui/Buttons';
 import { Checkbox } from '../../ui/Checkbox';
@@ -50,7 +51,7 @@ export default function MemberForm({ member, onSubmitMember, onClose }: MemberFo
       await onSubmitMember(memberData);
       onClose();
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : 'Kunne ikke lagre medlemmet.');
+      setSubmitError(norwegianErrorMessage(err, 'Kunne ikke lagre medlemmet.'));
     } finally {
       setSubmitting(false);
     }

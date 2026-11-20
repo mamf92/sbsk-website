@@ -26,13 +26,13 @@ async function submit() {
 
 describe('MemberForm', () => {
   it('awaits the save before closing, and stays open on failure (#169)', async () => {
-    const onSubmitMember = vi.fn().mockRejectedValue(new Error('tilgang nektet'));
+    const onSubmitMember = vi.fn().mockRejectedValue(new Error('Permission denied'));
     const onClose = vi.fn();
     render(<MemberForm member={member} onSubmitMember={onSubmitMember} onClose={onClose} />);
 
     await submit();
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('tilgang nektet');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Kunne ikke lagre medlemmet.');
     expect(onSubmitMember).toHaveBeenCalledTimes(1);
     // The old bug: onClose ran unconditionally, synchronously, before the save even resolved.
     expect(onClose).not.toHaveBeenCalled();

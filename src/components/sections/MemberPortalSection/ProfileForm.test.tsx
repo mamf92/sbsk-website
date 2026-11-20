@@ -19,13 +19,13 @@ const profile: Profile = {
 
 describe('ProfileForm', () => {
   it('surfaces a save failure instead of closing silently (#169)', async () => {
-    const onSubmitProfile = vi.fn().mockRejectedValue(new Error('nettverksfeil'));
+    const onSubmitProfile = vi.fn().mockRejectedValue(new Error('Network error'));
     const onClose = vi.fn();
     render(<ProfileForm profile={profile} onSubmitProfile={onSubmitProfile} onClose={onClose} />);
 
     await userEvent.click(screen.getByRole('button', { name: 'Lagre endringer' }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('nettverksfeil');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Kunne ikke lagre endringene.');
     expect(onSubmitProfile).toHaveBeenCalledTimes(1);
     // The form stays open on failure — nothing here ever calls onClose on a rejection.
     expect(onClose).not.toHaveBeenCalled();

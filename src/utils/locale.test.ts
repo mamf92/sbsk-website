@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  detectLocale,
   getInitialLocale,
   getLocale,
   isTranslatedPath,
@@ -9,22 +8,6 @@ import {
   setLocale,
   subscribeLocale,
 } from './locale';
-
-describe('detectLocale', () => {
-  it.each([
-    [['nb-NO'], 'nb'],
-    [['nb_NO'], 'nb'],
-    [['nn'], 'nb'],
-    [['no'], 'nb'],
-    [['en-US', 'nb'], 'en'],
-    [['de-DE'], 'en'],
-    [['nbx'], 'en'],
-    [[], 'nb'],
-    [undefined, 'nb'],
-  ] as const)('%j → %s', (languages, expected) => {
-    expect(detectLocale(languages as readonly string[] | undefined)).toBe(expected);
-  });
-});
 
 describe('getInitialLocale', () => {
   it('prefers a stored choice over the browser', () => {
@@ -39,10 +22,10 @@ describe('getInitialLocale', () => {
     expect(getInitialLocale()).toBe('nb');
   });
 
-  it('falls back to navigator.language when the languages list is empty', () => {
-    vi.spyOn(navigator, 'languages', 'get').mockReturnValue([]);
+  it('stays Norwegian for an English browser until the visitor picks English', () => {
+    vi.spyOn(navigator, 'languages', 'get').mockReturnValue(['en-US']);
     vi.spyOn(navigator, 'language', 'get').mockReturnValue('en-US');
-    expect(getInitialLocale()).toBe('en');
+    expect(getInitialLocale()).toBe('nb');
   });
 
   it('survives storage that throws', () => {

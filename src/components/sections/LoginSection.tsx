@@ -1,3 +1,4 @@
+import { norwegianErrorMessage } from '../../utils/errorMessage';
 import { useRef, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '../ui/Buttons';
@@ -37,11 +38,7 @@ export default function LoginSection({ reason }: { reason?: string }) {
       const { isAdmin } = await signInWithPassword({ email, password });
       navigate(isAdmin ? '/styreportal' : '/medlemsportal');
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError('Noe gikk galt. Prøv igjen.');
-      }
+      setError(norwegianErrorMessage(err, 'Noe gikk galt. Prøv igjen.'));
     } finally {
       setLoading(false);
     }
