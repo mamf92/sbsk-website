@@ -22,7 +22,7 @@ export const calendarHeroType = defineType({
       title: 'Komplett bilde',
       name: 'completeImage',
       type: 'object',
-      description: 'Legg til bilde med alt-tekst, kilde og kilde-URL. Valgfritt.',
+      description: 'Legg til bilde med alt-tekst, kilde og lenke til kilden. Valgfritt.',
       fields: [
         {
           title: 'Bilde',
@@ -31,7 +31,7 @@ export const calendarHeroType = defineType({
           options: { hotspot: true },
         },
         {
-          title: 'Alt-tekst',
+          title: 'Bildebeskrivelse (alt-tekst)',
           name: 'altText',
           type: 'string',
           description: 'Beskriv bildet for synshemmede og SEO.',
@@ -43,10 +43,10 @@ export const calendarHeroType = defineType({
           description: 'Kilden for bildet (f.eks. fotografens navn eller nettsted).',
         },
         {
-          title: 'Kilde-URL',
+          title: 'Lenke til kilden',
           name: 'sourceUrl',
           type: 'url',
-          description: 'URL til kilden for bildet.',
+          description: 'Nettadressen der bildet er hentet fra.',
         },
       ],
     }),
@@ -70,10 +70,10 @@ export const calendarHeroType = defineType({
           description: 'Navn på kilden for bildet.',
         },
         {
-          title: 'Bildekilde URL',
+          title: 'Lenke til bildekilden',
           name: 'imageSourceUrl',
           type: 'url',
-          description: 'URL til kilden for bildet.',
+          description: 'Nettadressen der bildet er hentet fra.',
         },
       ],
     }),

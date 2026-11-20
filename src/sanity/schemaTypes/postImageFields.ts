@@ -6,7 +6,7 @@ import { defineField } from 'sanity';
 // itself.
 export const postImageFields = [
   defineField({
-    title: 'Alt-tekst',
+    title: 'Bildebeskrivelse (alt-tekst)',
     name: 'alt',
     type: 'string',
     description:
@@ -26,10 +26,10 @@ export const postImageFields = [
     description: 'Navn på kilden for bildet.',
   }),
   defineField({
-    title: 'Bildekilde URL',
+    title: 'Lenke til bildekilden',
     name: 'imageSourceUrl',
     type: 'url',
-    description: 'URL til kilden for bildet.',
+    description: 'Nettadressen der bildet er hentet fra.',
   }),
 ];
 
