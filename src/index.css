@@ -200,9 +200,10 @@
   --spacing-stack: 0.5rem; /* 8 */
 
   /* The one square every icon-only control sits in: the burger, the theme toggle, the
-     add-to-calendar button. 42px clears the 24px target minimum (WCAG 2.5.8) with room to
-     spare and matches the header's other controls. `size-icon-button`. */
-  --spacing-icon-button: 2.625rem; /* 42 */
+     add-to-calendar button. 44px clears the 24px target minimum (WCAG 2.5.8) with room to
+     spare and is exactly `Button` size `md` (h-11), so every control in the header's right-hand
+     cluster shares one height. `size-icon-button`. */
+  --spacing-icon-button: 2.75rem; /* 44 */
 
   /* ---------------------------------------------------------------------
      Motion. The brand is still flat — sharp corners, no blur, no scale — but not

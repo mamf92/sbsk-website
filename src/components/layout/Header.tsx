@@ -140,7 +140,7 @@ export default function Header() {
               room for a third control at 320px, so there it lives at the top of the menu. */}
           {showLanguageToggle && (
             <span className="hidden sm:contents">
-              <LanguageToggle locale={locale} onChange={setLocale} />
+              <LanguageToggle locale={locale} onChange={setLocale} size="md" />
             </span>
           )}
 
@@ -155,7 +155,7 @@ export default function Header() {
               to={portalPath}
               className={buttonClasses({
                 variant: 'primary',
-                size: 'sm',
+                size: 'md',
                 className: 'hidden lg:inline-flex',
               })}
             >
@@ -167,14 +167,14 @@ export default function Header() {
             <div ref={dropdownRef} className="relative z-50 hidden lg:block">
               <Button
                 variant="primary"
-                size="sm"
+                size="md"
                 icon="expand"
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               >
                 {(user?.name && 'Hi, ' + user.name) || 'Min profil'}
               </Button>
               <div
-                className={`bg-darkestblue absolute top-11 right-0 z-50 flex w-40 flex-col items-start gap-2 p-4 ${isDropdownOpen ? '' : 'hidden'}`}
+                className={`bg-darkestblue absolute top-12 right-0 z-50 flex w-40 flex-col items-start gap-2 p-4 ${isDropdownOpen ? '' : 'hidden'}`}
               >
                 {isAdmin && (
                   <Button
@@ -220,7 +220,7 @@ export default function Header() {
                 to="/login"
                 className={buttonClasses({
                   variant: 'primary',
-                  size: 'sm',
+                  size: 'md',
                   className: 'hidden lg:inline-flex',
                 })}
               >
