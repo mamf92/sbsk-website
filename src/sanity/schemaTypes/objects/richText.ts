@@ -9,18 +9,18 @@ export const richTextBlocks = [
     type: 'block',
     styles: [
       { title: 'Normal', value: 'normal' },
-      { title: 'Heading 1', value: 'h2' },
-      { title: 'Heading 2', value: 'h3' },
+      { title: 'Overskrift', value: 'h2' },
+      { title: 'Underoverskrift', value: 'h3' },
     ],
     lists: [
-      { title: 'Bullet', value: 'bullet' },
-      { title: 'Numbered', value: 'number' },
+      { title: 'Punktliste', value: 'bullet' },
+      { title: 'Nummerert liste', value: 'number' },
     ],
     marks: {
       decorators: [
-        { title: 'Strong', value: 'strong' },
-        { title: 'Underline', value: 'underline' },
-        { title: 'Emphasis', value: 'em' },
+        { title: 'Fet', value: 'strong' },
+        { title: 'Understreket', value: 'underline' },
+        { title: 'Kursiv', value: 'em' },
       ],
       annotations: [
         {

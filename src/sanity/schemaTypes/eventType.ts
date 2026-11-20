@@ -4,7 +4,7 @@ import { isUniqueAcrossEvents } from './slugAcrossEvents';
 
 export const eventType = defineType({
   name: 'event',
-  title: 'Arrangement',
+  title: 'Kalender - Arrangement',
   type: 'document',
   fields: [
     defineField({
@@ -116,7 +116,7 @@ export const eventType = defineType({
         defineField({
           name: 'url',
           type: 'url',
-          title: 'URL',
+          title: 'Nettadresse',
           validation: (rule) => rule.uri({ scheme: ['http', 'https'] }),
         }),
       ],
@@ -212,7 +212,7 @@ export const eventType = defineType({
             defineField({
               name: 'url',
               type: 'url',
-              description: 'URL for lenken.',
+              description: 'Nettadressen lenken skal gå til.',
               validation: (rule) => rule.uri({ scheme: ['http', 'https'] }),
             }),
           ],

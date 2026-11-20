@@ -3,7 +3,7 @@ import { heroLinksField } from './heroLinksField';
 
 export const gamesHeroType = defineType({
   name: 'gamesHero',
-  title: 'Våre spill - Hero',
+  title: 'Våre spill - Forsidebilde',
   type: 'document',
   fields: [
     defineField({
@@ -22,7 +22,7 @@ export const gamesHeroType = defineType({
       title: 'Bilde',
       name: 'image',
       type: 'image',
-      description: 'Bakgrunnsbilde for hero-seksjonen. Valgfritt.',
+      description: 'Bakgrunnsbilde i toppen av siden. Valgfritt.',
       options: { hotspot: true },
     }),
     defineField({
@@ -38,10 +38,10 @@ export const gamesHeroType = defineType({
           description: 'Navn på kilden for bildet.',
         },
         {
-          title: 'Bildekilde URL',
+          title: 'Lenke til bildekilden',
           name: 'imageSourceUrl',
           type: 'url',
-          description: 'URL til kilden for bildet.',
+          description: 'Nettadressen der bildet er hentet fra.',
         },
       ],
     }),

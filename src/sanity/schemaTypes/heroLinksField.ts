@@ -21,8 +21,8 @@ export const heroLinksField = defineField({
   title: 'Lenker',
   name: 'links',
   type: 'array',
-  description: 'Knapper som vises i hero-seksjonen. Maks tre. Valgfritt.',
-  validation: (rule) => rule.max(3).error('Hero-seksjonen viser maks tre knapper'),
+  description: 'Knapper som vises i forsidebildet. Maks tre. Valgfritt.',
+  validation: (rule) => rule.max(3).error('Forsidebildet viser maks tre knapper'),
   of: [
     {
       type: 'object',
