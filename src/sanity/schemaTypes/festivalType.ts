@@ -272,7 +272,7 @@ export const festivalDayType = defineType({
 /** A festival over several days with its own programme: «Storarrangement», e.g. BGM. */
 export const festivalType = defineType({
   name: 'festival',
-  title: 'Storarrangement',
+  title: 'Kalender - Storarrangement',
   type: 'document',
   description:
     'Arrangementer over flere dager med eget program, som Board Game Masters. Får sin egen side under /arrangementer når det er publisert, og den nyeste Board Game Masters vises på /board-game-masters.',
