@@ -60,6 +60,30 @@ describe('Alert', () => {
   });
 });
 
+describe('Alert tones', () => {
+  it.each([
+    ['info', 'status'],
+    ['success', 'status'],
+    ['warning', 'status'],
+    ['error', 'alert'],
+  ] as const)('%s announces as %s with a glyph, not colour alone', (tone, role) => {
+    const { container } = render(<Alert tone={tone}>Tekst</Alert>);
+    expect(screen.getByRole(role)).toHaveTextContent('Tekst');
+    expect(container.querySelector('svg')).not.toBeNull();
+  });
+
+  it('gives every tone its own class list', () => {
+    const tones = ['info', 'success', 'warning', 'error'] as const;
+    const classes = tones.map((tone) => {
+      const { unmount, container } = render(<Alert tone={tone}>x</Alert>);
+      const c = (container.firstElementChild as HTMLElement).innerHTML;
+      unmount();
+      return c;
+    });
+    expect(new Set(classes).size).toBe(4);
+  });
+});
+
 describe('FieldError', () => {
   it('is the small Alert, and is announced the same way', () => {
     render(<FieldError>Postnummeret må være på 4 siffer.</FieldError>);

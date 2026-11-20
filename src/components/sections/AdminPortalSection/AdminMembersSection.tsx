@@ -164,7 +164,7 @@ export default function AdminMembersSection({
         </div>
       </div>
 
-      {!paymentsKnown && <Alert>{PAYMENTS_UNAVAILABLE}</Alert>}
+      {!paymentsKnown && <Alert tone="warning">{PAYMENTS_UNAVAILABLE}</Alert>}
 
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-wrap items-center gap-2">

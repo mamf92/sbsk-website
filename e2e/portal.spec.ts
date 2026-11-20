@@ -202,7 +202,7 @@ test('a member who is not an admin falls back to the member portal', async ({ pa
   await expect(page.getByRole('heading', { level: 1, name: 'Velkommen, Ingrid!' })).toBeVisible();
   await expect(page.getByRole('navigation', { name: 'Styreportal' })).toHaveCount(0);
   // #82: the fallback used to be silent. A non-admin now sees why they landed here.
-  await expect(page.getByRole('alert')).toHaveText(
+  await expect(page.getByRole('status')).toHaveText(
     'Du har ikke administratortilgang til styreportalen.',
   );
 });
@@ -241,14 +241,14 @@ test('the overview survives a missing payment view and says so', async ({ page }
   await expect(page.getByRole('heading', { level: 1, name: 'Hei, Ingrid!' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Noe gikk galt hos oss' })).toHaveCount(0);
   const summary = page.getByRole('region', { name: 'Medlemmer' });
-  await expect(summary.getByRole('alert')).toContainText('Betalingsstatus kunne ikke hentes');
+  await expect(summary.getByRole('status')).toContainText('Betalingsstatus kunne ikke hentes');
   await expect(summary.getByRole('link', { name: /^3\s*Aktive$/ })).toBeVisible();
   // No number is better than a wrong one: with no status, "Ikke betalt" would read 3.
   await expect(summary.getByRole('link', { name: /Ikke betalt/ })).toHaveCount(0);
 
   await page.goto(`${BOARD_PORTAL}/medlemmer`);
   await expect(page.getByRole('list', { name: 'Medlemmer' }).getByRole('listitem')).toHaveCount(3);
-  await expect(page.getByRole('alert')).toContainText('Betalingsstatus kunne ikke hentes');
+  await expect(page.getByRole('status')).toContainText('Betalingsstatus kunne ikke hentes');
   expect(errors, `page threw: ${errors.join(', ')}`).toEqual([]);
 });
 

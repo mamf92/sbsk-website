@@ -1,60 +1,99 @@
 import * as React from 'react';
 import AlertCircle from '../../assets/icons/symbols/alert-circle.svg?react';
+import AlertTriangle from '../../assets/icons/symbols/alert-triangle.svg?react';
 import Check from '../../assets/icons/symbols/check.svg?react';
+import Info from '../../assets/icons/symbols/info.svg?react';
+
+export type AlertTone = 'info' | 'success' | 'warning' | 'error';
 
 type AlertProps = React.HTMLAttributes<HTMLDivElement> & {
   size?: 'sm' | 'md';
-  /** See the tone note below. Defaults to `error`, the only tone this had until #180. */
-  tone?: 'error' | 'success';
+  /** Defaults to `error`, the only tone this had until #180. */
+  tone?: AlertTone;
 };
 
-const toneGlyph = { error: AlertCircle, success: Check } as const;
+const toneConfig = {
+  info: {
+    Glyph: Info,
+    role: 'status',
+    border: 'border-darkblue',
+    tab: 'bg-darkblue text-white',
+  },
+  success: {
+    Glyph: Check,
+    role: 'status',
+    border: 'border-success',
+    tab: 'bg-success text-white',
+  },
+  // Yellow with dark ink: white on yellow is ~1.9:1. The hairline is `darkestorange`
+  // (4.5:1 on white) because yellow alone would not outline the box on a white page.
+  warning: {
+    Glyph: AlertTriangle,
+    role: 'status',
+    border: 'border-darkestorange',
+    tab: 'bg-yellow text-darkestblue',
+  },
+  error: {
+    Glyph: AlertCircle,
+    role: 'alert',
+    border: 'border-error',
+    tab: 'bg-error text-white',
+  },
+} as const;
 
 /**
- * The error message, announced rather than merely painted. `role="alert"` is the whole point:
- * `LoginSection` and `RegisterSection` rendered failures as orange body text that no screen
- * reader ever mentioned.
+ * The form message: info, success, warning or error, announced rather than merely painted.
+ * `role="alert"` (assertive) is reserved for `error`; the other tones are `role="status"`
+ * (polite), because a confirmation or a heads-up should not interrupt the way a failure does.
  *
- * **Why it paints its own white surface.** `--color-error` is `#b5251f` and both auth forms
- * sit on a `darkblue` panel — red on `#002f5f` measures 2.07:1, so the obvious "red text on
- * the panel" fails badly. A white block with a red hairline, a red glyph and red text is
- * 6.4:1 and works on any surface, which matters because this component has to be usable on a
- * `darkblue` form panel and on the white page alike. It stays flat and square; the brand's
- * only concession here is that it brings its own fill.
+ * **Why it paints its own white surface.** The auth forms sit on a `darkblue` panel, and
+ * coloured text on it fails (red is 2.07:1, green is no better), while a tinted fill would
+ * change meaning with whatever sits behind it. A white block with dark ink text is 16:1 on
+ * any surface and in both themes, so it is legible on the white page, the `darkblue` panel
+ * and the dark-mode page alike.
  *
- * **Two tones now, not one.** Error was the only tone until the Kontakt oss form (#180) needed
- * to confirm a send rather than only report a failure — a genuine second case, not a guess at
- * a map nobody asked for. `tone="success"` swaps the red for `--color-success` (`#007124`,
- * 6.20:1 on white) and the glyph for a check, and announces via `role="status"` instead of
- * `role="alert"`: a status update should not interrupt the way an alert does. `FieldError`
- * stays error-only — nothing pairs a field-level success message with it yet.
+ * **Tone lives in the icon tab, never in the text.** A solid tab at the left carries the tone
+ * colour and its glyph (check, info, triangle, circle-bang), plus a hairline in the same
+ * colour. The text stays ink, so colour is never the only signal: the glyph shape differs
+ * per tone, and the live-region role carries it for assistive tech. Flat and square, no
+ * shadow: nothing here is pressable, so it does not take `lift`.
+ *
+ * (The first version, #180, was a white box with green or red text and glyph. Green text
+ * on a white box inside a navy panel read as a foreign object; the tab gives each tone one
+ * strong, brand-consistent anchor instead.)
  */
 export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
   { size = 'md', tone = 'error', className = '', children, ...props },
   ref,
 ) {
-  const Glyph = toneGlyph[tone];
-  const toneClass = tone === 'success' ? 'border-success text-success' : 'border-error text-error';
+  const { Glyph, role, border, tab } = toneConfig[tone];
+  const sm = size === 'sm';
 
   return (
     <div
       ref={ref}
-      role={tone === 'success' ? 'status' : 'alert'}
+      role={role}
       className={[
-        toneClass,
-        'font-body flex w-full items-start rounded-none border bg-white',
-        size === 'sm' ? 'gap-2 px-2 py-1.5 text-sm' : 'gap-3 px-3 py-2 text-base',
+        border,
+        'font-body text-darkestblue flex w-full items-stretch rounded-none border bg-white',
+        sm ? 'text-sm' : 'text-base',
         className,
       ]
         .filter(Boolean)
         .join(' ')}
       {...props}
     >
-      <Glyph
+      <span
         aria-hidden="true"
-        className={['mt-0.5 shrink-0', size === 'sm' ? 'size-4' : 'size-5'].join(' ')}
-      />
-      <span>{children}</span>
+        className={[
+          tab,
+          'flex shrink-0 items-start justify-center',
+          sm ? 'w-8 pt-1.5' : 'w-10 pt-2.5',
+        ].join(' ')}
+      >
+        <Glyph className={sm ? 'size-4' : 'size-5'} />
+      </span>
+      <span className={sm ? 'px-2 py-1.5' : 'px-3 py-2'}>{children}</span>
     </div>
   );
 });
