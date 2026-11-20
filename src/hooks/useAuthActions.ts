@@ -15,7 +15,7 @@ export const useAuthActions = () => {
     const { data, error } = await supabase.auth.signUp({ email, password });
 
     if (error || !data.user) {
-      throw new Error(error?.message ?? 'Registration failed');
+      throw new Error(error?.message ?? 'Registrering mislyktes');
     }
 
     const profile = await getProfile(data.user.id);
@@ -29,7 +29,7 @@ export const useAuthActions = () => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error || !data.session) {
-      throw new Error(error?.message ?? 'Login failed');
+      throw new Error(error?.message ?? 'Innlogging mislyktes');
     }
 
     const profile = await getProfile(data.session.user.id);

@@ -39,7 +39,7 @@ export default function ProfileCard({ member }: { member: Profile }) {
             <div className="xs:h-37.5 xs:w-37.5 h-20 w-20">
               <img
                 src="https://placehold.net/avatar-2.png"
-                alt="Placeholder profile"
+                alt="Profilbilde mangler"
                 className="h-full w-full object-cover"
               />
             </div>

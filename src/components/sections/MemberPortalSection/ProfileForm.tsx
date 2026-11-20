@@ -1,3 +1,4 @@
+import { norwegianErrorMessage } from '../../../utils/errorMessage';
 import type { Profile } from '../../../supabase/queryHelpers/getProfile';
 import { Button } from '../../ui/Buttons';
 import { Dialog } from '../../ui/Dialog';
@@ -133,7 +134,7 @@ export default function ProfileForm({ profile, onSubmitProfile, onClose }: Profi
       // here leaves it open with the failure shown, instead of disappearing silently (#169).
       await onSubmitProfile(profileData);
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : 'Kunne ikke lagre endringene.');
+      setSubmitError(norwegianErrorMessage(err, 'Kunne ikke lagre endringene.'));
     } finally {
       setSubmitting(false);
     }

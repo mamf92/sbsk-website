@@ -55,24 +55,13 @@ function storeLocale(locale: Locale) {
 }
 
 /**
- * English only when the browser clearly prefers a language that is not Norwegian. The club's
- * audience is Norwegian, so anything uncertain (no language, an empty list) means `nb`.
+ * Norwegian unless the visitor has chosen English with the toggle. The club's audience is
+ * Norwegian and the rest of the site (header, footer, portals) has no English, so following
+ * the browser's language put an English event page under a Norwegian header.
  */
-export function detectLocale(languages: readonly string[] | undefined): Locale {
-  const first = languages?.find((language) => typeof language === 'string' && language);
-  if (!first) return DEFAULT_LOCALE;
-  // `nb-NO`, `nb_NO` (some embedded browsers), `no`, `nn`.
-  return /^(nb|nn|no)([-_]|$)/i.test(first) ? 'nb' : 'en';
-}
-
-function browserLanguages(): readonly string[] {
-  // An empty `languages` list is not "no preference": fall back to the single value.
-  return navigator.languages?.length ? navigator.languages : [navigator.language];
-}
-
 export function getInitialLocale(): Locale {
   if (!i18nEnabled) return DEFAULT_LOCALE;
-  return getStoredLocale() ?? detectLocale(browserLanguages());
+  return getStoredLocale() ?? DEFAULT_LOCALE;
 }
 
 /* -------------------------------------------------------------------------- */

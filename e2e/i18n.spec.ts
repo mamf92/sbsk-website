@@ -21,8 +21,10 @@ test('a Norwegian browser gets a Norwegian page', async ({ page }) => {
 test.describe('an English browser', () => {
   test.use({ locale: 'en-GB' });
 
-  test('gets English where a page exists in English, and Norwegian elsewhere', async ({ page }) => {
+  test('still gets Norwegian, and can opt in to English with the toggle', async ({ page }) => {
     await page.goto('/board-game-masters');
+    await expect(page.locator('html')).toHaveAttribute('lang', 'nb');
+    await page.getByRole('button', { name: /^EN\b/ }).click();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 
     await page.goto('/om-oss');
