@@ -178,7 +178,7 @@ export const CALENDAR_HERO = {
 export const GAMES_HERO = {
   _id: 'games-hero',
   _type: 'gamesHero',
-  title: 'Våre spill',
+  title: 'Brettspill',
   subtitle: 'Spillene klubben eier, klare til å bli tatt med på en spillkveld.',
 };
 

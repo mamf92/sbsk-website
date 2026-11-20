@@ -228,7 +228,7 @@ function FilterRow({ label, children }: { label: string; children: React.ReactNo
 }
 
 function GamesHero({ gamesHero }: { gamesHero?: GamesHeroTypes | null }) {
-  const title = gamesHero?.title || 'Våre spill';
+  const title = gamesHero?.title || 'Brettspill';
   const subtitle =
     gamesHero?.subtitle ||
     'Sjekk ut spillene i samlingen vår. Som medlem får du rabatt hos vår samarbeidspartner Outland.';

@@ -28,7 +28,7 @@ test('home page renders the hero fallback copy', async ({ page }) => {
 test('header navigates to a Norwegian non-ASCII route', async ({ page }) => {
   await page.goto('/');
 
-  await page.getByRole('link', { name: 'Våre spill' }).first().click();
+  await page.getByRole('link', { name: 'Brettspill', exact: true }).first().click();
 
   // Guards the encoded-path round-trip between the router and the links.
   await expect(page).toHaveURL(/(v%C3%A5re-spill|våre-spill)/);

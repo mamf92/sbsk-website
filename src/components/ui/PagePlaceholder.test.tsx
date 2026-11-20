@@ -20,11 +20,11 @@ const renderPlaceholder = (props: Parameters<typeof PagePlaceholder>[0]) =>
 
 describe('PagePlaceholder', () => {
   it('renders the title as the page h1', () => {
-    renderPlaceholder({ title: 'Våre spill' });
+    renderPlaceholder({ title: 'Brettspill' });
 
     const headings = screen.getAllByRole('heading', { level: 1 });
     expect(headings).toHaveLength(1);
-    expect(headings[0]).toHaveTextContent('Våre spill');
+    expect(headings[0]).toHaveTextContent('Brettspill');
   });
 
   // The six routes this replaces titled themselves with a <div>, so a screen reader landing on

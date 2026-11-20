@@ -103,7 +103,7 @@ export default function Header() {
             Board Game Masters
           </NavLink>
           <NavLink to="/våre-spill" className={desktopNavLink}>
-            Våre spill
+            Brettspill
           </NavLink>
           <NavLink to="/om-oss" className={desktopNavLink}>
             Om oss
@@ -255,7 +255,7 @@ export default function Header() {
             Board Game Masters
           </NavLink>
           <NavLink to="/våre-spill" className={mobileNavLink} onClick={closeMobileMenu}>
-            Våre spill
+            Brettspill
           </NavLink>
           <NavLink to="/om-oss" className={mobileNavLink} onClick={closeMobileMenu}>
             Om oss

@@ -87,13 +87,13 @@ export const festivalSessionType = defineType({
       title: 'Spill',
       type: 'reference',
       to: [{ type: 'game' }],
-      description: 'Valgfritt. Velg et spill fra «Våre spill» for å vise bilde og antall spillere.',
+      description: 'Valgfritt. Velg et spill fra «Brettspill» for å vise bilde og antall spillere.',
     }),
     defineField({
       name: 'gameName',
       title: 'Spillets navn',
       type: 'string',
-      description: 'Bruk dette hvis spillet ikke finnes under «Våre spill».',
+      description: 'Bruk dette hvis spillet ikke finnes under «Brettspill».',
       hidden: ({ parent }) => !!(parent as { game?: unknown } | undefined)?.game,
     }),
     defineField({

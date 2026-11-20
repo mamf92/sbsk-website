@@ -2,7 +2,7 @@ import { defineField, defineType } from 'sanity';
 
 export const gameType = defineType({
   name: 'game',
-  title: 'Våre spill',
+  title: 'Brettspill',
   type: 'document',
   fields: [
     defineField({

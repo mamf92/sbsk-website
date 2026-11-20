@@ -3,7 +3,7 @@ import { heroLinksField } from './heroLinksField';
 
 export const gamesHeroType = defineType({
   name: 'gamesHero',
-  title: 'Våre spill - Forsidebilde',
+  title: 'Brettspill - Forsidebilde',
   type: 'document',
   fields: [
     defineField({
