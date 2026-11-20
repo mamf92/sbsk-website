@@ -18,7 +18,7 @@ export const boardMemberType = defineType({
       description: 'F.eks. «Leder» eller «Kasserer». Valgfritt.',
     }),
     defineField({
-      title: 'Bio',
+      title: 'Presentasjon',
       name: 'bio',
       type: 'text',
       description: 'Én-to setninger. Valgfritt.',

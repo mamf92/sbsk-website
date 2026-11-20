@@ -38,10 +38,10 @@ export const gamesHeroType = defineType({
           description: 'Navn på kilden for bildet.',
         },
         {
-          title: 'Bildekilde URL',
+          title: 'Lenke til bildekilden',
           name: 'imageSourceUrl',
           type: 'url',
-          description: 'URL til kilden for bildet.',
+          description: 'Nettadressen der bildet er hentet fra.',
         },
       ],
     }),
