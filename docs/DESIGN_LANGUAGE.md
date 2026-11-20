@@ -702,3 +702,8 @@ shadow on focus, so the doubling was specific to form controls and the fix is to
 Claude Design is upstream, this repo is the source of truth. When the two disagree, the
 disagreement is worth resolving explicitly rather than porting silently — see
 `docs/ROADMAP.md`, Phase 4.
+
+**Header controls share one height.** The right-hand cluster (theme toggle, language toggle,
+portal link, profile menu, log-in) is all 44px: `--spacing-icon-button` equals `Button` size `md`
+(`h-11`). Before, it was 42/32/36/36 and read as four different buttons side by side. Pick
+`md` for anything new in that row; `xs` stays for the mobile menu's own stacked controls.
