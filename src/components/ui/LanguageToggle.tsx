@@ -18,11 +18,12 @@ const TARGET: Record<Locale, { next: Locale; label: string; ariaLabel: string }>
 export function LanguageToggle({
   locale,
   onChange,
-  size = 'xs',
+  size = 'md',
   className,
 }: {
   locale: Locale;
   onChange: (next: Locale) => void;
+  /** Defaults to `md`, the height of the header controls it sits among. */
   size?: ButtonSize;
   className?: string;
 }) {

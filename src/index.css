@@ -199,11 +199,15 @@
      `inline-block` display class into `inline-size: 0.5rem` and crush every nav link. */
   --spacing-stack: 0.5rem; /* 8 */
 
-  /* The one square every icon-only control sits in: the burger, the theme toggle, the
-     add-to-calendar button. 44px clears the 24px target minimum (WCAG 2.5.8) with room to
-     spare and is exactly `Button` size `md` (h-11), so every control in the header's right-hand
-     cluster shares one height. `size-icon-button`. */
-  --spacing-icon-button: 2.75rem; /* 44 */
+  /* The one control-height scale. `Button` takes its height from these (`h-control-md`), and
+     `IconButton` is the same number square (`size-control-md`), so a text button and an icon
+     button side by side are always exactly as tall as each other. Header and toolbar
+     controls all use `md`: 44px is the touch-target size, so nothing in a row is smaller
+     than a thumb. `xs`/`sm` are for dense lists and in-card actions, `lg` for form submits. */
+  --spacing-control-xs: 2rem; /* 32 */
+  --spacing-control-sm: 2.25rem; /* 36 */
+  --spacing-control-md: 2.75rem; /* 44 */
+  --spacing-control-lg: 3rem; /* 48 */
 
   /* ---------------------------------------------------------------------
      Motion. The brand is still flat — sharp corners, no blur, no scale — but not

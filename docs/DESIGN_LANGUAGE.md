@@ -703,7 +703,12 @@ Claude Design is upstream, this repo is the source of truth. When the two disagr
 disagreement is worth resolving explicitly rather than porting silently — see
 `docs/ROADMAP.md`, Phase 4.
 
-**Header controls share one height.** The right-hand cluster (theme toggle, language toggle,
-portal link, profile menu, log-in) is all 44px: `--spacing-icon-button` equals `Button` size `md`
-(`h-11`). Before, it was 42/32/36/36 and read as four different buttons side by side. Pick
-`md` for anything new in that row; `xs` stays for the mobile menu's own stacked controls.
+## Control heights
+
+One scale, in `@theme` (`src/index.css`): `--spacing-control-xs/sm/md/lg` = 32 / 36 / 44 / 48px.
+`Button` takes its height from it (`h-control-*`), and `IconButton` / `NavMenuButton` are the same
+number square (`size-control-sm` / `size-control-md`). Everything in one row takes the same step, so
+an icon button next to a text button is exactly as tall. Header and toolbar controls (theme toggle,
+language toggle, portal link, profile dropdown, burger) are all `md`, the touch-target size.
+`xs`/`sm` are for dense lists and in-card actions, `lg` for form submits and empty-state actions.
+Never write `h-8`/`h-11`/`size-10` on a control; add a step to the scale instead.

@@ -16,7 +16,7 @@ describe('IconButton', () => {
   it('sits in the shared square with the lift hover and a focus ring', () => {
     render(<IconButton icon="sun" label="Lys" />);
     const button = screen.getByRole('button');
-    expect(button).toHaveClass('size-icon-button', 'lift', 'focus-visible:outline-focus-ring');
+    expect(button).toHaveClass('size-control-md', 'lift', 'focus-visible:outline-focus-ring');
     expect(button.className).not.toMatch(/\btransition/);
   });
 
@@ -40,7 +40,7 @@ describe('IconButton', () => {
 
   it('shares its square with anything that composes the recipe', () => {
     expect(iconButtonClasses({ className: 'flex-col' })).toMatch(
-      /size-icon-button.*lift.*flex-col$/,
+      /lift.*size-control-md.*flex-col$/,
     );
   });
 });
