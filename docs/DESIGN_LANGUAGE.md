@@ -649,11 +649,16 @@ here at all" and `inline` for "this list has content but no matches". It is colo
 inherits from whatever surface it lands on, because it lands on the white page and on a
 `darkblue` panel. `ErrorState` is the same shape at full-page scale with the 404's furniture.
 
-**Error brings its own surface.** `--color-error` is `#b5251f`, and both auth forms sit on a
-`darkblue` panel where red text measures **2.07:1** — so the obvious treatment fails outright.
-`Alert` is a white block with a red hairline, a red glyph and red text: 6.4:1, flat, square,
-and legible on any fill. `role="alert"` is the part that matters most; these failures used to
-be painted and never announced. `FieldError` is `Alert` at `sm`, and pairs with `invalid` on
+**Alerts bring their own surface.** `Alert` has four tones — `info`, `success`, `warning`,
+`error` — and is a white block with ink text (`darkestblue`, ~16:1) and a solid icon tab at the
+left carrying the tone colour and a tone-specific glyph (info, check, triangle, circle-bang),
+with a hairline in the same colour. Coloured _text_ was the first version (#180) and it is out:
+red is 2.07:1 on the `darkblue` form panel, and green-on-white read as a foreign object on it.
+Tone sits in the tab and the glyph shape, so colour is never the only signal; the white
+surface is legible on the white page, the `darkblue` panel and the dark-mode page. Warning's
+tab is `yellow` with dark ink (white on yellow is ~1.9:1) and its hairline `darkestorange`.
+Only `error` is `role="alert"`; the other tones are `role="status"`. Flat, square, no shadow:
+nothing pressable, so no `lift`. `FieldError` is `Alert` at `sm`, and pairs with `invalid` on
 `Input` / `Textarea` — the control owns the box, `FieldError` owns the words, and
 `aria-describedby` joins them.
 

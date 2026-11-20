@@ -53,14 +53,12 @@ export default function LoginSection({ reason }: { reason?: string }) {
         <div className="flex flex-col items-center gap-4">
           <h1 className="font-heading text-h1 text-center text-white">Velkommen tilbake!</h1>
           {reason === 'password_changed' && (
-            <p className="font-body text-orange text-center">
-              Passordet er oppdatert. Logg inn med det nye passordet.
-            </p>
+            <Alert tone="success">Passordet er oppdatert. Logg inn med det nye passordet.</Alert>
           )}
           {reason === 'not_authenticated' && (
-            <p className="font-body text-orange text-center">
+            <Alert tone="info">
               Det ser ut som at du ikke er logget inn. Logg inn igjen for å fortsette.
-            </p>
+            </Alert>
           )}
           <p className="font-body w-full text-center text-white">
             Medlemmer logger inn her og kommer til <strong>Min side</strong>, med arrangementer,

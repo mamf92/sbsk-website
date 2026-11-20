@@ -17,7 +17,7 @@ export default function MemberPortalSection({ profile, reason }: MemberPortalSec
         <PortalHeader profile={profile} />
         {reason === 'not_admin' && (
           <div className="max-w-form md:max-w-content w-full px-2">
-            <Alert>Du har ikke administratortilgang til styreportalen.</Alert>
+            <Alert tone="info">Du har ikke administratortilgang til styreportalen.</Alert>
           </div>
         )}
         <ProfileCard member={profile} />

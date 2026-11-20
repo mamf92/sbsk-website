@@ -40,7 +40,7 @@ export default function MembersSummary({ members, seasonStatus }: MembersSummary
         {paymentsKnown && tile('/styreportal/medlemmer', counts.paid, `Betalt ${season}`)}
         {tile('/styreportal/medlemmer?status=deaktivert', counts.disabled, 'Deaktiverte')}
       </div>
-      {!paymentsKnown && <Alert>{PAYMENTS_UNAVAILABLE}</Alert>}
+      {!paymentsKnown && <Alert tone="warning">{PAYMENTS_UNAVAILABLE}</Alert>}
       <div className="flex flex-wrap gap-2">
         <Link
           to="/styreportal/medlemmer"
