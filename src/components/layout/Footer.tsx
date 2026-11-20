@@ -66,7 +66,7 @@ export default function Footer() {
                   Kalender
                 </NavLink>
                 <NavLink to="/våre-spill" className={navLinkClassesBody}>
-                  Våre spill
+                  Brettspill
                 </NavLink>
                 <NavLink to="/om-oss" className={navLinkClassesBody}>
                   Om oss

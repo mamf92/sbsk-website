@@ -13,8 +13,8 @@ export interface HeroLink {
 /**
  * The row of calls-to-action under a hero's title, from the Studio's `links[]` (#255).
  *
- * Shared because the home and Våre spill heroes had drifted: home rendered an editable array
- * and Våre spill a hardcoded button, so an editor could change one and not the other. The
+ * Shared because the home and Brettspill heroes had drifted: home rendered an editable array
+ * and Brettspill a hardcoded button, so an editor could change one and not the other. The
  * fallback stays with the caller, since the two pages sensibly point at different things when
  * nobody has set anything.
  *
