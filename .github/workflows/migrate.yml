@@ -1,0 +1,146 @@
+name: Database migrations
+
+# Applies supabase/migrations to the production Supabase project with `supabase db push`, so a
+# schema change, destructive ones included (DROP COLUMN, a data fix), ships the way code does:
+# written as a migration file, reviewed in its pull request, run on a scratch Postgres by the
+# "Database tests" job in ci.yml, and applied here once it is on `main`. Nobody pastes SQL into
+# the dashboard, and nothing applies a statement that is not in the repository.
+#
+# `db push` applies only the files whose version is missing from the remote history table
+# (supabase_migrations.schema_migrations), each in its own transaction, and records them. It
+# refuses to run when the remote history has a version with no local file, or when a new local
+# file is older than the newest applied one; both stop the job before anything is applied.
+#
+# Runs after CI on a push to `main` (workflow_run always runs this file from the default branch),
+# and by hand from the Actions tab. The connection string is an environment secret on
+# `supabase-production`, an environment that only `main` may deploy to, so a pull request or any
+# other branch never sees it. See docs/DATABASE_MIGRATIONS.md for the setup.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Only list what would be applied
+        type: boolean
+        default: false
+      mark_applied:
+        description: >-
+          Space-separated migration versions to record as applied WITHOUT running them (for SQL
+          that is already live, e.g. applied by hand). Each must exist in supabase/migrations.
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+# One migration run at a time, and never cancel one half way.
+concurrency:
+  group: supabase-production
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    name: Apply migrations to production
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion != 'cancelled'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:
+      contents: read
+      actions: read
+
+    environment: supabase-production
+
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      # The exact commit CI tested, not whatever `main` has moved on to since.
+      SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.SHA }}
+
+      # Gate on the job that matters, not the whole CI run: the database tests are what applied
+      # these exact migrations to a scratch database. A red dependency audit or a flaky browser
+      # test says nothing about the SQL and should not hold a migration back.
+      - name: Require green database tests for this commit
+        if: github.event_name == 'workflow_run'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          result=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID/jobs?per_page=100" \
+            -q '.jobs[] | select(.name == "Database tests") | .conclusion')
+          if [ "$result" != "success" ]; then
+            echo "::error::Database tests for $SHA concluded '${result:-missing}'; not migrating production."
+            exit 1
+          fi
+
+      - name: Check the connection secret is set
+        id: secret
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "::warning::SUPABASE_DB_URL is not set on the supabase-production environment; skipping. See docs/DATABASE_MIGRATIONS.md."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: supabase/setup-cli@689adcfb80d947100a1eab127289b97d1fb07b13 # v3.2.0
+        if: steps.secret.outputs.ok == 'true'
+        with:
+          version: 2.122.1
+
+      # The free-tier project hibernates when idle and refuses database logins until something
+      # wakes it; an anonymous REST request does. Then wait until the history table answers.
+      - name: Wake the project
+        if: steps.secret.outputs.ok == 'true'
+        env:
+          SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          SUPABASE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          if [ -n "$SUPABASE_URL" ]; then
+            curl -sS -o /dev/null -w 'REST wake-up: %{http_code}\n' \
+              -H "apikey: $SUPABASE_KEY" "$SUPABASE_URL/rest/v1/" || true
+          fi
+          for attempt in 1 2 3 4 5 6; do
+            if supabase migration list --db-url "$SUPABASE_DB_URL"; then exit 0; fi
+            echo "Database not answering yet (attempt $attempt); retrying in 20s."
+            sleep 20
+          done
+          echo "::error::Could not connect to the production database."
+          exit 1
+
+      - name: Record already-live migrations as applied
+        # A dry run writes nothing, history included.
+        if: steps.secret.outputs.ok == 'true' && inputs.mark_applied != '' && !inputs.dry_run
+        env:
+          VERSIONS: ${{ inputs.mark_applied }}
+        run: |
+          for v in $VERSIONS; do
+            if ! [[ "$v" =~ ^[0-9]{14}$ ]] || ! compgen -G "supabase/migrations/${v}_*.sql" >/dev/null; then
+              echo "::error::'$v' is not the version of a file in supabase/migrations."
+              exit 1
+            fi
+          done
+          # shellcheck disable=SC2086 # one argument per version
+          supabase migration repair --status applied $VERSIONS --db-url "$SUPABASE_DB_URL"
+
+      - name: Show pending migrations
+        if: steps.secret.outputs.ok == 'true'
+        run: supabase db push --dry-run --db-url "$SUPABASE_DB_URL"
+
+      - name: Apply pending migrations
+        if: steps.secret.outputs.ok == 'true' && !inputs.dry_run
+        run: supabase db push --yes --db-url "$SUPABASE_DB_URL"
+
+      - name: History after the run
+        if: steps.secret.outputs.ok == 'true' && always()
+        run: supabase migration list --db-url "$SUPABASE_DB_URL"

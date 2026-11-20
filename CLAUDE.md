@@ -85,6 +85,11 @@ asset caching, COOP, clickjacking, Trusted Types — and what is accepted rather
 one policy. Adding a script, font, image host or backend from anywhere but our own origin means
 adding it there too, with a reason — `e2e/csp.spec.ts` fails otherwise.
 
+Production database changes, destructive ones included, go through a migration file in
+`supabase/migrations/`, merged via PR, and are applied by `.github/workflows/migrate.yml`
+(`supabase db push`) after CI on `main`. Never apply DDL or data fixes to production through the
+Supabase MCP. See `docs/DATABASE_MIGRATIONS.md`.
+
 Sandboxed sessions may have no network route to Sanity or Supabase. Prefer unit tests with
 mocked helpers over anything that needs a live backend.
 
