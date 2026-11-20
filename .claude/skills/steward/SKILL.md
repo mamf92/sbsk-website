@@ -68,16 +68,24 @@ that was the parent's last open sub-issue, tick the parent's checklist and close
 Every issue write carries evidence: a PR, commit or file/line. Do not close an issue on the
 strength of a PR title alone.
 
-## Security-sensitive changes need a human, not just self-review
+## Security-sensitive changes: extra checks, not an extra approval
 
-The self-review pass below is you, the same agent, checking your own diff — it shares whatever
-blind spot produced the diff, and CI does not exercise real Supabase RLS policies or auth
-behavior. If a PR touches `src/supabase/`, an RLS policy, an auth guard/loader, anything
-under the member or board portal, or the agents' own rules — the `permissions` block of
-`.claude/settings.json`, `.claude/skills/`, `.claude/hooks/` — do not self-merge on green CI alone: leave the PR for the
-maintainer's explicit review, or at minimum flag the specific security-relevant lines in a PR
-comment and wait for a human response before merging, even though the ruleset does not require
-it.
+Asking a thread to do a piece of work is the maintainer's approval to merge it (decided
+2026-11-20). That holds for every path, the member and board portals included: green CI plus the
+self-review pass is enough, and a thread does not stop to ask "OK to merge?".
+
+What changes for a PR touching `src/supabase/`, an RLS policy, an auth guard/loader, anything
+under the member or board portal, or the agents' own rules (the `permissions` block of
+`.claude/settings.json`, `.claude/skills/`, `.claude/hooks/`) is the checking, not the waiting:
+
+- The self-review is you checking your own diff, and CI does not exercise real Supabase RLS
+  policies or auth behaviour. So read the diff specifically for the security boundaries
+  (`admin_session()` / the aal2 boundary, RLS, auth guards, 2FA) and say in the PR body what you
+  checked.
+- Keep the security tests green and add one for any boundary the PR moves. Never loosen,
+  skip or delete a security test to get green.
+- A change that widens access, weakens 2FA/aal2, or touches RLS or permissions is not
+  "presentational": call it out in the PR body and describe it in your reply.
 
 ## What "green" means here
 

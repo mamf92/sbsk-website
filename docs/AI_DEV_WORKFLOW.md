@@ -40,10 +40,10 @@ discarded. Keep them. They are the handoff protocol, not bureaucracy.
 
 You stay in step 1: writing the issue. Spot-check merged PRs and their diffs afterward rather
 than gating each one — the branch ruleset requires zero approvals on purpose, so a session can
-carry a PR all the way to `main` unattended. Steps 2 through 5 should need nothing from you,
-**except** a PR touching Supabase, RLS, auth, the member/board portal, or the agents' own
-permissions, skills and hooks under `.claude/`: the steward skill holds those for your
-explicit review rather than self-merging on green CI.
+carry a PR all the way to `main` unattended. Steps 2 through 5 should need nothing from you: handing a thread the work is your
+approval to merge it, including PRs touching Supabase, RLS, auth, the member/board portal or
+`.claude/`. Those get extra checks instead of an extra approval (security-boundary review of the
+diff and green security tests; see the steward skill).
 
 This works the same whether the session runs on claude.ai/code or as `claude` in a local
 checkout — both read the same `.claude/settings.json` and `.claude/skills/steward/`. A local
