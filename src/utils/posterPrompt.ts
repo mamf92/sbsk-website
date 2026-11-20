@@ -36,7 +36,7 @@ const TYPOGRAPHY =
 
 const FORMAT_TEXT: Record<PosterFormat, string> = {
   portrait:
-    'Portrait A-format poster (2:3 ratio, like A3 or A4), text in the top and bottom thirds.',
+    'Portrait A-format poster (A-series proportions, 1:1.414, like A3 or A4), text in the top and bottom thirds.',
   landscape:
     'Wide landscape poster, 16:9 or 3:2, text on the left or right with the illustration beside it.',
 };
