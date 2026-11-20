@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
@@ -95,83 +95,102 @@ describe('Header — mobile nav tab order', () => {
   });
 });
 
-// The mobile nav renders its own "Profil"/"Logg ut" buttons too (hidden only by a `lg:hidden`
-// CSS class, not removed from the DOM), so role queries by name are ambiguous. The dropdown
-// panel is the toggle button's next sibling — scope into it to reach the desktop copy only.
-function getDropdownPanel() {
-  // No `name` on the mocked user — the toggle falls back to the fixed "Min profil" label
-  // rather than "Hei, {name}", which keeps this query stable regardless of greeting copy.
-  const toggle = screen.getByRole('button', { name: 'Min profil' });
-  return toggle.nextElementSibling as HTMLElement;
-}
-
-describe('Header — desktop profile dropdown', () => {
+// The mobile nav renders its own "Min side"/"Logg ut" entries too (hidden only by a `lg:hidden`
+// CSS class, not removed from the DOM), so the menu entries are queried by their `menuitem`
+// role, which only the desktop profile menu uses.
+describe('Header — desktop profile menu', () => {
   beforeEach(() => {
     auth.isAuthenticated = true;
+    auth.isAdmin = false;
+    // No `name` on the mocked user — the trigger falls back to the fixed "Min profil" label.
     auth.user = { supabase_id: 'member-1' } as Profile;
   });
 
   it('opens and closes on toggle', async () => {
     renderHeader();
-    expect(getDropdownPanel()).toHaveClass('hidden');
+    const trigger = screen.getByRole('button', { name: 'Min profil' });
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('menu')).toBeNull();
 
-    await userEvent.click(screen.getByRole('button', { name: 'Min profil' }));
-    expect(getDropdownPanel()).not.toHaveClass('hidden');
+    await userEvent.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+
+    await userEvent.click(trigger);
+    expect(screen.queryByRole('menu')).toBeNull();
   });
 
-  it('closes on Escape', async () => {
+  it('closes on Escape and returns focus to the trigger', async () => {
     renderHeader();
-    await userEvent.click(screen.getByRole('button', { name: 'Min profil' }));
-    expect(getDropdownPanel()).not.toHaveClass('hidden');
-
+    const trigger = screen.getByRole('button', { name: 'Min profil' });
+    await userEvent.click(trigger);
+    await userEvent.keyboard('{ArrowDown}');
     await userEvent.keyboard('{Escape}');
-    expect(getDropdownPanel()).toHaveClass('hidden');
+    expect(screen.queryByRole('menu')).toBeNull();
+    expect(trigger).toHaveFocus();
   });
 
   it('closes on an outside click', async () => {
     renderHeader();
     await userEvent.click(screen.getByRole('button', { name: 'Min profil' }));
-    expect(getDropdownPanel()).not.toHaveClass('hidden');
-
     await userEvent.click(document.body);
-    expect(getDropdownPanel()).toHaveClass('hidden');
+    expect(screen.queryByRole('menu')).toBeNull();
   });
 
   it('stays open when clicking inside its own bounds', async () => {
     renderHeader();
     await userEvent.click(screen.getByRole('button', { name: 'Min profil' }));
-    await userEvent.click(getDropdownPanel());
-    expect(getDropdownPanel()).not.toHaveClass('hidden');
-  });
-});
-
-describe('Header — direct portal link', () => {
-  beforeEach(() => {
-    auth.isAuthenticated = true;
-    auth.isAdmin = false;
-    auth.user = { supabase_id: 'member-1' } as Profile;
+    await userEvent.click(screen.getByRole('menu'));
+    expect(screen.getByRole('menu')).toBeInTheDocument();
   });
 
-  it('links a signed-in member to Min side', () => {
-    renderHeader('/kalender');
-    const links = screen.getAllByRole('link', { name: 'Min side' });
-    expect(links[0]).toHaveAttribute('href', '/medlemsportal');
+  it('moves focus through the entries with the arrow keys', async () => {
+    renderHeader();
+    screen.getByRole('button', { name: 'Min profil' }).focus();
+    await userEvent.keyboard('{ArrowDown}');
+    const items = await screen.findAllByRole('menuitem');
+    await waitFor(() => expect(items[0]).toHaveFocus());
+    await userEvent.keyboard('{ArrowDown}');
+    expect(items[1]).toHaveFocus();
+    await userEvent.keyboard('{ArrowDown}');
+    expect(items[0]).toHaveFocus();
+    await userEvent.keyboard('{End}');
+    expect(items[1]).toHaveFocus();
   });
 
-  it('links a signed-in admin to Styreportal', () => {
-    auth.isAdmin = true;
-    renderHeader('/kalender');
-    expect(screen.getAllByRole('link', { name: 'Styreportal' })[0]).toHaveAttribute(
-      'href',
-      '/styreportal',
-    );
-  });
-
-  it('shows no portal link when signed out', () => {
-    auth.isAuthenticated = false;
+  it('has no separate portal button beside the trigger', () => {
     renderHeader('/kalender');
     expect(screen.queryByRole('link', { name: 'Min side' })).toBeNull();
     expect(screen.queryByRole('link', { name: 'Styreportal' })).toBeNull();
+  });
+
+  it('offers Min side and Logg ut to a member', async () => {
+    renderHeader('/kalender');
+    await userEvent.click(screen.getByRole('button', { name: 'Min profil' }));
+    expect(screen.getByRole('menuitem', { name: 'Min side' })).toHaveAttribute(
+      'href',
+      '/medlemsportal',
+    );
+    expect(screen.getByRole('menuitem', { name: 'Logg ut' })).toBeInTheDocument();
+    expect(screen.queryByRole('menuitem', { name: 'Styreportal' })).toBeNull();
+  });
+
+  it('adds Styreportal for an admin', async () => {
+    auth.isAdmin = true;
+    renderHeader('/kalender');
+    await userEvent.click(screen.getByRole('button', { name: 'Min profil' }));
+    expect(screen.getByRole('menuitem', { name: 'Styreportal' })).toHaveAttribute(
+      'href',
+      '/styreportal',
+    );
+    expect(screen.getByRole('menuitem', { name: 'Min side' })).toBeInTheDocument();
+  });
+
+  it('shows no portal entries when signed out', () => {
+    auth.isAuthenticated = false;
+    renderHeader('/kalender');
+    expect(screen.queryByRole('button', { name: 'Min profil' })).toBeNull();
+    expect(screen.queryByRole('menuitem')).toBeNull();
   });
 });
 
