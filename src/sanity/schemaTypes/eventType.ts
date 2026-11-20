@@ -4,7 +4,7 @@ import { isUniqueAcrossEvents } from './slugAcrossEvents';
 
 export const eventType = defineType({
   name: 'event',
-  title: 'Arrangement',
+  title: 'Kalender - Arrangement',
   type: 'document',
   fields: [
     defineField({

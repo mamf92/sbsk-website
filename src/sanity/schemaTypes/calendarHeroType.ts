@@ -2,7 +2,7 @@ import { defineField, defineType } from 'sanity';
 
 export const calendarHeroType = defineType({
   name: 'calendarHero',
-  title: 'Kalender - Hero',
+  title: 'Kalender - Forsidebilde',
   type: 'document',
 
   fields: [
@@ -54,7 +54,7 @@ export const calendarHeroType = defineType({
       title: 'Bilde',
       name: 'image',
       type: 'image',
-      description: 'Bilde som vises i hero-seksjonen. Valgfritt.',
+      description: 'Bilde som vises på forsidebildet. Valgfritt.',
       options: { hotspot: true },
     }),
     defineField({

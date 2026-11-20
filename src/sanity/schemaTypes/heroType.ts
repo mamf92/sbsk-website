@@ -3,7 +3,7 @@ import { heroLinksField } from './heroLinksField';
 
 export const homeHeroType = defineType({
   name: 'homeHero',
-  title: 'Hjemmeside - Hero',
+  title: 'Hjemmeside - Forsidebilde',
   type: 'document',
 
   fields: [
@@ -23,7 +23,7 @@ export const homeHeroType = defineType({
       title: 'Bilde',
       name: 'image',
       type: 'image',
-      description: 'Bilde som vises i hero-seksjonen. Valgfritt.',
+      description: 'Bilde som vises på forsidebildet. Valgfritt.',
       options: { hotspot: true },
     }),
     defineField({
@@ -51,7 +51,7 @@ export const homeHeroType = defineType({
       title: 'Sponsorer',
       name: 'sponsors',
       type: 'array',
-      description: 'Sponsorer som vises i hero-seksjonen. Valgfritt.',
+      description: 'Sponsorer som vises på forsidebildet. Valgfritt.',
       of: [
         {
           type: 'object',
