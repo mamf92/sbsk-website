@@ -1,4 +1,5 @@
 import { Button } from './Buttons';
+import type { ButtonSize } from './buttonClasses';
 import type { Locale } from '../../utils/locale';
 
 const TARGET: Record<Locale, { next: Locale; label: string; ariaLabel: string }> = {
@@ -17,17 +18,20 @@ const TARGET: Record<Locale, { next: Locale; label: string; ariaLabel: string }>
 export function LanguageToggle({
   locale,
   onChange,
+  size = 'md',
   className,
 }: {
   locale: Locale;
   onChange: (next: Locale) => void;
+  /** Defaults to `md`, the height of the header controls it sits among. */
+  size?: ButtonSize;
   className?: string;
 }) {
   const target = TARGET[locale];
   return (
     <Button
       variant="toggle"
-      size="xs"
+      size={size}
       lang={target.next}
       aria-label={target.ariaLabel}
       onClick={() => onChange(target.next)}

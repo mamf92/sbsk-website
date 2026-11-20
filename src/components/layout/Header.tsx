@@ -37,6 +37,9 @@ export default function Header() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { logout, isAuthenticated, isAdmin, user } = useAuth();
+  // Greeting uses the first name only: the full name ("Martin Andreas Michael") made the button
+  // the widest control in the header.
+  const firstName = user?.name?.trim().split(/\s+/)[0];
 
   const portalPath = isAdmin ? '/styreportal' : '/medlemsportal';
   const portalLabel = isAdmin ? 'Styreportal' : 'Min side';
@@ -155,7 +158,7 @@ export default function Header() {
               to={portalPath}
               className={buttonClasses({
                 variant: 'primary',
-                size: 'sm',
+                size: 'md',
                 className: 'hidden lg:inline-flex',
               })}
             >
@@ -167,19 +170,19 @@ export default function Header() {
             <div ref={dropdownRef} className="relative z-50 hidden lg:block">
               <Button
                 variant="primary"
-                size="sm"
+                size="md"
                 icon="expand"
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               >
-                {(user?.name && 'Hi, ' + user.name) || 'Min profil'}
+                {firstName ? `Hei, ${firstName}` : 'Min profil'}
               </Button>
               <div
-                className={`bg-darkestblue absolute top-11 right-0 z-50 flex w-40 flex-col items-start gap-2 p-4 ${isDropdownOpen ? '' : 'hidden'}`}
+                className={`bg-darkestblue absolute top-full right-0 z-50 mt-2 flex min-w-44 flex-col items-start gap-2 p-4 ${isDropdownOpen ? '' : 'hidden'}`}
               >
                 {isAdmin && (
                   <Button
                     variant="primary"
-                    size="sm"
+                    size="md"
                     icon="right"
                     onClick={() => {
                       navigate('/styreportal');
@@ -191,7 +194,7 @@ export default function Header() {
                 )}
                 <Button
                   variant="primary"
-                  size="sm"
+                  size="md"
                   icon="right"
                   onClick={() => {
                     navigate('/medlemsportal');
@@ -202,7 +205,7 @@ export default function Header() {
                 </Button>
                 <Button
                   variant="secondary"
-                  size="sm"
+                  size="md"
                   icon="right"
                   onClick={() => {
                     logout();
@@ -220,7 +223,7 @@ export default function Header() {
                 to="/login"
                 className={buttonClasses({
                   variant: 'primary',
-                  size: 'sm',
+                  size: 'md',
                   className: 'hidden lg:inline-flex',
                 })}
               >
@@ -254,11 +257,11 @@ export default function Header() {
       >
         <div className="flex flex-col overflow-hidden">
           {portalRoutesEnabled && isAuthenticated && (
-            <div className="flex gap-2 border-t border-white/12 px-6 py-[15px]">
+            <div className="flex flex-wrap gap-2 border-t border-white/12 px-6 py-[15px]">
               {isAdmin && (
                 <Button
                   variant="primary"
-                  size="xs"
+                  size="md"
                   icon="right"
                   onClick={() => {
                     closeMobileMenu();
@@ -270,7 +273,7 @@ export default function Header() {
               )}
               <Button
                 variant="primary"
-                size="xs"
+                size="md"
                 icon="right"
                 onClick={() => {
                   closeMobileMenu();
@@ -281,7 +284,7 @@ export default function Header() {
               </Button>
               <Button
                 variant="secondary"
-                size="xs"
+                size="md"
                 icon="right"
                 onClick={() => {
                   logout();
@@ -298,7 +301,7 @@ export default function Header() {
               <NavLink
                 to="/login"
                 onClick={closeMobileMenu}
-                className={buttonClasses({ variant: 'primary', size: 'xs' })}
+                className={buttonClasses({ variant: 'primary', size: 'md' })}
               >
                 Logg inn
               </NavLink>

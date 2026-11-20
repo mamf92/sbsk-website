@@ -702,3 +702,13 @@ shadow on focus, so the doubling was specific to form controls and the fix is to
 Claude Design is upstream, this repo is the source of truth. When the two disagree, the
 disagreement is worth resolving explicitly rather than porting silently — see
 `docs/ROADMAP.md`, Phase 4.
+
+## Control heights
+
+One scale, in `@theme` (`src/index.css`): `--spacing-control-xs/sm/md/lg` = 32 / 36 / 44 / 48px.
+`Button` takes its height from it (`h-control-*`), and `IconButton` / `NavMenuButton` are the same
+number square (`size-control-sm` / `size-control-md`). Everything in one row takes the same step, so
+an icon button next to a text button is exactly as tall. Header and toolbar controls (theme toggle,
+language toggle, portal link, profile dropdown, burger) are all `md`, the touch-target size.
+`xs`/`sm` are for dense lists and in-card actions, `lg` for form submits and empty-state actions.
+Never write `h-8`/`h-11`/`size-10` on a control; add a step to the scale instead.

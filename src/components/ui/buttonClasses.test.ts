@@ -59,7 +59,7 @@ describe('buttonClasses', () => {
     expect(tokens).toContain('inline-flex'); // first token of `base`
     expect(tokens).toContain('border'); // first token of the variant
     expect(tokens).toContain('lift'); // the whole of `motion`
-    expect(tokens).toContain('h-12'); // first token of the size
+    expect(tokens).toContain('h-control-lg'); // first token of the size
     expect(tokens).toContain('w-full'); // the caller's own
   });
 });

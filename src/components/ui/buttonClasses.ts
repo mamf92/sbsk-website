@@ -73,17 +73,18 @@ const motion = {
   disabled: 'transition-colors duration-(--duration-fast) ease-standard',
 } as const;
 
-// height · padding-x · font-size/weight, per the design library scale.
+// height · padding-x · font-size/weight. Heights are the `--spacing-control-*` tokens in
+// `src/index.css`, shared with `IconButton`, so an icon button beside a text button matches it.
 //
 // The weights look like they alternate — `sm` and `lg` bold, `xs` and `md` not — and they are
 // not. It is a 2×2: two type sizes, and within each the larger of the pair is the emphatic one.
 // `xs`/`sm` are both `text-xs`, `md`/`lg` both `text-base`. Reading it as an alternation and
 // "fixing" it would put every mid-size button on the page into bold.
 const sizes = {
-  xs: 'h-8 px-2 text-xs gap-1',
-  sm: 'h-9 px-3 text-xs font-bold gap-2',
-  md: 'h-11 px-4 text-base gap-2',
-  lg: 'h-12 px-6 text-base font-bold gap-2',
+  xs: 'h-control-xs px-2 text-xs gap-1',
+  sm: 'h-control-sm px-3 text-xs font-bold gap-2',
+  md: 'h-control-md px-4 text-base gap-2',
+  lg: 'h-control-lg px-6 text-base font-bold gap-2',
 } as const;
 
 export type ButtonVariant = keyof typeof variants;

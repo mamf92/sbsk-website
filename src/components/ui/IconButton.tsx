@@ -4,7 +4,7 @@ import moon from '../../assets/icons/symbols/moon.svg?react';
 import calendarAdd from '../../assets/icons/symbols/calendar-add.svg?react';
 
 import { iconButtonClasses } from './iconButtonClasses';
-import type { IconButtonVariant } from './iconButtonClasses';
+import type { IconButtonSize, IconButtonVariant } from './iconButtonClasses';
 
 const icons = { sun, moon, calendarAdd } as const;
 
@@ -21,17 +21,22 @@ type IconButtonProps = Omit<
    */
   label: string;
   variant?: IconButtonVariant;
+  /** Matches `Button`'s `sm` / `md` height, so it can sit beside a text button. */
+  size?: IconButtonSize;
 };
 
 export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
-  ({ icon, label, variant = 'ghost', className = '', type = 'button', ...props }, ref) => {
+  (
+    { icon, label, variant = 'ghost', size = 'md', className = '', type = 'button', ...props },
+    ref,
+  ) => {
     const Icon = icons[icon];
     return (
       <button
         ref={ref}
         type={type}
         aria-label={label}
-        className={iconButtonClasses({ variant, className })}
+        className={iconButtonClasses({ variant, size, className })}
         {...props}
       >
         <Icon aria-hidden="true" focusable="false" className="size-5 fill-current" />

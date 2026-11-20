@@ -100,7 +100,7 @@ describe('Header — mobile nav tab order', () => {
 // panel is the toggle button's next sibling — scope into it to reach the desktop copy only.
 function getDropdownPanel() {
   // No `name` on the mocked user — the toggle falls back to the fixed "Min profil" label
-  // rather than "Hi, {name}", which keeps this query stable regardless of greeting copy.
+  // rather than "Hei, {name}", which keeps this query stable regardless of greeting copy.
   const toggle = screen.getByRole('button', { name: 'Min profil' });
   return toggle.nextElementSibling as HTMLElement;
 }

@@ -9,10 +9,18 @@
  * an animation, not an icon from the map.
  */
 const base =
-  'inline-flex size-icon-button flex-none cursor-pointer items-center justify-center ' +
+  'inline-flex flex-none cursor-pointer items-center justify-center ' +
   'rounded-none border-0 lift ' +
   'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ' +
   'focus-visible:outline-focus-ring';
+
+// Same numbers as `Button`'s heights (`--spacing-control-*`), so the two line up in a row.
+const sizes = {
+  sm: 'size-control-sm',
+  md: 'size-control-md',
+} as const;
+
+export type IconButtonSize = keyof typeof sizes;
 
 const variants = {
   // No fill: draws in the surface's own text colour, and the shadow is what shows the box.
@@ -27,7 +35,8 @@ export type IconButtonVariant = keyof typeof variants;
 
 export function iconButtonClasses({
   variant = 'ghost',
+  size = 'md',
   className = '',
-}: { variant?: IconButtonVariant; className?: string } = {}) {
-  return [base, variants[variant], className].filter(Boolean).join(' ');
+}: { variant?: IconButtonVariant; size?: IconButtonSize; className?: string } = {}) {
+  return [base, sizes[size], variants[variant], className].filter(Boolean).join(' ');
 }
