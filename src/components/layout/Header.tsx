@@ -9,7 +9,7 @@ import { useTheme } from '../../hooks/theme/ThemeContext';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../hooks/authContext/authContext';
 import { useGoHome } from '../../hooks/useGoHome';
-import { memberPortalEnabled, portalRoutesEnabled } from '../../utils/featureFlags';
+import { portalRoutesEnabled } from '../../utils/featureFlags';
 import { LanguageToggle } from '../ui/LanguageToggle';
 import { useIsTranslatedRoute, useLocale } from '../../hooks/locale/useLocale';
 
@@ -215,10 +215,17 @@ export default function Header() {
               </div>
             </div>
           ) : (
-            memberPortalEnabled && (
-              <Button variant="primary" size="sm" icon="right" onClick={() => navigate('/login')}>
+            portalRoutesEnabled && (
+              <NavLink
+                to="/login"
+                className={buttonClasses({
+                  variant: 'primary',
+                  size: 'sm',
+                  className: 'hidden lg:inline-flex',
+                })}
+              >
                 Logg inn
-              </Button>
+              </NavLink>
             )
           )}
 
@@ -284,6 +291,17 @@ export default function Header() {
               >
                 Logg ut
               </Button>
+            </div>
+          )}
+          {portalRoutesEnabled && !isAuthenticated && (
+            <div className="flex border-t border-white/12 px-6 py-[15px]">
+              <NavLink
+                to="/login"
+                onClick={closeMobileMenu}
+                className={buttonClasses({ variant: 'primary', size: 'xs' })}
+              >
+                Logg inn
+              </NavLink>
             </div>
           )}
           {showLanguageToggle && (

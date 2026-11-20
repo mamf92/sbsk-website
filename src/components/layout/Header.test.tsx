@@ -174,3 +174,20 @@ describe('Header — direct portal link', () => {
     expect(screen.queryByRole('link', { name: 'Styreportal' })).toBeNull();
   });
 });
+
+describe('Header — login entry point', () => {
+  it('shows a Logg inn link to /login in the desktop bar and the mobile menu when signed out', () => {
+    auth.isAuthenticated = false;
+    renderHeader();
+    const links = screen.getAllByRole('link', { name: 'Logg inn', hidden: true });
+    expect(links).toHaveLength(2);
+    links.forEach((link) => expect(link).toHaveAttribute('href', '/login'));
+  });
+
+  it('shows no Logg inn link when signed in', () => {
+    auth.isAuthenticated = true;
+    renderHeader();
+    expect(screen.queryByRole('link', { name: 'Logg inn', hidden: true })).toBeNull();
+    auth.isAuthenticated = false;
+  });
+});
