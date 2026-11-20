@@ -158,6 +158,15 @@ describe('Header — desktop profile menu', () => {
     expect(items[1]).toHaveFocus();
   });
 
+  it('closes when Tab moves focus out of the menu, without losing focus', async () => {
+    renderHeader();
+    await userEvent.click(screen.getByRole('button', { name: 'Min profil' }));
+    screen.getAllByRole('menuitem').at(-1)!.focus();
+    await userEvent.tab();
+    expect(screen.queryByRole('menu')).toBeNull();
+    expect(document.body).not.toHaveFocus();
+  });
+
   it('has no separate portal button beside the trigger', () => {
     renderHeader('/kalender');
     expect(screen.queryByRole('link', { name: 'Min side' })).toBeNull();
