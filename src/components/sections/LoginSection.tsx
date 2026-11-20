@@ -63,8 +63,12 @@ export default function LoginSection({ reason }: { reason?: string }) {
             </p>
           )}
           <p className="font-body w-full text-center text-white">
-            Her kan du logge inn på din medlemsprofil og få tilgang til arrangementer,
-            medlemsfordeler og mer!
+            Medlemmer logger inn her og kommer til <strong>Min side</strong>, med arrangementer,
+            medlemsfordeler og mer.
+          </p>
+          <p className="font-body w-full text-center text-white">
+            Styremedlemmer logger inn på samme måte og går videre til <strong>Styreportalen</strong>
+            , som krever tofaktorautentisering (en kode fra autentiseringsappen din).
           </p>
           <p className="font-body w-full text-center text-white">
             Ingen konto enda? Er du medlem i klubben kan du lage din egen medlemsprofil ved å klikke

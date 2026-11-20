@@ -151,3 +151,10 @@ describe('Footer — going home', () => {
     scrollTo.mockRestore();
   });
 });
+
+describe('Footer — login entry point', () => {
+  it('links to the login page for signed-out visitors', () => {
+    renderFooter();
+    expect(screen.getByRole('link', { name: 'Logg inn' })).toHaveAttribute('href', '/login');
+  });
+});
