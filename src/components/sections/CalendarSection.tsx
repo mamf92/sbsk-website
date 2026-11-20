@@ -15,7 +15,7 @@ import EmptyState from '../ui/EmptyState';
 import { AvatarStack, type AvatarStackPerson } from '../ui/AvatarStack';
 import { groupByMonth } from '../../utils/groupByMonth';
 import { urlFor } from '../../sanity/sanityImageUrl';
-import calendarPlaceholderImage from '../../assets/images/calendar-placeholder.png';
+import calendarDefaultImage from '../../assets/images/calendar-default.webp';
 import ExpandIcon from '../../assets/icons/arrows/expand.svg?react';
 import ArrowRight from '../../assets/icons/arrows/arrowright.svg?react';
 import type { CalendarEventTypes } from '../../sanity/queryHelpers/events';
@@ -52,9 +52,7 @@ const FALLBACK_CALENDAR = {
   title: 'Kalender',
   subtitle:
     'Her vil du finne oversikt over alle våre arrangementer fra ukentlige spillkvelder, til turneringer og andre events. ',
-  imageUrl: calendarPlaceholderImage,
-  imageSourceName: 'Designed by Freepik',
-  imageSourceUrl: 'https://www.freepik.com',
+  imageUrl: calendarDefaultImage,
 };
 
 // How many events past the featured one to render before "Last inn flere".
@@ -322,10 +320,10 @@ function CalendarHero({
 }: CalendarHeroTypes = {}) {
   const resolvedTitle = title || FALLBACK_CALENDAR.title;
   const resolvedSubtitle = subtitle || FALLBACK_CALENDAR.subtitle;
-  const resolvedImageSource = imageSourceName || FALLBACK_CALENDAR.imageSourceName;
-  const resolvedImageSourceUrl = safeExternalUrl(
-    imageSourceUrl || FALLBACK_CALENDAR.imageSourceUrl,
-  );
+  // The default image is the club's own (docs/IMAGE_DESIGN_LANGUAGE.md), so it carries no
+  // credit; only a credit an editor entered for their own image is shown.
+  const resolvedImageSource = imageSourceName;
+  const resolvedImageSourceUrl = safeExternalUrl(imageSourceUrl);
   return (
     <div className="max-w-content content-gutter:px-0 flex w-full flex-col px-3">
       <div className="relative aspect-2/1 max-h-[40svh]">
@@ -340,8 +338,8 @@ function CalendarHero({
         ) : (
           <img
             src={FALLBACK_CALENDAR.imageUrl}
-            width={1024}
-            height={500}
+            width={1600}
+            height={800}
             alt=""
             className="h-full w-full object-cover"
           />
