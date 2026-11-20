@@ -35,6 +35,7 @@ export default function UpcomingEventsPanel({
       {events.length === 0 ? (
         <EmptyState
           variant="inline"
+          tone="inherit"
           headingLevel={3}
           title="Ingen arrangementer"
           body="Det ligger ingen kommende arrangementer i kalenderen."

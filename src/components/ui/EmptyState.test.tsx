@@ -21,6 +21,14 @@ describe('EmptyState', () => {
     expect(screen.getByRole('heading', { name: 'Ingen treff' }).tagName).toBe('H3');
   });
 
+  it('sets the page text pair by default and leaves colour to the surface on inherit', () => {
+    const { container, rerender } = render(<EmptyState title="Ingen treff" />);
+    expect(container.firstElementChild).toHaveClass('text-darkestblue', 'dark:text-white');
+
+    rerender(<EmptyState title="Ingen treff" tone="inherit" />);
+    expect(container.firstElementChild).not.toHaveClass('text-darkestblue');
+  });
+
   it('renders an optional action and forwards its clicks', async () => {
     const onClick = vi.fn();
     render(
