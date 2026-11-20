@@ -34,8 +34,8 @@ const icon = 'h-5 w-5 flex-none fill-none text-orange';
  *
  * The panel is a `role="menu"` with real links, so a middle click or "open in new tab" works
  * and navigation needs no `navigate()` call. Focus moves into the panel on keyboard open and
- * arrow keys, Home and End walk the rows; Escape returns to the trigger, Tab and an outside
- * press just close it. It sits on the header, which is dark in both themes, so it needs no
+ * arrow keys, Home and End walk the rows; Escape returns to the trigger, Tab out of the menu and an
+ * outside press just close it. It sits on the header, which is dark in both themes, so it needs no
  * `dark:` variants of its own.
  */
 export function ProfileMenu({
@@ -105,9 +105,6 @@ export function ProfileMenu({
         event.preventDefault();
         close(true);
         break;
-      case 'Tab':
-        close();
-        break;
     }
   }
 
@@ -117,7 +114,17 @@ export function ProfileMenu({
   }
 
   return (
-    <div ref={containerRef} className={['relative z-50', className].join(' ')}>
+    <div
+      ref={containerRef}
+      className={['relative z-50', className].join(' ')}
+      onBlur={(event) => {
+        // Tab moves focus first and closes after, so the focused row is never unmounted
+        // underneath the browser's own Tab motion. A null `relatedTarget` (a click on
+        // non-focusable panel space) is left to the outside-press handler.
+        const next = event.relatedTarget as Node | null;
+        if (open && next && !containerRef.current?.contains(next)) setOpen(false);
+      }}
+    >
       <Button
         ref={triggerRef}
         variant="primary"
