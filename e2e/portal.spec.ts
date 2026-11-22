@@ -174,6 +174,22 @@ test('Min side suggests upcoming events and links settings', async ({ page }) =>
   expect(errors, `page threw: ${errors.join(', ')}`).toEqual([]);
 });
 
+test('the membership card shows the code to scan and an unpaid season', async ({ page }) => {
+  const errors = collectPageErrors(page);
+  await stubSanityWithContent(page);
+  await stubSupabase(page, { isAdmin: false });
+
+  await page.goto(`${MEMBER_PORTAL}/medlemskort`);
+
+  const card = page.getByRole('region', { name: 'Medlemskort' });
+  await expect(card).toContainText('Ingrid Hetland');
+  await expect(card).toContainText('ikke betalt');
+  const code = page.getByRole('img', { name: 'QR-kode for medlemskortet til Ingrid Hetland' });
+  await expect(code.locator('path')).toHaveCount(1);
+  await expect(page.getByText('0123 4567 89ab cdef 0123 4567 89ab cdef')).toBeVisible();
+  expect(errors, `page threw: ${errors.join(', ')}`).toEqual([]);
+});
+
 // #162 closed this hole for Sanity and left it open for Supabase: `getMembers()` was stubbed `[]`,
 // so the list body never ran. An empty list renders nothing and cannot throw — which is exactly
 // how #160 shipped a page that crashed on every real row while CI stayed green.

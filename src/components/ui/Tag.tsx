@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 type TagProps = React.HTMLAttributes<HTMLSpanElement> & {
-  tone?: 'blue' | 'orange';
+  tone?: 'blue' | 'orange' | 'success';
 };
 
 // Same API as the redesign proof of concept's `Tag`, styled in the current look: a flat,
@@ -12,6 +12,7 @@ const base =
 const tones = {
   blue: 'bg-darkblue text-white',
   orange: 'bg-orange text-darkestblue',
+  success: 'bg-success text-white',
 } as const;
 
 /** A short label on an event or a programme item: its format, an edition, a state. */

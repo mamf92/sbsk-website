@@ -45,6 +45,11 @@ asks for that the policy cannot carry, because a `<meta http-equiv>` CSP is not 
 | `Strict-Transport-Security`  | No                                | Header-only. `github.io` is on the browsers' HSTS preload list, so HTTPS is enforced for the domain regardless; the `includeSubDomains`/`preload` directives an audit wants are GitHub's to send.                                                                                                                                         |
 | `require-trusted-types-for`  | Technically yes, deliberately not | This one _can_ travel in a `<meta>` CSP. It is left off because it would break the page: React DOM assigns to `innerHTML` on paths this app reaches, and the embedded Sanity Studio is several megabytes of third-party editor code doing the same. Enabling it means auditing both, which is not a change this site can make on its own. |
 
+**`Permissions-Policy` for the camera.** The board's "Skann medlemskort" uses the camera
+(`getUserMedia`). A header would limit the camera to our own origin (`camera=(self)`), but it is
+header-only. Accepted: the browser asks before any page uses the camera, the page is never framed
+by us (`frame-src 'none'`), and the scan works without camera access too (typed code).
+
 ## Other accepted findings
 
 **Third-party cookies from `cdn.sanity.io`.** Hero and content images are served from Sanity's

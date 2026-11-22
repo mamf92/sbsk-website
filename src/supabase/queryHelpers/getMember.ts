@@ -16,6 +16,8 @@ export interface Member {
   disabled_reason: string | null;
   birth_year: number | null;
   created_at: string;
+  /** The membership card's QR payload. Readable by the member and the board only. */
+  member_card_token: string;
 }
 
 export type MemberStatus = 'active' | 'disabled';

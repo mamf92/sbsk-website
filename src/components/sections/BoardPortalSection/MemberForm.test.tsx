@@ -18,6 +18,7 @@ const member: Member = {
   is_admin: false,
   supabase_id: 'aaaaaaaa-0000-4000-8000-000000000001',
   created_at: '2026-02-01T09:00:00Z',
+  member_card_token: '0'.repeat(32),
 };
 
 async function submit() {

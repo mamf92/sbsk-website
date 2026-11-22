@@ -129,6 +129,7 @@ export const SELF_MEMBER = {
   disabled_reason: null,
   birth_year: null,
   created_at: '2025-03-01T09:00:00Z',
+  member_card_token: '0123456789abcdef0123456789abcdef',
 };
 
 type Row = Record<string, unknown>;
