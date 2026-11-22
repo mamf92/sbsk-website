@@ -45,6 +45,9 @@ const signup: AdminSignup = {
   createdAt: '2026-11-01T00:00:00Z',
 };
 
+const lookup = vi.fn();
+const TOKEN = 'abcdefabcdefabcdefabcdefabcdefab';
+
 function renderSection(overrides: { checkedIn?: string[]; guests?: number } = {}) {
   render(
     <MemoryRouter>
@@ -54,6 +57,7 @@ function renderSection(overrides: { checkedIn?: string[]; guests?: number } = {}
         checkedIn={overrides.checkedIn ?? []}
         guests={overrides.guests ?? 0}
         signups={[signup]}
+        lookup={lookup}
       />
     </MemoryRouter>,
   );
@@ -68,7 +72,14 @@ beforeEach(() => {
   checkInMember.mockReset().mockResolvedValue(undefined);
   undoCheckIn.mockReset().mockResolvedValue(undefined);
   setGuestCount.mockReset().mockResolvedValue(undefined);
+  lookup.mockReset();
 });
+
+async function typeCard(code: string) {
+  await userEvent.click(screen.getByRole('button', { name: 'Skann medlemskort' }));
+  await userEvent.type(screen.getByLabelText('Kode fra medlemskortet'), code);
+  await userEvent.click(screen.getByRole('button', { name: 'Finn medlem' }));
+}
 
 describe('AdminCheckInSection', () => {
   it('lists signed-up members first, then other active members, and focuses search', () => {
@@ -178,5 +189,67 @@ describe('AdminCheckInSection', () => {
     renderSection();
     await user.type(screen.getByRole('searchbox', { name: 'Søk etter medlem' }), 'Dina');
     expect(screen.getByText('Er personen ikke medlem? Tell dem som gjest.')).toBeVisible();
+  });
+
+  describe('membership card', () => {
+    it('checks the card holder in and says who it was', async () => {
+      lookup.mockResolvedValue({
+        memberId: 'anna',
+        name: 'Anna',
+        surname: 'Berg',
+        status: 'active',
+        seasonPaid: true,
+      });
+      renderSection();
+      await typeCard(`sbsk-medlem:${TOKEN}`);
+      expect(lookup).toHaveBeenCalledWith(TOKEN);
+      expect(await screen.findByText('Anna Berg er sjekket inn.')).toBeVisible();
+      expect(checkInMember).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'event-1' }),
+        'anna',
+      );
+    });
+
+    it('does not check in twice, and flags an unpaid season', async () => {
+      lookup.mockResolvedValue({
+        memberId: 'ola',
+        name: 'Ola',
+        surname: 'Hansen',
+        status: 'active',
+        seasonPaid: false,
+      });
+      renderSection({ checkedIn: ['ola'] });
+      await typeCard(TOKEN);
+      expect(
+        await screen.findByText(/Ola Hansen er allerede sjekket inn\. Ikke betalt/),
+      ).toBeVisible();
+      expect(checkInMember).not.toHaveBeenCalled();
+    });
+
+    it('refuses a disabled member and an unknown code', async () => {
+      lookup.mockResolvedValueOnce({
+        memberId: 'dina',
+        name: 'Dina',
+        surname: 'Lie',
+        status: 'disabled',
+        seasonPaid: false,
+      });
+      renderSection();
+      await typeCard(TOKEN);
+      expect(
+        await screen.findByText('Dina Lie er deaktivert og kan ikke sjekkes inn.'),
+      ).toBeVisible();
+      lookup.mockResolvedValueOnce(null);
+      await typeCard(TOKEN);
+      expect(await screen.findByText(/Fant ingen med den koden/)).toBeVisible();
+      expect(checkInMember).not.toHaveBeenCalled();
+    });
+
+    it('rejects text that is not a card code before looking anything up', async () => {
+      renderSection();
+      await typeCard('https://example.com');
+      expect(screen.getByText('Det ser ikke ut som en kode fra et medlemskort.')).toBeVisible();
+      expect(lookup).not.toHaveBeenCalled();
+    });
   });
 });

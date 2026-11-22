@@ -14,9 +14,11 @@ describe('Tag', () => {
       <>
         <Tag tone="blue">A</Tag>
         <Tag tone="orange">B</Tag>
+        <Tag tone="success">C</Tag>
       </>,
     );
-    expect(screen.getByText('A').className).not.toBe(screen.getByText('B').className);
+    const classes = ['A', 'B', 'C'].map((text) => screen.getByText(text).className);
+    expect(new Set(classes).size).toBe(3);
   });
 
   it('keeps the caller className, forwards attributes and the ref', () => {

@@ -67,7 +67,7 @@ export default function MemberDashboardTop({
           className={`grid flex-none gap-2 ${showBadges ? 'grid-cols-3 md:w-[27rem]' : 'grid-cols-2 md:w-80'}`}
         >
           <StatTile value={activity.checkIns ?? '–'} label="Innsjekk" />
-          <StatTile value={activity.signups ?? '–'} label="Påmeldinger" />
+          <StatTile value={activity.signups ?? '–'} label="Påmeldt" />
           {showBadges && <StatTile value={badges ?? '–'} label="Merker" />}
         </div>
       </div>

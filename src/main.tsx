@@ -30,6 +30,7 @@ import {
 } from './loaders/admin-portal-loaders';
 import { memberPortalLoader } from './loaders/member-portal-loader';
 import { memberOverviewLoader } from './loaders/member-overview-loader';
+import { memberCardLoader } from './loaders/member-card-loader';
 import { onboardingLoader } from './loaders/onboarding-loader';
 import { twoFactorChallengeLoader, twoFactorSetupLoader } from './loaders/two-factor-loaders';
 import { newPasswordLoader } from './loaders/new-password-loader';
@@ -62,6 +63,7 @@ const Terms = React.lazy(() => import('./pages/Terms'));
 const Login = React.lazy(() => import('./pages/Login'));
 const MemberPortal = React.lazy(() => import('./pages/MemberPortal'));
 const MemberOverview = React.lazy(() => import('./pages/MemberOverview'));
+const MemberCard = React.lazy(() => import('./pages/MemberCard'));
 const MemberSettings = React.lazy(() => import('./pages/MemberSettings'));
 const BoardPortal = React.lazy(() => import('./pages/BoardPortal'));
 const AdminOverview = React.lazy(() => import('./pages/AdminOverview'));
@@ -155,6 +157,7 @@ const router = createBrowserRouter(
                     loader: memberPortalLoader,
                     children: [
                       { index: true, element: <MemberOverview />, loader: memberOverviewLoader },
+                      { path: 'medlemskort', element: <MemberCard />, loader: memberCardLoader },
                       { path: 'innstillinger', element: <MemberSettings /> },
                     ],
                   },

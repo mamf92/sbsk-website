@@ -16,6 +16,7 @@ export function testMember(id: string, overrides: Partial<Member> = {}): Member 
     disabled_reason: null,
     birth_year: null,
     created_at: '2025-01-01T00:00:00Z',
+    member_card_token: '0'.repeat(32),
     ...overrides,
   };
 }

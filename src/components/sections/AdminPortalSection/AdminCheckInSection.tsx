@@ -7,6 +7,7 @@ import { Input } from '../../ui/Input';
 import { StatTile } from '../../ui/StatTile';
 import { Tag } from '../../ui/Tag';
 import { linkClassesInherit } from '../../ui/Link';
+import CardScanner from './CardScanner';
 import { formatAdminEventDate, osloDate } from './eventDate';
 import type { AdminEvent } from '../../../sanity/queryHelpers/admin-events';
 import type { AdminSignup } from '../../../supabase/queryHelpers/getEventSignupsForAdmin';
@@ -17,7 +18,8 @@ import {
   undoCheckIn,
   type CheckInEvent,
 } from '../../../supabase/queryHelpers/checkIn';
-import { compareMemberNames, memberMatches } from '../../../utils/membership';
+import { lookupCard, type CardLookup } from '../../../supabase/queryHelpers/membershipCard';
+import { compareMemberNames, currentSeason, memberMatches } from '../../../utils/membership';
 
 type AdminCheckInSectionProps = {
   event: AdminEvent;
@@ -25,6 +27,8 @@ type AdminCheckInSectionProps = {
   checkedIn: string[];
   guests: number;
   signups: AdminSignup[];
+  /** For tests; the real lookup otherwise. */
+  lookup?: (token: string) => Promise<CardLookup | null>;
 };
 
 const MAX_GUESTS = 10000;
@@ -41,6 +45,7 @@ export default function AdminCheckInSection({
   checkedIn: initialCheckedIn,
   guests: initialGuests,
   signups,
+  lookup = lookupCard,
 }: AdminCheckInSectionProps) {
   const target: CheckInEvent = useMemo(
     () => ({ id: event._id, date: osloDate(event), category: event.category }),
@@ -50,6 +55,8 @@ export default function AdminCheckInSection({
   const [guests, setGuests] = useState(initialGuests);
   const [query, setQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
+  // The result of the last card scan, so the door sees who it was without reading the list.
+  const [scanned, setScanned] = useState<{ tone: 'success' | 'info'; text: string } | null>(null);
   // Members with a write in flight. Their button is disabled until it settles, so an undo
   // cannot race the check-in it undoes.
   const [pending, setPending] = useState<ReadonlySet<string>>(() => new Set());
@@ -72,8 +79,8 @@ export default function AdminCheckInSection({
     ];
   }, [members, query, signedUp]);
 
-  const toggle = async (member: Member) => {
-    if (pending.has(member.id)) return;
+  const toggle = async (member: Member): Promise<boolean> => {
+    if (pending.has(member.id)) return false;
     const wasIn = checkedIn.has(member.id);
     const setBusy = (busy: boolean) =>
       setPending((prev) => {
@@ -96,13 +103,45 @@ export default function AdminCheckInSection({
     try {
       if (wasIn) await undoCheckIn(target.id, member.id);
       else await checkInMember(target, member.id);
+      return true;
     } catch {
       flip(wasIn);
       setError(
         `Kunne ikke ${wasIn ? 'angre innsjekken for' : 'sjekke inn'} ${member.name}. Sjekk nettet og prøv igjen.`,
       );
+      return false;
     } finally {
       setBusy(false);
+    }
+  };
+
+  const checkInByCard = async (token: string) => {
+    setError(null);
+    setScanned(null);
+    let found: CardLookup | null;
+    try {
+      found = await lookup(token);
+    } catch {
+      setError('Kunne ikke slå opp medlemskortet. Sjekk nettet og prøv igjen, eller søk på navn.');
+      return;
+    }
+    const member = found ? members.find((m) => m.id === found.memberId) : undefined;
+    if (!found || !member) {
+      setError('Fant ingen med den koden. Søk på navn, eller be medlemmet åpne kortet på nytt.');
+      return;
+    }
+    const fullName = `${member.name} ${member.surname}`.trim();
+    if (found.status !== 'active') {
+      setError(`${fullName} er deaktivert og kan ikke sjekkes inn.`);
+      return;
+    }
+    const unpaid = found.seasonPaid ? '' : ` Ikke betalt for ${currentSeason()}.`;
+    if (checkedIn.has(member.id)) {
+      setScanned({ tone: 'info', text: `${fullName} er allerede sjekket inn.${unpaid}` });
+      return;
+    }
+    if (await toggle(member)) {
+      setScanned({ tone: 'success', text: `${fullName} er sjekket inn.${unpaid}` });
     }
   };
 
@@ -174,6 +213,11 @@ export default function AdminCheckInSection({
             </Button>
           </div>
         </div>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <CardScanner onCode={(token) => void checkInByCard(token)} />
+        {scanned && <Alert tone={scanned.tone}>{scanned.text}</Alert>}
       </div>
 
       <Input

@@ -23,6 +23,7 @@
     "@sanity/vision": "^5.31.2",
     "@supabase/supabase-js": "^2.115.0",
     "i18next": "26.5.11",
+    "qrcode-generator": "2.0.4",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-i18next": "17.1.9",
