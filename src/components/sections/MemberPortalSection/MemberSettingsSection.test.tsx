@@ -14,6 +14,8 @@ vi.mock('react-router-dom', async (importOriginal) => ({
 vi.mock('../../../supabase/queryHelpers/memberAuth', () => ({
   setPassword: (password: string) => setPassword(password),
   signOutEverywhere: () => signOutEverywhere(),
+  sendSignInCode: vi.fn(),
+  verifySignInCode: vi.fn(),
 }));
 vi.mock('../../../hooks/authContext/authContext', () => ({
   useAuth: () => ({ refreshSession: vi.fn().mockResolvedValue(false) }),
