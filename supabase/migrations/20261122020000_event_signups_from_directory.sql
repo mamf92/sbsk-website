@@ -83,3 +83,29 @@ create policy "Members read their own sign-ups"
 create policy "Admins read all sign-ups"
   on public.event_participants for select to authenticated
   using (public.admin_session());
+
+-- Disabled members no longer see their own sign-ups either (as before this migration).
+drop policy "Members read their own sign-ups" on public.event_participants;
+create policy "Members read their own sign-ups"
+  on public.event_participants for select to authenticated
+  using (supabase_id = (select auth.uid()) and public.member_is_active());
+
+-- Profile photos follow the same choice. Before, any signed-in account could list and fetch
+-- every photo. Now: your own, the board's view of everyone, and the photos of members listed
+-- in member_directory (active, and not hidden from other members).
+drop policy if exists "Authenticated users can view profile images" on storage.objects;
+create policy "Members view photos of visible members"
+  on storage.objects for select to authenticated
+  using (
+    bucket_id = 'profile-images'
+    and (
+      (storage.foldername(name))[1] = (select auth.uid())::text
+      or public.admin_session()
+      or exists (
+        select 1 from public.member_directory d
+        -- `objects.name`, qualified: member_directory has a `name` column of its own, and an
+        -- unqualified `name` here would silently compare against the member's first name.
+        where d.supabase_id::text = (storage.foldername(objects.name))[1]
+      )
+    )
+  );

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useRevalidator } from 'react-router-dom';
 import { Panel } from '../../ui/Panel';
 import { Button } from '../../ui/Buttons';
 import { Input } from '../../ui/Input';
@@ -54,6 +54,7 @@ export default function MemberSettingsSection({ profile }: { profile: Profile })
 function VisibilityPanel({ profile }: { profile: Profile }) {
   const [show, setShow] = useState(profile.show_in_attendee_lists);
   const [saving, setSaving] = useState(false);
+  const revalidator = useRevalidator();
   const [error, setError] = useState<string | null>(null);
 
   const change = async (next: boolean) => {
@@ -62,6 +63,8 @@ function VisibilityPanel({ profile }: { profile: Profile }) {
     setError(null);
     try {
       await setShowInAttendeeLists(profile.supabase_id, next);
+      // The profile comes from the parent route's loader, which tab changes do not re-run.
+      revalidator.revalidate();
     } catch (err: unknown) {
       setShow(!next);
       setError(norwegianErrorMessage(err, 'Vi fikk ikke lagret valget. Prøv igjen.'));

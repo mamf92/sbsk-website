@@ -15,7 +15,7 @@ export async function memberOverviewLoader() {
   const { user } = await requireMember('/medlemsportal');
   const [events, signups, me] = await Promise.all([
     settle(getUpcomingEventsForAdmin(20)),
-    settle(getMySignups()),
+    settle(getMySignups(user.id)),
     settle(getMember(user.id)),
   ]);
   const upcoming = (events.data ?? []).filter((event) => event._type === 'event');
@@ -30,7 +30,7 @@ export async function memberOverviewLoader() {
     joined: signups.data ?? [],
     counts: counts.data ?? {},
     favourite: favouriteCategory(categories.data ?? []),
-    failed: events.failed || signups.failed,
+    failed: events.failed || signups.failed || counts.failed,
   };
 }
 

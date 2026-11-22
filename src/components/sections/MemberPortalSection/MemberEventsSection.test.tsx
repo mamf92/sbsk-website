@@ -6,6 +6,11 @@ import type { AdminEvent } from '../../../sanity/queryHelpers/admin-events';
 
 const joinEvent = vi.fn();
 const leaveEvent = vi.fn();
+const revalidate = vi.fn();
+vi.mock('react-router-dom', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('react-router-dom')>()),
+  useRevalidator: () => ({ revalidate, state: 'idle' }),
+}));
 vi.mock('../../../supabase/queryHelpers/eventParticipants', () => ({
   joinEvent: (...args: unknown[]) => joinEvent(...args),
   leaveEvent: (...args: unknown[]) => leaveEvent(...args),
@@ -63,6 +68,16 @@ describe('MemberEventsSection', () => {
     expect(within(mine()).getByText('Spillkveld a')).toBeInTheDocument();
     expect(within(mine()).getByText('5 påmeldt')).toBeInTheDocument();
     expect(within(suggested()).queryByText('Spillkveld a')).not.toBeInTheDocument();
+    expect(revalidate).toHaveBeenCalled();
+  });
+
+  it('keeps a left event in place so the member can join again', async () => {
+    renderSection(['b']);
+    await userEvent.click(within(mine()).getByRole('button', { name: 'Meld meg av Spillkveld b' }));
+    expect(leaveEvent).toHaveBeenCalledWith('b', 'user-1');
+    expect(
+      within(mine()).getByRole('button', { name: 'Meld meg på Spillkveld b' }),
+    ).toBeInTheDocument();
   });
 
   it('rolls a failed leave back and says so', async () => {

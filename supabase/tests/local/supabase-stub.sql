@@ -82,6 +82,7 @@ create table if not exists storage.objects (
   name text
 );
 alter table storage.objects enable row level security;
+grant select, insert, update, delete on storage.objects to authenticated;
 
 create or replace function storage.foldername(name text) returns text[]
 language sql immutable as $$

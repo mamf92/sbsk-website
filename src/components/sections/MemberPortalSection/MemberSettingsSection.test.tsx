@@ -6,6 +6,11 @@ import type { Profile } from '../../../supabase/queryHelpers/getProfile';
 
 const setPassword = vi.fn();
 const signOutEverywhere = vi.fn();
+const revalidate = vi.fn();
+vi.mock('react-router-dom', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('react-router-dom')>()),
+  useRevalidator: () => ({ revalidate, state: 'idle' }),
+}));
 vi.mock('../../../supabase/queryHelpers/memberAuth', () => ({
   setPassword: (password: string) => setPassword(password),
   signOutEverywhere: () => signOutEverywhere(),

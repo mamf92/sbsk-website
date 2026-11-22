@@ -157,7 +157,7 @@ function countdown(start: Date, now: Date): string {
  * "Mine kommende" filter has to see the same optimistic state the cards do.
  */
 function useRsvp(events: CalendarEventTypes[]) {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, authResolved, user } = useAuth();
   const [participants, setParticipants] = useState<Record<string, EventAttendee[]>>({});
   const [pending, setPending] = useState<Record<string, boolean>>({});
   const [errors, setErrors] = useState<Record<string, string | null>>({});
@@ -239,7 +239,15 @@ function useRsvp(events: CalendarEventTypes[]) {
     }
   }
 
-  return { loggedIn: isAuthenticated, attendeesOf, isAttending, toggle, pending, errors };
+  return {
+    loggedIn: isAuthenticated,
+    authResolved,
+    attendeesOf,
+    isAttending,
+    toggle,
+    pending,
+    errors,
+  };
 }
 
 /** Named attendees as avatars; hidden ones are only counted (`AvatarStack`'s `hiddenCount`). */
@@ -474,7 +482,7 @@ function EventList({ events, failed }: { events: CalendarEventTypes[]; failed?: 
       <div className="flex flex-wrap items-center justify-end gap-3">
         {/* One line for the whole list rather than a button on every card. Only once member
             sign-up is open: until then there is nobody a sign-in would help. */}
-        {memberPortalEnabled && !rsvp.loggedIn && (
+        {memberPortalEnabled && rsvp.authResolved && !rsvp.loggedIn && (
           <Link
             to={`/login?neste=${encodeURIComponent('/kalender')}`}
             className={`${linkClassesInherit} text-darkestblue mr-auto underline dark:text-white`}

@@ -2,7 +2,7 @@
 -- (phase 3 step 4, decisions 7 and 8).
 begin;
 \ir helpers/auth.sql
-select plan(9);
+select plan(13);
 select tests.seed();
 
 select tests.authenticate_as('a@example.no');
@@ -60,6 +60,23 @@ select is(
   'an admin at aal1 is an ordinary member here'
 );
 
+-- Photos follow the visibility choice.
+select tests.as_owner();
+insert into storage.buckets (id, name) values ('profile-images', 'profile-images') on conflict do nothing;
+insert into storage.objects (bucket_id, name) values
+  ('profile-images', tests.user_id('a@example.no')::text || '/a.webp'),
+  ('profile-images', tests.user_id('b@example.no')::text || '/b.webp');
+select tests.authenticate_as('a@example.no');
+select results_eq(
+  $$select name from storage.objects order by name$$,
+  array[tests.user_id('a@example.no')::text || '/a.webp'],
+  'a member cannot fetch the photo of a hidden member'
+);
+select tests.authenticate_as('b@example.no');
+select is((select count(*)::int from storage.objects), 2, 'a hidden member sees their own photo and visible ones');
+select tests.authenticate_as('admin@example.no', 'aal2');
+select is((select count(*)::int from storage.objects), 2, 'the board sees every photo');
+
 -- A disabled member's sign-ups disappear from the list.
 select tests.as_owner();
 update public.members set status = 'disabled', disabled_at = now() where email = 'b@example.no';
@@ -69,6 +86,9 @@ select is(
   1,
   'a disabled member is not listed as coming'
 );
+
+select tests.authenticate_as('b@example.no');
+select is_empty('select * from public.event_participants', 'a disabled member cannot read even their own sign-ups');
 
 select tests.as_anon();
 select throws_ok('select * from public.event_attendees', '42501', null, 'anon cannot read attendees');

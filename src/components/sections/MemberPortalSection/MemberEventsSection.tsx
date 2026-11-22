@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useRevalidator } from 'react-router-dom';
 import { Panel } from '../../ui/Panel';
 import { Button } from '../../ui/Buttons';
 import { Alert } from '../../ui/Alert';
@@ -43,7 +43,11 @@ export default function MemberEventsSection({
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const mine = events.filter((event) => joined.has(event._id));
+  const revalidator = useRevalidator();
+  // Events joined at load stay in this list after a "Meld av", with "Meld meg på" again, so a
+  // mistaken tap can be undone on the spot.
+  const initial = useMemo(() => new Set(initiallyJoined), [initiallyJoined]);
+  const mine = events.filter((event) => joined.has(event._id) || initial.has(event._id));
   // Scored once against the joined set as loaded, so a suggestion does not jump away the moment
   // the member taps it; it moves to "Mine påmeldinger" and its slot stays until the next visit.
   const suggestions = useMemo(
@@ -74,6 +78,8 @@ export default function MemberEventsSection({
     try {
       if (leaving) await leaveEvent(event._id, supabaseId);
       else await joinEvent(event._id, supabaseId);
+      // The band's sign-up count comes from the parent route's loader.
+      revalidator.revalidate();
     } catch {
       apply(leaving);
       setError(
@@ -105,6 +111,7 @@ export default function MemberEventsSection({
           size="sm"
           variant={action === 'join' ? 'primary' : 'outline'}
           loading={pending === event._id}
+          disabled={pending !== null && pending !== event._id}
           aria-label={
             action === 'join' ? `Meld meg på ${event.title}` : `Meld meg av ${event.title}`
           }
@@ -127,7 +134,9 @@ export default function MemberEventsSection({
       <div className="grid gap-4 md:grid-cols-2">
         <Panel title="Mine påmeldinger">
           {mine.length > 0 ? (
-            <ul className="flex flex-col gap-3">{mine.map((event) => row(event, 'leave'))}</ul>
+            <ul className="flex flex-col gap-3">
+              {mine.map((event) => row(event, joined.has(event._id) ? 'leave' : 'join'))}
+            </ul>
           ) : (
             <p>Du er ikke påmeldt noe ennå. Se forslagene, eller finn noe i kalenderen.</p>
           )}

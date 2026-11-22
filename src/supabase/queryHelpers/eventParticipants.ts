@@ -52,9 +52,15 @@ export async function getEventAttendees(
   return byEvent;
 }
 
-/** The ids of every event the signed-in member has signed up for. RLS returns own rows only. */
-export async function getMySignups(): Promise<string[]> {
-  const { data, error } = await supabase.from('event_participants').select('event_id');
+/**
+ * The ids of every event this member has signed up for. Filtered explicitly: for the board
+ * (admin_session) RLS returns everyone's rows.
+ */
+export async function getMySignups(supabaseId: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('event_participants')
+    .select('event_id')
+    .eq('supabase_id', supabaseId);
   if (error) throw error;
   return (data ?? []).map((row: { event_id: string }) => row.event_id);
 }
