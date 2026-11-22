@@ -2,7 +2,7 @@
 -- retention run.
 begin;
 \ir helpers/auth.sql
-select plan(37);
+select plan(41);
 select tests.seed();
 
 -- authenticate_as() plus an `amr` entry: the last real sign-in, p_seconds_ago seconds back.
@@ -132,8 +132,16 @@ select is_empty(
   format('select 1 from public.admin_audit_log where actor = %L', (select uid from anna)),
   'she is no longer anyone''s actor in the audit log'
 );
+select is_empty(
+  format('select 1 from public.admin_audit_log where (old::text || new::text) like %L', '%' || (select uid from anna) || '%'),
+  'her login id is in no snapshot either (the headcount''s updated_by included)'
+);
 
--- The last active admin cannot erase themself.
+-- The last active admin cannot erase themself, and the check says so before anything happens.
+select tests.signed_in_ago('admin@example.no', 30, 'aal2');
+select throws_ok($$select public.erase_my_account_check()$$, 'P0001', 'last_admin', 'the check refuses the last admin up front');
+select tests.signed_in_ago('b@example.no', 600);
+select throws_ok($$select public.erase_my_account_check()$$, '42501', 'reauth_required', 'the check asks for a fresh sign-in');
 select tests.signed_in_ago('admin@example.no', 30, 'aal2');
 select throws_ok($$select public.erase_my_account('SLETT')$$, 'P0001', 'last_admin', 'the last admin is refused');
 
@@ -149,9 +157,15 @@ select throws_ok(
   format($$select public.admin_erase_member(%L, 'Ada Testesen')$$, tests.member_id('admin@example.no')),
   'P0001', 'use_own_page', 'the board cannot erase themself here'
 );
-select lives_ok(
-  format($$select public.admin_erase_member(%L, '  bjørn   testesen ')$$, tests.member_id('b@example.no')),
-  'typing the name erases the member'
+select tests.as_owner();
+update public.members set name = 'Bjørn  Are' where email = 'b@example.no';
+create temp table bjorn as select tests.user_id('b@example.no') as uid;
+grant select on bjorn to authenticated;
+select tests.authenticate_as('admin@example.no', 'aal2');
+select is(
+  public.admin_erase_member(tests.member_id('b@example.no'), '  bjørn are   testesen '),
+  (select uid from bjorn),
+  'typing the name erases the member (spacing aside) and returns the login to clean up'
 );
 select tests.authenticate_as('admin@example.no', 'aal1');
 select throws_ok(
@@ -167,10 +181,18 @@ insert into public.contact_messages (name, email, message, created_at)
 values ('Gammel', 'old@example.no', 'Hei', now() - interval '13 months');
 update public.members set disabled_at = now() - interval '25 months' where email = 'disabled@example.no';
 select tests.authenticate_as('admin@example.no', 'aal2');
+create temp table dina as select tests.user_id('disabled@example.no') as uid;
+grant select on dina to authenticated;
+create temp table retention as select public.run_retention() as r;
 select is(
-  (select r ->> 'contactMessages' || '/' || (r ->> 'lapsedMembers') from public.run_retention() r),
-  '1/1',
+  (select r ->> 'contactMessages' || '/' || (r ->> 'lapsedMembers') || '/' || (r ->> 'lapsedFailed') from retention),
+  '1/1/0',
   'retention removes an old contact message and erases a member disabled for two years'
+);
+select is(
+  (select r -> 'erasedLogins' from retention),
+  jsonb_build_array((select uid from dina)),
+  'retention returns the erased login, for its photo folder'
 );
 select tests.as_owner();
 select is((select count(*)::int from public.erasure_log), 3, 'each erasure is in the ledger');

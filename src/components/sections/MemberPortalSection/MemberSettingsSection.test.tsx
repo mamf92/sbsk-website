@@ -16,6 +16,7 @@ vi.mock('../../../supabase/queryHelpers/memberAuth', () => ({
   signOutEverywhere: () => signOutEverywhere(),
   sendSignInCode: vi.fn(),
   verifySignInCode: vi.fn(),
+  signOutHere: vi.fn(),
 }));
 vi.mock('../../../hooks/authContext/authContext', () => ({
   useAuth: () => ({ refreshSession: vi.fn().mockResolvedValue(false) }),

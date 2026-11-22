@@ -6,14 +6,17 @@ import { Dialog } from '../../ui/Dialog';
 import { Input } from '../../ui/Input';
 import { Panel } from '../../ui/Panel';
 import {
+  checkCanEraseMyAccount,
   eraseMyAccount,
   exportFileName,
   exportMyData,
-  hasFreshSignIn,
   removeMyPhotos,
 } from '../../../supabase/queryHelpers/gdpr';
-import { sendSignInCode, verifySignInCode } from '../../../supabase/queryHelpers/memberAuth';
-import { supabase } from '../../../supabase/client';
+import {
+  sendSignInCode,
+  signOutHere,
+  verifySignInCode,
+} from '../../../supabase/queryHelpers/memberAuth';
 import type { Profile } from '../../../supabase/queryHelpers/getProfile';
 import { downloadJson } from '../../../utils/downloadJson';
 import { CODE_INVALID, norwegianErrorMessage } from '../../../utils/errorMessage';
@@ -22,7 +25,8 @@ import { CODE_INVALID, norwegianErrorMessage } from '../../../utils/errorMessage
 export type MyDataActions = {
   exportData: () => Promise<unknown>;
   download: (data: unknown, fileName: string) => void;
-  freshSignIn: () => Promise<boolean>;
+  /** Raises `reauth_required` or `last_admin` when the erasure would be refused. */
+  check: () => Promise<void>;
   sendCode: (email: string) => Promise<void>;
   verifyCode: (email: string, code: string) => Promise<void>;
   removePhotos: (userId: string) => Promise<void>;
@@ -33,15 +37,13 @@ export type MyDataActions = {
 const realActions: MyDataActions = {
   exportData: exportMyData,
   download: downloadJson,
-  freshSignIn: hasFreshSignIn,
+  check: checkCanEraseMyAccount,
   sendCode: sendSignInCode,
   verifyCode: verifySignInCode,
   removePhotos: removeMyPhotos,
   erase: eraseMyAccount,
-  signOutHere: async () => {
-    // The login no longer exists; this only clears the session stored in this browser.
-    await supabase.auth.signOut({ scope: 'local' });
-  },
+  // The login no longer exists; this only clears the session stored in this browser.
+  signOutHere,
 };
 
 function errorText(error: unknown): string {
@@ -134,22 +136,35 @@ function DeleteAccountDialog({
   const [error, setError] = useState<string | null>(null);
   const confirmed = word.trim().toUpperCase() === 'SLETT';
 
+  // The check comes first: a refused erasure (old sign-in, last admin) must not have removed
+  // the photos already.
   const erase = async () => {
+    await actions.check();
     await actions.removePhotos(profile.supabase_id);
     await actions.erase('SLETT');
     await actions.signOutHere().catch(() => undefined);
     navigate('/konto-slettet', { replace: true });
   };
 
-  const fail = (err: unknown) => {
+  // Proof that the person holding this phone is the member: a new code by email.
+  const askForCode = async () => {
+    await actions.sendCode(profile.email);
+    setCode('');
+    setStep('code');
+  };
+
+  const fail = async (err: unknown) => {
     const text = errorText(err);
     if (text.includes('last_admin')) {
       setError(
         'Du er den siste aktive administratoren. Gjør en annen i styret til administrator først.',
       );
     } else if (text.includes('reauth_required')) {
-      setError('Innloggingen er for gammel. Be om en ny kode og prøv igjen.');
-      setStep('code');
+      try {
+        await askForCode();
+      } catch (sendError) {
+        setError(norwegianErrorMessage(sendError, 'Vi fikk ikke sendt koden. Prøv igjen.'));
+      }
     } else {
       setError(norwegianErrorMessage(err, 'Vi fikk ikke slettet kontoen. Prøv igjen.'));
     }
@@ -161,15 +176,9 @@ function DeleteAccountDialog({
     setBusy(true);
     setError(null);
     try {
-      if (await actions.freshSignIn()) {
-        await erase();
-        return;
-      }
-      // Proof that the person holding this phone is the member: a new code by email.
-      await actions.sendCode(profile.email);
-      setStep('code');
+      await erase();
     } catch (err) {
-      fail(err);
+      await fail(err);
     } finally {
       setBusy(false);
     }
@@ -189,7 +198,7 @@ function DeleteAccountDialog({
     try {
       await erase();
     } catch (err) {
-      fail(err);
+      await fail(err);
     } finally {
       setBusy(false);
     }

@@ -12,18 +12,31 @@ export async function exportMyData(): Promise<Record<string, unknown>> {
   return data as Record<string, unknown>;
 }
 
-/** Whether the last real sign-in is under five minutes old, as erasure requires. */
-export async function hasFreshSignIn(): Promise<boolean> {
-  const { data, error } = await supabase.rpc('gdpr_fresh_sign_in');
+/**
+ * Raises what would stop the erasure (`reauth_required`, `last_admin`, `not_member`) without
+ * changing anything, so the page asks before it removes a single photo.
+ */
+export async function checkCanEraseMyAccount(): Promise<void> {
+  const { error } = await supabase.rpc('erase_my_account_check');
   if (error) throw error;
-  return data === true;
 }
 
 /**
- * Removes every file under the member's own photo prefix. Runs before the erasure, while the
- * login still exists: Supabase refuses direct deletes from storage tables, so SQL cannot.
+ * The member's own photos, before the erasure, while the login still exists: Supabase refuses
+ * direct deletes from storage tables, so SQL cannot. The profile stops pointing at the photo
+ * first, so a failure after this leaves no broken picture.
  */
 export async function removeMyPhotos(userId: string): Promise<void> {
+  const { error } = await supabase
+    .from('profiles')
+    .update({ photo_url: null })
+    .eq('supabase_id', userId);
+  if (error) throw error;
+  await removePhotoFolder(userId);
+}
+
+/** Every file under one login's photo prefix: the member's own, or one the board erased. */
+async function removePhotoFolder(userId: string): Promise<void> {
   const bucket = supabase.storage.from('profile-images');
   const { data, error } = await bucket.list(userId, { limit: 1000 });
   if (error) throw error;
@@ -39,10 +52,19 @@ export async function eraseMyAccount(confirm: string): Promise<void> {
   if (error) throw error;
 }
 
-/** The nightly retention jobs, run when the board opens the member list (no pg_cron). */
+/**
+ * The nightly retention jobs, run when the board opens the member list (no pg_cron). Members it
+ * erased leave a photo folder the database cannot delete; the board's session removes it.
+ */
 export async function runRetention(): Promise<void> {
-  const { error } = await supabase.rpc('run_retention');
+  const { data, error } = await supabase.rpc('run_retention');
   if (error) throw error;
+  const logins = (data as { erasedLogins?: string[] } | null)?.erasedLogins ?? [];
+  for (const login of logins) {
+    await removePhotoFolder(login).catch((err: unknown) =>
+      console.error('Could not remove the photos of an erased member:', err),
+    );
+  }
 }
 
 /** `sbsk-mine-data-2026-11-22.json`, in the Oslo date. */

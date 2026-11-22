@@ -33,9 +33,10 @@ Changes to the plan made while building, so later steps follow them:
   `/konto-slettet` says it instead); the ledger hash uses built-in `sha256()` (same value as
   pgcrypto's `digest`); retention runs when the board opens the member list, like the
   application purge; the payments purge waits (nothing is five years old before 2032, and it
-  would take back the supporter badge); the export holds event ids, not titles. The board's
-  export and erasure have RPCs but no buttons yet (follow-up issue), and a member erased by
-  retention keeps their photo file until that issue adds a storage clean-up.
+  would take back the supporter badge); the export holds event ids, not titles. Photos: the
+  member's page removes its own before erasing (after `erase_my_account_check()`); for the
+  board's erasures the RPCs return the erased login ids and the board's browser removes the
+  folders. The board's export and erasure have RPCs but no buttons yet (#353).
 - **UI copy is Norwegian inline**, like the phase 2 admin pages. Moving it to i18n namespaces
   is one pass over `auth`/`member` strings when English is wanted.
 

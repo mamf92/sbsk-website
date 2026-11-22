@@ -3,6 +3,7 @@
 --
 -- No edge functions (threads cannot deploy them), so everything here is SECURITY DEFINER SQL:
 --   export_my_data()             the member's own data as one JSON document (right of access)
+--   erase_my_account_check()     what would stop the erasure, asked before photos are removed
 --   erase_my_account(confirm)    the member deletes their account (right to erasure); needs a
 --                                sign-in under five minutes old, read from the JWT's `amr`
 --   gdpr_fresh_sign_in()         lets the page ask for a new code before it starts
@@ -11,8 +12,10 @@
 --   run_retention()              the nightly jobs; pg_cron is off, so the board's member list
 --                                runs it, like purge_expired_applications()
 --
--- Storage is not touched here: Supabase refuses direct deletes from storage.objects, so the
--- page removes the member's own photos through the storage API before it calls the erasure.
+-- Storage is not touched here: Supabase refuses direct deletes from storage.objects. The page
+-- removes the member's own photos through the storage API before it calls the erasure; for the
+-- board's erasures, the functions return the erased login ids and the board's browser removes
+-- those folders (the "Admins delete profile images" policy below).
 -- No confirmation email either (no mail provider yet); the page says what was deleted instead.
 
 -- ---------------------------------------------------------------------------------------------
@@ -252,8 +255,10 @@ revoke execute on function public.event_headcounts_touch() from public, anon, au
 
 -- One transaction, in the order gdpr.md step 3 gives. Internal; the wrappers below decide who
 -- may call it. Refuses the last active admin (protect_last_admin() raises `last_admin`).
+-- Returns the erased login's id (null for a register-only member), whose photo folder the
+-- caller then removes.
 create or replace function public.erase_member(p_member uuid, p_trigger text)
-returns void
+returns uuid
 language plpgsql
 security definer
 set search_path to 'public'
@@ -313,16 +318,61 @@ begin
   end loop;
   if m.supabase_id is not null then
     update public.admin_audit_log set actor = null where actor = m.supabase_id;
+    -- Their login id, in the snapshots: the link on their own rows, and as the author of other
+    -- rows' changes (checked in by, marked paid by, ...). Also in the board's notes, which has
+    -- no foreign key to null it.
+    foreach k in array array['supabase_id', 'updated_by', 'checked_in_by', 'marked_by', 'decided_by', 'awarded_by'] loop
+      update public.admin_audit_log l
+      set old = case when l.old ->> k = m.supabase_id::text
+                     then jsonb_set(l.old, array[k], 'null') else l.old end,
+          new = case when l.new ->> k = m.supabase_id::text
+                     then jsonb_set(l.new, array[k], 'null') else l.new end
+      where l.old ->> k = m.supabase_id::text or l.new ->> k = m.supabase_id::text;
+    end loop;
+    update public.member_notes set updated_by = null where updated_by = m.supabase_id;
   end if;
 
   -- 6. The ledger: that someone was erased, never who.
   insert into public.erasure_log (subject_hash, trigger)
   values (encode(sha256(convert_to(m.id::text, 'UTF8')), 'hex'), p_trigger);
+  return m.supabase_id;
 end;
 $$;
 
 revoke execute on function public.erase_member(uuid, text) from public, anon, authenticated;
 grant execute on function public.erase_member(uuid, text) to service_role;
+
+-- Raises what would stop "Slett kontoen min" (`not_member`, `reauth_required`, `last_admin`)
+-- and returns the member id otherwise. The page asks this before it removes any photo, so a
+-- refused erasure leaves the account exactly as it was.
+create or replace function public.erase_my_account_check()
+returns uuid
+language plpgsql
+stable
+security definer
+set search_path to 'public'
+as $$
+declare
+  m public.members;
+begin
+  -- Not current_member_id(): that is active members only, and a member the board has just
+  -- disabled is still signed in until the token runs out.
+  select * into m from public.members where supabase_id = auth.uid();
+  if not found then
+    raise exception 'not_member' using errcode = '42501';
+  end if;
+  if not public.gdpr_fresh_sign_in() then
+    raise exception 'reauth_required' using errcode = '42501';
+  end if;
+  -- The same rule protect_last_admin() enforces on the delete, asked early.
+  if m.is_admin and m.status = 'active' and not exists (
+    select 1 from public.members where id <> m.id and is_admin and status = 'active'
+  ) then
+    raise exception 'last_admin' using errcode = 'P0001';
+  end if;
+  return m.id;
+end;
+$$;
 
 -- "Slett kontoen min". The page types SLETT and, when the sign-in is older than five minutes,
 -- asks for a new code first (`reauth_required`).
@@ -335,26 +385,19 @@ as $$
 declare
   me uuid;
 begin
-  -- Not current_member_id(): that is active members only, and a member the board has just
-  -- disabled is still signed in until the token runs out.
-  select id into me from public.members where supabase_id = auth.uid();
-  if me is null then
-    raise exception 'not_member' using errcode = '42501';
-  end if;
   if upper(trim(coalesce(p_confirm, ''))) not in ('SLETT', 'DELETE') then
     raise exception 'confirm_mismatch' using errcode = 'P0001';
   end if;
-  if not public.gdpr_fresh_sign_in() then
-    raise exception 'reauth_required' using errcode = '42501';
-  end if;
+  me := public.erase_my_account_check();
   perform public.erase_member(me, 'self');
 end;
 $$;
 
 -- The board, for a member who asks by email or has no login. Typing the member's full name
 -- confirms. Not for erasing yourself: that is the member page, with its fresh sign-in.
+-- Returns the erased login id, for the board's browser to remove the photo folder.
 create or replace function public.admin_erase_member(p_member uuid, p_confirm_name text)
-returns void
+returns uuid
 language plpgsql
 security definer
 set search_path to 'public'
@@ -373,17 +416,26 @@ begin
     raise exception 'use_own_page' using errcode = 'P0001';
   end if;
   if lower(regexp_replace(trim(coalesce(p_confirm_name, '')), '\s+', ' ', 'g'))
-     <> lower(trim(m.name || ' ' || m.surname)) then
+     <> lower(regexp_replace(trim(m.name || ' ' || m.surname), '\s+', ' ', 'g')) then
     raise exception 'confirm_mismatch' using errcode = 'P0001';
   end if;
-  perform public.erase_member(p_member, 'admin_request');
+  return public.erase_member(p_member, 'admin_request');
 end;
 $$;
 
+revoke execute on function public.erase_my_account_check() from public, anon;
+grant execute on function public.erase_my_account_check() to authenticated, service_role;
 revoke execute on function public.erase_my_account(text) from public, anon;
 revoke execute on function public.admin_erase_member(uuid, text) from public, anon;
 grant execute on function public.erase_my_account(text) to authenticated, service_role;
 grant execute on function public.admin_erase_member(uuid, text) to authenticated, service_role;
+
+-- The board removes the photo folder of a member it erased (the login is gone by then, so the
+-- owner's own policy no longer applies).
+drop policy if exists "Admins delete profile images" on storage.objects;
+create policy "Admins delete profile images"
+  on storage.objects for delete to authenticated
+  using (bucket_id = 'profile-images' and public.admin_session());
 
 -- ---------------------------------------------------------------------------------------------
 -- Retention (gdpr.md step 4)
@@ -405,6 +457,9 @@ declare
   erasures integer;
   audit integer;
   lapsed integer := 0;
+  failed integer := 0;
+  logins uuid[] := '{}';
+  login uuid;
   m uuid;
 begin
   if not public.admin_session() then
@@ -424,12 +479,22 @@ begin
 
   -- Disabled for two years: erased. A disabled member is never an active admin, so
   -- protect_last_admin() never stops this.
+  -- Each in its own subtransaction: one that fails (another board member's run erased it
+  -- first, say) is skipped and counted, and never undoes the purges above.
   for m in
     select id from public.members
     where status = 'disabled' and disabled_at < now() - interval '24 months'
   loop
-    perform public.erase_member(m, 'retention');
-    lapsed := lapsed + 1;
+    begin
+      login := public.erase_member(m, 'retention');
+      lapsed := lapsed + 1;
+      if login is not null then
+        logins := logins || login;
+      end if;
+    exception when others then
+      failed := failed + 1;
+      raise warning 'run_retention: erasing a lapsed member failed: %', sqlerrm;
+    end;
   end loop;
 
   return jsonb_build_object(
@@ -437,7 +502,10 @@ begin
     'contactMessages', contact,
     'erasureLog', erasures,
     'auditLog', audit,
-    'lapsedMembers', lapsed
+    'lapsedMembers', lapsed,
+    'lapsedFailed', failed,
+    -- The photo folders the board's browser removes next.
+    'erasedLogins', to_jsonb(logins)
   );
 end;
 $$;

@@ -11,7 +11,7 @@ function actions(overrides: Partial<MyDataActions> = {}): MyDataActions {
   return {
     exportData: vi.fn().mockResolvedValue({ format: 'sbsk-export/1' }),
     download: vi.fn(),
-    freshSignIn: vi.fn().mockResolvedValue(true),
+    check: vi.fn().mockResolvedValue(undefined),
     sendCode: vi.fn().mockResolvedValue(undefined),
     verifyCode: vi.fn().mockResolvedValue(undefined),
     removePhotos: vi.fn().mockResolvedValue(undefined),
@@ -83,10 +83,16 @@ describe('MyDataPanel', () => {
   });
 
   it('asks for a new code when the sign-in is old, then erases', async () => {
-    const a = actions({ freshSignIn: vi.fn().mockResolvedValue(false) });
+    const a = actions({
+      check: vi
+        .fn()
+        .mockRejectedValueOnce({ message: 'reauth_required' })
+        .mockResolvedValue(undefined),
+    });
     renderPanel(a);
     await openAndConfirm();
     expect(a.sendCode).toHaveBeenCalledWith('anna@example.no');
+    expect(a.removePhotos).not.toHaveBeenCalled();
     expect(a.erase).not.toHaveBeenCalled();
 
     await userEvent.type(await screen.findByLabelText('Kode fra e-posten'), '123456');
@@ -96,11 +102,20 @@ describe('MyDataPanel', () => {
     expect(await screen.findByText('Slettet-siden')).toBeInTheDocument();
   });
 
-  it('keeps the account and explains when the member is the last admin', async () => {
-    const a = actions({ erase: vi.fn().mockRejectedValue({ message: 'last_admin' }) });
+  it('refuses the last admin before touching the photos', async () => {
+    const a = actions({ check: vi.fn().mockRejectedValue({ message: 'last_admin' }) });
     renderPanel(a);
     await openAndConfirm();
     expect(await screen.findByText(/siste aktive administratoren/)).toBeInTheDocument();
-    expect(a.signOutHere).not.toHaveBeenCalled();
+    expect(a.removePhotos).not.toHaveBeenCalled();
+    expect(a.erase).not.toHaveBeenCalled();
+  });
+
+  it('sends a code when the sign-in runs out between the check and the erasure', async () => {
+    const a = actions({ erase: vi.fn().mockRejectedValue({ message: 'reauth_required' }) });
+    renderPanel(a);
+    await openAndConfirm();
+    expect(await screen.findByLabelText('Kode fra e-posten')).toBeInTheDocument();
+    expect(a.sendCode).toHaveBeenCalledWith('anna@example.no');
   });
 });
