@@ -7,7 +7,11 @@
 export const MAX_PHOTO_EDGE = 512;
 /** Larger originals are refused before decoding; the re-encoded file is far smaller. */
 export const MAX_SOURCE_BYTES = 20 * 1024 * 1024;
-const ACCEPTED = /^image\/(jpeg|png|webp|gif|heic|heif|avif)$/;
+/**
+ * What the picker offers and what is accepted, in one list. No HEIC: only Safari can decode it
+ * in a canvas, and iPhones already hand a JPEG to the web picker. No SVG: it can carry script.
+ */
+export const PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'];
 
 export class PhotoRejectedError extends Error {
   readonly reason: 'type' | 'size' | 'decode';
@@ -33,7 +37,7 @@ export function fitWithin(
 
 /** Checks a picked file before any decoding work. */
 export function checkPhotoFile(file: File): void {
-  if (!ACCEPTED.test(file.type)) throw new PhotoRejectedError('type');
+  if (!PHOTO_TYPES.includes(file.type)) throw new PhotoRejectedError('type');
   if (file.size > MAX_SOURCE_BYTES) throw new PhotoRejectedError('size');
 }
 
@@ -56,6 +60,10 @@ export async function resizeImage(file: File): Promise<Blob> {
   canvas.height = size.height;
   const context = canvas.getContext('2d');
   if (!context) throw new PhotoRejectedError('decode');
+  // White under transparent pixels: the JPEG fallback (Safari cannot write WebP) has no alpha
+  // channel and would otherwise turn them black.
+  context.fillStyle = '#ffffff';
+  context.fillRect(0, 0, size.width, size.height);
   context.drawImage(bitmap, 0, 0, size.width, size.height);
   bitmap.close();
 

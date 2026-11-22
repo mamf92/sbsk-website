@@ -3,8 +3,8 @@ import { supabase } from '../client';
 export interface MyActivity {
   /** Check-ins at the door. Null when the caller has no register row. */
   checkIns: number | null;
-  /** Events signed up for. */
-  signups: number;
+  /** Events signed up for. Null when the count could not be read. */
+  signups: number | null;
 }
 
 /** Counts for the portal band's stat tiles. RLS limits both tables to the caller's own rows. */

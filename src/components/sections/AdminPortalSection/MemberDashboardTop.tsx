@@ -61,7 +61,7 @@ export default function MemberDashboardTop({
         </div>
         <div className="grid flex-none grid-cols-2 gap-2 sm:grid-cols-2 md:w-80">
           <StatTile value={activity.checkIns ?? '–'} label="Innsjekk" />
-          <StatTile value={activity.signups} label="Påmeldinger" />
+          <StatTile value={activity.signups ?? '–'} label="Påmeldinger" />
         </div>
       </div>
       {editing && (

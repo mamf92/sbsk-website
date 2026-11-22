@@ -7,9 +7,9 @@ import { Textarea } from '../../ui/Textarea';
 import { Alert, FieldError } from '../../ui/Alert';
 import getImage from '../../../supabase/queryHelpers/getImage';
 import uploadImage, { removeImage } from '../../../supabase/queryHelpers/uploadImage';
-import { PhotoRejectedError } from '../../../utils/resizeImage';
+import { PHOTO_TYPES, PhotoRejectedError } from '../../../utils/resizeImage';
 import { Avatar } from '../../ui/Avatar';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { type ProfileFormValues } from '../../../supabase/queryHelpers/editProfile';
 
 type ProfileFormProps = {
@@ -40,17 +40,37 @@ export default function ProfileForm({ profile, onSubmitProfile, onClose }: Profi
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [pendingUploads, setPendingUploads] = useState(0);
+  const uploading = pendingUploads > 0;
 
-  // A photo is uploaded as soon as it is picked, so the preview is the real stored file. If the
-  // member then cancels, that upload is removed again; if they save, the photo it replaced is.
-  const discardUnsavedPhoto = () => {
-    if (photoPath && photoPath !== profile.photo_path) void removeImage(photoPath);
-  };
-  const close = () => {
-    discardUnsavedPhoto();
-    onClose();
-  };
+  // A photo is uploaded as soon as it is picked, so the preview is the real stored file. Every
+  // upload that does not end up saved is removed again: one superseded by a later pick, one
+  // still running when the dialog closes, and the current one on cancel. After a save, the
+  // photo it replaced is removed. Refs, not state, because uploads resolve after re-renders
+  // (and possibly after unmount) and must see the latest values.
+  const latestUpload = useRef(0);
+  const closed = useRef(false);
+  const currentPath = useRef<string | null>(profile.photo_path);
+  const saved = useRef(false);
+
+  const isUnsaved = (path: string | null): path is string =>
+    path !== null && path !== profile.photo_path;
+
+  useEffect(
+    () => {
+      // Reset on (re)mount: StrictMode mounts, unmounts and mounts again in development.
+      closed.current = false;
+      return () => {
+        closed.current = true;
+        if (!saved.current && isUnsaved(currentPath.current)) void removeImage(currentPath.current);
+      };
+    },
+    // Runs once, on unmount; `profile.photo_path` is fixed for the dialog's lifetime.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
+  const close = () => onClose();
 
   const fields: (ValidatedField & {
     name: string;
@@ -88,35 +108,50 @@ export default function ProfileForm({ profile, onSubmitProfile, onClose }: Profi
       label: 'Bilde',
       placeholder: 'Velg et bilde',
       defaultValue: '',
-      accept: 'image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif',
+      accept: PHOTO_TYPES.join(','),
       title: 'Filen må være et bilde (jpg, png, e.l.)',
       required: false,
       onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
+        const input = e.target;
+        const file = input.files?.[0];
         if (!file) return;
+        const upload = ++latestUpload.current;
         setPhotoError(null);
-        setUploading(true);
+        setPendingUploads((n) => n + 1);
         uploadImage(profile.supabase_id, file)
           .then(async (path) => {
             if (!path) {
-              setPhotoError('Vi fikk ikke lastet opp bildet. Prøv igjen.');
+              if (upload === latestUpload.current) {
+                setPhotoError('Vi fikk ikke lastet opp bildet. Prøv igjen.');
+              }
               return;
             }
-            discardUnsavedPhoto();
+            if (closed.current || upload !== latestUpload.current) {
+              void removeImage(path);
+              return;
+            }
+            if (isUnsaved(currentPath.current)) void removeImage(currentPath.current);
+            currentPath.current = path;
             setPhotoPath(path);
             const url = await getImage(path);
-            if (url) setImageURL(url);
+            if (url && !closed.current) setImageURL(url);
           })
           .catch((err: unknown) => {
+            if (closed.current || upload !== latestUpload.current) return;
+            input.value = '';
             setPhotoError(
               err instanceof PhotoRejectedError
                 ? err.reason === 'size'
                   ? 'Bildet er for stort. Velg et bilde under 20 MB.'
-                  : 'Filen må være et bilde (JPG, PNG, WebP eller HEIC).'
+                  : err.reason === 'type'
+                    ? 'Filen må være et bilde (JPG, PNG, WebP, GIF eller AVIF).'
+                    : 'Vi kunne ikke lese bildet. Prøv et JPG- eller PNG-bilde.'
                 : 'Vi fikk ikke lastet opp bildet. Prøv igjen.',
             );
           })
-          .finally(() => setUploading(false));
+          .finally(() => {
+            if (!closed.current) setPendingUploads((n) => n - 1);
+          });
       },
     },
   ];
@@ -150,7 +185,8 @@ export default function ProfileForm({ profile, onSubmitProfile, onClose }: Profi
       name,
       surname: surname || null,
       bio: formData.get('bio') as string | null,
-      photo_url: photoPath ?? (formData.get('photo_file') as File | null),
+      // Only ever a storage path: the raw form value is a File, which would serialise as `{}`.
+      photo_url: photoPath,
     };
 
     setSubmitError(null);
@@ -159,6 +195,7 @@ export default function ProfileForm({ profile, onSubmitProfile, onClose }: Profi
       // Resolving is what closes the dialog, from the caller's side (ProfileCard) — a rejection
       // here leaves it open with the failure shown, instead of disappearing silently (#169).
       await onSubmitProfile(profileData);
+      saved.current = true;
       if (profile.photo_path && photoPath !== profile.photo_path) {
         void removeImage(profile.photo_path);
       }
@@ -183,6 +220,7 @@ export default function ProfileForm({ profile, onSubmitProfile, onClose }: Profi
             />
           ) : (
             <Avatar
+              className="h-full w-full"
               name={[profile.name, profile.surname].filter(Boolean).join(' ') || profile.email}
               size="xl"
             />

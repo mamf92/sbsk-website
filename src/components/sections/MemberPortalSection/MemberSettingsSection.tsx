@@ -81,7 +81,7 @@ function PasswordPanel() {
   return (
     <Panel title="Passord">
       <p>Du kan alltid logge inn med en kode på e-post. Et passord er valgfritt.</p>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-3">
         <label className="flex flex-col gap-1">
           <span>Nytt passord</span>
           <Input
@@ -114,12 +114,14 @@ function SessionsPanel() {
     setError(null);
     try {
       await signOutEverywhere();
-      await refreshSession();
-      navigate('/login');
     } catch (err: unknown) {
       setError(norwegianErrorMessage(err, 'Vi fikk ikke logget deg ut. Prøv igjen.'));
       setBusy(false);
+      return;
     }
+    // Signed out already; the header catching up is not worth an error message.
+    await refreshSession().catch(() => false);
+    navigate('/login');
   };
 
   return (
