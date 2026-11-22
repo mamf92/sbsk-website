@@ -336,8 +336,9 @@ resizeImage.ts` (canvas `toBlob('image/webp', 0.85)`), reject non-images before 
 
 - Members tab: "Søknader" tab listing pending applications with Godkjenn (→ approve RPC →
   invite) and Avslå.
-- Check-in: "Skann medlemskort" button using the `BarcodeDetector` API where available (Chrome
-  Android, Safari 17+), falling back to the search list. Needs `getUserMedia` only — no new
+- Check-in: "Skann medlemskort" button using the camera: `BarcodeDetector` where available (Chrome
+  Android), otherwise jsQR, lazy-loaded (Safari has no `BarcodeDetector`), plus a typed-code
+  field and the search list. Needs `getUserMedia` only — no new
   host; add `Permissions-Policy` note to `docs/HOSTING.md` (cannot be set on Pages).
 - Member detail: award/revoke manual badges.
 

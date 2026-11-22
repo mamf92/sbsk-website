@@ -42,17 +42,30 @@ const QUIET = 4; // the quiet zone the QR spec asks for, in modules
  */
 export function QrCode({ value, label, className = '', ...props }: QrCodeProps) {
   const [matrix, setMatrix] = React.useState<Matrix | null>(null);
+  const [failed, setFailed] = React.useState(false);
 
   React.useEffect(() => {
     let current = true;
     setMatrix(null);
-    void encode(value).then((next) => current && setMatrix(next));
+    setFailed(false);
+    encode(value)
+      .then((next) => current && setMatrix(next))
+      // The encoder chunk did not load (weak signal, or a deploy replaced it): say so, rather
+      // than leaving an empty white square that looks like a broken card.
+      .catch(() => current && setFailed(true));
     return () => {
       current = false;
     };
   }, [value]);
 
   const size = (matrix?.length ?? 21) + QUIET * 2;
+  if (failed) {
+    return (
+      <p role="status" className={`font-body text-sm ${className}`}>
+        QR-koden kunne ikke vises. Last siden på nytt, eller vis koden under.
+      </p>
+    );
+  }
   return (
     <svg
       role="img"

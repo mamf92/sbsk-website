@@ -56,7 +56,8 @@ begin
              select 1 from public.membership_payments p
              where p.member_id = m.id
                and p.status = 'paid'
-               and p.season = extract(year from now())::smallint
+               -- The club's season is the Oslo calendar year, not UTC's.
+               and p.season = extract(year from now() at time zone 'Europe/Oslo')::smallint
            )
     from public.members m
     where m.member_card_token = lower(trim(p_token));

@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Alert } from '../../ui/Alert';
 import { Button } from '../../ui/Buttons';
@@ -79,8 +79,10 @@ export default function AdminCheckInSection({
     ];
   }, [members, query, signedUp]);
 
-  const toggle = async (member: Member): Promise<boolean> => {
+  const toggle = async (member: Member, fromScan = false): Promise<boolean> => {
     if (pending.has(member.id)) return false;
+    // A tap in the list makes the last scan's message stale.
+    if (!fromScan) setScanned(null);
     const wasIn = checkedIn.has(member.id);
     const setBusy = (busy: boolean) =>
       setPending((prev) => {
@@ -115,6 +117,13 @@ export default function AdminCheckInSection({
     }
   };
 
+  // The lookup is a round trip; by the time it answers, the list may have changed. The card
+  // path reads the newest state and `toggle` through this ref, not the render it started in.
+  const latest = useRef({ checkedIn, pending, toggle });
+  useEffect(() => {
+    latest.current = { checkedIn, pending, toggle };
+  });
+
   const checkInByCard = async (token: string) => {
     setError(null);
     setScanned(null);
@@ -125,22 +134,29 @@ export default function AdminCheckInSection({
       setError('Kunne ikke slå opp medlemskortet. Sjekk nettet og prøv igjen, eller søk på navn.');
       return;
     }
-    const member = found ? members.find((m) => m.id === found.memberId) : undefined;
-    if (!found || !member) {
+    if (!found) {
       setError('Fant ingen med den koden. Søk på navn, eller be medlemmet åpne kortet på nytt.');
       return;
     }
-    const fullName = `${member.name} ${member.surname}`.trim();
+    const fullName = `${found.name} ${found.surname}`.trim();
     if (found.status !== 'active') {
       setError(`${fullName} er deaktivert og kan ikke sjekkes inn.`);
       return;
     }
+    const member = members.find((m) => m.id === found.memberId);
+    if (!member) {
+      // Added to the register after this page loaded.
+      setError(`${fullName} er ikke i listen på denne siden ennå. Last siden på nytt.`);
+      return;
+    }
     const unpaid = found.seasonPaid ? '' : ` Ikke betalt for ${currentSeason()}.`;
-    if (checkedIn.has(member.id)) {
+    const now = latest.current;
+    if (now.checkedIn.has(member.id)) {
       setScanned({ tone: 'info', text: `${fullName} er allerede sjekket inn.${unpaid}` });
       return;
     }
-    if (await toggle(member)) {
+    if (now.pending.has(member.id)) return;
+    if (await now.toggle(member, true)) {
       setScanned({ tone: 'success', text: `${fullName} er sjekket inn.${unpaid}` });
     }
   };

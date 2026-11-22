@@ -251,5 +251,38 @@ describe('AdminCheckInSection', () => {
       expect(screen.getByText('Det ser ikke ut som en kode fra et medlemskort.')).toBeVisible();
       expect(lookup).not.toHaveBeenCalled();
     });
+
+    it('clears the scan message when the list changes that member', async () => {
+      lookup.mockResolvedValue({
+        memberId: 'anna',
+        name: 'Anna',
+        surname: 'Berg',
+        status: 'active',
+        seasonPaid: true,
+      });
+      renderSection();
+      await typeCard(TOKEN);
+      expect(await screen.findByText('Anna Berg er sjekket inn.')).toBeVisible();
+      await userEvent.click(screen.getByRole('button', { name: 'Angre innsjekk for Anna Berg' }));
+      expect(screen.queryByText('Anna Berg er sjekket inn.')).not.toBeInTheDocument();
+    });
+
+    it('asks for a reload when the card holder joined after the page loaded', async () => {
+      lookup.mockResolvedValue({
+        memberId: 'new',
+        name: 'Nina',
+        surname: 'Ny',
+        status: 'active',
+        seasonPaid: true,
+      });
+      renderSection();
+      await typeCard(TOKEN);
+      expect(
+        await screen.findByText(
+          'Nina Ny er ikke i listen på denne siden ennå. Last siden på nytt.',
+        ),
+      ).toBeVisible();
+      expect(checkInMember).not.toHaveBeenCalled();
+    });
   });
 });
