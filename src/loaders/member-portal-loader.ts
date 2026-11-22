@@ -2,6 +2,7 @@ import type { LoaderFunctionArgs } from 'react-router-dom';
 import { requireMember } from './requireMember';
 import { getMember } from '../supabase/queryHelpers/getMember';
 import { getMyActivity, type MyActivity } from '../supabase/queryHelpers/getMyActivity';
+import { getMyBadges } from '../supabase/queryHelpers/badges';
 import { settle } from './settle';
 
 /**
@@ -15,12 +16,16 @@ export async function memberPortalLoader(args?: LoaderFunctionArgs) {
     next.startsWith('/medlemsportal') ? next : '/medlemsportal',
   );
   // The band's extras. A failure here must not take Settings down with it (password, sign out
-  // everywhere), so both degrade: no "member since", and "–" in the stat tiles.
+  // everywhere), so all degrade: no "member since", and "–" in the stat tiles.
   // RLS lets an active member read their own register row and nothing else.
-  const { data: me } = await settle(getMember(user.id));
+  const [{ data: me }, { data: badges }] = await Promise.all([
+    settle(getMember(user.id)),
+    settle(getMyBadges()),
+  ]);
   const { data: activity } = await settle(getMyActivity(user.id, me?.id ?? null));
   const fallback: MyActivity = { checkIns: null, signups: null };
-  return { profile, me, activity: activity ?? fallback };
+  // Badges: the band shows the count, the overview tab the grid (null = could not be read).
+  return { profile, me, activity: activity ?? fallback, badges: badges ?? null };
 }
 
 export type MemberPortalData = Awaited<ReturnType<typeof memberPortalLoader>>;

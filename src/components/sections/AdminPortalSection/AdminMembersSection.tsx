@@ -9,6 +9,7 @@ import { Input } from '../../ui/Input';
 import { Segmented } from '../../ui/Segmented';
 import { Tag } from '../../ui/Tag';
 import MemberForm from '../BoardPortalSection/MemberForm';
+import ManualBadgesDialog from './ManualBadgesDialog';
 import MarkPaidDialog from './MarkPaidDialog';
 import MemberStatusDialog from './MemberStatusDialog';
 import { createMember } from '../../../supabase/queryHelpers/createMember';
@@ -58,6 +59,7 @@ type OpenDialog =
   | { kind: 'edit'; member?: Member }
   | { kind: 'paid'; member: Member }
   | { kind: 'status'; member: Member }
+  | { kind: 'badges'; member: Member }
   | null;
 
 function downloadCsv(csv: string, filename: string) {
@@ -267,6 +269,16 @@ export default function AdminMembersSection({
                       Marker som betalt
                     </Button>
                   )}
+                  {active && (
+                    <Button
+                      variant="tertiary"
+                      size="xs"
+                      aria-label={`Merker for ${fullName}`}
+                      onClick={() => setDialog({ kind: 'badges', member })}
+                    >
+                      Merker
+                    </Button>
+                  )}
                   <Button
                     variant="outline"
                     size="xs"
@@ -310,6 +322,9 @@ export default function AdminMembersSection({
           }}
           onClose={() => setDialog(null)}
         />
+      )}
+      {dialog?.kind === 'badges' && (
+        <ManualBadgesDialog member={dialog.member} onClose={() => setDialog(null)} />
       )}
       {dialog?.kind === 'status' && (
         <MemberStatusDialog

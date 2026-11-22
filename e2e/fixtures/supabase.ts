@@ -169,7 +169,15 @@ export interface SupabaseStubOptions {
    */
   aal?: 'aal1' | 'aal2';
   hasFactor?: boolean;
+  /** What `my_badges()` returns: the member's badges, earned or not. */
+  badges?: Row[];
 }
+
+/** One earned and one locked badge, so Min side renders both states. */
+export const MY_BADGES: Row[] = [
+  { slug: 'first-roll', kind: 'auto', awarded_at: '2026-10-01T18:00:00Z', progress: 1, target: 1 },
+  { slug: 'regular', kind: 'auto', awarded_at: null, progress: 1, target: 10 },
+];
 
 /** Thrown when the app asks for something the stub cannot honestly answer. */
 class UnsupportedQuery extends Error {}
@@ -261,6 +269,7 @@ export async function stubSupabase(page: Page, options: SupabaseStubOptions = {}
     isActive = true,
     aal = 'aal2',
     hasFactor = aal === 'aal2',
+    badges = MY_BADGES,
   } = options;
 
   const user = {
@@ -309,6 +318,7 @@ export async function stubSupabase(page: Page, options: SupabaseStubOptions = {}
       const procedure = path.slice('rpc/'.length);
       if (procedure === 'member_is_admin') return json(route, 200, isAdmin);
       if (procedure === 'member_is_active') return json(route, 200, isActive);
+      if (procedure === 'my_badges') return json(route, 200, badges);
       return json(route, 404, { message: `e2e stub has no RPC "${procedure}"` });
     }
 

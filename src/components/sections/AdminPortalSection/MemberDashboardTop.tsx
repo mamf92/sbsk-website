@@ -14,6 +14,8 @@ type MemberDashboardTopProps = {
   /** The viewer's register row; null for an account with no row (should not happen). */
   me: Member | null;
   activity: MyActivity;
+  /** Badges earned, as a third tile; left out where the page shows no badges (board portal). */
+  badges?: number | null;
   /** Extra actions on the right of the band (the board's "Innholdsredigering"). */
   actions?: React.ReactNode;
 };
@@ -30,8 +32,10 @@ export default function MemberDashboardTop({
   profile,
   me,
   activity,
+  badges,
   actions,
 }: MemberDashboardTopProps) {
+  const showBadges = badges !== undefined;
   const [editing, setEditing] = useState(false);
   const revalidator = useRevalidator();
   const fullName = [profile.name, profile.surname].filter(Boolean).join(' ') || profile.email;
@@ -59,9 +63,12 @@ export default function MemberDashboardTop({
             </div>
           </div>
         </div>
-        <div className="grid flex-none grid-cols-2 gap-2 sm:grid-cols-2 md:w-80">
+        <div
+          className={`grid flex-none gap-2 ${showBadges ? 'grid-cols-3 md:w-[27rem]' : 'grid-cols-2 md:w-80'}`}
+        >
           <StatTile value={activity.checkIns ?? '–'} label="Innsjekk" />
           <StatTile value={activity.signups ?? '–'} label="Påmeldinger" />
+          {showBadges && <StatTile value={badges ?? '–'} label="Merker" />}
         </div>
       </div>
       {editing && (
