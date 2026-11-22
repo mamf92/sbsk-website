@@ -47,15 +47,15 @@ describe('BadgeGrid', () => {
     render(<BadgeGrid badges={BADGES} />);
     expect(screen.getByText('Du har 3 av 4 merker.')).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: 'Stamgjest, ikke oppnådd ennå' }),
+      screen.getByRole('button', { name: /^Stamgjest, ikke oppnådd ennå/ }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Styreverv, oppnådd' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Styreverv, oppnådd/ })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Spillforklarer/ })).not.toBeInTheDocument();
   });
 
   it('opens a badge to read what it is for', async () => {
     render(<BadgeGrid badges={BADGES} />);
-    await userEvent.click(screen.getByRole('button', { name: 'Stamgjest, ikke oppnådd ennå' }));
+    await userEvent.click(screen.getByRole('button', { name: /^Stamgjest, ikke oppnådd ennå/ }));
     const dialog = screen.getByRole('dialog', { name: 'Stamgjest' });
     expect(within(dialog).getByText('Sjekket inn 10 ganger.')).toBeInTheDocument();
     expect(

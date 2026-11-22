@@ -39,26 +39,19 @@ export async function getMemberBadges(memberId: string): Promise<MemberBadge[]> 
 }
 
 /**
- * Give and take back manual badges in one go. RLS allows manual badges only, at aal2;
- * `awarded_by` defaults to the caller.
+ * Give and take back manual badges in one transaction (`set_manual_badges`). RLS allows
+ * manual badges only, at aal2; `awarded_by` defaults to the caller. Giving one the member
+ * already has is fine, so a retry after a failure cannot trip over its own earlier half.
  */
 export async function setManualBadges(
   memberId: string,
   give: string[],
   takeBack: string[],
 ): Promise<void> {
-  if (give.length > 0) {
-    const { error } = await supabase
-      .from('member_badges')
-      .insert(give.map((slug) => ({ member_id: memberId, badge_slug: slug })));
-    if (error) throw error;
-  }
-  if (takeBack.length > 0) {
-    const { error } = await supabase
-      .from('member_badges')
-      .delete()
-      .eq('member_id', memberId)
-      .in('badge_slug', takeBack);
-    if (error) throw error;
-  }
+  const { error } = await supabase.rpc('set_manual_badges', {
+    p_member: memberId,
+    p_give: give,
+    p_take_back: takeBack,
+  });
+  if (error) throw error;
 }

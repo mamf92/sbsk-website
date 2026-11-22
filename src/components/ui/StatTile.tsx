@@ -44,7 +44,7 @@ export const StatTile = React.forwardRef<HTMLDivElement, StatTileProps>(
   ({ className = '', value, label, tone = 'dark', size = 'md', ...props }, ref) => (
     <div ref={ref} className={[base, tones[tone], sizes[size], className].join(' ')} {...props}>
       <span className={`font-heading leading-none font-bold ${valueSizes[size]}`}>{value}</span>
-      <span className={`font-body text-xs tracking-wide uppercase ${labelTones[tone]}`}>
+      <span className={`font-body text-xs tracking-wide break-words uppercase ${labelTones[tone]}`}>
         {label}
       </span>
     </div>

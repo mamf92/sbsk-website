@@ -2,7 +2,7 @@
 -- the board only, and the member's own my_badges() view.
 begin;
 \ir helpers/auth.sql
-select plan(30);
+select plan(34);
 select tests.seed();
 
 create or replace function tests.badges_of(p_email text)
@@ -140,12 +140,30 @@ select lives_ok(
   ),
   'an admin at aal2 gives a manual badge'
 );
+select lives_ok(
+  format($$select public.set_manual_badges(%L, array['teacher', 'board'], '{}')$$, tests.member_id('a@example.no')),
+  'giving a badge the member already has is a no-op, so a retry succeeds'
+);
+select throws_ok(
+  format($$select public.set_manual_badges(%L, '{}', array['helping-hand'])$$, tests.member_id('a@example.no')),
+  '42501', 'badge_not_removed', 'taking back a badge the member does not have is reported'
+);
+select throws_ok(
+  format($$select public.set_manual_badges(%L, '{}', array['first-roll'])$$, tests.member_id('a@example.no')),
+  '42501', 'badge_not_removed', 'set_manual_badges cannot take back an automatic badge'
+);
+select tests.authenticate_as('admin@example.no', 'aal1');
+select throws_ok(
+  format($$select public.set_manual_badges(%L, array['helping-hand'], '{}')$$, tests.member_id('a@example.no')),
+  '42501', null, 'set_manual_badges refuses an admin at aal1'
+);
+select tests.authenticate_as('admin@example.no', 'aal2');
 delete from public.member_badges where badge_slug = 'first-roll';
 select tests.as_owner();
 select ok('first-roll' = any(tests.badges_of('a@example.no')), 'an admin cannot take back an automatic badge');
 select is(
-  (select count(*)::int from public.admin_audit_log where table_name = 'member_badges'), 1,
-  'giving a manual badge is audited'
+  (select count(*)::int from public.admin_audit_log where table_name = 'member_badges'), 2,
+  'giving manual badges is audited (teacher, then board)'
 );
 select is(
   (select awarded_by from public.member_badges where badge_slug = 'teacher'),

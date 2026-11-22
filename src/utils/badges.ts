@@ -8,7 +8,7 @@ export function progressText(badge: MyBadge): string | undefined {
   return `${badge.progress} av ${badge.target}${unit ? ` ${unit}` : ''}`;
 }
 
-/** Earned first, newest first; then locked, in the club's order (closest to earned first). */
+/** Earned first, newest first; then locked, in the club's order (sort_order). */
 export function orderBadges(badges: MyBadge[]): MyBadge[] {
   const earned = badges
     .filter((badge) => badge.awarded_at)

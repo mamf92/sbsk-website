@@ -17,14 +17,19 @@ const base =
 /**
  * One badge: dice-shaped art with the badge's initial, its name and a detail line. A button,
  * because the grid opens the badge's description from it; the accessible name says whether it
- * is earned, since the colour alone does not.
+ * is earned, since the colour alone does not, and carries the detail line too.
+ *
+ * A raw `<button>` rather than `Button`, like `IconButton`: a tile is a card-shaped target with
+ * stacked content, not one of the system's text buttons and sizes.
  */
 export const BadgeTile = React.forwardRef<HTMLButtonElement, BadgeTileProps>(
   ({ name, earned, detail, className = '', type = 'button', ...props }, ref) => (
     <button
       ref={ref}
       type={type}
-      aria-label={`${name}, ${earned ? 'oppnådd' : 'ikke oppnådd ennå'}`}
+      aria-label={[name, earned ? 'oppnådd' : 'ikke oppnådd ennå', detail]
+        .filter(Boolean)
+        .join(', ')}
       className={[base, className].join(' ')}
       {...props}
     >

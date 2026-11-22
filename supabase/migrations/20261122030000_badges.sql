@@ -271,6 +271,41 @@ revoke execute on function public.my_badges() from public, anon;
 grant execute on function public.my_badges() to authenticated, service_role;
 
 -- ---------------------------------------------------------------------------------------------
+-- The board's manual badges, given and taken back in one transaction. SECURITY INVOKER, so the
+-- member_badges policies above decide (admin_session(), manual badges only). Giving a badge
+-- the member already has is a no-op; taking back one that is not there, or one RLS hides,
+-- raises `badge_not_removed` rather than reporting a success that did not happen.
+-- ---------------------------------------------------------------------------------------------
+create or replace function public.set_manual_badges(
+  p_member uuid,
+  p_give text[],
+  p_take_back text[]
+)
+returns void
+language plpgsql
+security invoker
+set search_path to 'public'
+as $$
+declare
+  removed integer;
+begin
+  insert into public.member_badges (member_id, badge_slug)
+  select p_member, slug from unnest(coalesce(p_give, '{}')) slug
+  on conflict (member_id, badge_slug) do nothing;
+
+  delete from public.member_badges
+  where member_id = p_member and badge_slug = any(coalesce(p_take_back, '{}'));
+  get diagnostics removed = row_count;
+  if removed < cardinality(coalesce(p_take_back, '{}')) then
+    raise exception 'badge_not_removed' using errcode = '42501';
+  end if;
+end;
+$$;
+
+revoke execute on function public.set_manual_badges(uuid, text[], text[]) from public, anon;
+grant execute on function public.set_manual_badges(uuid, text[], text[]) to authenticated, service_role;
+
+-- ---------------------------------------------------------------------------------------------
 -- Seed. Category values match Sanity's event.category options (src/sanity/schemaTypes/
 -- eventType.ts), plus 'festival', which check-in writes for Board Game Masters. The plan's
 -- all-rounder asked for five categories; there are four, so it is three.

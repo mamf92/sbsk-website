@@ -11,8 +11,12 @@ describe('BadgeTile', () => {
         <BadgeTile name="Veteran" earned={false} detail="3 av 25 innsjekkinger" />
       </>,
     );
-    expect(screen.getByRole('button', { name: 'Stamgjest, oppnådd' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Veteran, ikke oppnådd ennå' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Stamgjest, oppnådd, Oppnådd 3. mars 2026' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Veteran, ikke oppnådd ennå, 3 av 25 innsjekkinger' }),
+    ).toBeInTheDocument();
     expect(screen.getByText('3 av 25 innsjekkinger')).toBeInTheDocument();
   });
 
