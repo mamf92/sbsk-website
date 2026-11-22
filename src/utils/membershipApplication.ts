@@ -14,5 +14,8 @@ export function welcomeMailto(application: Pick<Application, 'name' | 'email'>):
   ].join('\n');
   const params = new URLSearchParams({ subject: 'Velkommen i Stavanger Brettspillklubb', body });
   // URLSearchParams writes spaces as "+", which mail apps show literally.
-  return `mailto:${application.email}?${params.toString().replace(/\+/g, '%20')}`;
+  // The address is the applicant's own text: encode it, so a "?", "&" or "#" in it cannot add
+  // recipients or replace the body (RFC 6068). "@" stays readable.
+  const to = encodeURIComponent(application.email).replace(/%40/g, '@');
+  return `mailto:${to}?${params.toString().replace(/\+/g, '%20')}`;
 }

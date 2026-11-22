@@ -1,5 +1,6 @@
 import { redirect, type LoaderFunctionArgs } from 'react-router-dom';
 import { requireAdminSession } from './requireAdminSession';
+import { memberPortalEnabled } from '../utils/featureFlags';
 import { getProfile } from '../supabase/queryHelpers/getProfile';
 import { getMembers } from '../supabase/queryHelpers/getMembers';
 import {
@@ -73,7 +74,8 @@ export async function adminMembersLoader() {
   const [members, seasonStatus, applications] = await Promise.all([
     getMembers(),
     optional(getSeasonStatus()),
-    optional(getPendingApplications()),
+    // Approving sends people to /lag-medlemsprofil, which exists only with the member portal.
+    memberPortalEnabled ? optional(getPendingApplications()) : Promise.resolve([]),
   ]);
   return { members, seasonStatus, applications };
 }

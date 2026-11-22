@@ -6,7 +6,8 @@
 -- rejects. Decisions go through two SECURITY DEFINER functions, so there is no update policy.
 --
 -- Retention (gdpr.md): rejected and withdrawn applications are deleted after 90 days, approved
--- ones after 30 (the register holds the data then). pg_cron is not enabled on the project, so
+-- ones after 30 (the register holds the data then), and one left undecided for 90 days counts
+-- as abandoned and goes too, so spam cannot pile up. pg_cron is not enabled on the project, so
 -- purge_expired_applications() runs each time the board opens the member list.
 
 create type public.application_status as enum ('pending', 'approved', 'rejected', 'withdrawn');
@@ -158,7 +159,8 @@ begin
   end if;
   delete from public.membership_applications
   where (status = 'approved' and decided_at < now() - interval '30 days')
-     or (status in ('rejected', 'withdrawn') and coalesce(decided_at, created_at) < now() - interval '90 days');
+     or (status in ('rejected', 'withdrawn') and coalesce(decided_at, created_at) < now() - interval '90 days')
+     or (status = 'pending' and created_at < now() - interval '90 days');
   get diagnostics removed = row_count;
   return removed;
 end;

@@ -171,9 +171,10 @@ export default function MembershipApplicationSection({
                 value={values.message}
                 onChange={(e) => set('message', e.target.value)}
                 invalid={Boolean(errors.message)}
+                aria-describedby={errors.message ? 'apply-message-error' : undefined}
                 disabled={sending}
               />
-              {errors.message && <FieldError>{errors.message}</FieldError>}
+              {errors.message && <FieldError id="apply-message-error">{errors.message}</FieldError>}
             </div>
             <p className="font-body text-white">
               Vi bruker opplysningene til å behandle søknaden.{' '}

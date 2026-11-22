@@ -2,7 +2,7 @@
 -- register, retention purges old decisions.
 begin;
 \ir helpers/auth.sql
-select plan(18);
+select plan(19);
 select tests.seed();
 
 create or replace function tests.application_id(p_email text)
@@ -105,8 +105,17 @@ select lives_ok(
 select tests.as_owner();
 update public.membership_applications set decided_at = now() - interval '31 days' where email = 'sara@example.no';
 update public.membership_applications set decided_at = now() - interval '89 days' where email = 'a@example.no';
+insert into public.membership_applications (name, surname, email, privacy_version, created_at)
+values ('Gammel', 'Søknad', 'stale@example.no', '2026-11', now() - interval '91 days'),
+       ('Ny', 'Søknad', 'fresh@example.no', '2026-11', now() - interval '89 days');
 select tests.authenticate_as('admin@example.no', 'aal2');
-select is(public.purge_expired_applications(), 1, 'an approval older than 30 days is purged, a rejection under 90 days is kept');
+select is(public.purge_expired_applications(), 2, 'an approval older than 30 days and a pending one older than 90 are purged');
+select tests.as_owner();
+select is(
+  (select array_agg(email order by email) from public.membership_applications),
+  array['a@example.no', 'fresh@example.no'],
+  'a rejection under 90 days and a pending one under 90 days are kept'
+);
 select tests.as_owner();
 select is_empty(
   $$select 1 from public.admin_audit_log
