@@ -4,6 +4,7 @@ import { Button } from './Buttons';
 import UserIcon from '../../assets/icons/symbols/user.svg?react';
 import ShieldIcon from '../../assets/icons/symbols/shield.svg?react';
 import LogoutIcon from '../../assets/icons/symbols/logout.svg?react';
+import SettingsIcon from '../../assets/icons/symbols/settings.svg?react';
 
 type ProfileMenuProps = {
   /** Trigger text, e.g. "Hei, Martin". */
@@ -156,6 +157,15 @@ export function ProfileMenu({
           <Link to="/medlemsportal" role="menuitem" className={item} onClick={() => close()}>
             <UserIcon aria-hidden="true" className={icon} />
             Min side
+          </Link>
+          <Link
+            to="/medlemsportal/innstillinger"
+            role="menuitem"
+            className={item}
+            onClick={() => close()}
+          >
+            <SettingsIcon aria-hidden="true" className={icon} />
+            Innstillinger
           </Link>
           <div role="separator" className="my-1 border-t border-white/12" />
           <button

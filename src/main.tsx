@@ -60,6 +60,8 @@ const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'));
 const Terms = React.lazy(() => import('./pages/Terms'));
 const Login = React.lazy(() => import('./pages/Login'));
 const MemberPortal = React.lazy(() => import('./pages/MemberPortal'));
+const MemberOverview = React.lazy(() => import('./pages/MemberOverview'));
+const MemberSettings = React.lazy(() => import('./pages/MemberSettings'));
 const BoardPortal = React.lazy(() => import('./pages/BoardPortal'));
 const AdminOverview = React.lazy(() => import('./pages/AdminOverview'));
 const AdminMembers = React.lazy(() => import('./pages/AdminMembers'));
@@ -146,9 +148,14 @@ const router = createBrowserRouter(
                   { path: 'glemt-passord', element: <ForgotPassword /> },
                   { path: 'nytt-passord', element: <NewPassword />, loader: newPasswordLoader },
                   {
+                    id: 'member-portal',
                     path: 'medlemsportal',
                     element: <MemberPortal />,
                     loader: memberPortalLoader,
+                    children: [
+                      { index: true, element: <MemberOverview /> },
+                      { path: 'innstillinger', element: <MemberSettings /> },
+                    ],
                   },
                   {
                     path: 'styreportal',

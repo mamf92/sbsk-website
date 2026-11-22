@@ -101,7 +101,7 @@ export default function CodeSignInForm({
         </Button>
         <Button
           type="button"
-          variant="tertiary"
+          variant="outline"
           size="md"
           onClick={() => {
             setStep('email');

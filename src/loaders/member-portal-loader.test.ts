@@ -11,6 +11,14 @@ const signOut = vi.fn();
 vi.mock('../supabase/client', () => ({
   supabase: { auth: { getUser: () => getUser(), signOut: () => signOut() } },
 }));
+const getMember = vi.fn();
+const getMyActivity = vi.fn();
+vi.mock('../supabase/queryHelpers/getMember', () => ({
+  getMember: (id: string) => getMember(id),
+}));
+vi.mock('../supabase/queryHelpers/getMyActivity', () => ({
+  getMyActivity: (id: string, memberId: string) => getMyActivity(id, memberId),
+}));
 vi.mock('../supabase/queryHelpers/memberAuth', () => ({
   isActiveMember: () => isActiveMember(),
 }));
@@ -55,7 +63,15 @@ describe('memberPortalLoader', () => {
     signedIn();
     getProfile.mockResolvedValue(profile);
 
-    await expect(memberPortalLoader()).resolves.toEqual({ profile });
+    getMember.mockResolvedValue({ id: 'member-1' });
+    getMyActivity.mockResolvedValue({ checkIns: 3, signups: 1 });
+
+    await expect(memberPortalLoader()).resolves.toEqual({
+      profile,
+      me: { id: 'member-1' },
+      activity: { checkIns: 3, signups: 1 },
+    });
+    expect(getMyActivity).toHaveBeenCalledWith('auth-user-1', 'member-1');
     // Keyed on the auth user id, which is `supabase_id` on the row — not the profile's own id.
     expect(getProfile).toHaveBeenCalledWith('auth-user-1');
   });

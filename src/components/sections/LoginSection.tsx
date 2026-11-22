@@ -86,7 +86,7 @@ export default function LoginSection({ reason, next }: { reason?: string; next?:
               footer={
                 <Button
                   type="button"
-                  variant="tertiary"
+                  variant="outline"
                   size="md"
                   onClick={() => setMode('password')}
                 >

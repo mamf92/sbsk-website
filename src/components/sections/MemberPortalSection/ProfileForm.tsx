@@ -6,7 +6,9 @@ import { Input } from '../../ui/Input';
 import { Textarea } from '../../ui/Textarea';
 import { Alert, FieldError } from '../../ui/Alert';
 import getImage from '../../../supabase/queryHelpers/getImage';
-import uploadImage from '../../../supabase/queryHelpers/uploadImage';
+import uploadImage, { removeImage } from '../../../supabase/queryHelpers/uploadImage';
+import { PhotoRejectedError } from '../../../utils/resizeImage';
+import { Avatar } from '../../ui/Avatar';
 import { useState } from 'react';
 import { type ProfileFormValues } from '../../../supabase/queryHelpers/editProfile';
 
@@ -37,6 +39,18 @@ export default function ProfileForm({ profile, onSubmitProfile, onClose }: Profi
   const [fieldErrors, setFieldErrors] = useState<Record<string, string | null>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  // A photo is uploaded as soon as it is picked, so the preview is the real stored file. If the
+  // member then cancels, that upload is removed again; if they save, the photo it replaced is.
+  const discardUnsavedPhoto = () => {
+    if (photoPath && photoPath !== profile.photo_path) void removeImage(photoPath);
+  };
+  const close = () => {
+    discardUnsavedPhoto();
+    onClose();
+  };
 
   const fields: (ValidatedField & {
     name: string;
@@ -74,23 +88,35 @@ export default function ProfileForm({ profile, onSubmitProfile, onClose }: Profi
       label: 'Bilde',
       placeholder: 'Velg et bilde',
       defaultValue: '',
-      accept: 'image/*',
+      accept: 'image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif',
       title: 'Filen må være et bilde (jpg, png, e.l.)',
       required: false,
       onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file) {
-          uploadImage(profile.supabase_id, file).then((path) => {
-            if (path) {
-              setPhotoPath(path);
-              getImage(path).then((url) => {
-                if (url) {
-                  setImageURL(url);
-                }
-              });
+        if (!file) return;
+        setPhotoError(null);
+        setUploading(true);
+        uploadImage(profile.supabase_id, file)
+          .then(async (path) => {
+            if (!path) {
+              setPhotoError('Vi fikk ikke lastet opp bildet. Prøv igjen.');
+              return;
             }
-          });
-        }
+            discardUnsavedPhoto();
+            setPhotoPath(path);
+            const url = await getImage(path);
+            if (url) setImageURL(url);
+          })
+          .catch((err: unknown) => {
+            setPhotoError(
+              err instanceof PhotoRejectedError
+                ? err.reason === 'size'
+                  ? 'Bildet er for stort. Velg et bilde under 20 MB.'
+                  : 'Filen må være et bilde (JPG, PNG, WebP eller HEIC).'
+                : 'Vi fikk ikke lastet opp bildet. Prøv igjen.',
+            );
+          })
+          .finally(() => setUploading(false));
       },
     },
   ];
@@ -133,6 +159,9 @@ export default function ProfileForm({ profile, onSubmitProfile, onClose }: Profi
       // Resolving is what closes the dialog, from the caller's side (ProfileCard) — a rejection
       // here leaves it open with the failure shown, instead of disappearing silently (#169).
       await onSubmitProfile(profileData);
+      if (profile.photo_path && photoPath !== profile.photo_path) {
+        void removeImage(profile.photo_path);
+      }
     } catch (err) {
       setSubmitError(norwegianErrorMessage(err, 'Kunne ikke lagre endringene.'));
     } finally {
@@ -143,7 +172,7 @@ export default function ProfileForm({ profile, onSubmitProfile, onClose }: Profi
   return (
     <Dialog
       title="Rediger profil"
-      onClose={onClose}
+      onClose={close}
       headerEnd={
         <div className="xs:h-37.5 xs:w-37.5 h-20 w-20 shrink-0">
           {imageURL ? (
@@ -153,10 +182,9 @@ export default function ProfileForm({ profile, onSubmitProfile, onClose }: Profi
               className="h-full w-full object-cover"
             />
           ) : (
-            <img
-              src="https://placehold.net/avatar-2.png"
-              alt="Profilbilde mangler"
-              className="h-full w-full object-cover"
+            <Avatar
+              name={[profile.name, profile.surname].filter(Boolean).join(' ') || profile.email}
+              size="xl"
             />
           )}
         </div>
@@ -208,10 +236,11 @@ export default function ProfileForm({ profile, onSubmitProfile, onClose }: Profi
             defaultValue={profile?.bio ?? ''}
           />
         </div>
+        {photoError && <Alert>{photoError}</Alert>}
         {submitError && <Alert>{submitError}</Alert>}
         <div className="flex w-full flex-col gap-3 sm:flex-row sm:justify-end">
           <Button
-            onClick={onClose}
+            onClick={close}
             type="button"
             variant="tertiary"
             size="md"
@@ -219,7 +248,13 @@ export default function ProfileForm({ profile, onSubmitProfile, onClose }: Profi
           >
             Avbryt
           </Button>
-          <Button type="submit" variant="primary" size="md" icon="right" loading={submitting}>
+          <Button
+            type="submit"
+            variant="primary"
+            size="md"
+            icon="right"
+            loading={submitting || uploading}
+          >
             Lagre endringer
           </Button>
         </div>
