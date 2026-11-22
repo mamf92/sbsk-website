@@ -9,6 +9,7 @@ import {
 import { hasAcceptedCurrentTerms } from '../utils/legal';
 import { safeNextPath } from '../loaders/requireAdminSession';
 import { useAuth } from './authContext/authContext';
+import { memberPortalEnabled } from '../utils/featureFlags';
 
 interface LoginCredentials {
   email: string;
@@ -54,7 +55,11 @@ export const useAuthActions = () => {
     login(profile);
     await refreshSession();
     const isAdmin = await isBoardAdmin();
-    return { isAdmin, needsOnboarding: !hasAcceptedCurrentTerms(profile.terms_accepted_version) };
+    // Terms are only asked for once member sign-up is open: until then only the board signs
+    // in, and the texts are not published.
+    const needsOnboarding =
+      memberPortalEnabled && !hasAcceptedCurrentTerms(profile.terms_accepted_version);
+    return { isAdmin, needsOnboarding };
   };
 
   const signInWithPassword = async ({ email, password }: LoginCredentials) => {

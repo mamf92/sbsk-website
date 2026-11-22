@@ -90,17 +90,34 @@ function OnboardingForm({ profile, next }: { profile: Profile; next: string | nu
     setLoading(true);
     setError(null);
     try {
-      if (password) await setPassword(password);
+      // The profile and the acceptance first: the password is optional, and its failure
+      // (e.g. an admin at aal1, whom GoTrue refuses a password change) must not lose them.
       await completeOnboarding({
         supabaseId: profile.supabase_id,
         name,
         surname,
         termsVersion: CURRENT_LEGAL_VERSION,
       });
-      await refreshSession();
-      navigate(safeNextPath(next, isAdmin ? '/styreportal' : '/medlemsportal'));
     } catch (err: unknown) {
       setError(norwegianErrorMessage(err, 'Vi fikk ikke lagret profilen. Prøv igjen.'));
+      setLoading(false);
+      return;
+    }
+    try {
+      if (password) await setPassword(password);
+    } catch (err: unknown) {
+      setError(
+        norwegianErrorMessage(
+          err,
+          'Profilen er lagret, men passordet ble ikke satt. Du kan sette det senere i innstillingene.',
+        ),
+      );
+      setLoading(false);
+      return;
+    }
+    try {
+      await refreshSession();
+      navigate(safeNextPath(next, isAdmin ? '/styreportal' : '/medlemsportal'));
     } finally {
       setLoading(false);
     }

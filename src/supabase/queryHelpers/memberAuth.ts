@@ -41,15 +41,18 @@ export async function completeOnboarding(values: {
   surname: string;
   termsVersion: string;
 }): Promise<void> {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('profiles')
     .update({
       name: values.name.trim(),
       surname: values.surname.trim() || null,
       terms_accepted_version: values.termsVersion,
     })
-    .eq('supabase_id', values.supabaseId);
+    .eq('supabase_id', values.supabaseId)
+    .select('id');
   if (error) throw error;
+  // RLS filters an update it refuses down to zero rows, without an error.
+  if (!data || data.length === 0) throw new Error('Profile not updated');
 }
 
 /** Sets or changes the password of the signed-in member. Optional: a code always works. */

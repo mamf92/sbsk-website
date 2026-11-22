@@ -32,7 +32,7 @@ import { memberPortalLoader } from './loaders/member-portal-loader';
 import { onboardingLoader } from './loaders/onboarding-loader';
 import { twoFactorChallengeLoader, twoFactorSetupLoader } from './loaders/two-factor-loaders';
 import { newPasswordLoader } from './loaders/new-password-loader';
-import { portalRoutesEnabled } from './utils/featureFlags';
+import { memberPortalEnabled, portalRoutesEnabled } from './utils/featureFlags';
 
 // Every page below the home page is its own chunk. Lighthouse measured ~58% of the entry bundle
 // unused on the home page (#222) — that was thirteen other pages' markup and component trees,
@@ -125,7 +125,11 @@ const router = createBrowserRouter(
             // so the pages stay covered while hidden. Re-enable by setting
             // VITE_ENABLE_MEMBER_PORTAL=true at build time; VITE_ENABLE_PORTAL_ROUTES=true
             // makes them reachable by URL only, with no header link (board sign-in, phase 2).
-            ...(portalRoutesEnabled
+            // Member sign-up (code sign-in that creates a login, first-time setup) and the legal
+            // texts members accept: only with the full member portal. The board-only portal
+            // routes that production runs today must not open sign-up or publish unapproved
+            // terms (phase 3 PR 1 review).
+            ...(memberPortalEnabled
               ? [
                   {
                     path: 'lag-medlemsprofil',
@@ -134,6 +138,10 @@ const router = createBrowserRouter(
                   },
                   { path: 'personvern', element: <PrivacyPolicy /> },
                   { path: 'vilkår', element: <Terms /> },
+                ]
+              : []),
+            ...(portalRoutesEnabled
+              ? [
                   { path: 'login', element: <Login /> },
                   { path: 'glemt-passord', element: <ForgotPassword /> },
                   { path: 'nytt-passord', element: <NewPassword />, loader: newPasswordLoader },

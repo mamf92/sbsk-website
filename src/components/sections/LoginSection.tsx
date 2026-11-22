@@ -10,6 +10,7 @@ import {
   useAuthActions,
 } from '../../hooks/useAuthActions';
 import CodeSignInForm from './CodeSignInForm';
+import { memberPortalEnabled } from '../../utils/featureFlags';
 import { useAutofillSync } from '../../hooks/useAutofillSync';
 import { linkClassesInherit } from '../ui/Link';
 
@@ -69,10 +70,12 @@ export default function LoginSection({ reason, next }: { reason?: string; next?:
           {reason === 'disabled' && (
             <Alert tone="warning">Kontoen er deaktivert. Kontakt styret hvis dette er feil.</Alert>
           )}
-          <p className="font-body w-full text-center text-white">
-            Logg inn med passord, eller få en engangskode på e-post. Første gang? Velg kode, så
-            lager vi kontoen din.
-          </p>
+          {memberPortalEnabled && (
+            <p className="font-body w-full text-center text-white">
+              Logg inn med passord, eller få en engangskode på e-post. Første gang? Velg kode, så
+              lager vi kontoen din.
+            </p>
+          )}
         </div>
 
         <div className="w-full px-8 pt-8">
@@ -125,9 +128,11 @@ export default function LoginSection({ reason, next }: { reason?: string; next?:
               <Button type="submit" variant="primary" size="md" icon="right" loading={loading}>
                 Logg inn
               </Button>
-              <Button type="button" variant="secondary" size="md" onClick={() => setMode('code')}>
-                Send meg en engangskode i stedet
-              </Button>
+              {memberPortalEnabled && (
+                <Button type="button" variant="secondary" size="md" onClick={() => setMode('code')}>
+                  Send meg en engangskode i stedet
+                </Button>
+              )}
               <Link
                 to="/glemt-passord"
                 className={`${linkClassesInherit} text-center text-white underline`}

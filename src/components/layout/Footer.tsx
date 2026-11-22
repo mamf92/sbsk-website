@@ -5,7 +5,7 @@ import { Link, navLinkClassesBody } from '../ui/Link';
 import { Button } from '../ui/Buttons';
 import { useMotion } from '../../hooks/motion/MotionContext';
 import { useGoHome } from '../../hooks/useGoHome';
-import { portalRoutesEnabled } from '../../utils/featureFlags';
+import { memberPortalEnabled, portalRoutesEnabled } from '../../utils/featureFlags';
 import { CLUB_EMAIL, CLUB_EMAIL_HREF } from '../../utils/contact';
 
 export default function Footer() {
@@ -75,10 +75,12 @@ export default function Footer() {
                   Kontakt oss
                 </NavLink>
                 {portalRoutesEnabled && (
+                  <NavLink to="/login" className={navLinkClassesBody}>
+                    Logg inn
+                  </NavLink>
+                )}
+                {memberPortalEnabled && (
                   <>
-                    <NavLink to="/login" className={navLinkClassesBody}>
-                      Logg inn
-                    </NavLink>
                     <NavLink to="/personvern" className={navLinkClassesBody}>
                       Personvern
                     </NavLink>

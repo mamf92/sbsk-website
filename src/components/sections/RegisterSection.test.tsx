@@ -92,4 +92,19 @@ describe('RegisterSection first-time setup', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('minst 10 tegn');
     expect(completeOnboarding).not.toHaveBeenCalled();
   });
+
+  it('keeps the profile and terms when only the password fails', async () => {
+    setPassword.mockRejectedValue(new Error('AAL2 required'));
+    renderSetup();
+    await userEvent.click(screen.getByLabelText('Jeg er 13 år eller eldre.'));
+    await userEvent.click(screen.getByRole('checkbox', { name: /godtar/ }));
+    await userEvent.type(
+      screen.getByLabelText('Passord (valgfritt)', { exact: false }),
+      'et-langt-passord',
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Lagre og gå til Min side' }));
+
+    expect(completeOnboarding).toHaveBeenCalled();
+    expect(await screen.findByRole('alert')).toHaveTextContent('Profilen er lagret');
+  });
 });

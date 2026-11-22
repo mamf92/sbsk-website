@@ -35,8 +35,8 @@ export default function CodeSignInForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const sendCode = async (event: React.SubmitEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const sendCode = async (event?: React.SubmitEvent<HTMLFormElement>) => {
+    event?.preventDefault();
     setLoading(true);
     setError(null);
     try {
@@ -94,12 +94,21 @@ export default function CodeSignInForm({
           type="button"
           variant="secondary"
           size="md"
+          onClick={() => void sendCode()}
+          disabled={loading}
+        >
+          Send ny kode
+        </Button>
+        <Button
+          type="button"
+          variant="tertiary"
+          size="md"
           onClick={() => {
             setStep('email');
             setError(null);
           }}
         >
-          Send ny kode
+          Bruk en annen e-post
         </Button>
         {footer}
       </form>
