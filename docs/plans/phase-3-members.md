@@ -1,11 +1,28 @@
 # Plan — Phase 3: Members — sign-up, sign-in, Min side, events, badges
 
-Status: planned · Owner: unassigned · Depends on: [phase 2](phase-2-admin-page.md) (register,
+Status: in progress (from 2026-11-22) · Owner: Claude thread "Build phase 3 member system" · Depends on: [phase 2](phase-2-admin-page.md) (register,
 payments, attendance, `member_directory`, shared dashboard components), the security plan
 (`docs/plans/SECURITY_AND_RELIABILITY.md`: Turnstile, CORS/auth shared modules, pgTAP job),
 [i18n](i18n.md) · Ships together with: [gdpr.md](gdpr.md) (export, deletion, privacy policy and
 terms must be live before the first member signs up) · Later: Vipps (`phase-6-vipps-payments.md`)
 plugs into the sign-up built here.
+
+## Build notes (2026-11-22)
+
+Changes to the plan made while building, so later steps follow them:
+
+- **No new edge functions.** Threads cannot deploy edge functions, and migrations reach
+  production through `migrate.yml`. GDPR export and deletion become SECURITY DEFINER RPCs
+  (`export_my_data()`, `erase_my_account()`), reading the fresh-sign-in time from
+  `auth.jwt() -> 'amr'`. The member removes their own photo through the storage API first.
+- **Turnstile is deferred** (decision 5). It needs a Cloudflare site key and the Supabase
+  captcha secret. Rate limits cover the gap until then. See `docs/MEMBER_SIGN_IN.md`.
+- **"Glemt passord?" keeps the existing reset link** (`/glemt-passord`), next to the code
+  option. It already works and is tested.
+- **Legal texts are in `src/content/legal.ts`**, shaped `{ nb, en? }` for translation. The
+  `/personvern` and `/vilkår` routes sit behind the portal flag until the board approves the text.
+- **UI copy is Norwegian inline**, like the phase 2 admin pages. Moving it to i18n namespaces
+  is one pass over `auth`/`member` strings when English is wanted.
 
 ## Goal
 

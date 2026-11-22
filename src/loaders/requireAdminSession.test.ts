@@ -78,7 +78,14 @@ describe('safeNextPath', () => {
     ['javascript:alert(1)', '/styreportal'],
     [null, '/styreportal'],
     ['', '/styreportal'],
+    ['/ok/\\evil', '/styreportal'],
+    ['/with space', '/styreportal'],
   ])('%s → %s', (input, expected) => {
     expect(safeNextPath(input)).toBe(expected);
+  });
+
+  it("uses the caller's fallback", () => {
+    expect(safeNextPath('//evil.example', '/medlemsportal')).toBe('/medlemsportal');
+    expect(safeNextPath('/kalender', '/medlemsportal')).toBe('/kalender');
   });
 });

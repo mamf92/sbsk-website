@@ -29,6 +29,7 @@ import {
   adminPortalLoader,
 } from './loaders/admin-portal-loaders';
 import { memberPortalLoader } from './loaders/member-portal-loader';
+import { onboardingLoader } from './loaders/onboarding-loader';
 import { twoFactorChallengeLoader, twoFactorSetupLoader } from './loaders/two-factor-loaders';
 import { newPasswordLoader } from './loaders/new-password-loader';
 import { portalRoutesEnabled } from './utils/featureFlags';
@@ -55,6 +56,8 @@ const Event = React.lazy(() => import('./pages/SingleEventPage'));
 const Events = React.lazy(() => import('./pages/Events'));
 const OurPartners = React.lazy(() => import('./pages/OurPartners'));
 const Register = React.lazy(() => import('./pages/Register'));
+const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'));
+const Terms = React.lazy(() => import('./pages/Terms'));
 const Login = React.lazy(() => import('./pages/Login'));
 const MemberPortal = React.lazy(() => import('./pages/MemberPortal'));
 const BoardPortal = React.lazy(() => import('./pages/BoardPortal'));
@@ -124,7 +127,13 @@ const router = createBrowserRouter(
             // makes them reachable by URL only, with no header link (board sign-in, phase 2).
             ...(portalRoutesEnabled
               ? [
-                  { path: 'lag-medlemsprofil', element: <Register /> },
+                  {
+                    path: 'lag-medlemsprofil',
+                    element: <Register />,
+                    loader: onboardingLoader,
+                  },
+                  { path: 'personvern', element: <PrivacyPolicy /> },
+                  { path: 'vilkår', element: <Terms /> },
                   { path: 'login', element: <Login /> },
                   { path: 'glemt-passord', element: <ForgotPassword /> },
                   { path: 'nytt-passord', element: <NewPassword />, loader: newPasswordLoader },

@@ -11,6 +11,8 @@ const profile: Profile = {
   name: 'Martin',
   surname: 'Fischer',
   locale: 'nb',
+  terms_accepted_version: '2026-11',
+  terms_accepted_at: '2026-11-22T00:00:00Z',
   created_at: '2026-01-01T00:00:00Z',
   photo_url: null,
   photo_path: null,

@@ -13,3 +13,8 @@ What was changed and why?
 ## Follow-ups
 
 <!-- Issues opened for anything left out or found along the way, or "None". -->
+
+## Personal data
+
+- [ ] This PR adds no personal data, or it updates the data inventory in `docs/plans/gdpr.md`,
+      the export, `erase_member()`, the retention rule and `src/content/legal.ts` together.

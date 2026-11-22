@@ -1,17 +1,6 @@
-import { redirect } from 'react-router-dom';
-import { getProfile } from '../supabase/queryHelpers/getProfile';
-import { supabase } from '../supabase/client';
+import { requireMember } from './requireMember';
 
 export async function memberPortalLoader() {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw redirect('/login?reason=not_authenticated');
-  }
-
-  const profile = await getProfile(user.id);
-
+  const { profile } = await requireMember('/medlemsportal');
   return { profile };
 }

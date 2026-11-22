@@ -75,9 +75,17 @@ export default function Footer() {
                   Kontakt oss
                 </NavLink>
                 {portalRoutesEnabled && (
-                  <NavLink to="/login" className={navLinkClassesBody}>
-                    Logg inn
-                  </NavLink>
+                  <>
+                    <NavLink to="/login" className={navLinkClassesBody}>
+                      Logg inn
+                    </NavLink>
+                    <NavLink to="/personvern" className={navLinkClassesBody}>
+                      Personvern
+                    </NavLink>
+                    <NavLink to="/vilkår" className={navLinkClassesBody}>
+                      Vilkår
+                    </NavLink>
+                  </>
                 )}
               </nav>
               <nav
