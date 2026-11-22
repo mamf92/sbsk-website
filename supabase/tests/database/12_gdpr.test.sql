@@ -34,6 +34,8 @@ values ('evt-1', date '2026-03-01', 'spillkveld', tests.member_id('a@example.no'
 insert into public.event_headcounts (event_id, event_date, guests) values ('evt-1', date '2026-03-01', 2);
 insert into public.membership_payments (member_id, payer_name, season, amount_nok, method, paid_at)
 values (tests.member_id('a@example.no'), 'Anna Testesen', 2026, 200, 'manual', now());
+-- A corrected payer name: its audit entry holds only that column, keyed by the payment id.
+update public.membership_payments set payer_name = 'Anna T. Testesen' where season = 2026;
 insert into public.membership_applications (name, surname, email, privacy_version, status)
 values ('Anna', 'Testesen', 'a@example.no', '2026-11', 'approved');
 insert into public.contact_messages (name, email, message) values ('Anna', 'A@example.no', 'Hei!');
@@ -108,7 +110,7 @@ select ok(not exists (select 1 from public.attendance where event_id = 'evt-1'),
 select is((select guests from public.event_headcounts where event_id = 'evt-1'), 3, 'and counts as a guest instead');
 select is(
   (select payer_name || ':' || coalesce(member_id::text, 'unlinked') from public.membership_payments where season = 2026),
-  'Anna Testesen:unlinked',
+  'Anna T. Testesen:unlinked',
   'the payment is kept for the books, unlinked'
 );
 select is(

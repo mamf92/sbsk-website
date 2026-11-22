@@ -266,11 +266,20 @@ as $$
 declare
   m public.members;
   k text;
+  -- Rows of theirs whose audit history is keyed by the row's own id: an UPDATE entry holds
+  -- only the changed columns (a corrected payer_name, say), so neither member_id nor row_id
+  -- leads back to them once the row is unlinked or gone.
+  own_rows text[];
 begin
   select * into m from public.members where id = p_member for update;
   if not found then
     raise exception 'not_member' using errcode = 'P0002';
   end if;
+  select coalesce(array_agg(id::text), '{}') into own_rows from (
+    select id from public.membership_payments where member_id = m.id
+    union all
+    select id from public.attendance where member_id = m.id
+  ) mine;
 
   -- 1. Check-ins become anonymous guests, so the event's headcount stays right.
   insert into public.event_headcounts (event_id, event_date, guests)
@@ -309,6 +318,7 @@ begin
         new = case when l.new ? k and l.new -> k <> 'null'::jsonb
                    then jsonb_set(l.new, array[k], '"[slettet]"') else l.new end
     where (l.row_id = m.id::text
+           or (l.table_name in ('membership_payments', 'attendance') and l.row_id = any(own_rows))
            or l.old ->> 'member_id' = m.id::text
            or l.new ->> 'member_id' = m.id::text
            or (m.supabase_id is not null
