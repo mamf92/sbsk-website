@@ -54,6 +54,7 @@ export const PROFILES = [
     // Set up and accepted: otherwise every member route sends the session to /lag-medlemsprofil.
     terms_accepted_version: CURRENT_LEGAL_VERSION,
     terms_accepted_at: '2026-11-01T09:00:00Z',
+    show_in_attendee_lists: true,
   },
 ];
 
@@ -286,6 +287,7 @@ export async function stubSupabase(page: Page, options: SupabaseStubOptions = {}
     member_season_status: seasonStatus,
     admin_event_signups: [],
     event_participants: [],
+    event_attendees: [],
     attendance: [],
     event_headcounts: [],
   };

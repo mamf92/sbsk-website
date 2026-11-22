@@ -144,6 +144,31 @@ test('the member portal renders the signed-in member profile', async ({ page }) 
   expect(errors, `page threw: ${errors.join(', ')}`).toEqual([]);
 });
 
+test('Min side suggests upcoming events and links settings', async ({ page }) => {
+  const errors = collectPageErrors(page);
+  await stubSanityWithContent(page);
+  await stubSupabase(page, { isAdmin: false });
+
+  await page.goto(MEMBER_PORTAL);
+
+  await expect(page.getByRole('region', { name: 'Mine påmeldinger' })).toContainText(
+    'Du er ikke påmeldt noe ennå',
+  );
+  const suggestions = page.getByRole('region', { name: 'Forslag til deg' });
+  await expect(suggestions.getByText(UPCOMING_EVENT.title)).toBeVisible();
+  await expect(
+    suggestions.getByRole('button', { name: `Meld meg på ${UPCOMING_EVENT.title}` }),
+  ).toBeVisible();
+
+  await page
+    .getByRole('navigation', { name: 'Min side' })
+    .getByRole('link', { name: 'Innstillinger' })
+    .click();
+  await expect(page).toHaveURL(/\/medlemsportal\/innstillinger$/);
+  await expect(page.getByRole('checkbox', { name: /Vis meg med navn og bilde/ })).toBeChecked();
+  expect(errors, `page threw: ${errors.join(', ')}`).toEqual([]);
+});
+
 // #162 closed this hole for Sanity and left it open for Supabase: `getMembers()` was stubbed `[]`,
 // so the list body never ran. An empty list renders nothing and cannot throw — which is exactly
 // how #160 shipped a page that crashed on every real row while CI stayed green.

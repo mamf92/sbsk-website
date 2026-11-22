@@ -6,6 +6,8 @@ import { Input } from '../../ui/Input';
 import { Alert } from '../../ui/Alert';
 import { linkClassesInherit } from '../../ui/Link';
 import { setPassword, signOutEverywhere } from '../../../supabase/queryHelpers/memberAuth';
+import { setShowInAttendeeLists } from '../../../supabase/queryHelpers/eventParticipants';
+import { Checkbox } from '../../ui/Checkbox';
 import type { Profile } from '../../../supabase/queryHelpers/getProfile';
 import { norwegianErrorMessage } from '../../../utils/errorMessage';
 import { MIN_PASSWORD_LENGTH } from '../RegisterSection';
@@ -23,6 +25,7 @@ export default function MemberSettingsSection({ profile }: { profile: Profile })
     <div className="grid gap-4 md:grid-cols-2">
       <PasswordPanel />
       <SessionsPanel />
+      <VisibilityPanel profile={profile} />
       {/* The legal pages only exist once member sign-up is on (phase 3 PR 1). */}
       {memberPortalEnabled && (
         <Panel title="Personvern" className="md:col-span-2">
@@ -45,6 +48,46 @@ export default function MemberSettingsSection({ profile }: { profile: Profile })
         </Panel>
       )}
     </div>
+  );
+}
+
+function VisibilityPanel({ profile }: { profile: Profile }) {
+  const [show, setShow] = useState(profile.show_in_attendee_lists);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const change = async (next: boolean) => {
+    setShow(next);
+    setSaving(true);
+    setError(null);
+    try {
+      await setShowInAttendeeLists(profile.supabase_id, next);
+    } catch (err: unknown) {
+      setShow(!next);
+      setError(norwegianErrorMessage(err, 'Vi fikk ikke lagret valget. Prøv igjen.'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    // Spans the row when the privacy panel is not there, so no panel stands alone at half width.
+    <Panel title="Synlighet" className={memberPortalEnabled ? '' : 'md:col-span-2'}>
+      <label className="flex items-start gap-3">
+        <Checkbox
+          checked={show}
+          disabled={saving}
+          onChange={(e) => void change(e.target.checked)}
+          className="mt-1"
+        />
+        <span>Vis meg med navn og bilde når jeg er påmeldt et arrangement</span>
+      </label>
+      <p className="text-sm">
+        Slår du dette av, ser andre medlemmer bare at én til kommer. Styret ser alltid hvem som er
+        påmeldt.
+      </p>
+      {error && <Alert>{error}</Alert>}
+    </Panel>
   );
 }
 

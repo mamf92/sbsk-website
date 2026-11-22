@@ -30,3 +30,13 @@ export async function getMyActivity(
 
   return { signups: signups.count ?? 0, checkIns: memberId ? (checkIns.count ?? 0) : null };
 }
+
+/** The categories of the member's own check-ins (RLS: own rows only), for suggestions. */
+export async function getMyCheckInCategories(memberId: string): Promise<(string | null)[]> {
+  const { data, error } = await supabase
+    .from('attendance')
+    .select('event_category')
+    .eq('member_id', memberId);
+  if (error) throw error;
+  return (data ?? []).map((row: { event_category: string | null }) => row.event_category);
+}

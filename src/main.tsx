@@ -29,6 +29,7 @@ import {
   adminPortalLoader,
 } from './loaders/admin-portal-loaders';
 import { memberPortalLoader } from './loaders/member-portal-loader';
+import { memberOverviewLoader } from './loaders/member-overview-loader';
 import { onboardingLoader } from './loaders/onboarding-loader';
 import { twoFactorChallengeLoader, twoFactorSetupLoader } from './loaders/two-factor-loaders';
 import { newPasswordLoader } from './loaders/new-password-loader';
@@ -153,7 +154,7 @@ const router = createBrowserRouter(
                     element: <MemberPortal />,
                     loader: memberPortalLoader,
                     children: [
-                      { index: true, element: <MemberOverview /> },
+                      { index: true, element: <MemberOverview />, loader: memberOverviewLoader },
                       { path: 'innstillinger', element: <MemberSettings /> },
                     ],
                   },
