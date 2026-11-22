@@ -1,5 +1,4 @@
 import { useLoaderData } from 'react-router-dom';
-import BadgesPanel from '../components/sections/AdminPortalSection/BadgesPanel';
 import MembersSummary from '../components/sections/AdminPortalSection/MembersSummary';
 import PosterPromptPanel from '../components/sections/AdminPortalSection/PosterPromptPanel';
 import UpcomingEventsPanel from '../components/sections/AdminPortalSection/UpcomingEventsPanel';
@@ -17,7 +16,6 @@ export default function AdminOverview() {
       />
       <div className="flex flex-col gap-6">
         <MembersSummary members={members} seasonStatus={seasonStatus} />
-        <BadgesPanel />
         <PosterPromptPanel />
       </div>
     </div>

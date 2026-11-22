@@ -159,6 +159,11 @@ test('Min side suggests upcoming events and links settings', async ({ page }) =>
   await expect(
     suggestions.getByRole('button', { name: `Meld meg på ${UPCOMING_EVENT.title}` }),
   ).toBeVisible();
+  const badges = page.getByRole('region', { name: 'Merker' });
+  await expect(badges.getByRole('button', { name: 'Første kast, oppnådd' })).toBeVisible();
+  await badges.getByRole('button', { name: 'Stamgjest, ikke oppnådd ennå' }).click();
+  await expect(page.getByRole('dialog', { name: 'Stamgjest' })).toContainText('1 av 10');
+  await page.getByRole('button', { name: 'Lukk' }).click();
 
   await page
     .getByRole('navigation', { name: 'Min side' })

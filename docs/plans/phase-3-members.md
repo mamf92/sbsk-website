@@ -21,6 +21,12 @@ Changes to the plan made while building, so later steps follow them:
   option. It already works and is tested.
 - **Legal texts are in `src/content/legal.ts`**, shaped `{ nb, en? }` for translation. The
   `/personvern` and `/vilkår` routes sit behind the portal flag until the board approves the text.
+- **Badges without pg_cron.** pg_cron is not enabled, so `my_badges()` re-checks the
+  member's automatic badges each time Min side loads; that covers `membership_years`.
+  `months_in_a_row` reads check-ins, so the `attendance` trigger covers it. "Allsidig" needs
+  three categories, not five: the site has four (`spillkveld`, `turnering`, `annet`,
+  `festival`). "Masters-deltaker" is a check-in with category `festival`, so no mapping
+  table. Badge names live in `src/content/badges.ts`.
 - **UI copy is Norwegian inline**, like the phase 2 admin pages. Moving it to i18n namespaces
   is one pass over `auth`/`member` strings when English is wanted.
 
