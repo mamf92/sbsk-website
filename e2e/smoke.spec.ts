@@ -78,7 +78,6 @@ for (const route of singleMainRoutes) {
 // and `/om-oss` left this list once they got a real page, and `/kontakt-oss` left it in #180 —
 // see e2e/content.spec.ts and the dedicated Kontakt oss test below for their own coverage.
 const placeholderRoutes = [
-  { route: '/bli-medlem', heading: 'Bli medlem' },
   { route: '/våre-partnere', heading: 'Våre partnere' },
   { route: '/board-game-masters', heading: 'Board Game Masters' },
 ];
@@ -93,6 +92,19 @@ for (const { route, heading } of placeholderRoutes) {
     await expect(page.getByRole('button', { name: /Se kalender/ })).toBeVisible();
   });
 }
+
+// `/bli-medlem` left the placeholder list once the application form landed (phase 3). The suite
+// runs with the member portal on, so it is the form; production keeps the placeholder until then.
+test('/bli-medlem is the application form, with one h1', async ({ page }) => {
+  await page.goto('/bli-medlem');
+  await expect(page.locator('h1')).toHaveCount(1);
+  await expect(page.getByRole('heading', { level: 1, name: 'Bli medlem' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Send søknad' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'personvernerklæringen' })).toHaveAttribute(
+    'href',
+    /\/personvern$/,
+  );
+});
 
 // Every other test here stubs Sanity with an empty result, which means the list bodies never
 // run: `events.map(...)` over `[]` renders nothing and cannot throw. That blind spot hid a crash

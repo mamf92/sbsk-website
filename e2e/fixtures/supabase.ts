@@ -300,6 +300,7 @@ export async function stubSupabase(page: Page, options: SupabaseStubOptions = {}
     event_attendees: [],
     attendance: [],
     event_headcounts: [],
+    membership_applications: [],
   };
 
   // Registered first on purpose: Playwright hands a request to the most recently added matching
@@ -320,6 +321,7 @@ export async function stubSupabase(page: Page, options: SupabaseStubOptions = {}
       if (procedure === 'member_is_admin') return json(route, 200, isAdmin);
       if (procedure === 'member_is_active') return json(route, 200, isActive);
       if (procedure === 'my_badges') return json(route, 200, badges);
+      if (procedure === 'purge_expired_applications') return json(route, 200, 0);
       return json(route, 404, { message: `e2e stub has no RPC "${procedure}"` });
     }
 

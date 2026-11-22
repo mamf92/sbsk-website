@@ -1,7 +1,12 @@
 import { redirect, type LoaderFunctionArgs } from 'react-router-dom';
 import { requireAdminSession } from './requireAdminSession';
+import { memberPortalEnabled } from '../utils/featureFlags';
 import { getProfile } from '../supabase/queryHelpers/getProfile';
 import { getMembers } from '../supabase/queryHelpers/getMembers';
+import {
+  getPendingApplications,
+  purgeExpiredApplications,
+} from '../supabase/queryHelpers/membershipApplications';
 import { getSeasonStatus } from '../supabase/queryHelpers/getSeasonStatus';
 import { getEventSignupsForAdmin } from '../supabase/queryHelpers/getEventSignupsForAdmin';
 import { getMyActivity } from '../supabase/queryHelpers/getMyActivity';
@@ -64,8 +69,15 @@ export async function adminOverviewLoader() {
 /** `/styreportal/medlemmer`. */
 export async function adminMembersLoader() {
   await requireAdminSession('/styreportal/medlemmer');
-  const [members, seasonStatus] = await Promise.all([getMembers(), optional(getSeasonStatus())]);
-  return { members, seasonStatus };
+  // Retention first, so a purged application is never listed (no pg_cron; see the migration).
+  await optional(purgeExpiredApplications());
+  const [members, seasonStatus, applications] = await Promise.all([
+    getMembers(),
+    optional(getSeasonStatus()),
+    // Approving sends people to /lag-medlemsprofil, which exists only with the member portal.
+    memberPortalEnabled ? optional(getPendingApplications()) : Promise.resolve([]),
+  ]);
+  return { members, seasonStatus, applications };
 }
 
 /** `/styreportal/innsjekk`: pick today's (or this week's) event. */
