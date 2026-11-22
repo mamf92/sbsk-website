@@ -59,9 +59,3 @@ export async function rejectApplication(id: string): Promise<void> {
   const { error } = await supabase.rpc('reject_application', { p_id: id });
   if (error) throw error;
 }
-
-/** Retention for decided applications (gdpr.md); run when the board opens the member list. */
-export async function purgeExpiredApplications(): Promise<void> {
-  const { error } = await supabase.rpc('purge_expired_applications');
-  if (error) throw error;
-}

@@ -171,6 +171,11 @@ test('Min side suggests upcoming events and links settings', async ({ page }) =>
     .click();
   await expect(page).toHaveURL(/\/medlemsportal\/innstillinger$/);
   await expect(page.getByRole('checkbox', { name: /Vis meg med navn og bilde/ })).toBeChecked();
+  const myData = page.getByRole('region', { name: 'Dine data' });
+  await expect(myData.getByRole('button', { name: 'Last ned mine data' })).toBeVisible();
+  await myData.getByRole('button', { name: 'Slett kontoen min' }).click();
+  await expect(page.getByRole('dialog', { name: 'Slette kontoen din?' })).toBeVisible();
+  await page.getByRole('button', { name: 'Avbryt' }).click();
   expect(errors, `page threw: ${errors.join(', ')}`).toEqual([]);
 });
 

@@ -27,6 +27,16 @@ Changes to the plan made while building, so later steps follow them:
   three categories, not five: the site has four (`spillkveld`, `turnering`, `annet`,
   `festival`). "Masters-deltaker" is a check-in with category `festival`, so no mapping
   table. Badge names live in `src/content/badges.ts`.
+- **GDPR (step 8) as built.** `export_my_data()`, `erase_my_account()`, `admin_export_member_data()`,
+  `admin_erase_member()` and `run_retention()` in `20261122060000_gdpr_export_and_erasure.sql`.
+  Differences from gdpr.md: no confirmation email (no mail provider yet; the goodbye page
+  `/konto-slettet` says it instead); the ledger hash uses built-in `sha256()` (same value as
+  pgcrypto's `digest`); retention runs when the board opens the member list, like the
+  application purge; the payments purge waits (nothing is five years old before 2032, and it
+  would take back the supporter badge); the export holds event ids, not titles. Photos: the
+  member's page removes its own before erasing (after `erase_my_account_check()`); for the
+  board's erasures the RPCs return the erased login ids and the board's browser removes the
+  folders. The board's export and erasure have RPCs but no buttons yet (#353).
 - **UI copy is Norwegian inline**, like the phase 2 admin pages. Moving it to i18n namespaces
   is one pass over `auth`/`member` strings when English is wanted.
 

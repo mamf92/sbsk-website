@@ -80,6 +80,8 @@ for (const route of singleMainRoutes) {
 const placeholderRoutes = [
   { route: '/våre-partnere', heading: 'Våre partnere' },
   { route: '/board-game-masters', heading: 'Board Game Masters' },
+  // Where "Slett kontoen min" lands; a goodbye rather than a placeholder, but the same shape.
+  { route: '/konto-slettet', heading: 'Kontoen din er slettet' },
 ];
 
 for (const { route, heading } of placeholderRoutes) {

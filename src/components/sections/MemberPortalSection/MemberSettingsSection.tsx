@@ -13,12 +13,13 @@ import { norwegianErrorMessage } from '../../../utils/errorMessage';
 import { MIN_PASSWORD_LENGTH } from '../RegisterSection';
 import { useAuth } from '../../../hooks/authContext/authContext';
 import { memberPortalEnabled } from '../../../utils/featureFlags';
+import MyDataPanel from './MyDataPanel';
 
 const dateFormat = new Intl.DateTimeFormat('nb-NO', { dateStyle: 'long' });
 
 /**
- * `/medlemsportal/innstillinger`: password, sign-in sessions and privacy. "Last ned mine data"
- * and "Slett kontoen min" join the privacy panel in phase 3 PR 7 (docs/plans/gdpr.md).
+ * `/medlemsportal/innstillinger`: password, sign-in sessions, visibility and privacy, with
+ * "Last ned mine data" and "Slett kontoen min" (docs/plans/gdpr.md) in "Dine data".
  */
 export default function MemberSettingsSection({ profile }: { profile: Profile }) {
   return (
@@ -28,7 +29,7 @@ export default function MemberSettingsSection({ profile }: { profile: Profile })
       <VisibilityPanel profile={profile} />
       {/* The legal pages only exist once member sign-up is on (phase 3 PR 1). */}
       {memberPortalEnabled && (
-        <Panel title="Personvern" className="md:col-span-2">
+        <Panel title="Personvern">
           <p>
             {profile.terms_accepted_version && profile.terms_accepted_at
               ? `Du godtok personvernerklæringen og vilkårene (versjon ${profile.terms_accepted_version}) ${dateFormat.format(new Date(profile.terms_accepted_at))}.`
@@ -47,6 +48,7 @@ export default function MemberSettingsSection({ profile }: { profile: Profile })
           </p>
         </Panel>
       )}
+      {memberPortalEnabled && <MyDataPanel profile={profile} />}
     </div>
   );
 }

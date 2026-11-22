@@ -60,6 +60,7 @@ const OurPartners = React.lazy(() => import('./pages/OurPartners'));
 const Register = React.lazy(() => import('./pages/Register'));
 const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'));
 const Terms = React.lazy(() => import('./pages/Terms'));
+const AccountDeleted = React.lazy(() => import('./pages/AccountDeleted'));
 const Login = React.lazy(() => import('./pages/Login'));
 const MemberPortal = React.lazy(() => import('./pages/MemberPortal'));
 const MemberOverview = React.lazy(() => import('./pages/MemberOverview'));
@@ -143,6 +144,7 @@ const router = createBrowserRouter(
                   },
                   { path: 'personvern', element: <PrivacyPolicy /> },
                   { path: 'vilkår', element: <Terms /> },
+                  { path: 'konto-slettet', element: <AccountDeleted /> },
                 ]
               : []),
             ...(portalRoutesEnabled

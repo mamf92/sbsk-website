@@ -66,3 +66,9 @@ export async function signOutEverywhere(): Promise<void> {
   const { error } = await supabase.auth.signOut({ scope: 'global' });
   if (error) throw error;
 }
+
+/** Forgets the session in this browser only, for a login that no longer exists. */
+export async function signOutHere(): Promise<void> {
+  const { error } = await supabase.auth.signOut({ scope: 'local' });
+  if (error) throw error;
+}
