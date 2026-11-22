@@ -4,11 +4,17 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '../ui/Buttons';
 import { Input } from '../ui/Input';
 import { Alert } from '../ui/Alert';
-import { useAuthActions } from '../../hooks/useAuthActions';
+import {
+  destinationAfterSignIn,
+  MemberDisabledError,
+  useAuthActions,
+} from '../../hooks/useAuthActions';
+import CodeSignInForm from './CodeSignInForm';
+import { memberPortalEnabled } from '../../utils/featureFlags';
 import { useAutofillSync } from '../../hooks/useAutofillSync';
 import { linkClassesInherit } from '../ui/Link';
 
-export default function LoginSection({ reason }: { reason?: string }) {
+export default function LoginSection({ reason, next }: { reason?: string; next?: string }) {
   const navigate = useNavigate();
   const { signInWithPassword } = useAuthActions();
   const formRef = useRef<HTMLFormElement>(null);
@@ -16,6 +22,7 @@ export default function LoginSection({ reason }: { reason?: string }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  const [mode, setMode] = useState<'password' | 'code'>('password');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,10 +42,13 @@ export default function LoginSection({ reason }: { reason?: string }) {
     setError(null);
 
     try {
-      const { isAdmin } = await signInWithPassword({ email, password });
-      navigate(isAdmin ? '/styreportal' : '/medlemsportal');
+      navigate(destinationAfterSignIn(await signInWithPassword({ email, password }), next));
     } catch (err: unknown) {
-      setError(norwegianErrorMessage(err, 'Noe gikk galt. Prøv igjen.'));
+      setError(
+        err instanceof MemberDisabledError
+          ? 'Kontoen er deaktivert. Kontakt styret.'
+          : norwegianErrorMessage(err, 'Noe gikk galt. Prøv igjen.'),
+      );
     } finally {
       setLoading(false);
     }
@@ -57,64 +67,80 @@ export default function LoginSection({ reason }: { reason?: string }) {
               Det ser ut som at du ikke er logget inn. Logg inn igjen for å fortsette.
             </Alert>
           )}
-          <p className="font-body w-full text-center text-white">
-            Medlemmer logger inn her og kommer til <strong>Min side</strong>, med arrangementer,
-            medlemsfordeler og mer.
-          </p>
-          <p className="font-body w-full text-center text-white">
-            Styremedlemmer logger inn på samme måte og går videre til <strong>Styreportalen</strong>
-            , som krever tofaktorautentisering (en kode fra autentiseringsappen din).
-          </p>
-          <p className="font-body w-full text-center text-white">
-            Ingen konto enda? Er du medlem i klubben kan du lage din egen medlemsprofil ved å klikke
-            på lenken under.
-          </p>
-          <Link to="/lag-medlemsprofil" className={`${linkClassesInherit} text-white underline`}>
-            Registrere deg her!
-          </Link>
+          {reason === 'disabled' && (
+            <Alert tone="warning">Kontoen er deaktivert. Kontakt styret hvis dette er feil.</Alert>
+          )}
+          {memberPortalEnabled && (
+            <p className="font-body w-full text-center text-white">
+              Logg inn med passord, eller få en engangskode på e-post. Første gang? Velg kode, så
+              lager vi kontoen din.
+            </p>
+          )}
         </div>
 
         <div className="w-full px-8 pt-8">
-          <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-5">
-            <label className="flex w-full flex-col gap-1">
-              <span className="font-body text-white">E-post</span>
-              <Input
-                type="email"
-                id="email"
-                name="email"
-                autoComplete="email"
-                placeholder="din@epost.no"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </label>
-            <label className="flex w-full flex-col gap-1">
-              <span className="font-body text-white">Passord</span>
-              <Input
-                type="password"
-                id="password"
-                name="password"
-                autoComplete="current-password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </label>
+          {mode === 'code' ? (
+            <CodeSignInForm
+              initialEmail={email}
+              onSignedIn={(result) => navigate(destinationAfterSignIn(result, next))}
+              footer={
+                <Button
+                  type="button"
+                  variant="tertiary"
+                  size="md"
+                  onClick={() => setMode('password')}
+                >
+                  Logg inn med passord i stedet
+                </Button>
+              }
+            />
+          ) : (
+            <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-5">
+              <label className="flex w-full flex-col gap-1">
+                <span className="font-body text-white">E-post</span>
+                <Input
+                  type="email"
+                  id="email"
+                  name="email"
+                  autoComplete="email"
+                  placeholder="din@epost.no"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </label>
+              <label className="flex w-full flex-col gap-1">
+                <span className="font-body text-white">Passord</span>
+                <Input
+                  type="password"
+                  id="password"
+                  name="password"
+                  autoComplete="current-password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </label>
 
-            {error && <Alert>{error}</Alert>}
+              {error && <Alert>{error}</Alert>}
 
-            <Button type="submit" variant="primary" size="md" icon="right" loading={loading}>
-              Logg inn
-            </Button>
-            <Link
-              to="/glemt-passord"
-              className={`${linkClassesInherit} text-center text-white underline`}
-            >
-              Glemt passord?
-            </Link>
-          </form>
+              <Button type="submit" variant="primary" size="md" icon="right" loading={loading}>
+                Logg inn
+              </Button>
+              {memberPortalEnabled && (
+                <Button type="button" variant="secondary" size="md" onClick={() => setMode('code')}>
+                  Send meg en engangskode i stedet
+                </Button>
+              )}
+              <Link
+                to="/glemt-passord"
+                className={`${linkClassesInherit} text-center text-white underline`}
+              >
+                Glemt passord?
+              </Link>
+            </form>
+          )}
         </div>
       </div>
     </div>

@@ -5,7 +5,7 @@ import {
   stubSanityWithContent,
   UPCOMING_EVENT,
 } from './fixtures/sanity';
-import { MEMBERS, stubSupabase } from './fixtures/supabase';
+import { AUTH_USER, MEMBERS, PROFILES, stubSupabase, verifiedSession } from './fixtures/supabase';
 
 // The two portal routes, in a real browser, with a real session.
 //
@@ -37,7 +37,7 @@ for (const route of [MEMBER_PORTAL, BOARD_PORTAL]) {
 
     await page.goto(route);
 
-    await expect(page).toHaveURL(/\/login\?reason=not_authenticated$/);
+    await expect(page).toHaveURL(/\/login\?reason=not_authenticated(&neste=[^&]+)?$/);
     // The reason is not decoration: it is what tells a visitor why they are looking at a login
     // form they did not ask for.
     await expect(page.getByText('Det ser ut som at du ikke er logget inn.')).toBeVisible();
@@ -50,9 +50,85 @@ for (const route of [MEMBER_PORTAL, BOARD_PORTAL]) {
 
     await page.goto(route);
 
-    await expect(page).toHaveURL(/\/login\?reason=not_authenticated$/);
+    await expect(page).toHaveURL(/\/login\?reason=not_authenticated(&neste=[^&]+)?$/);
   });
 }
+
+test('the member portal signs out a member the board has disabled', async ({ page }) => {
+  await stubSupabase(page, { isAdmin: false, isActive: false });
+  await page.route('**://*.supabase.co/auth/v1/logout**', (route) =>
+    route.fulfill({ status: 204, body: '' }),
+  );
+
+  await page.goto(MEMBER_PORTAL);
+
+  await expect(page).toHaveURL(/\/login\?reason=disabled$/);
+  await expect(page.getByText('Kontoen er deaktivert.')).toBeVisible();
+});
+
+test('a member who has not accepted the terms lands on first-time setup', async ({ page }) => {
+  await stubSupabase(page, {
+    isAdmin: false,
+    profiles: [{ ...PROFILES[0], terms_accepted_version: null, terms_accepted_at: null }],
+  });
+
+  await page.goto(MEMBER_PORTAL);
+
+  await expect(page).toHaveURL(/\/lag-medlemsprofil\?neste=%2Fmedlemsportal$/);
+  await expect(page.getByLabel('Fornavn')).toHaveValue(PROFILES[0].name);
+  await expect(page.getByRole('link', { name: 'personvernerklæringen' })).toBeVisible();
+});
+
+test('a listed member signs in with an emailed code', async ({ page }) => {
+  await stubSupabase(page, { signedIn: false, isAdmin: false });
+  await page.route('**://*.supabase.co/auth/v1/otp**', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }),
+  );
+  await page.route('**://*.supabase.co/auth/v1/verify**', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(verifiedSession()),
+    }),
+  );
+
+  await page.goto('/login');
+  await page.getByRole('button', { name: 'Send meg en engangskode i stedet' }).click();
+  await page.getByLabel('E-post').fill(AUTH_USER.email);
+  await page.getByRole('button', { name: 'Send meg en kode' }).click();
+  await page.getByLabel('Kode fra e-posten').fill('123456');
+  await page.getByRole('button', { name: 'Logg inn', exact: true }).click();
+
+  await expect(page).toHaveURL(/\/medlemsportal$/);
+});
+
+test('an email that is not on the member list gets a plain answer', async ({ page }) => {
+  await stubSupabase(page, { signedIn: false });
+  await page.route('**://*.supabase.co/auth/v1/otp**', (route) =>
+    route.fulfill({
+      status: 500,
+      contentType: 'application/json',
+      body: JSON.stringify({ code: 'unexpected_failure', msg: 'Database error saving new user' }),
+    }),
+  );
+
+  await page.goto('/lag-medlemsprofil');
+  await page.getByLabel('E-post').fill('ukjent@example.test');
+  await page.getByRole('button', { name: 'Send meg en kode' }).click();
+
+  await expect(page.getByRole('alert')).toContainText('Vi fant ikke e-posten i medlemslisten');
+});
+
+test('the privacy policy and terms are linked from the footer', async ({ page }) => {
+  await stubSupabase(page, { signedIn: false });
+
+  await page.goto('/');
+  await page.getByRole('contentinfo').getByRole('link', { name: 'Personvern' }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Personvernerklæring' })).toBeVisible();
+
+  await page.getByRole('contentinfo').getByRole('link', { name: 'Vilkår' }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Vilkår for medlemmer' })).toBeVisible();
+});
 
 test('the member portal renders the signed-in member profile', async ({ page }) => {
   const errors = collectPageErrors(page);

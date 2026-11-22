@@ -42,7 +42,7 @@ export async function requireAdminSession(next = '/styreportal'): Promise<User> 
  * Anything else (`//evil.example`, `https://…`, `javascript:`) falls back to the board portal,
  * so the 2FA pages cannot be used as an open redirect.
  */
-export function safeNextPath(value: string | null): string {
-  if (value && /^\/(?![/\\])/.test(value)) return value;
-  return '/styreportal';
+export function safeNextPath(value: string | null, fallback = '/styreportal'): string {
+  if (value && /^\/(?![/\\])/.test(value) && !/[\\\s]/.test(value)) return value;
+  return fallback;
 }

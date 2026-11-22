@@ -1,5 +1,6 @@
 import type { Page, Route } from '@playwright/test';
 import { AUTH_STORAGE_KEY, SUPABASE_URL } from './supabase-env';
+import { CURRENT_LEGAL_VERSION } from '../../src/utils/legal';
 
 // A Supabase stand-in for the e2e suite: a signed-in session in the browser, and a stub that
 // answers PostgREST by *reading the query the app sent* — table, `select`, filters — against
@@ -50,6 +51,9 @@ export const PROFILES = [
     bio: 'Styremedlem og turneringsansvarlig.',
     photo_url: null,
     locale: 'nb',
+    // Set up and accepted: otherwise every member route sends the session to /lag-medlemsprofil.
+    terms_accepted_version: CURRENT_LEGAL_VERSION,
+    terms_accepted_at: '2026-11-01T09:00:00Z',
   },
 ];
 
@@ -134,6 +138,8 @@ export interface SupabaseStubOptions {
   fail?: Record<string, number>;
   /** What the `member_is_admin()` RPC reports; the header probes it on every load. */
   isAdmin?: boolean;
+  /** What `member_is_active()` reports. False is a member the board has disabled. */
+  isActive?: boolean;
   /**
    * The session's assurance level, carried in the JWT's `aal` claim, and whether the user has
    * a verified TOTP factor. supabase-js computes `getAuthenticatorAssuranceLevel()` from these
@@ -230,6 +236,7 @@ export async function stubSupabase(page: Page, options: SupabaseStubOptions = {}
     seasonStatus = SEASON_STATUS,
     fail = {},
     isAdmin = true,
+    isActive = true,
     aal = 'aal2',
     hasFactor = aal === 'aal2',
   } = options;
@@ -278,6 +285,7 @@ export async function stubSupabase(page: Page, options: SupabaseStubOptions = {}
     if (path.startsWith('rpc/')) {
       const procedure = path.slice('rpc/'.length);
       if (procedure === 'member_is_admin') return json(route, 200, isAdmin);
+      if (procedure === 'member_is_active') return json(route, 200, isActive);
       return json(route, 404, { message: `e2e stub has no RPC "${procedure}"` });
     }
 
@@ -374,4 +382,17 @@ export async function stubSupabase(page: Page, options: SupabaseStubOptions = {}
     },
     { key: AUTH_STORAGE_KEY, session, profile: profiles[0], admin: isAdmin },
   );
+}
+
+/** What `POST /auth/v1/verify` returns for a correct code: a fresh aal1 session. */
+export function verifiedSession() {
+  const expiresAt = Math.floor(Date.now() / 1000) + 3600;
+  return {
+    access_token: accessToken(expiresAt, 'aal1'),
+    token_type: 'bearer',
+    expires_in: 3600,
+    expires_at: expiresAt,
+    refresh_token: 'e2e-refresh-token',
+    user: { ...AUTH_USER, factors: [] },
+  };
 }

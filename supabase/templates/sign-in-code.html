@@ -1,0 +1,19 @@
+<!--
+  Sign-in code email (phase 3). Paste into BOTH Supabase dashboard templates:
+  Authentication → Emails → "Magic Link" and "Confirm signup". The first code for a new member
+  uses "Confirm signup"; every later code uses "Magic Link". See docs/MEMBER_SIGN_IN.md.
+  Subject for both: "Koden din: {{ .Token }} / Your code"
+-->
+<div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #0b1a33">
+  <h2 style="margin: 0 0 16px">Stavanger Brettspillklubb</h2>
+  <p>Her er koden for å logge inn:</p>
+  <p style="font-size: 32px; font-weight: bold; letter-spacing: 6px; margin: 16px 0">
+    {{ .Token }}
+  </p>
+  <p>Koden virker i 10 minutter. Har du ikke bedt om den, kan du se bort fra denne e-posten.</p>
+  <hr style="border: none; border-top: 1px solid #ccc; margin: 24px 0" />
+  <p lang="en">
+    Your sign-in code is <strong>{{ .Token }}</strong>. It works for 10 minutes. If you did not ask
+    for it, you can ignore this email.
+  </p>
+</div>
