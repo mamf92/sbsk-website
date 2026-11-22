@@ -153,9 +153,11 @@ describe('Header — desktop profile menu', () => {
     await userEvent.keyboard('{ArrowDown}');
     expect(items[1]).toHaveFocus();
     await userEvent.keyboard('{ArrowDown}');
+    expect(items[2]).toHaveFocus();
+    await userEvent.keyboard('{ArrowDown}');
     expect(items[0]).toHaveFocus();
     await userEvent.keyboard('{End}');
-    expect(items[1]).toHaveFocus();
+    expect(items[2]).toHaveFocus();
   });
 
   it('closes when Tab moves focus out of the menu, without losing focus', async () => {

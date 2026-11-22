@@ -60,3 +60,9 @@ export async function setPassword(password: string): Promise<void> {
   const { error } = await supabase.auth.updateUser({ password });
   if (error) throw error;
 }
+
+/** Ends every session of this account, on every device, including this one. */
+export async function signOutEverywhere(): Promise<void> {
+  const { error } = await supabase.auth.signOut({ scope: 'global' });
+  if (error) throw error;
+}

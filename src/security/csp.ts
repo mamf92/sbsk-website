@@ -33,13 +33,6 @@ const SANITY = 'https://*.sanity.io';
 const SANITY_WS = 'wss://*.api.sanity.io';
 
 /**
- * Fallback avatar in ProfileForm and ProfileCard, shown when a member has no profile image.
- * Remove this entry the moment that placeholder becomes a local asset — it is the only
- * third-party host the public site loads anything from.
- */
-const AVATAR_PLACEHOLDER = 'https://placehold.net';
-
-/**
  * The Supabase project answers REST, auth and storage on its https origin and realtime on the
  * matching websocket one. Derived rather than hardcoded because the URL is an environment
  * variable: production points at the hosted project, CI and the e2e suite at
@@ -86,7 +79,7 @@ export function buildContentSecurityPolicy({ supabaseUrl, dev = false }: CspOpti
 
     // blob: is for object URLs created while previewing an upload; the Supabase origin serves
     // the stored profile images through getPublicUrl.
-    'img-src': ["'self'", 'data:', 'blob:', SANITY, AVATAR_PLACEHOLDER, ...supabase.http],
+    'img-src': ["'self'", 'data:', 'blob:', SANITY, ...supabase.http],
 
     'media-src': ["'self'", 'data:', 'blob:', ...supabase.http],
 

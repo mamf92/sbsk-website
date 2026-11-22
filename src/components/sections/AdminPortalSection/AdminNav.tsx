@@ -1,30 +1,12 @@
-import { NavLink } from 'react-router-dom';
-import { navLinkClasses } from '../../ui/Link';
+import { PortalTabs } from '../../ui/PortalTabs';
 
 const tabs = [
   { to: '/styreportal', label: 'Oversikt', end: true },
-  { to: '/styreportal/medlemmer', label: 'Medlemmer', end: false },
-  { to: '/styreportal/innsjekk', label: 'Innsjekk', end: false },
+  { to: '/styreportal/medlemmer', label: 'Medlemmer' },
+  { to: '/styreportal/innsjekk', label: 'Innsjekk' },
 ] as const;
 
-/** The board portal's tabs. Real links (nested routes), so the door check-in can be bookmarked
- *  on a phone; NavLink sets `aria-current="page"`, which `navLinkClasses` styles. */
+/** The board portal's tabs, so the door check-in can be bookmarked on a phone. */
 export default function AdminNav() {
-  return (
-    <nav aria-label="Styreportal" className="border-b border-gray-300 dark:border-white/20">
-      <ul className="max-w-content mx-auto flex w-full gap-6 overflow-x-auto px-4 py-3">
-        {tabs.map((tab) => (
-          <li key={tab.to}>
-            <NavLink
-              to={tab.to}
-              end={tab.end}
-              className={`${navLinkClasses} text-darkblue dark:text-white`}
-            >
-              {tab.label}
-            </NavLink>
-          </li>
-        ))}
-      </ul>
-    </nav>
-  );
+  return <PortalTabs label="Styreportal" tabs={tabs} />;
 }

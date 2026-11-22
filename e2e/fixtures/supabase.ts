@@ -109,6 +109,27 @@ export const MEMBERS = [
   },
 ];
 
+/**
+ * The signed-in user's own register row (an admin, unpaid this season). Separate from `MEMBERS`
+ * so tests can name the other three; `stubSupabase` serves all four by default, because every
+ * member route reads its own row (`getMember`) and the board sees the whole register.
+ */
+export const SELF_MEMBER = {
+  id: 'aaaaaaaa-0000-4000-8000-0000000000aa',
+  name: 'Ingrid',
+  surname: 'Hetland',
+  phone: null,
+  email: AUTH_USER.email,
+  is_admin: true,
+  supabase_id: AUTH_USER.id,
+  status: 'active',
+  member_since: '2025-03-01',
+  disabled_at: null,
+  disabled_reason: null,
+  birth_year: null,
+  created_at: '2025-03-01T09:00:00Z',
+};
+
 type Row = Record<string, unknown>;
 
 /**
@@ -232,7 +253,7 @@ export async function stubSupabase(page: Page, options: SupabaseStubOptions = {}
     signedIn = true,
     authStatus = 200,
     profiles = PROFILES,
-    members = MEMBERS,
+    members = [...MEMBERS, SELF_MEMBER],
     seasonStatus = SEASON_STATUS,
     fail = {},
     isAdmin = true,

@@ -401,7 +401,7 @@ a table read.
 - [ ] CSV export escapes formula prefixes.
 - [ ] Security advisors (`get_advisors`) clean or each remaining warning documented in the
       migration comment, as 20261107093420 does.
-- [ ] `placehold.net` avatar fallback replaced by a local asset and removed from the CSP
+- [x] `placehold.net` avatar fallback replaced by a local asset and removed from the CSP
       (it leaks every viewer's IP to a third party — see gdpr.md).
 
 ## Steps (one PR each, into `main`)

@@ -2,6 +2,16 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import ProfileForm from './ProfileForm';
+
+const uploadImage = vi.fn();
+const removeImage = vi.fn();
+vi.mock('../../../supabase/queryHelpers/uploadImage', () => ({
+  default: (userId: string, file: File) => uploadImage(userId, file),
+  removeImage: (path: string) => removeImage(path),
+}));
+vi.mock('../../../supabase/queryHelpers/getImage', () => ({
+  default: (path: string) => Promise.resolve(`https://signed.example/${path}`),
+}));
 import type { Profile } from '../../../supabase/queryHelpers/getProfile';
 
 const profile: Profile = {
@@ -74,5 +84,35 @@ describe('ProfileForm', () => {
 
     expect(onSubmitProfile).toHaveBeenCalledTimes(1);
     expect(nameInput).not.toHaveAttribute('aria-invalid');
+  });
+
+  it('removes a picked photo again when the member cancels', async () => {
+    uploadImage.mockResolvedValue('user-1/new.webp');
+    removeImage.mockReset();
+    const { unmount } = render(
+      <ProfileForm profile={profile} onSubmitProfile={vi.fn()} onClose={vi.fn()} />,
+    );
+    const file = new File(['x'], 'me.jpg', { type: 'image/jpeg' });
+    await userEvent.upload(screen.getByLabelText('Bilde'), file);
+    await screen.findByRole('img', { name: 'Martin Fischer' });
+
+    unmount();
+    expect(removeImage).toHaveBeenCalledWith('user-1/new.webp');
+  });
+
+  it('saves the stored path, never the raw file', async () => {
+    uploadImage.mockResolvedValue('user-1/new.webp');
+    const onSubmitProfile = vi.fn().mockResolvedValue(undefined);
+    render(<ProfileForm profile={profile} onSubmitProfile={onSubmitProfile} onClose={vi.fn()} />);
+    await userEvent.upload(
+      screen.getByLabelText('Bilde'),
+      new File(['x'], 'me.jpg', { type: 'image/jpeg' }),
+    );
+    await screen.findByRole('img', { name: 'Martin Fischer' });
+    await userEvent.click(screen.getByRole('button', { name: 'Lagre endringer' }));
+
+    expect(onSubmitProfile).toHaveBeenCalledWith(
+      expect.objectContaining({ photo_url: 'user-1/new.webp' }),
+    );
   });
 });

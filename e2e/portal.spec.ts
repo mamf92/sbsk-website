@@ -136,7 +136,7 @@ test('the member portal renders the signed-in member profile', async ({ page }) 
 
   await page.goto(MEMBER_PORTAL);
 
-  await expect(page.getByRole('heading', { level: 1, name: 'Velkommen, Ingrid!' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Hei, Ingrid!' })).toBeVisible();
   await expect(page.getByText('Styremedlem og turneringsansvarlig.')).toBeVisible();
   // The same landmark contract the rest of the suite holds every public route to.
   await expect(page.locator('main')).toHaveCount(1);
@@ -151,7 +151,8 @@ test('the board portal opens on the overview, with the register summarised', asy
   const errors = collectPageErrors(page);
   // Real content, so the festival's localised title reaches the events panel.
   await stubSanityWithContent(page);
-  await stubSupabase(page);
+  // The three-member register these numbers are counted from, without the admin's own row.
+  await stubSupabase(page, { members: MEMBERS });
 
   await page.goto(BOARD_PORTAL);
 
@@ -178,7 +179,7 @@ test('the members tab renders real rows in Norwegian order, filtered from the UR
   page,
 }) => {
   const errors = collectPageErrors(page);
-  await stubSupabase(page);
+  await stubSupabase(page, { members: MEMBERS });
 
   await page.goto(`${BOARD_PORTAL}/medlemmer`);
 
@@ -263,7 +264,7 @@ test('retrying after a blip re-runs the loader and shows the portal', async ({ p
 
   // Revalidating rather than reloading is the behaviour under test: the visitor keeps their
   // place, and the loader runs again against a backend that now answers.
-  await expect(page.getByRole('heading', { level: 1, name: 'Velkommen, Ingrid!' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Hei, Ingrid!' })).toBeVisible();
 });
 
 // The board portal's gate (src/loaders/requireAdminSession.ts). A signed-in member is not a login
@@ -275,12 +276,12 @@ test('a member who is not an admin falls back to the member portal', async ({ pa
   await page.goto(BOARD_PORTAL);
 
   await expect(page).toHaveURL(`${MEMBER_PORTAL}?reason=not_admin`);
-  await expect(page.getByRole('heading', { level: 1, name: 'Velkommen, Ingrid!' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Hei, Ingrid!' })).toBeVisible();
   await expect(page.getByRole('navigation', { name: 'Styreportal' })).toHaveCount(0);
   // #82: the fallback used to be silent. A non-admin now sees why they landed here.
-  await expect(page.getByRole('status')).toHaveText(
-    'Du har ikke administratortilgang til styreportalen.',
-  );
+  await expect(
+    page.getByRole('status').filter({ hasText: 'Du har ikke administratortilgang' }),
+  ).toHaveText('Du har ikke administratortilgang til styreportalen.');
 });
 
 test('an admin who has not entered their code is asked for it', async ({ page }) => {
@@ -310,7 +311,7 @@ test('a board portal registry failure is a fault, not a fallback', async ({ page
 test('the overview survives a missing payment view and says so', async ({ page }) => {
   const errors = collectPageErrors(page);
   await stubSanityWithContent(page);
-  await stubSupabase(page, { fail: { member_season_status: 404 } });
+  await stubSupabase(page, { members: MEMBERS, fail: { member_season_status: 404 } });
 
   await page.goto(BOARD_PORTAL);
 
