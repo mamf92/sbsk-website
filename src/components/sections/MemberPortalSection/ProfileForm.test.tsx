@@ -116,4 +116,48 @@ describe('ProfileForm', () => {
       expect.objectContaining({ photo_url: 'user-1/new.webp' }),
     );
   });
+  it('keeps a photo whose save is still running when the dialog closes', async () => {
+    uploadImage.mockResolvedValue('user-1/new.webp');
+    removeImage.mockReset();
+    let finish: (ok: boolean) => void = () => {};
+    const onSubmitProfile = vi.fn(
+      () => new Promise<void>((resolve, reject) => (finish = (ok) => (ok ? resolve() : reject()))),
+    );
+    const view = (
+      <ProfileForm profile={profile} onSubmitProfile={onSubmitProfile} onClose={vi.fn()} />
+    );
+    const { unmount } = render(view);
+    await userEvent.upload(
+      screen.getByLabelText('Bilde'),
+      new File(['x'], 'me.jpg', { type: 'image/jpeg' }),
+    );
+    await screen.findByRole('img', { name: 'Martin Fischer' });
+    await userEvent.click(screen.getByRole('button', { name: 'Lagre endringer' }));
+
+    unmount();
+    expect(removeImage).not.toHaveBeenCalled();
+    finish(true);
+    await Promise.resolve();
+    expect(removeImage).not.toHaveBeenCalled();
+  });
+
+  it('removes the photo when a save still running at close then fails', async () => {
+    uploadImage.mockResolvedValue('user-1/new.webp');
+    removeImage.mockReset();
+    let fail: () => void = () => {};
+    const onSubmitProfile = vi.fn(() => new Promise<void>((_, reject) => (fail = reject)));
+    const { unmount } = render(
+      <ProfileForm profile={profile} onSubmitProfile={onSubmitProfile} onClose={vi.fn()} />,
+    );
+    await userEvent.upload(
+      screen.getByLabelText('Bilde'),
+      new File(['x'], 'me.jpg', { type: 'image/jpeg' }),
+    );
+    await screen.findByRole('img', { name: 'Martin Fischer' });
+    await userEvent.click(screen.getByRole('button', { name: 'Lagre endringer' }));
+
+    unmount();
+    fail();
+    await vi.waitFor(() => expect(removeImage).toHaveBeenCalledWith('user-1/new.webp'));
+  });
 });

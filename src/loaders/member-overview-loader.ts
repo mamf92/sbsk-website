@@ -1,4 +1,7 @@
-import { getUpcomingEventsForAdmin } from '../sanity/queryHelpers/admin-events';
+import {
+  getUpcomingEventsByIds,
+  getUpcomingEventsForAdmin,
+} from '../sanity/queryHelpers/admin-events';
 import { getAttendeeCounts, getMySignups } from '../supabase/queryHelpers/eventParticipants';
 import { getMember } from '../supabase/queryHelpers/getMember';
 import { getMyCheckInCategories } from '../supabase/queryHelpers/getMyActivity';
@@ -18,7 +21,12 @@ export async function memberOverviewLoader() {
     settle(getMySignups(user.id)),
     settle(getMember(user.id)),
   ]);
-  const upcoming = (events.data ?? []).filter((event) => event._type === 'event');
+  const pool = (events.data ?? []).filter((event) => event._type === 'event');
+  // The pool is the next 20; a sign-up further ahead is fetched on its own so it is still listed.
+  const inPool = new Set(pool.map((event) => event._id));
+  const missing = (signups.data ?? []).filter((id) => !inPool.has(id));
+  const extra = await settle(getUpcomingEventsByIds(missing));
+  const upcoming = [...pool, ...(extra.data ?? [])].sort((a, b) => a.start.localeCompare(b.start));
   const ids = upcoming.map((event) => event._id);
   const [counts, categories] = await Promise.all([
     settle(getAttendeeCounts(ids)),
@@ -30,7 +38,7 @@ export async function memberOverviewLoader() {
     joined: signups.data ?? [],
     counts: counts.data ?? {},
     favourite: favouriteCategory(categories.data ?? []),
-    failed: events.failed || signups.failed || counts.failed,
+    failed: events.failed || signups.failed || extra.failed || counts.failed,
   };
 }
 
