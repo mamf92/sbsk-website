@@ -25,6 +25,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<Profile | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [authResolved, setAuthResolved] = useState(false);
 
   const isAuthenticated = !!token;
 
@@ -73,7 +74,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     clearLegacyAuthStorage();
-    void refreshSession();
+    void refreshSession().finally(() => setAuthResolved(true));
 
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       setToken(session?.access_token ?? null);
@@ -94,7 +95,16 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, token, user, isAdmin, login, logout, refreshSession }}
+      value={{
+        isAuthenticated,
+        authResolved,
+        token,
+        user,
+        isAdmin,
+        login,
+        logout,
+        refreshSession,
+      }}
     >
       {children}
     </AuthContext.Provider>

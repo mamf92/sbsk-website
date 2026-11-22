@@ -3,6 +3,8 @@ import type { Profile } from '../../supabase/queryHelpers/getProfile';
 
 export interface AuthContextType {
   isAuthenticated: boolean;
+  /** False until the stored session has been read once. Until then, signed out is unknown. */
+  authResolved: boolean;
   isAdmin: boolean;
   token: string | null;
   user: Profile | null;

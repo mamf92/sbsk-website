@@ -52,6 +52,9 @@ export default function ProfileForm({ profile, onSubmitProfile, onClose }: Profi
   const closed = useRef(false);
   const currentPath = useRef<string | null>(profile.photo_path);
   const saved = useRef(false);
+  // A save in flight when the dialog closes (Avbryt, Escape) may still commit its photo, so the
+  // unmount cleanup leaves it; the save itself removes it if it then fails.
+  const saving = useRef(false);
 
   const isUnsaved = (path: string | null): path is string =>
     path !== null && path !== profile.photo_path;
@@ -62,7 +65,9 @@ export default function ProfileForm({ profile, onSubmitProfile, onClose }: Profi
       closed.current = false;
       return () => {
         closed.current = true;
-        if (!saved.current && isUnsaved(currentPath.current)) void removeImage(currentPath.current);
+        if (!saved.current && !saving.current && isUnsaved(currentPath.current)) {
+          void removeImage(currentPath.current);
+        }
       };
     },
     // Runs once, on unmount; `profile.photo_path` is fixed for the dialog's lifetime.
@@ -191,6 +196,7 @@ export default function ProfileForm({ profile, onSubmitProfile, onClose }: Profi
 
     setSubmitError(null);
     setSubmitting(true);
+    saving.current = true;
     try {
       // Resolving is what closes the dialog, from the caller's side (ProfileCard) — a rejection
       // here leaves it open with the failure shown, instead of disappearing silently (#169).
@@ -200,9 +206,14 @@ export default function ProfileForm({ profile, onSubmitProfile, onClose }: Profi
         void removeImage(profile.photo_path);
       }
     } catch (err) {
+      if (closed.current) {
+        if (isUnsaved(photoPath)) void removeImage(photoPath);
+        return;
+      }
       setSubmitError(norwegianErrorMessage(err, 'Kunne ikke lagre endringene.'));
     } finally {
-      setSubmitting(false);
+      saving.current = false;
+      if (!closed.current) setSubmitting(false);
     }
   };
 

@@ -3,7 +3,8 @@ import { eventDetailPath } from '../../utils/eventLinks';
 import { Link, useNavigate } from 'react-router-dom';
 import { PortableText, toPlainText } from '@portabletext/react';
 // Aliased: this module already imports React Router's `Link` for in-app navigation.
-import { Link as ExternalTextLink } from '../ui/Link';
+import { Link as ExternalTextLink, linkClassesInherit } from '../ui/Link';
+import { memberPortalEnabled } from '../../utils/featureFlags';
 import { Button } from '../ui/Buttons';
 import { RsvpButton } from '../ui/RsvpButton';
 import { Chip, type ChipCategory } from '../ui/Chip';
@@ -32,11 +33,10 @@ import { isInternalLink, internalLinkPath } from '../../utils/internalLinks';
 import { openExternal, safeExternalUrl } from '../../utils/safeUrl';
 import { useAuth } from '../../hooks/authContext/authContext';
 import {
-  createParticipantFromProfile,
-  addParticipantToEvent,
-  removeParticipantFromEvent,
-  getEventParticipants,
-  type EventParticipant,
+  getEventAttendees,
+  joinEvent,
+  leaveEvent,
+  type EventAttendee,
 } from '../../supabase/queryHelpers/eventParticipants';
 
 interface CalendarSectionProps {
@@ -157,8 +157,8 @@ function countdown(start: Date, now: Date): string {
  * "Mine kommende" filter has to see the same optimistic state the cards do.
  */
 function useRsvp(events: CalendarEventTypes[]) {
-  const { isAuthenticated, user } = useAuth();
-  const [participants, setParticipants] = useState<Record<string, EventParticipant[]>>({});
+  const { isAuthenticated, authResolved, user } = useAuth();
+  const [participants, setParticipants] = useState<Record<string, EventAttendee[]>>({});
   const [pending, setPending] = useState<Record<string, boolean>>({});
   const [errors, setErrors] = useState<Record<string, string | null>>({});
 
@@ -178,7 +178,7 @@ function useRsvp(events: CalendarEventTypes[]) {
     }
     let cancelled = false;
     const eventIds = eventIdsKey ? eventIdsKey.split(',') : [];
-    getEventParticipants(eventIds)
+    getEventAttendees(eventIds)
       .then((byEvent) => {
         if (!cancelled) setParticipants(byEvent);
       })
@@ -190,7 +190,7 @@ function useRsvp(events: CalendarEventTypes[]) {
     };
   }, [eventIdsKey, isAuthenticated]);
 
-  const attendeesOf = (eventId: string): EventParticipant[] => participants[eventId] ?? [];
+  const attendeesOf = (eventId: string): EventAttendee[] => participants[eventId] ?? [];
 
   const isAttending = (eventId: string) =>
     !!user && attendeesOf(eventId).some((p) => p.supabase_id === user.supabase_id);
@@ -201,7 +201,14 @@ function useRsvp(events: CalendarEventTypes[]) {
 
     const previous = attendeesOf(eventId);
     const leaving = previous.some((p) => p.supabase_id === supabaseId);
-    const participant = createParticipantFromProfile(user);
+    // The optimistic row for the member's own toggle, never sent: the server row is ids only.
+    const participant: EventAttendee = {
+      supabase_id: supabaseId,
+      name: user.name,
+      surname: user.surname,
+      photo_url: user.photo_url ?? '',
+      hidden: false,
+    };
 
     setErrors((current) => ({ ...current, [eventId]: null }));
     setPending((current) => ({ ...current, [eventId]: true }));
@@ -214,9 +221,9 @@ function useRsvp(events: CalendarEventTypes[]) {
 
     try {
       if (leaving) {
-        await removeParticipantFromEvent(eventId);
+        await leaveEvent(eventId, supabaseId);
       } else {
-        await addParticipantToEvent(eventId);
+        await joinEvent(eventId, supabaseId);
       }
     } catch (err) {
       console.error('Error updating event participation:', err);
@@ -232,14 +239,25 @@ function useRsvp(events: CalendarEventTypes[]) {
     }
   }
 
-  return { loggedIn: isAuthenticated, attendeesOf, isAttending, toggle, pending, errors };
+  return {
+    loggedIn: isAuthenticated,
+    authResolved,
+    attendeesOf,
+    isAttending,
+    toggle,
+    pending,
+    errors,
+  };
 }
 
-function toAvatarPeople(participants: EventParticipant[]): AvatarStackPerson[] {
-  return participants.map((participant) => ({
-    name: [participant.name, participant.surname].filter(Boolean).join(' ').trim() || 'Medlem',
-    src: participant.photo_url || undefined,
-  }));
+/** Named attendees as avatars; hidden ones are only counted (`AvatarStack`'s `hiddenCount`). */
+function toAvatarPeople(participants: EventAttendee[]): AvatarStackPerson[] {
+  return participants
+    .filter((participant) => !participant.hidden)
+    .map((participant) => ({
+      name: [participant.name, participant.surname].filter(Boolean).join(' ').trim() || 'Medlem',
+      src: participant.photo_url || undefined,
+    }));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -461,7 +479,17 @@ function EventList({ events, failed }: { events: CalendarEventTypes[]; failed?: 
 
   return (
     <div className="max-w-content content-gutter:px-0 flex w-full flex-col gap-4 px-2">
-      <div className="flex justify-end">
+      <div className="flex flex-wrap items-center justify-end gap-3">
+        {/* One line for the whole list rather than a button on every card. Only once member
+            sign-up is open: until then there is nobody a sign-in would help. */}
+        {memberPortalEnabled && rsvp.authResolved && !rsvp.loggedIn && (
+          <Link
+            to={`/login?neste=${encodeURIComponent('/kalender')}`}
+            className={`${linkClassesInherit} text-darkestblue mr-auto underline dark:text-white`}
+          >
+            Logg inn for å melde deg på
+          </Link>
+        )}
         <Segmented
           label="Vis arrangementer"
           options={SCOPE_OPTIONS}
@@ -690,7 +718,12 @@ function EventRow({
               onClick={(clickEvent) => clickEvent.stopPropagation()}
             >
               {attendees.length > 0 && (
-                <AvatarStack people={toAvatarPeople(attendees)} max={3} size="sm" />
+                <AvatarStack
+                  people={toAvatarPeople(attendees)}
+                  hiddenCount={attendees.filter((a) => a.hidden).length}
+                  max={3}
+                  size="sm"
+                />
               )}
               <RsvpButton
                 attending={attending}

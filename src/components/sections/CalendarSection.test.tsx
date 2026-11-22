@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import type { CalendarEventTypes } from '../../sanity/queryHelpers/events';
 import type { Profile } from '../../supabase/queryHelpers/getProfile';
-import type { EventParticipant } from '../../supabase/queryHelpers/eventParticipants';
+import type { EventAttendee } from '../../supabase/queryHelpers/eventParticipants';
 import CalendarSection from './CalendarSection';
 
 // The clock the whole suite reasons about. "Upcoming" and "past" are relative to it, so it has
@@ -43,28 +43,22 @@ vi.mock('../../sanity/sanityImageUrl', () => ({
   }),
 }));
 
-const addParticipantToEvent = vi.fn().mockResolvedValue(undefined);
-const removeParticipantFromEvent = vi.fn().mockResolvedValue(undefined);
-const getEventParticipants = vi.fn().mockResolvedValue({});
+const joinEvent = vi.fn().mockResolvedValue(undefined);
+const leaveEvent = vi.fn().mockResolvedValue(undefined);
+const getEventAttendees = vi.fn().mockResolvedValue({});
 
 vi.mock('../../supabase/queryHelpers/eventParticipants', () => ({
-  createParticipantFromProfile: (user: Profile) => ({
-    supabase_id: user.supabase_id,
-    name: user.name ?? '',
-    surname: user.surname ?? '',
-    photo_url: user.photo_url ?? '',
-  }),
-  addParticipantToEvent: (...args: unknown[]) => addParticipantToEvent(...args),
-  removeParticipantFromEvent: (...args: unknown[]) => removeParticipantFromEvent(...args),
-  getEventParticipants: (...args: unknown[]) => getEventParticipants(...args),
+  joinEvent: (...args: unknown[]) => joinEvent(...args),
+  leaveEvent: (...args: unknown[]) => leaveEvent(...args),
+  getEventAttendees: (...args: unknown[]) => getEventAttendees(...args),
 }));
 
-/** The attendees `getEventParticipants` resolves for `next-up` once a test opts in to them. */
-const NEXT_UP_PARTICIPANTS: EventParticipant[] = [
-  { supabase_id: 'a', name: 'Anne', surname: 'Berg', photo_url: '' },
-  { supabase_id: 'b', name: 'Kari', surname: 'Lund', photo_url: '' },
-  { supabase_id: 'c', name: 'Tor', surname: 'Solberg', photo_url: '' },
-  { supabase_id: 'd', name: 'Rita', surname: 'Nilsen', photo_url: '' },
+/** The attendees `getEventAttendees` resolves for `next-up` once a test opts in to them. */
+const NEXT_UP_PARTICIPANTS: EventAttendee[] = [
+  { supabase_id: 'a', name: 'Anne', surname: 'Berg', photo_url: '', hidden: false },
+  { supabase_id: 'b', name: 'Kari', surname: 'Lund', photo_url: '', hidden: false },
+  { supabase_id: 'c', name: 'Tor', surname: 'Solberg', photo_url: '', hidden: false },
+  { supabase_id: null, name: null, surname: null, photo_url: '', hidden: true },
 ];
 
 const body = [
@@ -129,9 +123,9 @@ beforeEach(() => {
   vi.setSystemTime(NOW);
   auth.isAuthenticated = false;
   auth.user = null;
-  addParticipantToEvent.mockClear();
-  removeParticipantFromEvent.mockClear();
-  getEventParticipants.mockReset().mockResolvedValue({});
+  joinEvent.mockClear();
+  leaveEvent.mockClear();
+  getEventAttendees.mockReset().mockResolvedValue({});
 });
 
 afterEach(() => {
@@ -225,14 +219,14 @@ describe('CalendarSection', () => {
   });
 
   it('shows the avatar stack and RSVP button to a logged-in member', async () => {
-    getEventParticipants.mockResolvedValue({ 'next-up': NEXT_UP_PARTICIPANTS });
+    getEventAttendees.mockResolvedValue({ 'next-up': NEXT_UP_PARTICIPANTS });
     auth.isAuthenticated = true;
     auth.user = member;
     renderSection();
 
     const next = card('Ukentlig spillkveld');
     expect(await within(next).findByRole('img', { name: 'Anne Berg' })).toBeInTheDocument();
-    // Four attendees, three shown, one folded into the counter.
+    // Three named attendees shown, and one hidden member counted in the "+1".
     expect(within(next).getByText('+1')).toBeInTheDocument();
     expect(within(next).getByRole('button', { name: /Meld deg på/ })).toHaveTextContent('Bli med');
   });
@@ -253,7 +247,7 @@ describe('CalendarSection', () => {
 
     const row = card('Board Game Masters – Åpningskveld');
     expect(within(row).queryByRole('button', { name: /Meld deg på/ })).not.toBeInTheDocument();
-    expect(getEventParticipants).toHaveBeenCalledWith(expect.not.arrayContaining(['bgm:fre']));
+    expect(getEventAttendees).toHaveBeenCalledWith(expect.not.arrayContaining(['bgm:fre']));
   });
 
   it('joins an event optimistically', async () => {
@@ -264,14 +258,14 @@ describe('CalendarSection', () => {
     const next = card('Ukentlig spillkveld');
     await userEvent.click(within(next).getByRole('button', { name: /Meld deg på/ }));
 
-    expect(addParticipantToEvent).toHaveBeenCalledWith('next-up');
+    expect(joinEvent).toHaveBeenCalledWith('next-up', member.supabase_id);
     expect(within(next).getByRole('button', { name: /Meld deg av/ })).toHaveTextContent('Påmeldt!');
   });
 
   it('rolls the join back and explains itself when the write fails', async () => {
     auth.isAuthenticated = true;
     auth.user = member;
-    addParticipantToEvent.mockRejectedValueOnce(new Error('nope'));
+    joinEvent.mockRejectedValueOnce(new Error('nope'));
     vi.spyOn(console, 'error').mockImplementation(() => {});
     renderSection();
 

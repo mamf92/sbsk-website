@@ -47,6 +47,10 @@ export const ADMIN_EVENTS_BETWEEN_QUERY = `*[
 
 export const ADMIN_EVENT_BY_ID_QUERY = `*[_id == $id && _type in ["event", "festival"]][0]${ADMIN_EVENT_PROJECTION}`;
 
+export const ADMIN_UPCOMING_EVENTS_BY_ID_QUERY = `*[
+  _id in $ids && _type == "event" && eventEndTime >= $from
+] | order(eventStartTime asc)${ADMIN_EVENT_PROJECTION}`;
+
 const isoDate = (date: Date) => date.toISOString().slice(0, 10);
 
 export async function getUpcomingEventsForAdmin(
@@ -78,4 +82,17 @@ export async function getCheckInEvents(days = 7, now = new Date()): Promise<Admi
 
 export async function getAdminEvent(id: string): Promise<AdminEvent | null> {
   return client.fetch<AdminEvent | null>(ADMIN_EVENT_BY_ID_QUERY, { id });
+}
+
+/** Upcoming events among `ids`, however far ahead: a member's own sign-ups on Min side. */
+export async function getUpcomingEventsByIds(
+  ids: string[],
+  now = new Date(),
+): Promise<AdminEvent[]> {
+  if (ids.length === 0) return [];
+  const events = await client.fetch<AdminEvent[] | null>(ADMIN_UPCOMING_EVENTS_BY_ID_QUERY, {
+    ids,
+    from: now.toISOString(),
+  });
+  return events ?? [];
 }

@@ -1,7 +1,9 @@
-/**
- * Min side's first tab. The calendar with the member's sign-ups and suggestions joins it in
- * phase 3 PR 3, badges in PR 4 and the membership card in PR 5.
- */
+import { useLoaderData } from 'react-router-dom';
+import MemberEventsSection from '../components/sections/MemberPortalSection/MemberEventsSection';
+import type { MemberOverviewData } from '../loaders/member-overview-loader';
+
+/** Min side's first tab: the member's sign-ups and suggestions. Badges and the card follow. */
 export default function MemberOverview() {
-  return null;
+  const data = useLoaderData() as MemberOverviewData;
+  return <MemberEventsSection {...data} />;
 }

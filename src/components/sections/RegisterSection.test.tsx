@@ -36,6 +36,7 @@ const profile: Profile = {
   bio: null,
   terms_accepted_version: null,
   terms_accepted_at: null,
+  show_in_attendee_lists: true,
 };
 
 function renderSetup(next: string | null = null) {

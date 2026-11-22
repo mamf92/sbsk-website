@@ -7,7 +7,7 @@ select tests.seed();
 -- event participants (RSVP)
 select tests.authenticate_as('a@example.no');
 select lives_ok(
-  $$insert into public.event_participants (event_id, supabase_id, name, surname) values ('evt-1', auth.uid(), 'Anna', 'T')$$,
+  $$insert into public.event_participants (event_id, supabase_id) values ('evt-1', auth.uid())$$,
   'an active member signs up for an event'
 );
 select throws_ok(
@@ -15,9 +15,9 @@ select throws_ok(
   '42501', null, 'a member cannot sign someone else up'
 );
 select tests.authenticate_as('b@example.no');
-select is((select count(*)::int from public.event_participants), 1, 'active members see who is coming');
+select is((select count(*)::int from public.event_attendees), 1, 'active members see who is coming');
 select tests.authenticate_as('disabled@example.no');
-select is_empty('select * from public.event_participants', 'a disabled member sees no sign-ups');
+select is_empty('select * from public.event_attendees', 'a disabled member sees no sign-ups');
 select throws_ok(
   $$insert into public.event_participants (event_id, supabase_id) values ('evt-1', auth.uid())$$,
   '42501', null, 'a disabled member cannot sign up'

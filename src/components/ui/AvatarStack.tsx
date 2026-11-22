@@ -15,6 +15,8 @@ type AvatarStackProps = Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> &
   overlap?: boolean;
   /** Makes the "+N" counter a button. Left off, it renders as plain text. */
   onMore?: () => void;
+  /** People counted but not shown by name (members hidden from attendee lists). Added to "+N". */
+  hiddenCount?: number;
 };
 
 // The library's stack also has a `responsive` mode that measures its container with a
@@ -41,9 +43,21 @@ const counterSizes = {
 } as const;
 
 export const AvatarStack = React.forwardRef<HTMLDivElement, AvatarStackProps>(
-  ({ className = '', people, max = 5, size = 'sm', overlap = false, onMore, ...props }, ref) => {
+  (
+    {
+      className = '',
+      people,
+      max = 5,
+      size = 'sm',
+      overlap = false,
+      onMore,
+      hiddenCount = 0,
+      ...props
+    },
+    ref,
+  ) => {
     const shown = people.slice(0, max);
-    const extra = people.length - shown.length;
+    const extra = people.length - shown.length + hiddenCount;
     const tuck = overlap ? overlapMargin[size] : '';
     const counterClasses = [counterBase, counterSizes[size], tuck].join(' ');
 

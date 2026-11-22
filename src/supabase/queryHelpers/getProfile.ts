@@ -11,6 +11,8 @@ export interface Profile {
   /** Version of the privacy policy and terms the member accepted; null before first-time setup. */
   terms_accepted_version: string | null;
   terms_accepted_at: string | null;
+  /** Whether other members see this member by name in attendee lists (default true). */
+  show_in_attendee_lists: boolean;
   created_at: string;
   /** Signed, browser-loadable URL resolved fresh on every fetch — do not persist it. */
   photo_url: string | null;
