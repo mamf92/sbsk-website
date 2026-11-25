@@ -5,13 +5,138 @@
   Subject for both: "{{ .Token }} er koden din til SBSK"
   The code comes first in the subject and stays on its own line in the body, so iPhone and
   Android can offer it as an autofill suggestion. English version: sign-in-code.en.html.
+  Email-safe: tables, inline CSS, PNG logo from the live site (public/images/brand/).
+  Colours are the site tokens: darkblue #002f5f, darkestblue #031f3b, orange #f29d35.
 -->
-<div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #0b1a33">
-  <h2 style="margin: 0 0 16px">Stavanger Brettspillklubb</h2>
-  <p>Koden din er:</p>
-  <p style="font-size: 32px; font-weight: bold; letter-spacing: 6px; margin: 16px 0">
-    {{ .Token }}
-  </p>
-  <p>Skriv inn koden på nettsiden for å logge inn. Koden virker i 10 minutter.</p>
-  <p>Har du ikke bedt om koden, kan du se bort fra denne e-posten.</p>
-</div>
+<!doctype html>
+<html lang="nb">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="supported-color-schemes" content="light dark" />
+    <title>{{ .Token }} er koden din til SBSK</title>
+  </head>
+  <body style="margin: 0; padding: 0; background-color: #f5f5fe">
+    <table
+      role="presentation"
+      width="100%"
+      cellpadding="0"
+      cellspacing="0"
+      border="0"
+      bgcolor="#f5f5fe"
+    >
+      <tr>
+        <td align="center" style="padding: 24px 12px">
+          <table
+            role="presentation"
+            width="480"
+            cellpadding="0"
+            cellspacing="0"
+            border="0"
+            style="width: 100%; max-width: 480px"
+          >
+            <tr>
+              <td
+                bgcolor="#002f5f"
+                style="background-color: #002f5f; padding: 20px 24px; border-radius: 12px 12px 0 0"
+              >
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="padding-right: 14px">
+                      <img
+                        src="https://mamf92.github.io/sbsk-website/images/brand/sbsk-logo.png"
+                        width="56"
+                        height="56"
+                        alt=""
+                        style="display: block; border: 0; border-radius: 10px"
+                      />
+                    </td>
+                    <td
+                      style="
+                        font-family: Arial, Helvetica, sans-serif;
+                        font-size: 20px;
+                        line-height: 24px;
+                        font-weight: bold;
+                        color: #ffffff;
+                      "
+                    >
+                      Stavanger<br />Brettspillklubb
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td
+                bgcolor="#f29d35"
+                height="4"
+                style="background-color: #f29d35; height: 4px; font-size: 0; line-height: 0"
+              >
+                &nbsp;
+              </td>
+            </tr>
+            <tr>
+              <td
+                bgcolor="#ffffff"
+                style="
+                  background-color: #ffffff;
+                  padding: 28px 24px;
+                  font-family: Arial, Helvetica, sans-serif;
+                  font-size: 16px;
+                  line-height: 24px;
+                  color: #0d0d0d;
+                  border-radius: 0 0 12px 12px;
+                "
+              >
+                <p style="margin: 0 0 16px">Hei! Her er koden din for å logge inn:</p>
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td
+                      align="center"
+                      bgcolor="#031f3b"
+                      style="
+                        background-color: #031f3b;
+                        border-radius: 10px;
+                        padding: 18px 12px;
+                        font-family: 'Courier New', Courier, monospace;
+                        font-size: 36px;
+                        line-height: 40px;
+                        font-weight: bold;
+                        letter-spacing: 8px;
+                        color: #f29d35;
+                      "
+                    >
+                      {{ .Token }}
+                    </td>
+                  </tr>
+                </table>
+                <p style="margin: 20px 0 8px">
+                  Skriv inn koden på nettsiden for å logge inn. Koden virker i 10 minutter.
+                </p>
+                <p style="margin: 0; font-size: 14px; line-height: 20px; color: #595959">
+                  Har du ikke bedt om koden, kan du se bort fra denne e-posten. Ingen har fått
+                  tilgang til kontoen din.
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td
+                align="center"
+                style="
+                  padding: 16px 12px;
+                  font-family: Arial, Helvetica, sans-serif;
+                  font-size: 12px;
+                  line-height: 18px;
+                  color: #727a88;
+                "
+              >
+                Stavanger Brettspillklubb · Spillglede i Stavanger
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
