@@ -12,7 +12,7 @@ the member portal is switched on (`VITE_ENABLE_MEMBER_PORTAL=true`).
 1. Open Authentication → Emails → SMTP Settings. Turn on custom SMTP.
    Supabase's built-in sender only delivers to the project's own team, at 2 emails an hour.
 2. Open Authentication → Emails → Templates → "Magic Link".
-   Paste `supabase/templates/sign-in-code.html` as the body. Set the subject from that file.
+   Paste `supabase/templates/sign-in-code.nb.html` as the body. Set the subject from that file.
 3. Do the same for "Confirm signup".
 4. Open Authentication → Sign In / Providers → Email.
    Set "Email OTP Expiration" to 600 seconds and "Email OTP Length" to 6.

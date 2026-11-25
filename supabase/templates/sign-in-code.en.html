@@ -1,0 +1,14 @@
+<!--
+  Sign-in code email, English (phase 3). Not in use until language-specific code emails exist
+  (docs/plans/i18n.md §3): Supabase holds one template per type. Subject:
+  "{{ .Token }} is your SBSK code"
+-->
+<div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #0b1a33">
+  <h2 style="margin: 0 0 16px">Stavanger Brettspillklubb</h2>
+  <p>Your code is:</p>
+  <p style="font-size: 32px; font-weight: bold; letter-spacing: 6px; margin: 16px 0">
+    {{ .Token }}
+  </p>
+  <p>Enter the code on the website to sign in. The code works for 10 minutes.</p>
+  <p>If you did not ask for this code, you can ignore this email.</p>
+</div>
