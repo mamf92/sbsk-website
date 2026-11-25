@@ -1,0 +1,17 @@
+<!--
+  Sign-in code email, Norwegian (phase 3). Paste into BOTH Supabase dashboard templates:
+  Authentication → Emails → "Magic Link" and "Confirm signup". The first code for a new member
+  uses "Confirm signup"; every later code uses "Magic Link". See docs/MEMBER_SIGN_IN.md.
+  Subject for both: "{{ .Token }} er koden din til SBSK"
+  The code comes first in the subject and stays on its own line in the body, so iPhone and
+  Android can offer it as an autofill suggestion. English version: sign-in-code.en.html.
+-->
+<div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #0b1a33">
+  <h2 style="margin: 0 0 16px">Stavanger Brettspillklubb</h2>
+  <p>Koden din er:</p>
+  <p style="font-size: 32px; font-weight: bold; letter-spacing: 6px; margin: 16px 0">
+    {{ .Token }}
+  </p>
+  <p>Skriv inn koden på nettsiden for å logge inn. Koden virker i 10 minutter.</p>
+  <p>Har du ikke bedt om koden, kan du se bort fra denne e-posten.</p>
+</div>
