@@ -14,6 +14,7 @@ the member portal is switched on (`VITE_ENABLE_MEMBER_PORTAL=true`).
 2. Open Authentication → Emails → Templates → "Magic Link".
    Paste `supabase/templates/sign-in-code.nb.html` as the body. Set the subject from that file.
 3. Do the same for "Confirm signup".
+   Then open "Reset Password" and paste `supabase/templates/reset-password.nb.html` (subject in that file).
 4. Open Authentication → Sign In / Providers → Email.
    Set "Email OTP Expiration" to 600 seconds and "Email OTP Length" to 6.
 5. On the same page, set "Minimum password length" to 10.
