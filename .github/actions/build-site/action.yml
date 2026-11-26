@@ -28,10 +28,13 @@ runs:
         VITE_BASE: /${{ github.event.repository.name }}/
         VITE_SUPABASE_URL: ${{ inputs.supabase-url }}
         VITE_SUPABASE_PUBLISHABLE_KEY: ${{ inputs.supabase-publishable-key }}
-        # No member/board portal on MVP launch (#213) — Studio is the only sign-in this round.
-        VITE_ENABLE_MEMBER_PORTAL: 'false'
-        # ...but the portal routes answer by URL (no header link), so the board can sign in,
-        # enrol 2FA and use /styreportal before members are invited (phase 2).
+        # Member portal on (26 Nov 2026, opened for testing): the Bli medlem form, board
+        # approval in the member list, member sign-up at /lag-medlemsprofil and the legal
+        # pages. Sign-up stays invite-only: the on_auth_user_created_before trigger refuses
+        # any email that is not an active row in members.
+        VITE_ENABLE_MEMBER_PORTAL: 'true'
+        # Implied by the flag above; kept so turning the portal off again leaves the board's
+        # URL-only routes (/login, /styreportal) in place.
         VITE_ENABLE_PORTAL_ROUTES: 'true'
         # Nothing reads the messages the Kontakt oss form writes yet (#254) — the page
         # publishes the club's address instead until #133 or portal access lands.
