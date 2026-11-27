@@ -39,11 +39,14 @@ function capitalise(text: string) {
 export function NextEventHero({
   next,
   later,
+  failed = false,
   photo,
   now,
   member,
 }: {
   next: CalendarEventTypes | null;
+  /** The events could not be fetched: say so rather than «not entered yet». */
+  failed?: boolean;
   later: CalendarEventTypes[];
   photo?: SanityImageSource | null;
   now: Date;
@@ -118,7 +121,9 @@ export function NextEventHero({
             </>
           ) : (
             <p className="font-heading text-h1 font-bold">
-              Neste spillkveld er ikke lagt inn ennå.
+              {failed
+                ? 'Vi fikk ikke hentet kalenderen akkurat nå. Prøv igjen om litt.'
+                : 'Neste spillkveld er ikke lagt inn ennå.'}
             </p>
           )}
 

@@ -60,3 +60,20 @@ test('has no horizontal page scroll on a phone, in either view', async ({ page }
     expect(overflow, url).toBeLessThanOrEqual(0);
   }
 });
+
+test('typing in search does not refetch the calendar', async ({ page }) => {
+  await page.goto('/kalender/alle');
+  await expect(page.getByRole('heading', { name: 'Alle arrangementer' })).toBeVisible();
+  let fetches = 0;
+  page.on('request', (request) => {
+    if (request.url().includes('api.sanity.io')) fetches += 1;
+  });
+  await page
+    .getByRole('searchbox', { name: 'Søk i alle arrangementer' })
+    .pressSequentially('turnering');
+  await expect(page).toHaveURL(/q=turnering/);
+  await expect(page.getByRole('searchbox', { name: 'Søk i alle arrangementer' })).toHaveValue(
+    'turnering',
+  );
+  expect(fetches).toBe(0);
+});

@@ -73,6 +73,10 @@ export default function CalendarAll() {
   const today = osloDay(now);
 
   const q = params.get('q') ?? '';
+  // The field keeps its own value: a URL update is a navigation, which React Router runs as a
+  // transition, so binding the input straight to `q` would drop fast keystrokes. «Nullstill»
+  // clears both.
+  const [text, setText] = useState(q);
   const rawKategori = params.get('kategori') ?? 'alle';
   const kategori = (
     KATEGORIER.has(rawKategori) && (rawKategori !== 'mine' || member) ? rawKategori : 'alle'
@@ -286,8 +290,11 @@ export default function CalendarAll() {
               icon="search"
               aria-label="Søk i alle arrangementer"
               placeholder="Søk etter navn eller sted"
-              value={q}
-              onChange={(event) => update({ q: event.target.value }, true)}
+              value={text}
+              onChange={(event) => {
+                setText(event.target.value);
+                update({ q: event.target.value }, true);
+              }}
               className="text-lg"
             />
           </form>
@@ -364,7 +371,10 @@ export default function CalendarAll() {
                   variant="tertiary"
                   size="sm"
                   icon="backspace"
-                  onClick={() => update({ q: null, kategori: null })}
+                  onClick={() => {
+                    setText('');
+                    update({ q: null, kategori: null });
+                  }}
                 >
                   Nullstill
                 </Button>

@@ -130,6 +130,13 @@ describe('HomeRedesign', () => {
     expect(within(hero).getByText('Beskjed:', { exact: false })).toBeInTheDocument();
   });
 
+  it('says the calendar could not be fetched rather than that nothing is planned', () => {
+    loaderData = { ...loaderData, events: [], eventsFailed: true };
+    renderPage();
+    expect(screen.getByText(/Vi fikk ikke hentet kalenderen/)).toBeInTheDocument();
+    expect(screen.queryByText('Neste spillkveld er ikke lagt inn ennå.')).toBeNull();
+  });
+
   it('says so when no game night is in the calendar', () => {
     loaderData = { ...loaderData, events: [] };
     renderPage();
