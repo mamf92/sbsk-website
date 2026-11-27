@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import type { CalendarEventTypes } from '../../../sanity/queryHelpers/events';
 import { Eyebrow } from '../../ui/Eyebrow';
 import { countdownLabel, isSpecialEvent } from '../../../utils/eventHighlights';
+import { eventLink } from '../../../utils/eventLinks';
 import {
   clockTime,
   dayOfMonth,
@@ -37,7 +38,9 @@ export function GameNightStrip({
   return (
     <section
       aria-labelledby="fast-spillkveld"
-      className="bg-cream dark:bg-darkblue border-b border-black dark:border-white/20"
+      // Darkest navy in dark mode, not the title band's darkblue: the two bands sit edge to edge
+      // and must read as two sections.
+      className="bg-cream dark:bg-darkestblue border-b border-black dark:border-white/20"
     >
       <div className="max-w-shell mx-auto grid gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[16rem_minmax(0,1fr)] lg:items-center lg:py-10">
         <div className="text-darkestblue flex flex-col gap-2 dark:text-white">
@@ -78,25 +81,41 @@ export function GameNightStrip({
                     Neste
                   </span>
                 )}
-                <span className="sr-only">{formatDayLong(start, 'nb')}</span>
-                <span
-                  aria-hidden="true"
-                  className="font-heading text-xs font-extrabold tracking-[0.16em] uppercase"
+                {/* The date is the link (its own page, or the night opened on «Alle
+                    arrangementer»); a member's sign-up sits under it, outside the link. */}
+                <Link
+                  to={eventLink(event)}
+                  className="focus-visible:outline-focus-ring group flex w-full flex-col items-center focus-visible:outline-2 focus-visible:outline-offset-2"
                 >
-                  {weekdayAbbreviation(start)}
-                </span>
-                <span aria-hidden="true" className="font-heading text-5xl font-extrabold">
-                  {dayOfMonth(start)}
-                </span>
-                <span
-                  aria-hidden="true"
-                  className="font-heading text-xs font-extrabold tracking-[0.16em] uppercase"
-                >
-                  {monthAbbreviation(start)}
-                </span>
-                <span className="font-body mt-1.5 line-clamp-2 min-h-8 text-center text-xs leading-tight font-bold">
-                  {note}
-                </span>
+                  <span className="sr-only">
+                    {formatDayLong(start, 'nb')}
+                    {isSpecialEvent(event) ? `: ${event.title}` : ''}
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="font-heading text-xs font-extrabold tracking-[0.16em] uppercase"
+                  >
+                    {weekdayAbbreviation(start)}
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="font-heading text-5xl font-extrabold underline-offset-4 group-hover:underline"
+                  >
+                    {dayOfMonth(start)}
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="font-heading text-xs font-extrabold tracking-[0.16em] uppercase"
+                  >
+                    {monthAbbreviation(start)}
+                  </span>
+                  <span
+                    aria-hidden={isSpecialEvent(event) ? true : undefined}
+                    className="font-body mt-1.5 line-clamp-2 min-h-8 text-center text-xs leading-tight font-bold"
+                  >
+                    {note}
+                  </span>
+                </Link>
                 {signUp && <div className="mt-1">{signUp(event)}</div>}
               </li>
             );

@@ -1,5 +1,10 @@
 import { expect, test } from '@playwright/test';
-import { PAST_EVENT, UPCOMING_TOURNAMENT, stubSanityWithContent } from '../fixtures/sanity';
+import {
+  PAST_EVENT,
+  UPCOMING_EVENT,
+  UPCOMING_TOURNAMENT,
+  stubSanityWithContent,
+} from '../fixtures/sanity';
 
 // «Alle arrangementer» (/kalender/alle), as the /redesign/ preview builds it.
 
@@ -76,4 +81,25 @@ test('typing in search does not refetch the calendar', async ({ page }) => {
     'turnering',
   );
   expect(fetches).toBe(0);
+});
+
+test('a link to one event opens it, scrolled into view and ringed', async ({ page }) => {
+  await page.goto(`/kalender/alle?arrangement=${UPCOMING_TOURNAMENT._id}`);
+  const row = page.locator(`[data-event-id="${UPCOMING_TOURNAMENT._id}"]`);
+  await expect(row).toHaveAttribute('data-expanded', 'true');
+  await expect(row).toBeInViewport();
+  await expect(page.locator('.focus-pulse')).toHaveCount(1);
+});
+
+test('a link to a past event turns on the past list', async ({ page }) => {
+  await page.goto(`/kalender/alle?arrangement=${PAST_EVENT._id}`);
+  await expect(page.locator(`[data-event-id="${PAST_EVENT._id}"]`)).toBeInViewport();
+});
+
+test('in the month view, an event with its own page links straight to it', async ({ page }) => {
+  const start = new Date(UPCOMING_EVENT.eventStartTime);
+  const key = start.toLocaleDateString('sv-SE', { timeZone: 'Europe/Oslo' });
+  await page.goto(`/kalender/alle?visning=maned&maned=${key.slice(0, 7)}`);
+  await page.getByRole('link', { name: `Gå til ${UPCOMING_EVENT.title}` }).click();
+  await expect(page).toHaveURL(/\/arrangementer\/spillkveld-torsdag$/);
 });

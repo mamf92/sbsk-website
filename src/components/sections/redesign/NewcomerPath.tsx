@@ -26,7 +26,9 @@ export function NewcomerPath() {
   return (
     <section
       aria-labelledby="tre-trekk"
-      className="bg-cream dark:bg-darkblue border-b border-black dark:border-white/20"
+      // The section's fill decides the step cards' shadow colour (`--hard-shadow-color`):
+      // darkestblue on cream, white on darkblue.
+      className="bg-cream dark:bg-darkblue surface-light dark:surface-dark border-b border-black dark:border-white/20"
     >
       <div className="max-w-shell mx-auto flex flex-col gap-8 px-4 py-10 sm:px-6 lg:py-12">
         <SectionHeading id="tre-trekk" kicker="Ny her?" title="Tre trekk, så er du i gang" />
@@ -43,8 +45,10 @@ export function NewcomerPath() {
               >
                 <span
                   aria-hidden="true"
-                  className={`font-heading border-darkestblue text-darkestblue relative flex size-14 flex-none items-center justify-center border-2 text-3xl font-extrabold shadow-[6px_6px_0_var(--color-darkestblue)] md:size-22 md:text-5xl dark:border-white dark:shadow-[6px_6px_0_white] ${
-                    i === 2 ? 'bg-orange' : 'bg-white'
+                  className={`font-heading border-darkestblue text-darkestblue relative flex size-14 flex-none items-center justify-center border-2 text-3xl font-extrabold shadow-[6px_6px_0_var(--hard-shadow-color)] md:size-22 md:text-5xl dark:border-white ${
+                    // A white card cannot carry a white shadow: in dark mode the plain steps
+                    // take the page's own navy, and only the goal stays orange.
+                    i === 2 ? 'bg-orange' : 'dark:bg-darkestblue bg-white dark:text-white'
                   } ${step.tilt}`}
                 >
                   {i + 1}

@@ -102,10 +102,17 @@ describe('HomeRedesign', () => {
     expect(within(hero).getByRole('button', { name: /Legg i kalenderen/ })).toBeInTheDocument();
     expect(within(hero).getByRole('link', { name: 'Vis i kart' })).toHaveAttribute(
       'href',
-      expect.stringContaining('openstreetmap.org'),
+      expect.stringContaining('google.com/maps'),
     );
-    // What comes after, in the ticker.
-    expect(within(hero).getByText('Julespillkveld')).toBeInTheDocument();
+    // What comes after, in the ticker: its own page, or the event opened on the full list.
+    expect(within(hero).getByRole('link', { name: /Julespillkveld/ })).toHaveAttribute(
+      'href',
+      '/arrangementer/jul',
+    );
+    expect(within(hero).getByRole('link', { name: /Vårturnering/ })).toHaveAttribute(
+      'href',
+      expect.stringMatching(/^\/kalender\/alle\?arrangement=/),
+    );
   });
 
   it('shows the newcomer path, the notice board and posters for special events only', () => {

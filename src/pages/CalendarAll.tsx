@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, useLoaderData, useSearchParams } from 'react-router-dom';
 import { toPlainText } from '@portabletext/react';
 import type { CalendarEventTypes } from '../sanity/queryHelpers/events';
@@ -15,6 +15,7 @@ import { useAuth } from '../hooks/authContext/authContext';
 import { useRsvp } from '../hooks/useRsvp';
 import { memberPortalEnabled } from '../utils/featureFlags';
 import { countdownLabel } from '../utils/eventHighlights';
+import { FOCUS_EVENT_PARAM } from '../utils/eventLinks';
 import { groupByMonth } from '../utils/groupByMonth';
 import { osloDateKey } from '../utils/eventDateFormat';
 import {
@@ -68,7 +69,10 @@ export default function CalendarAll() {
   const { isAuthenticated, user } = useAuth();
   const member = memberPortalEnabled && isAuthenticated && !!user;
   const rsvp = useRsvp(events);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  // `?arrangement=<id>`: a link from the front page or /kalender for an event with no page of its
+  // own. That event starts open, scrolled into view, with a pulsing ring.
+  const focusId = params.get(FOCUS_EVENT_PARAM);
+  const [expandedId, setExpandedId] = useState<string | null>(focusId);
   const now = useMemo(() => new Date(), []);
   const today = osloDay(now);
 
@@ -82,7 +86,20 @@ export default function CalendarAll() {
     KATEGORIER.has(rawKategori) && (rawKategori !== 'mine' || member) ? rawKategori : 'alle'
   ) as Kategori;
   const visning = params.get('visning') === 'maned' ? 'maned' : 'liste';
-  const showPast = params.get('tidligere') === 'vis';
+  const focusEvent = focusId ? events.find((event) => event._id === focusId) : undefined;
+  // A past event is only listed with «Vis tidligere» on, so a link to one turns it on.
+  const showPast =
+    params.get('tidligere') === 'vis' || (!!focusEvent && new Date(focusEvent.eventEndTime) < now);
+
+  useEffect(() => {
+    if (!focusId) return;
+    const row = document.querySelector(`[data-event-id="${CSS.escape(focusId)}"]`);
+    const reduce = document.documentElement.classList.contains('reduce-motion');
+    // Centred, so the sticky filter bar never covers it.
+    row?.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
+    // Only on arrival: a later change of filter or view must not jump the page back.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /** Changes some parameters and keeps the rest; `null` removes one. */
   function update(changes: Record<string, string | null>, replace = false) {
@@ -126,16 +143,17 @@ export default function CalendarAll() {
 
   function row(event: CalendarEventTypes, options: { past?: boolean; big?: boolean } = {}) {
     return (
-      <EventRow
-        key={event._id}
-        event={event}
-        rsvp={rsvp}
-        variant={options.big ? 'card' : 'agenda'}
-        highlight={q}
-        past={options.past}
-        expanded={expandedId === event._id}
-        onToggle={() => setExpandedId(expandedId === event._id ? null : event._id)}
-      />
+      <div key={event._id} className={event._id === focusId ? 'focus-pulse' : undefined}>
+        <EventRow
+          event={event}
+          rsvp={rsvp}
+          variant={options.big ? 'card' : 'agenda'}
+          highlight={q}
+          past={options.past}
+          expanded={expandedId === event._id}
+          onToggle={() => setExpandedId(expandedId === event._id ? null : event._id)}
+        />
+      </div>
     );
   }
 

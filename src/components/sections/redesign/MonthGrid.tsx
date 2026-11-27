@@ -1,8 +1,10 @@
 import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import type { CalendarEventTypes } from '../../../sanity/queryHelpers/events';
 import { Button } from '../../ui/Buttons';
 import { IconButton } from '../../ui/IconButton';
 import { clockTime } from '../../../utils/eventDateFormat';
+import { eventDetailPath } from '../../../utils/eventLinks';
 import {
   MONTHS,
   WEEKDAYS,
@@ -46,7 +48,8 @@ export function Legend() {
 /**
  * A month as a Monday-first grid. On desktop each day shows its events' names and start times
  * on their category colour; on a phone, lettered squares. A day with events is a button that
- * picks it; the page lists the picked day's events under the grid.
+ * picks it; the page lists the picked day's events under the grid. On desktop, an event with a
+ * page of its own is also a link straight to that page, laid over the day's button.
  */
 export function MonthGrid({
   year,
@@ -122,12 +125,11 @@ export function MonthGrid({
           const label = `${WEEKDAYS_LONG[day.weekday]} ${day.d}. ${MONTHS[day.m]}${
             isToday ? ', i dag' : ''
           }: ${dayEvents.map((event) => event.title).join(', ')}`;
-          const cell = [
-            'relative flex h-full w-full flex-col items-center gap-1 p-1 text-left min-h-16 sm:min-h-28 sm:items-stretch sm:p-1.5',
-            selected
-              ? 'outline-darkorange dark:outline-orange dark:bg-darkblue bg-gray-100 outline-2 -outline-offset-2'
-              : '',
-          ].join(' ');
+          const cell =
+            'relative flex h-full w-full flex-col items-center gap-1 p-1 text-left min-h-16 sm:min-h-28 sm:items-stretch sm:p-1.5';
+          const selectedClasses = selected
+            ? 'outline-darkorange dark:outline-orange dark:bg-darkblue bg-gray-100 outline-2 -outline-offset-2'
+            : '';
           const content = (
             <>
               <span
@@ -144,22 +146,37 @@ export function MonthGrid({
               {dayEvents.length > 0 && (
                 <>
                   <span className="hidden min-w-0 flex-col gap-1 sm:flex">
-                    {dayEvents.slice(0, 2).map((event) => (
-                      <span
-                        key={event._id}
-                        lang="nb"
-                        className={`font-body line-clamp-2 px-1 py-0.5 text-xs leading-tight font-bold break-words hyphens-auto dark:outline dark:outline-white/50 ${
-                          eventCategory(event.category).chip
-                        }`}
-                      >
-                        {!event.allDay && (
-                          <span className="font-normal opacity-85">
-                            {clockTime(new Date(event.eventStartTime))}{' '}
-                          </span>
-                        )}
-                        {event.title}
-                      </span>
-                    ))}
+                    {dayEvents.slice(0, 2).map((event) => {
+                      const chip = `font-body line-clamp-2 px-1 py-0.5 text-xs leading-tight font-bold break-words hyphens-auto dark:outline dark:outline-white/50 ${
+                        eventCategory(event.category).chip
+                      }`;
+                      const text = (
+                        <>
+                          {!event.allDay && (
+                            <span className="font-normal opacity-85">
+                              {clockTime(new Date(event.eventStartTime))}{' '}
+                            </span>
+                          )}
+                          {event.title}
+                        </>
+                      );
+                      const path = eventDetailPath(event);
+                      return path ? (
+                        <Link
+                          key={event._id}
+                          to={path}
+                          lang="nb"
+                          aria-label={`Gå til ${event.title}`}
+                          className={`${chip} lift focus-visible:outline-focus-ring pointer-events-auto underline-offset-2 hover:underline focus-visible:outline-2`}
+                        >
+                          {text}
+                        </Link>
+                      ) : (
+                        <span key={event._id} lang="nb" className={chip}>
+                          {text}
+                        </span>
+                      );
+                    })}
                     {dayEvents.length > 2 && (
                       <span className="font-body text-xs font-bold opacity-80">
                         +{dayEvents.length - 2} til
@@ -179,22 +196,26 @@ export function MonthGrid({
             <li
               key={day.key}
               className={[
+                'relative',
                 index % 7 ? 'border-l border-gray-300 dark:border-white/20' : '',
                 index >= 7 ? 'border-t border-gray-300 dark:border-white/20' : '',
               ].join(' ')}
             >
               {dayEvents.length > 0 ? (
-                // A raw button on purpose: a grid cell is not one of `Button`'s variants, and
-                // takes the cell's whole area as its target.
-                <button
-                  type="button"
-                  aria-label={label}
-                  aria-pressed={selected}
-                  onClick={() => onSelect(selected ? null : day.key)}
-                  className={`${cell} dark:hover:bg-darkblue cursor-pointer hover:bg-gray-100`}
-                >
-                  {content}
-                </button>
+                <>
+                  {/* A raw button on purpose: a grid cell is not one of `Button`'s variants, and
+                      takes the cell's whole area as its target. It sits under the cell's
+                      content rather than wrapping it, so an event's own link can sit on top
+                      without nesting one control in another. */}
+                  <button
+                    type="button"
+                    aria-label={label}
+                    aria-pressed={selected}
+                    onClick={() => onSelect(selected ? null : day.key)}
+                    className={`dark:hover:bg-darkblue absolute inset-0 cursor-pointer hover:bg-gray-100 ${selectedClasses}`}
+                  />
+                  <div className={`${cell} pointer-events-none`}>{content}</div>
+                </>
               ) : (
                 // Empty days are left to sight: the list under the grid names every event.
                 <div aria-hidden="true" className={cell}>
