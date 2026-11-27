@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { SponsorGrid, SponsorStrip } from './Sponsors';
+import { SponsorGrid, SponsorLine, SponsorStrip } from './Sponsors';
 import { groupSponsorsByTier } from '../../utils/sponsors';
 import type { SponsorTypes } from '../../sanity/queryHelpers/fragments';
 
@@ -64,5 +64,21 @@ describe('SponsorGrid', () => {
     const sources = screen.getAllByAltText('Vanlig AS').map((img) => img.getAttribute('src'));
     expect(sources).toEqual(['https://cdn.test/vanlig.png', 'https://cdn.test/vanlig-lys.png']);
     expect(screen.getByText('Partner AS').tagName).toBe('SPAN');
+  });
+});
+
+describe('SponsorLine', () => {
+  it('shows every sponsor once, main sponsors first, under «Med støtte fra»', () => {
+    render(<SponsorLine sponsors={sponsors} />);
+    const line = screen.getByRole('region', { name: 'Med støtte fra' });
+    const items = line.querySelectorAll('li');
+    expect(items).toHaveLength(4);
+    expect(items[0].querySelector('img')?.getAttribute('alt')).toBe('Hoved AS');
+    expect(items[3]).toHaveTextContent('Partner AS');
+  });
+
+  it('renders nothing without sponsors', () => {
+    const { container } = render(<SponsorLine sponsors={[]} />);
+    expect(container).toBeEmptyDOMElement();
   });
 });

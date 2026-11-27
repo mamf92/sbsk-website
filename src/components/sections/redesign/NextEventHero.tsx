@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import type { SanityImageSource } from '@sanity/image-url';
 import type { CalendarEventTypes } from '../../../sanity/queryHelpers/events';
 import { HeroImage } from '../../ui/HeroImage';
+import { Polaroid } from '../../ui/Polaroid';
 import { Eyebrow } from '../../ui/Eyebrow';
 import { Button } from '../../ui/Buttons';
 import { buttonClasses } from '../../ui/buttonClasses';
@@ -169,16 +170,13 @@ export function NextEventHero({
 
         {/* The one place a photo of people earns its space: a polaroid, not a full-bleed band. */}
         <div className="max-w-aside relative mx-auto w-full lg:mx-0 lg:justify-self-end">
-          <div className="bg-cream text-darkestblue tilt-right-lg relative border border-black p-3 pb-14 shadow-[10px_10px_0_var(--color-darkestblue)]">
-            <div className="relative aspect-[4/3] overflow-hidden border border-black">
-              <HeroImage image={photo} priority />
-            </div>
-            <span className="font-heading absolute bottom-4 left-4 -rotate-1 text-lg font-bold">
-              {next?.location
-                ? `Spillkveld på ${next.location.split(',')[0]}`
-                : 'Spillkveld i SBSK'}
-            </span>
-          </div>
+          <Polaroid
+            caption={
+              next?.location ? `Spillkveld på ${next.location.split(',')[0]}` : 'Spillkveld i SBSK'
+            }
+          >
+            <HeroImage image={photo} priority />
+          </Polaroid>
           <span
             aria-hidden="true"
             className="font-heading bg-orange text-darkestblue border-darkestblue absolute -top-6 -left-3 flex size-26 -rotate-12 items-center justify-center rounded-full border-2 p-3 text-center text-sm leading-tight font-extrabold sm:-left-8 sm:size-32 sm:text-base"
