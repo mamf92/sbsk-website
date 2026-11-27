@@ -52,6 +52,7 @@ import { memberPortalEnabled, portalRoutesEnabled, redesignEnabled } from './uti
 //
 // `RouteError` and `RouteFallback` are eager on purpose: see their own doc comments.
 const Calendar = React.lazy(() => import('./pages/Calendar'));
+const CalendarRedesign = React.lazy(() => import('./pages/CalendarRedesign'));
 const BoardGameMasters = React.lazy(() => import('./pages/BoardGameMasters'));
 const OurGames = React.lazy(() => import('./pages/OurGames'));
 const AboutUs = React.lazy(() => import('./pages/AboutUs'));
@@ -119,7 +120,11 @@ const router = createBrowserRouter(
             redesignEnabled
               ? { index: true, element: <HomeRedesign />, loader: homeRedesignLoader }
               : { index: true, element: <Home />, loader: homeLoader },
-            { path: 'kalender', element: <Calendar />, loader: calendarLoader },
+            {
+              path: 'kalender',
+              element: redesignEnabled ? <CalendarRedesign /> : <Calendar />,
+              loader: calendarLoader,
+            },
             {
               path: 'board-game-masters',
               element: <BoardGameMasters />,

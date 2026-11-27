@@ -5,7 +5,10 @@ import { stubSanityWithContent } from '../fixtures/sanity';
 // An axe scan of the new pages, in both themes. Serious and critical findings fail.
 
 // Each route with a landmark that proves the new page rendered.
-const ROUTES: [string, string][] = [['/', 'Neste spillkveld']];
+const ROUTES: [string, string][] = [
+  ['/', 'Neste spillkveld'],
+  ['/kalender', 'Sesongen på ett brett'],
+];
 
 for (const theme of ['light', 'dark'] as const) {
   for (const [route, region] of ROUTES) {

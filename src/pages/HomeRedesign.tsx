@@ -7,10 +7,9 @@ import { PosterGrid } from '../components/sections/redesign/UpcomingHighlights';
 import { MemberCorner } from '../components/sections/redesign/MemberCorner';
 import { SectionHeading } from '../components/ui/SectionHeading';
 import { TextLink } from '../components/ui/TextLink';
-import { RsvpButton } from '../components/ui/RsvpButton';
-import { AvatarStack } from '../components/ui/AvatarStack';
+import { EventSignUp } from '../components/sections/redesign/EventSignUp';
 import { useAuth } from '../hooks/authContext/authContext';
-import { toAvatarPeople, useRsvp } from '../hooks/useRsvp';
+import { useRsvp } from '../hooks/useRsvp';
 import { useMemberHome } from '../hooks/useMemberHome';
 import { useUnreadPosts } from '../hooks/useUnreadPosts';
 import { memberPortalEnabled } from '../utils/featureFlags';
@@ -51,42 +50,6 @@ export default function HomeRedesign() {
   const firstName = user?.name?.trim() || home?.me?.name || '';
   const fullName = [user?.name, user?.surname].filter(Boolean).join(' ').trim();
 
-  function signUp(event: CalendarEventTypes, size: 'md' | 'lg') {
-    const attending = rsvp.isAttending(event._id);
-    const attendees = rsvp.attendeesOf(event._id);
-    const hidden = attendees.filter((a) => a.hidden).length;
-    return (
-      <div className={`flex flex-wrap items-center gap-3 ${size === 'md' ? 'flex-col' : ''}`}>
-        <RsvpButton
-          attending={attending}
-          joinLabel={size === 'lg' ? 'Jeg kommer' : 'Meld meg på'}
-          attendingLabel={size === 'lg' ? 'Du kommer' : 'Påmeldt!'}
-          leaveLabel="Meld av"
-          ariaLabel={attending ? `Meld av ${event.title}` : `Meld på ${event.title}`}
-          size={size}
-          disabled={rsvp.pending[event._id]}
-          onClick={() => rsvp.toggle(event._id)}
-        />
-        {attendees.length > 0 && (
-          <span className="font-body flex items-center gap-2 text-sm">
-            <AvatarStack
-              people={toAvatarPeople(attendees)}
-              hiddenCount={hidden}
-              max={5}
-              size="xs"
-            />
-            {attendees.length} kommer
-          </span>
-        )}
-        {rsvp.errors[event._id] && (
-          <p role="alert" className="font-body w-full text-sm">
-            {rsvp.errors[event._id]}
-          </p>
-        )}
-      </div>
-    );
-  }
-
   const checkIns = home?.activity.checkIns;
   const sticker =
     checkIns === null || checkIns === undefined
@@ -117,7 +80,9 @@ export default function HomeRedesign() {
                 ) : null,
                 actions:
                   next && !next.festivalDay ? (
-                    <div className="pt-2">{signUp(next, 'lg')}</div>
+                    <div className="pt-2">
+                      <EventSignUp event={next} rsvp={rsvp} size="lg" />
+                    </div>
                   ) : null,
                 sticker,
               }
@@ -149,7 +114,9 @@ export default function HomeRedesign() {
                 : visitorAttendance(h)
             }
             actions={(h) =>
-              member && h.event && !h.event.festivalDay ? signUp(h.event, 'md') : undefined
+              member && h.event && !h.event.festivalDay ? (
+                <EventSignUp event={h.event} rsvp={rsvp} size="md" />
+              ) : undefined
             }
           />
         </section>
