@@ -30,6 +30,8 @@ import { downloadIcs, type IcsEventInput } from '../utils/ics';
 import { useEventsT } from '../i18n';
 import { pickLocale } from '../i18n/pickLocale';
 import { useLocale, useTranslatedContent } from '../hooks/locale/useLocale';
+import { redesignEnabled } from '../utils/featureFlags';
+import { EventPageRedesign } from '../components/sections/redesign/EventPageRedesign';
 
 const FestivalPage = lazy(() => import('../components/sections/FestivalPage/FestivalPage'));
 
@@ -45,6 +47,7 @@ export default function SingleEventPage() {
   const data = useLoaderData() as ArrangementData | { event: CalendarEventTypes };
   // A festival shares the URL space; its page is its own chunk, loaded only when one is opened.
   if ('kind' in data && data.kind === 'festival') return <FestivalPage festival={data.festival} />;
+  if (redesignEnabled) return <EventPageRedesign event={data.event} />;
   return <EventPage event={data.event} />;
 }
 

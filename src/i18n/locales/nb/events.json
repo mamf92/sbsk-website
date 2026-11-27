@@ -97,5 +97,21 @@
   "relatedPosts": "Innlegg om arrangementet",
   "addEventToCalendar": "Legg til {{title}} i kalenderen",
   "keyInfo": "Nøkkelinfo",
-  "addToCalendar": "Legg i kalenderen"
+  "addToCalendar": "Legg i kalenderen",
+  "redesign": {
+    "calendar": "Kalender",
+    "inShort": "Kort fortalt",
+    "goodToKnow": "Godt å vite",
+    "links": "Lenker",
+    "notice": "Beskjed",
+    "signupOpenUntil": "Påmelding åpen til {{date}}",
+    "signupOpen": "Påmelding åpen",
+    "category": {
+      "spillkveld": "Spillkveld",
+      "turnering": "Turnering",
+      "annet": "Arrangement"
+    },
+    "signupSoon": "Påmeldingen åpner snart",
+    "past": "Arrangementet er over"
+  }
 }
