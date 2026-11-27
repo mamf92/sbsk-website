@@ -53,6 +53,7 @@ import { memberPortalEnabled, portalRoutesEnabled, redesignEnabled } from './uti
 // `RouteError` and `RouteFallback` are eager on purpose: see their own doc comments.
 const Calendar = React.lazy(() => import('./pages/Calendar'));
 const CalendarRedesign = React.lazy(() => import('./pages/CalendarRedesign'));
+const CalendarAll = React.lazy(() => import('./pages/CalendarAll'));
 const BoardGameMasters = React.lazy(() => import('./pages/BoardGameMasters'));
 const OurGames = React.lazy(() => import('./pages/OurGames'));
 const AboutUs = React.lazy(() => import('./pages/AboutUs'));
@@ -139,7 +140,10 @@ const router = createBrowserRouter(
             { path: 'våre-partnere', element: <OurPartners /> },
             { path: 'innlegg/:id', element: <Post />, loader: postDetailLoader },
             ...(redesignEnabled
-              ? [{ path: 'innlegg', element: <Posts />, loader: allPostsLoader }]
+              ? [
+                  { path: 'innlegg', element: <Posts />, loader: allPostsLoader },
+                  { path: 'kalender/alle', element: <CalendarAll />, loader: calendarLoader },
+                ]
               : []),
             // Gated behind #213: no member/board portal for the MVP launch, so these four
             // routes are absent from the production build and fall through to the catch-all

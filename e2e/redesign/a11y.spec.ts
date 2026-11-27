@@ -8,6 +8,11 @@ import { stubSanityWithContent } from '../fixtures/sanity';
 const ROUTES: [string, string][] = [
   ['/', 'Neste spillkveld'],
   ['/kalender', 'Sesongen på ett brett'],
+  ['/kalender/alle', 'Neste arrangement'],
+  [
+    '/kalender/alle?visning=maned',
+    `I ${new Date().toLocaleDateString('nb-NO', { month: 'long', timeZone: 'Europe/Oslo' })}`,
+  ],
 ];
 
 for (const theme of ['light', 'dark'] as const) {

@@ -83,7 +83,7 @@ export function SeasonBoard({
                         return (
                           <li key={key}>
                             <Link
-                              to={`/kalender/alle?visning=maned&maned=${month.key}&dag=${day.slice(8)}`}
+                              to={`/kalender/alle?visning=maned&maned=${month.key}&dag=${day}`}
                               className={`font-body lift flex items-start gap-1.5 px-1.5 py-1 text-xs leading-tight font-bold ${
                                 eventCategory(event.category).chip
                               } ${mine ? 'outline-success outline-3' : 'dark:outline dark:outline-white/50'}`}
