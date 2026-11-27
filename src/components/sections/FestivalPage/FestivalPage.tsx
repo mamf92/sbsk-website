@@ -38,6 +38,8 @@ import {
 } from '../../../utils/festival';
 import { safeLinkUrl } from '../../../utils/safeUrl';
 import { signupState } from '../../../utils/signup';
+import { redesignEnabled } from '../../../utils/featureFlags';
+import { FestivalPageRedesign } from '../redesign/FestivalPageRedesign';
 
 const SITE = 'Stavanger Brettspillklubb';
 const h2 = 'font-heading text-h3 font-bold';
@@ -62,6 +64,12 @@ function LocaleRichText({ value }: { value: LocaleBlock | undefined }) {
  * to contact, built from the same primitives as a single event, so a later reskin reaches both.
  */
 export default function FestivalPage({ festival }: { festival: FestivalTypes }) {
+  // The new design only in the /redesign/ preview build (`VITE_ENABLE_REDESIGN`).
+  if (redesignEnabled) return <FestivalPageRedesign festival={festival} />;
+  return <FestivalPageCurrent festival={festival} />;
+}
+
+function FestivalPageCurrent({ festival }: { festival: FestivalTypes }) {
   useTranslatedContent();
   const t = useEventsT();
   const { locale } = useLocale();

@@ -109,9 +109,24 @@
     "category": {
       "spillkveld": "Game night",
       "turnering": "Tournament",
-      "annet": "Event"
+      "annet": "Event",
+      "bgm": "Tournament"
     },
     "signupSoon": "Sign-up opens soon",
-    "past": "This event is over"
+    "past": "This event is over",
+    "festivalCategory": "Festival",
+    "festivalWhole": "Add the whole festival to your calendar",
+    "programmeComing": "The programme is coming. It will be posted here when it is ready.",
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days",
+    "chooseDay": "Choose day",
+    "dayCalendar": "Add the day to your calendar",
+    "faqContact": "Didn't find the answer? Email",
+    "questions_one": "{{count}} question",
+    "questions_other": "{{count}} questions",
+    "about": "About {{name}}",
+    "howItWorks": "How it works",
+    "galleryKicker": "Gallery",
+    "signupComing": "Sign-up coming soon"
   }
 }
