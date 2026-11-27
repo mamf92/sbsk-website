@@ -3,9 +3,7 @@ name: CI
 on:
   pull_request:
   push:
-    # `redesign` is the long-lived UI refresh branch; its green pushes feed the preview at
-    # /<repo>/redesign/ through .github/workflows/preview.yml.
-    branches: [main, redesign]
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
