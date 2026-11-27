@@ -66,7 +66,7 @@ test('typing in search does not refetch the calendar', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Alle arrangementer' })).toBeVisible();
   let fetches = 0;
   page.on('request', (request) => {
-    if (request.url().includes('api.sanity.io')) fetches += 1;
+    if (new URL(request.url()).hostname.endsWith('.api.sanity.io')) fetches += 1;
   });
   await page
     .getByRole('searchbox', { name: 'Søk i alle arrangementer' })
