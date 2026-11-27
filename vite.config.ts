@@ -43,9 +43,9 @@ function calendarFeed(siteUrl: string): Plugin {
     apply: 'build',
     async generateBundle() {
       try {
-        const { events, eventsFailed } = await calendarLoader();
-        if (eventsFailed || events.length === 0) {
-          this.warn(`${CALENDAR_FEED_FILE} skipped: no events from Sanity`);
+        const { events, eventsFailed, festivalsFailed } = await calendarLoader();
+        if (eventsFailed || festivalsFailed || events.length === 0) {
+          this.warn(`${CALENDAR_FEED_FILE} skipped: Sanity did not return the whole calendar`);
           return;
         }
         this.emitFile({

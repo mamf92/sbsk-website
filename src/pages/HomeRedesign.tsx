@@ -45,7 +45,7 @@ export default function HomeRedesign() {
     (event): event is CalendarEventTypes => !!event && !event.festivalDay,
   );
   const rsvp = useRsvp(member ? rsvpEvents : []);
-  const home = useMemberHome();
+  const home = useMemberHome(member);
   const isNew = useUnreadPosts(member);
   const firstName = user?.name?.trim() || home?.me?.name || '';
   const fullName = [user?.name, user?.surname].filter(Boolean).join(' ').trim();

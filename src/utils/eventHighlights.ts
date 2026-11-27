@@ -58,6 +58,8 @@ export interface Highlight {
   title: string;
   start: Date;
   end: Date;
+  /** Only dates are known: the poster shows «Hele dagen» rather than 00:00–23:59. */
+  allDay?: boolean;
   location?: string;
   /** Where the poster links; null when the event has no page. */
   href: string | null;
@@ -81,6 +83,7 @@ export function eventHighlights(events: CalendarEventTypes[], now: Date): Highli
       const existing = festivals.get(event.festival.slug);
       if (existing) {
         if (end > existing.end) existing.end = end;
+        existing.allDay = existing.allDay && !!event.allDay;
         continue;
       }
       const highlight: Highlight = {
@@ -89,6 +92,7 @@ export function eventHighlights(events: CalendarEventTypes[], now: Date): Highli
         title: event.festival.name,
         start,
         end,
+        allDay: !!event.allDay,
         location: event.location,
         href: `/arrangementer/${event.festival.slug}`,
         image: event.festival.image ?? null,
@@ -103,6 +107,7 @@ export function eventHighlights(events: CalendarEventTypes[], now: Date): Highli
       title: event.title,
       start,
       end,
+      allDay: !!event.allDay,
       location: event.location,
       href: eventDetailPath(event),
       image: event.image ?? null,

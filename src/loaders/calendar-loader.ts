@@ -21,5 +21,8 @@ export async function calendarLoader() {
       ? []
       : [...(events.data ?? []), ...(festivals.data ?? []).flatMap(festivalDayRows)],
     eventsFailed: events.failed,
+    // The page shows the events without festival days; the subscription feed must not, or
+    // calendar apps would delete the festival entries (see vite.config.ts).
+    festivalsFailed: festivals.failed,
   };
 }

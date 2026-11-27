@@ -167,3 +167,21 @@ export function formatDayLong(date: Date, locale: Locale): string {
 export function formatDate(date: Date, locale: Locale): string {
   return format(date, dateLocale(locale), { day: 'numeric', month: 'long', year: 'numeric' });
 }
+
+/**
+ * The short time of an event on a poster or agenda row: «17:00–22:00», «Hele dagen», an
+ * evening past midnight as «18:00–01:00», a span of days as «28.–31. jan», and one that crosses
+ * a month as «30. jan–1. feb».
+ */
+export function shortTimeText(start: Date, end: Date, allDay = false): string {
+  const days = osloDaysBetween(start, end);
+  if (days === 0) return allDay ? 'Hele dagen' : `${clockTime(start)}–${clockTime(end)}`;
+  if (days === 1 && !allDay && Number(clockTime(end).slice(0, 2)) < 12) {
+    return `${clockTime(start)}–${clockTime(end)}`;
+  }
+  const startMonth = monthAbbreviation(start).toLowerCase();
+  const endMonth = monthAbbreviation(end).toLowerCase();
+  return startMonth === endMonth
+    ? `${dayOfMonth(start)}.–${dayOfMonth(end)}. ${endMonth}`
+    : `${dayOfMonth(start)}. ${startMonth}–${dayOfMonth(end)}. ${endMonth}`;
+}

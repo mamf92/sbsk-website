@@ -26,6 +26,7 @@ import {
   dayOfMonth,
   monthAbbreviation,
   osloDaysBetween,
+  shortTimeText,
   timeRange,
   weekdayAbbreviation,
 } from '../../utils/eventDateFormat';
@@ -663,7 +664,7 @@ export function EventRow({
                 <Highlighted text={event.title} query={highlight} />
               </h3>
               <span className="font-body text-sm opacity-85">
-                {event.allDay ? 'Hele dagen' : timeRange(start, end).replace(/^\S+\s/, '')}
+                {shortTimeText(start, end, event.allDay)}
                 {event.location ? ' · ' : ''}
                 {event.location && <Highlighted text={event.location} query={highlight} />}
               </span>

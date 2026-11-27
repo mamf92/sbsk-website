@@ -3,8 +3,8 @@ name: Nightly rebuild
 # The site is static, so `kalender.ics` (the calendar subscription feed, built from Sanity by
 # vite.config.ts) is only as fresh as the last deploy. This rebuilds `main` and redeploys it every
 # night, so an event an editor adds in the Studio reaches subscribers' calendars by morning
-# without anyone merging anything. It deploys exactly what CI already deployed from `main`, with
-# fresh content, so it runs no checks of its own.
+# without anyone merging anything. It rebuilds the newest `main` commit that CI itself deployed
+# (its checks all passed), never a newer one whose checks failed, so it runs no checks of its own.
 
 on:
   schedule:
@@ -23,6 +23,7 @@ jobs:
 
     permissions:
       contents: read
+      actions: read
       pages: write
       id-token: write
 
@@ -36,9 +37,21 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
+      - name: Find the last commit CI deployed
+        id: deployed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        # CI's deploy job only runs when every check passed, so a successful push run on main is
+        # a commit that is safe to rebuild.
+        run: |
+          sha="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow ci.yml --branch main \
+            --event push --status success --limit 1 --json headSha --jq '.[0].headSha')"
+          if [ -z "$sha" ]; then echo "No successful CI run on main" >&2; exit 1; fi
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: main
+          ref: ${{ steps.deployed.outputs.sha }}
       - uses: ./.github/actions/setup
 
       - name: Build live site and redesign preview
