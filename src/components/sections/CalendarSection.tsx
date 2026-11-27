@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { eventDetailPath } from '../../utils/eventLinks';
 import { Link, useNavigate } from 'react-router-dom';
 import { PortableText, toPlainText } from '@portabletext/react';
@@ -513,17 +513,59 @@ function EventList({ events, failed }: { events: CalendarEventTypes[]; failed?: 
 /* Row                                                                         */
 /* -------------------------------------------------------------------------- */
 
-function EventRow({
+/** Wraps each match of `query` in a `<mark>`, case-insensitively. */
+function Highlighted({ text, query }: { text: string; query?: string }) {
+  const q = query?.trim().toLowerCase();
+  if (!q) return <>{text}</>;
+  const parts: ReactNode[] = [];
+  let from = 0;
+  let at = text.toLowerCase().indexOf(q);
+  while (at >= 0) {
+    parts.push(text.slice(from, at));
+    parts.push(
+      <mark key={at} className="bg-orange text-darkestblue">
+        {text.slice(at, at + q.length)}
+      </mark>,
+    );
+    from = at + q.length;
+    at = text.toLowerCase().indexOf(q, from);
+  }
+  parts.push(text.slice(from));
+  return <>{parts}</>;
+}
+
+const AGENDA_LABEL: Record<Category, string> = {
+  spillkveld: 'Spillkveld',
+  turnering: 'Turnering',
+  annet: 'Annet',
+};
+
+/**
+ * One event in a calendar list: the date block, time and place, title, the member's sign-up,
+ * and a panel that opens with the description, image and links.
+ *
+ * `variant="agenda"` is the tighter row of the new «Alle arrangementer» page (behind
+ * `redesignEnabled`): a white row where only the date block carries the category colour, a small
+ * category label, the search term highlighted, and past events greyed with «Har vært».
+ */
+export function EventRow({
   event,
   rsvp,
   expanded,
   onToggle,
+  variant = 'card',
+  highlight,
+  past = false,
 }: {
   event: CalendarEventTypes;
   rsvp: ReturnType<typeof useRsvp>;
   expanded: boolean;
   onToggle: () => void;
+  variant?: 'card' | 'agenda';
+  highlight?: string;
+  past?: boolean;
 }) {
+  const agenda = variant === 'agenda';
   const navigate = useNavigate();
   const styles = categoryStyles(event.category);
   const start = new Date(event.eventStartTime);
@@ -555,7 +597,8 @@ function EventRow({
       data-expanded={expanded}
       className={[
         'w-full border border-black dark:border-white',
-        styles.surface,
+        agenda ? 'dark:bg-darkestblue text-darkestblue bg-white dark:text-white' : styles.surface,
+        agenda && past ? 'opacity-75' : '',
         expandable || linksOut ? 'lift-card' : '',
       ].join(' ')}
     >
@@ -564,37 +607,79 @@ function EventRow({
           expandable ? onToggle : linksOut && detailPath ? () => navigate(detailPath) : undefined
         }
         className={[
-          'flex min-h-27 items-stretch',
-          styles.surfaceTone,
+          agenda ? 'flex min-h-20 items-stretch' : 'flex min-h-27 items-stretch',
+          agenda ? '' : styles.surfaceTone,
           expandable || linksOut ? 'cursor-pointer select-none' : '',
         ].join(' ')}
       >
-        {/* Full-bleed date block — the number runs to the edges of its column. */}
-        <div
-          className={[
-            'flex w-20 flex-none flex-col items-center justify-center p-1 sm:w-25',
-            styles.accent,
-          ].join(' ')}
-        >
-          <span className="font-heading sm:text-daymark text-5xl leading-[0.78] font-extrabold">
-            {dayOfMonth(start)}
-          </span>
-          <span className="font-heading text-base font-bold tracking-[0.18em] uppercase">
-            {monthAbbreviation(start)}
-          </span>
-        </div>
-
-        <div className="relative flex flex-1 flex-wrap items-center gap-4 p-4 pr-12 sm:flex-nowrap sm:gap-5">
-          <div className="flex min-w-0 flex-[1_1_100%] flex-col gap-1 sm:flex-1">
-            <span className="font-body text-xs opacity-85">
-              {event.allDay ? weekdayAbbreviation(start) : timeRange(start, end)}
-              {event.location ? ` · ${event.location}` : ''}
+        {agenda ? (
+          <div
+            className={[
+              'flex w-16 flex-none flex-col items-center justify-center py-2 sm:w-20',
+              past
+                ? 'bg-gray-300 text-gray-800 dark:bg-white/15 dark:text-white'
+                : `${styles.surface} ${styles.surfaceTone}`,
+            ].join(' ')}
+          >
+            <span className="font-heading text-xs font-extrabold tracking-[0.16em] uppercase">
+              {weekdayAbbreviation(start)}
             </span>
-            <h3 className="font-heading text-h3 font-bold">{event.title}</h3>
+            <span className="font-heading text-4xl leading-none font-extrabold">
+              {dayOfMonth(start)}
+            </span>
+            <span className="font-heading text-xs font-bold tracking-[0.16em] uppercase">
+              {monthAbbreviation(start)}
+            </span>
           </div>
+        ) : (
+          /* Full-bleed date block — the number runs to the edges of its column. */
+          <div
+            className={[
+              'flex w-20 flex-none flex-col items-center justify-center p-1 sm:w-25',
+              styles.accent,
+            ].join(' ')}
+          >
+            <span className="font-heading sm:text-daymark text-5xl leading-[0.78] font-extrabold">
+              {dayOfMonth(start)}
+            </span>
+            <span className="font-heading text-base font-bold tracking-[0.18em] uppercase">
+              {monthAbbreviation(start)}
+            </span>
+          </div>
+        )}
+
+        <div
+          className={`relative flex flex-1 flex-wrap items-center pr-12 sm:flex-nowrap ${
+            agenda ? 'gap-3 p-3 sm:gap-4 sm:px-4' : 'gap-4 p-4 sm:gap-5'
+          }`}
+        >
+          {agenda ? (
+            <div className="flex min-w-0 flex-[1_1_100%] flex-col gap-0.5 sm:flex-1">
+              <span className="text-darkestorange dark:text-orange text-xs font-bold tracking-[0.06em] uppercase">
+                {past ? 'Har vært · ' : ''}
+                {event.festivalDay ? 'Festival' : AGENDA_LABEL[event.category]}
+              </span>
+              <h3 className="font-heading text-base leading-snug font-bold sm:text-lg">
+                <Highlighted text={event.title} query={highlight} />
+              </h3>
+              <span className="font-body text-sm opacity-85">
+                {event.allDay ? 'Hele dagen' : timeRange(start, end).replace(/^\S+\s/, '')}
+                {event.location ? ' · ' : ''}
+                {event.location && <Highlighted text={event.location} query={highlight} />}
+              </span>
+            </div>
+          ) : (
+            <div className="flex min-w-0 flex-[1_1_100%] flex-col gap-1 sm:flex-1">
+              <span className="font-body text-xs opacity-85">
+                {event.allDay ? weekdayAbbreviation(start) : timeRange(start, end)}
+                {event.location ? ` · ${event.location}` : ''}
+              </span>
+              <h3 className="font-heading text-h3 font-bold">{event.title}</h3>
+            </div>
+          )}
 
           {/* Members-only. Kept as one block so avatars and the RSVP wrap together. */}
-          {rsvp.loggedIn && !event.festivalDay && (
+          {rsvp.loggedIn && !event.festivalDay && !past && (
             <div
               className="flex flex-[1_1_100%] flex-wrap items-center gap-3 sm:flex-none"
               onClick={(clickEvent) => clickEvent.stopPropagation()}
@@ -612,7 +697,7 @@ function EventRow({
                 joinLabel="Bli med"
                 attendingLabel="Påmeldt!"
                 leaveLabel="Meld av"
-                joinVariant={styles.surfaceButtonVariant}
+                joinVariant={agenda ? 'primary' : styles.surfaceButtonVariant}
                 disabled={rsvp.pending[event._id]}
                 ariaLabel={attending ? `Meld deg av ${event.title}` : `Meld deg på ${event.title}`}
                 onClick={() => rsvp.toggle(event._id)}
