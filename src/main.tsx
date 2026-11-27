@@ -21,6 +21,7 @@ import { arrangementLoader, boardGameMastersLoader } from './sanity/queryHelpers
 import { calendarLoader } from './loaders/calendar-loader';
 import { ourGamesLoader } from './loaders/our-games-loader';
 import { aboutUsLoader } from './loaders/about-us-loader';
+import { becomeAMemberLoader } from './loaders/become-a-member-loader';
 import {
   adminCheckInEventLoader,
   adminCheckInListLoader,
@@ -120,7 +121,7 @@ const router = createBrowserRouter(
             { path: 'våre-spill', element: <OurGames />, loader: ourGamesLoader },
             { path: 'om-oss', element: <AboutUs />, loader: aboutUsLoader },
             { path: 'kontakt-oss', element: <ContactUs /> },
-            { path: 'bli-medlem', element: <BecomeAMember /> },
+            { path: 'bli-medlem', element: <BecomeAMember />, loader: becomeAMemberLoader },
             { path: 'arrangementer', element: <Events />, loader: eventsListLoader },
             { path: 'arrangementer/:id', element: <Event />, loader: arrangementLoader },
             { path: 'våre-partnere', element: <OurPartners /> },

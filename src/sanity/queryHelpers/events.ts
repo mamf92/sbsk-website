@@ -142,3 +142,16 @@ export async function calendarEventsLoader() {
   // this resolves to `[]` rather than throwing the way the upcoming-only list does.
   return { events: events ?? [] };
 }
+
+// Bli medlem's «Mens du venter»: the one next game night, nothing else. Uses the row
+// projection so the result is an ordinary calendar row.
+export const NEXT_GAME_NIGHT_QUERY = `*[
+  _type == "event" && category == "spillkveld" && eventEndTime >= now()
+] | order(eventStartTime asc)[0]{
+  ${EVENT_ROW_PROJECTION}
+}`;
+
+/** The next game night, or `null` when none is in the calendar. */
+export async function nextGameNightLoader(): Promise<CalendarEventTypes | null> {
+  return (await client.fetch<CalendarEventTypes | null>(NEXT_GAME_NIGHT_QUERY)) ?? null;
+}

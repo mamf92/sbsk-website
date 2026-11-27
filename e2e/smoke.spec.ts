@@ -100,8 +100,10 @@ for (const { route, heading } of placeholderRoutes) {
 test('/bli-medlem is the application form, with one h1', async ({ page }) => {
   await page.goto('/bli-medlem');
   await expect(page.locator('h1')).toHaveCount(1);
-  await expect(page.getByRole('heading', { level: 1, name: 'Bli medlem' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Send søknad' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Få din plass ved bordet' }),
+  ).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Meld meg inn' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'personvernerklæringen' })).toHaveAttribute(
     'href',
     /\/personvern$/,

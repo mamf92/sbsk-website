@@ -73,6 +73,10 @@
   --color-gray-100: #f5f5fe;
   --color-gray-300: #d9d9d9;
   --color-gray-500: #595959;
+  /* Paper: the fill of a form or note that should read as a printed sheet on a dark band
+     (Bli medlem's form card). Light in both themes, so whatever sits on it takes
+     `surface-light` and dark ink. darkestblue on it measures 14.9:1. */
+  --color-cream: #faf3e4;
 
   /* ---------------------------------------------------------------------
      Semantic colours. Deliberately partial: the library defines a full
@@ -247,6 +251,9 @@
   --shadow-1: 2px 2px 0 var(--hard-shadow-color);
   --shadow-2: 4px 4px 0 var(--hard-shadow-color);
   --shadow-3: 6px 6px 0 var(--hard-shadow-color);
+  /* A sheet resting on a band rather than a pressable surface: never lifts, so it is not part
+     of the lift utilities. Used by the Bli medlem form card. */
+  --shadow-4: 10px 10px 0 var(--hard-shadow-color);
 
   /* The accent pair is the library's, and is deliberately not what `surface-dark` uses: an
      orange shadow under a `variant="primary"` button is orange-on-orange, so the button reads
@@ -254,6 +261,7 @@
      shadow on a non-orange element; not part of the lift utilities. */
   --shadow-accent-1: 2px 2px 0 var(--color-orange);
   --shadow-accent-2: 4px 4px 0 var(--color-orange);
+  --shadow-accent-4: 10px 10px 0 var(--color-orange);
   /* Field state, painted as the brand's hard offset rather than a coloured border alone —
      `Input`/`Textarea` land these via `fieldStateShadow()` in `fieldClasses.ts`. Deliberately
      not built on `--hard-shadow-color`: that token is a *surface* property that
@@ -728,4 +736,11 @@
 
 @utility surface-light {
   --hard-shadow-color: var(--color-darkestblue);
+}
+
+/* The faint dot grid on a dark brand band (Bli medlem's hero, the membership card face). White
+   at 7% so it reads as texture, never as content. Put it on the element that paints the fill. */
+@utility dot-pattern {
+  background-image: radial-gradient(circle, rgb(255 255 255 / 0.07) 2px, transparent 2.6px);
+  background-size: 22px 22px;
 }
