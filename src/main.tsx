@@ -7,6 +7,7 @@ import { ThemeProvider } from './hooks/theme/ThemeProvider';
 import './index.css';
 import App from './App';
 import Home from './pages/Home';
+import HomeRedesign from './pages/HomeRedesign';
 import { initTheme } from './utils/theme';
 import { initMotion } from './utils/motion';
 import { recoverFromStaleChunks } from './utils/staleChunkReload';
@@ -15,8 +16,9 @@ import StudioRoute from './pages/StudioRoute';
 import RouteError from './components/sections/RouteError';
 import RouteFallback from './components/sections/RouteFallback';
 import { homeLoader } from './loaders/home-loader';
+import { homeRedesignLoader } from './loaders/home-redesign-loader';
 import { eventsListLoader } from './sanity/queryHelpers/events';
-import { postDetailLoader } from './sanity/queryHelpers/posts';
+import { allPostsLoader, postDetailLoader } from './sanity/queryHelpers/posts';
 import { arrangementLoader, boardGameMastersLoader } from './sanity/queryHelpers/festivals';
 import { calendarLoader } from './loaders/calendar-loader';
 import { ourGamesLoader } from './loaders/our-games-loader';
@@ -35,7 +37,7 @@ import { memberCardLoader } from './loaders/member-card-loader';
 import { onboardingLoader } from './loaders/onboarding-loader';
 import { twoFactorChallengeLoader, twoFactorSetupLoader } from './loaders/two-factor-loaders';
 import { newPasswordLoader } from './loaders/new-password-loader';
-import { memberPortalEnabled, portalRoutesEnabled } from './utils/featureFlags';
+import { memberPortalEnabled, portalRoutesEnabled, redesignEnabled } from './utils/featureFlags';
 
 // Every page below the home page is its own chunk. Lighthouse measured ~58% of the entry bundle
 // unused on the home page (#222) — that was thirteen other pages' markup and component trees,
@@ -78,6 +80,7 @@ const TwoFactorChallenge = React.lazy(() => import('./pages/TwoFactorChallenge')
 const TwoFactorSetup = React.lazy(() => import('./pages/TwoFactorSetup'));
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 const Post = React.lazy(() => import('./pages/PostPage'));
+const Posts = React.lazy(() => import('./pages/Posts'));
 
 // Must run before createBrowserRouter below reads window.location. See public/404.html and
 // src/utils/githubPagesRedirect.ts for what this undoes (#22).
@@ -111,7 +114,11 @@ const router = createBrowserRouter(
           // above would replace `<App />` and blank the header and footer on every cold load.
           hydrateFallbackElement: <RouteFallback />,
           children: [
-            { index: true, element: <Home />, loader: homeLoader },
+            // The new front page and calendar replace today's only in the /redesign/ preview
+            // build (`VITE_ENABLE_REDESIGN`, see `.github/actions/build-site`).
+            redesignEnabled
+              ? { index: true, element: <HomeRedesign />, loader: homeRedesignLoader }
+              : { index: true, element: <Home />, loader: homeLoader },
             { path: 'kalender', element: <Calendar />, loader: calendarLoader },
             {
               path: 'board-game-masters',
@@ -126,6 +133,9 @@ const router = createBrowserRouter(
             { path: 'arrangementer/:id', element: <Event />, loader: arrangementLoader },
             { path: 'våre-partnere', element: <OurPartners /> },
             { path: 'innlegg/:id', element: <Post />, loader: postDetailLoader },
+            ...(redesignEnabled
+              ? [{ path: 'innlegg', element: <Posts />, loader: allPostsLoader }]
+              : []),
             // Gated behind #213: no member/board portal for the MVP launch, so these four
             // routes are absent from the production build and fall through to the catch-all
             // 404 below. `memberPortalEnabled` is true in unit tests and the Playwright config

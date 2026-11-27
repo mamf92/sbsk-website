@@ -25,13 +25,14 @@ export function isGameNight(event: CalendarEventTypes): boolean {
 }
 
 /**
- * Special: a festival day, a tournament or «annet» event, or a game night the editors gave its
- * own page (a themed night such as Julespillkveld). An ordinary game night is routine.
+ * Special: a festival day, a tournament or «annet» event, or a game night the editors marked
+ * out with its own page or its own image (a themed night such as Julespillkveld). An ordinary
+ * game night, with neither, is routine.
  */
 export function isSpecialEvent(event: CalendarEventTypes): boolean {
   if (event.festivalDay) return true;
   if (event.category !== 'spillkveld') return true;
-  return !!event.hasDetailPage;
+  return !!event.hasDetailPage || !!event.image;
 }
 
 /** The next game night that has not ended, or else the next event of any kind. */
@@ -118,3 +119,10 @@ export const KIND_LABEL: Record<HighlightKind, string> = {
   annet: 'Annet',
   spillkveld: 'Spillkveld',
 };
+
+/** The third fact on a poster for a visitor: what they need to know about coming. */
+export function visitorAttendance(highlight: Highlight): string {
+  if (highlight.kind === 'festival') return 'Program';
+  if (highlight.kind === 'spillkveld') return 'Åpent for alle';
+  return 'Påmelding';
+}

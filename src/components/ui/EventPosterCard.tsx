@@ -25,7 +25,7 @@ export type EventPosterCardProps = {
   attendance: string;
   /** Extra actions under the facts, such as a member's sign-up. */
   actions?: ReactNode;
-  /** A wide poster spanning two grid columns (the festival on the calendar). */
+  /** A wide poster: a 21:9 image and a larger title, for a card that spans its row. */
   wide?: boolean;
 };
 
@@ -57,9 +57,7 @@ export function EventPosterCard({
     : posterArt(kind, title);
   return (
     <article
-      className={`dark:bg-darkblue surface-light dark:surface-dark text-darkestblue border-darkestblue relative flex flex-col border-2 bg-white dark:border-white dark:text-white ${
-        wide ? 'md:col-span-2' : ''
-      }`}
+      className={`dark:bg-darkblue surface-light dark:surface-dark text-darkestblue border-darkestblue relative flex w-full min-w-0 flex-col border-2 bg-white dark:border-white dark:text-white`}
     >
       <div className="relative">
         <img
@@ -76,7 +74,7 @@ export function EventPosterCard({
         <DateStamp start={start} end={end} className="absolute right-4 -bottom-7" />
       </div>
       <div className="flex flex-1 flex-col p-4 pt-5">
-        <p className="text-darkorange dark:text-orange m-0 pr-24 text-xs font-bold tracking-[0.04em] uppercase">
+        <p className="text-darkestorange dark:text-orange m-0 pr-24 text-xs font-bold tracking-[0.04em] uppercase">
           {KIND_LABEL[kind]}
           {place ? ` · ${place}` : ''}
         </p>

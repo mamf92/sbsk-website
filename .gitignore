@@ -13,6 +13,7 @@
 
 # Build files
 /dist
+/dist-redesign
 /build
 
 # Lint cache — lint-staged runs `eslint --cache` on every commit.
