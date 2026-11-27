@@ -82,6 +82,10 @@ describe('isSpecialEvent', () => {
     expect(isSpecialEvent(bgmFri)).toBe(true);
     expect(isSpecialEvent(jul)).toBe(true);
   });
+
+  it('treats a game night with its own image as special', () => {
+    expect(isSpecialEvent({ ...night, image: { asset: { _ref: 'image-x' } } })).toBe(true);
+  });
 });
 
 describe('nextGameNight', () => {

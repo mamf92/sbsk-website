@@ -139,6 +139,11 @@ export async function eventsListLoader() {
   return { events };
 }
 
+/** Every event that has not ended, soonest first: the new front page's hero, ticker and posters. */
+export async function upcomingEventsLoader(): Promise<CalendarEventTypes[]> {
+  return (await client.fetch<CalendarEventTypes[] | null>(EVENTS_LIST_QUERY)) ?? [];
+}
+
 export async function calendarEventsLoader() {
   const events = await client.fetch<CalendarEventTypes[]>(CALENDAR_EVENTS_QUERY);
   // An empty archive is a legitimate state — the calendar renders its own empty copy — so

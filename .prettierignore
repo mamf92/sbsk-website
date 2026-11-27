@@ -1,5 +1,6 @@
 node_modules
 dist
+dist-redesign
 build
 
 # Agent worktrees are separate checkouts with their own build and test output.

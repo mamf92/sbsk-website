@@ -74,6 +74,25 @@ export async function postDetailLoader({ params }: LoaderFunctionArgs) {
   return { post };
 }
 
+// `/innlegg`: every post, newest first. Capped so the page cannot grow unbounded.
+const ALL_POSTS_QUERY = `*[
+  _type == "post"
+  && defined(slug.current)
+]|order(publishedAt desc)[0...100]{${POST_FIELDS}
+}`;
+
+export async function allPostsLoader(): Promise<{ posts: PostTypes[]; failed: boolean }> {
+  try {
+    return {
+      posts: (await client.fetch<PostTypes[] | null>(ALL_POSTS_QUERY)) ?? [],
+      failed: false,
+    };
+  } catch (error) {
+    console.error('Posts failed to load:', error);
+    return { posts: [], failed: true };
+  }
+}
+
 export async function postsLoader() {
   return { posts: await client.fetch<PostTypes[]>(POSTS_QUERY) };
 }
