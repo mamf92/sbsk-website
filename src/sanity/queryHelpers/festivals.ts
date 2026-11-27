@@ -196,6 +196,8 @@ export interface FestivalCalendarTypes {
   slug: string;
   series?: 'bgm' | 'annet';
   venue?: { name?: string } | null;
+  /** The poster art on the new calendar and front page («Kommende høydepunkter»). */
+  heroImage?: SanityImageSource | null;
   days?: (Pick<FestivalDayTypes, '_key' | 'date' | 'label' | 'opens' | 'closes' | 'sessions'> & {
     venue?: { name?: string } | null;
   })[];
@@ -207,6 +209,7 @@ export const FESTIVAL_CALENDAR_QUERY = `*[_type == "festival" && defined(slug.cu
   "slug": slug.current,
   series,
   venue{ name },
+  heroImage,
   days[]{ _key, date, label, opens, closes, venue{ name }, sessions[]{ _key, start, end } }
 }`;
 

@@ -40,6 +40,9 @@ export interface CalendarEventTypes {
   /** A row made from a festival day, not an event document: it has no RSVP of its own, since
    *  the festival's sign-up lives on its page. Set in TypeScript, never by a query. */
   festivalDay?: boolean;
+  /** The festival a festival-day row belongs to, so the new pages can show the whole festival as
+   *  one poster. Set in TypeScript, never by a query. */
+  festival?: { slug: string; name: string; image?: SanityImageSource | null };
   /** Only the date is known (a festival day announced without hours): show no times. */
   allDay?: boolean;
   /** Detail page only. Falls back to the deprecated `signupUrl` field in the query. */

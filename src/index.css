@@ -33,12 +33,38 @@
   }
 }
 
+/* Noto Sans in three real weights. Before 27 Nov 2026 only Regular shipped, declared for the
+   whole 100–900 range, so every bold heading was the browser's synthetic bold. Bold and
+   ExtraBold are the Latin subsets from Fontsource (SIL OFL 1.1), self-hosted so the CSP needs no
+   font host. A character outside the subset's `unicode-range` (★, →) falls back to Regular. */
 @font-face {
   font-family: 'Noto Sans';
   src: url('/fonts/NotoSans-Regular.ttf') format('truetype');
-  font-weight: 100 900;
+  font-weight: 100 600;
   font-style: normal;
   font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans';
+  src: url('/fonts/NotoSans-Bold-latin.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Noto Sans';
+  src: url('/fonts/NotoSans-ExtraBold-latin.woff2') format('woff2');
+  font-weight: 800 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 @font-face {
@@ -170,6 +196,17 @@
      against the month abbreviation under them. */
   --text-daymark: 4.125rem;
   --text-daymark--line-height: 0.78;
+
+  /* The new front page's hero date («Torsdag 26. november») and the calendar's title band.
+     Fluid, like `--text-display`, but a step larger: on those two pages the date or the title is
+     the whole message of the band. 42px on a phone, 80px from 1250px up. */
+  --text-poster: clamp(2.625rem, 6.4vw, 5rem);
+  --text-poster--line-height: 0.95;
+
+  /* A section title on the new front page and calendar («Oppslagstavla», «Tre trekk…»): one step
+     above `--text-h1`, because each sits alone at the top of a full-width band. */
+  --text-section: clamp(2rem, 4vw, 2.5rem);
+  --text-section--line-height: 1.15;
 
   --tracking-heading: 0.05em;
 
@@ -743,4 +780,40 @@
 @utility dot-pattern {
   background-image: radial-gradient(circle, rgb(255 255 255 / 0.07) 2px, transparent 2.6px);
   background-size: 22px 22px;
+}
+
+/* A paper object pinned or dropped onto a band (a notice, a polaroid, a date stamp) sits a
+   little crooked. `tilt-*` sets the angle; `tilt-straighten` puts it square under a real pointer,
+   which is the hover feedback for a tilted link. The rotation itself is not motion, so reduced
+   motion keeps the angle and only drops the travel. */
+@utility tilt-left {
+  rotate: -1.2deg;
+}
+
+@utility tilt-right {
+  rotate: 1deg;
+}
+
+@utility tilt-left-lg {
+  rotate: -2.5deg;
+}
+
+@utility tilt-right-lg {
+  rotate: 2.5deg;
+}
+
+@utility tilt-straighten {
+  transition: rotate var(--transition-snappy);
+
+  @variant hover {
+    rotate: 0deg;
+  }
+
+  &:focus-visible {
+    rotate: 0deg;
+  }
+
+  @variant motion-reduce {
+    transition: none;
+  }
 }

@@ -725,3 +725,20 @@ The first piece of the round 3 look, adopted on `/bli-medlem`. Three tokens, all
 
 Shared pieces: `Eyebrow`, `StepStrip`, `MembershipCardFace` in `src/components/ui/`, and the
 `meeple` icon.
+
+## The new front page and calendar (Nov 2026)
+
+Built behind `VITE_ENABLE_REDESIGN` and shown in the `/redesign/` preview. Adds to the paper look:
+
+- Noto Sans now ships real Bold (700) and ExtraBold (800) files, so `font-bold` and
+  `font-extrabold` headings are no longer the browser's synthetic bold.
+- `text-poster` (the hero date and the calendar title) and `text-section` (a band's title): two
+  fluid sizes above the heading scale, used only on those pages.
+- `tilt-left`, `tilt-right`, `tilt-left-lg`, `tilt-right-lg`: a pinned note, polaroid or date
+  stamp sits slightly crooked. `tilt-straighten` puts a tilted link square under a real pointer
+  or keyboard focus; reduced motion keeps the angle and drops the travel.
+
+Shared pieces in `src/components/ui/`: `SectionHeading` (band title with the divider kicker),
+`TextLink` («Hele kalenderen →»), `FactsStrip` (the hairline facts row, shared with `GameCard`),
+`DateStamp` and `EventPosterCard`. Which events get a poster is decided once, in
+`src/utils/eventHighlights.ts`.
