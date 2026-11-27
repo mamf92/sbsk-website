@@ -16,6 +16,7 @@ import {
   isGameNight,
   upcomingEvents,
   visitorAttendance,
+  takesClubSignUp,
 } from '../utils/eventHighlights';
 import { seasonMonths } from '../utils/season';
 import Info from '../assets/icons/symbols/info.svg?react';
@@ -75,7 +76,12 @@ export default function CalendarRedesign() {
             nights={nights}
             now={now}
             signUp={
-              member ? (event) => <EventSignUp event={event} rsvp={rsvp} size="xs" /> : undefined
+              member
+                ? (event) =>
+                    takesClubSignUp(event, now) ? (
+                      <EventSignUp event={event} rsvp={rsvp} size="xs" />
+                    ) : null
+                : undefined
             }
           />
           <SeasonBoard
@@ -96,12 +102,12 @@ export default function CalendarRedesign() {
                 highlights={highlights}
                 wideFestival
                 attendance={(h) =>
-                  member && h.event && !h.event.festivalDay
+                  member && h.event && takesClubSignUp(h.event, now)
                     ? `${rsvp.attendeesOf(h.event._id).length} kommer`
                     : visitorAttendance(h)
                 }
                 actions={(h) =>
-                  member && h.event && !h.event.festivalDay ? (
+                  member && h.event && takesClubSignUp(h.event, now) ? (
                     <EventSignUp event={h.event} rsvp={rsvp} size="md" />
                   ) : undefined
                 }

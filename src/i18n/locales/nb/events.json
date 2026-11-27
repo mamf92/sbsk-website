@@ -127,6 +127,8 @@
     "about": "Om {{name}}",
     "howItWorks": "Slik foregår det",
     "galleryKicker": "Galleri",
-    "signupComing": "Påmelding kommer"
+    "signupComing": "Påmelding kommer",
+    "place": "Sted",
+    "dayElsewhere": "Annet sted: {{place}}"
   }
 }

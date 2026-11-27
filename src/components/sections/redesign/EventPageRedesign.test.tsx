@@ -140,4 +140,13 @@ describe('EventPageRedesign', () => {
     renderPage({ ...dropIn, frontPageNotice: 'Avlyst' });
     expect(screen.getByText('Avlyst')).toBeInTheDocument();
   });
+
+  it('gives a multi-day event both of its dates', () => {
+    renderPage({
+      ...dropIn,
+      eventStartTime: new Date('2099-03-13T09:00:00Z'),
+      eventEndTime: new Date('2099-03-15T16:00:00Z'),
+    });
+    expect(screen.getByText(/13\..*15\. mars/)).toBeInTheDocument();
+  });
 });

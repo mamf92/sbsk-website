@@ -44,6 +44,7 @@ export function PosterGrid({
           >
             <EventPosterCard
               kind={h.kind}
+              label={h.label}
               title={h.title}
               start={h.start}
               end={h.end}

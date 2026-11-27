@@ -127,6 +127,8 @@
     "about": "About {{name}}",
     "howItWorks": "How it works",
     "galleryKicker": "Gallery",
-    "signupComing": "Sign-up coming soon"
+    "signupComing": "Sign-up coming soon",
+    "place": "Venue",
+    "dayElsewhere": "Other venue: {{place}}"
   }
 }

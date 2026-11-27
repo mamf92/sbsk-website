@@ -28,7 +28,9 @@ import { signupState } from '../../../utils/signup';
 import {
   clockTime,
   formatDateTime,
+  formatDateTimeRange,
   formatDayLong,
+  osloDateKey,
   parseInstant,
   timeRange,
 } from '../../../utils/eventDateFormat';
@@ -175,7 +177,9 @@ export function EventPageRedesign({ event }: { event: CalendarEventTypes }) {
         <div className="flex flex-col gap-2">
           <HeroFact icon={Clock}>
             <time dateTime={start.toISOString()}>
-              {capitalise(formatDayLong(start, locale))}, {clockTime(start)}–{clockTime(end)}
+              {osloDateKey(start) === osloDateKey(end)
+                ? `${capitalise(formatDayLong(start, locale))}, ${clockTime(start)}–${clockTime(end)}`
+                : capitalise(formatDateTimeRange(start, end, locale))}
             </time>
             {event.venue?.doorsOpen && (
               <HeroFactNote>{t('venue.doorsOpen', { time: event.venue.doorsOpen })}</HeroFactNote>

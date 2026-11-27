@@ -6,6 +6,7 @@ import { Eyebrow } from '../../ui/Eyebrow';
 import { SectionHeading } from '../../ui/SectionHeading';
 import { SessionCard } from '../../ui/SessionCard';
 import { SignupBlock } from '../../ui/SignupBlock';
+import { VenueDetails } from './VenueDetails';
 import { DAY_PARAM } from '../FestivalPage/Program';
 import { useEventsT } from '../../../i18n';
 import { pickLocale } from '../../../i18n/pickLocale';
@@ -28,6 +29,7 @@ import {
   sessionDateTimes,
 } from '../../../utils/festival';
 import { downloadIcs } from '../../../utils/ics';
+import { signupState } from '../../../utils/signup';
 import Clock from '../../../assets/icons/symbols/clock.svg?react';
 import Pin from '../../../assets/icons/symbols/locationpin.svg?react';
 
@@ -114,10 +116,26 @@ export function FestivalProgram({ festival }: { festival: FestivalTypes }) {
     days[index].opens && days[index].closes
       ? `${days[index].opens}–${days[index].closes}`
       : undefined;
+  /** A day's own venue, when it is somewhere other than the festival's. */
+  const otherVenueOf = (index: number) => {
+    const venue = days[index].venue;
+    return venue?.name && venue.name !== festival.venue?.name ? venue : undefined;
+  };
   const wholeFestival = () =>
     downloadIcs(festivalIcs(festival, locale, window.location.href), `${festival.slug}.ics`);
 
   if (!hasProgramme) {
+    // Days with their own sign-up or another venue keep those details reachable before the
+    // programme exists, since the day panel that normally holds them is not shown yet.
+    const special = days
+      .map((_, index) => index)
+      .filter((index) => {
+        const own = days[index].signup;
+        const differs =
+          signupState(own, now) !== 'none' &&
+          (own?.method !== festival.signup?.method || own?.url !== festival.signup?.url);
+        return differs || !!otherVenueOf(index);
+      });
     return (
       <section
         id="program"
@@ -143,6 +161,26 @@ export function FestivalProgram({ festival }: { festival: FestivalTypes }) {
               </li>
             ))}
           </ol>
+          {special.length > 0 && (
+            <ul className="flex flex-col gap-4 lg:col-span-2">
+              {special.map((index) => {
+                const d = days[index];
+                const venue = otherVenueOf(index);
+                return (
+                  <li
+                    key={d._key}
+                    className="flex flex-col gap-3 border-t border-black/20 pt-4 dark:border-white/20"
+                  >
+                    <h3 className="font-heading text-h3 font-extrabold">
+                      {capitalise(formatDayLong(festivalDate(d.date), locale))} · {dayLabel(index)}
+                    </h3>
+                    <SignupBlock signup={d.signup} now={now} compact />
+                    {venue && <VenueDetails venue={venue} withPlace />}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </div>
       </section>
     );
@@ -276,6 +314,11 @@ export function FestivalProgram({ festival }: { festival: FestivalTypes }) {
             <p className="font-body pt-3" lang={summary.lang !== locale ? summary.lang : undefined}>
               {summary.value}
             </p>
+          )}
+          {otherVenueOf(dayIndex) && (
+            <div className="pt-4">
+              <VenueDetails venue={otherVenueOf(dayIndex)} withPlace />
+            </div>
           )}
 
           {available.length > 1 && (

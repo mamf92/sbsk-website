@@ -380,6 +380,15 @@ function requestQuery(url: URL, postData: string | null) {
   return { query, params };
 }
 
+/**
+ * `DATASET` with the game night as drop-in, as real game nights are. A member gets the club's
+ * own «Bli med» only where there is no other sign-up (`takesClubSignUp`), and `UPCOMING_EVENT`
+ * has a Spond link for the event-page specs.
+ */
+export const DROP_IN_DATASET = DATASET.map((doc) =>
+  doc === UPCOMING_EVENT ? { ...UPCOMING_EVENT, signup: { method: 'oppmote' } } : doc,
+);
+
 /** Answers every Sanity data query by running it, for real, over `DATASET`. */
 export async function stubSanityWithContent(page: Page, dataset: unknown[] = DATASET) {
   await page.route('**://*.sanity.io/**', async (route) => {
