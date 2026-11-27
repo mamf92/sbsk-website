@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { UPCOMING_TOURNAMENT, stubSanityWithContent } from '../fixtures/sanity';
+import { DROP_IN_DATASET, UPCOMING_TOURNAMENT, stubSanityWithContent } from '../fixtures/sanity';
 import { stubSupabase } from '../fixtures/supabase';
 
 // The new calendar overview, as the /redesign/ preview builds it (VITE_ENABLE_REDESIGN on).
@@ -61,9 +61,18 @@ test.describe('visitor', () => {
 });
 
 test('a member can sign up for a game night from its date', async ({ page }) => {
-  await stubSanityWithContent(page);
+  await stubSanityWithContent(page, DROP_IN_DATASET);
   await stubSupabase(page, { isAdmin: false });
   await page.goto('/kalender');
   const nights = page.getByRole('region', { name: 'Annenhver torsdag' });
   await expect(nights.getByRole('button', { name: /^Meld på / }).first()).toBeVisible();
+});
+
+test('a member gets no «Bli med» on a night with its own Spond sign-up', async ({ page }) => {
+  await stubSanityWithContent(page);
+  await stubSupabase(page, { isAdmin: false });
+  await page.goto('/kalender');
+  const nights = page.getByRole('region', { name: 'Annenhver torsdag' });
+  await expect(nights.getByText('Neste', { exact: true })).toBeVisible();
+  await expect(nights.getByRole('button', { name: /^Meld på / })).toHaveCount(0);
 });

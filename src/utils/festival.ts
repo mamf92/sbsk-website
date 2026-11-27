@@ -334,7 +334,12 @@ export function festivalDayRows(festival: FestivalCalendarTypes): CalendarEventT
           // A day held elsewhere names its own venue.
           location: day.venue?.name ?? festival.venue?.name,
           festivalDay: true,
-          festival: { slug: festival.slug, name, image: festival.heroImage ?? null },
+          festival: {
+            slug: festival.slug,
+            name,
+            image: festival.heroImage ?? null,
+            series: festival.series,
+          },
           // Only the date is known: the calendar shows the day without made-up times.
           allDay: !known || undefined,
           detailPath: `/arrangementer/${festival.slug}?dag=${index + 1}`,

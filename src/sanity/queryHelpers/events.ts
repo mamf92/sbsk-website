@@ -44,10 +44,16 @@ export interface CalendarEventTypes {
   festivalDay?: boolean;
   /** The festival a festival-day row belongs to, so the new pages can show the whole festival as
    *  one poster. Set in TypeScript, never by a query. */
-  festival?: { slug: string; name: string; image?: SanityImageSource | null };
+  festival?: {
+    slug: string;
+    name: string;
+    image?: SanityImageSource | null;
+    series?: 'bgm' | 'annet';
+  };
   /** Only the date is known (a festival day announced without hours): show no times. */
   allDay?: boolean;
-  /** Detail page only. Falls back to the deprecated `signupUrl` field in the query. */
+  /** Falls back to the deprecated `signupUrl` field in the query. Rows carry only its method,
+   *  link and dates, for the members' «Bli med» rule (`takesClubSignUp`). */
   signup?: SignupTypes | null;
   venue?: VenueTypes | null;
   showSponsors?: boolean;
@@ -74,7 +80,11 @@ const EVENT_ROW_PROJECTION = `
   location,
   links,
   hasDetailPage,
-  frontPageNotice
+  frontPageNotice,
+  "signup": select(
+    defined(signup.method) => signup{ method, url, opens, closes },
+    defined(signupUrl.url) => { "method": "lenke", "url": signupUrl.url }
+  )
 `;
 
 const EVENTS_LIST_QUERY = `*[

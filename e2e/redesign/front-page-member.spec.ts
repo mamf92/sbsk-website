@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { UPCOMING_TOURNAMENT, stubSanityWithContent } from '../fixtures/sanity';
+import { DROP_IN_DATASET, UPCOMING_TOURNAMENT, stubSanityWithContent } from '../fixtures/sanity';
 import { PROFILES, stubSupabase } from '../fixtures/supabase';
 
 // The new front page for a signed-in member (VITE_ENABLE_REDESIGN on).
@@ -7,7 +7,7 @@ import { PROFILES, stubSupabase } from '../fixtures/supabase';
 test('a member sees their greeting, card, badges and sign-up', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  await stubSanityWithContent(page);
+  await stubSanityWithContent(page, DROP_IN_DATASET);
   await stubSupabase(page, { isAdmin: false });
 
   await page.goto('/');

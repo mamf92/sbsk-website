@@ -5,6 +5,7 @@ import {
   eventHighlights,
   isSpecialEvent,
   nextGameNight,
+  takesClubSignUp,
   upcomingEvents,
 } from './eventHighlights';
 
@@ -123,5 +124,37 @@ describe('eventHighlights', () => {
     expect(bgm.end.toISOString()).toBe('2027-01-31T17:00:00.000Z');
     expect(highlights[0].href).toBe('/arrangementer/julespillkveld');
     expect(highlights[2].href).toBeNull();
+  });
+});
+
+describe('takesClubSignUp', () => {
+  it('gives «Bli med» only where there is no other way to sign up', () => {
+    expect(takesClubSignUp(night, NOW)).toBe(true);
+    expect(takesClubSignUp(event({ _id: 'd', signup: { method: 'oppmote' } }), NOW)).toBe(true);
+    expect(
+      takesClubSignUp(
+        event({ _id: 's', signup: { method: 'spond', url: 'https://spond.com/x' } }),
+        NOW,
+      ),
+    ).toBe(false);
+    expect(takesClubSignUp(event({ _id: 'c', signup: { method: 'stengt' } }), NOW)).toBe(false);
+    expect(takesClubSignUp(event({ _id: 'f', festivalDay: true }), NOW)).toBe(false);
+  });
+});
+
+describe('eventHighlights labels', () => {
+  it('tags a Board Game Masters festival «Turnering»', () => {
+    const day = event({
+      _id: 'bgm-day',
+      category: 'turnering',
+      festivalDay: true,
+      festival: { slug: 'bgm', name: 'Board Game Masters', series: 'bgm' },
+    });
+    expect(eventHighlights([day], NOW)[0].label).toBe('Turnering');
+    const other = {
+      ...day,
+      festival: { slug: 'x', name: 'Sommerspillhelg', series: 'annet' as const },
+    };
+    expect(eventHighlights([other], NOW)[0].label).toBeUndefined();
   });
 });

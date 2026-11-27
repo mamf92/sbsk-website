@@ -27,6 +27,8 @@ export type EventPosterCardProps = {
   attendance: string;
   /** Extra actions under the facts, such as a member's sign-up. */
   actions?: ReactNode;
+  /** The tag, when it is not the kind's own label. */
+  label?: string;
   /** A wide poster: a 21:9 image and a larger title, for a card that spans its row. */
   wide?: boolean;
 };
@@ -37,6 +39,7 @@ export type EventPosterCardProps = {
  */
 export function EventPosterCard({
   kind,
+  label,
   title,
   start,
   end,
@@ -71,13 +74,13 @@ export function EventPosterCard({
           }`}
         />
         <span className="font-heading bg-darkestblue absolute top-3 left-3 px-2 py-1 text-xs font-extrabold tracking-[0.16em] text-white uppercase">
-          {KIND_LABEL[kind]}
+          {label ?? KIND_LABEL[kind]}
         </span>
         <DateStamp start={start} end={end} className="absolute right-4 -bottom-7" />
       </div>
       <div className="flex flex-1 flex-col p-4 pt-5">
         <p className="text-darkestorange dark:text-orange m-0 pr-24 text-xs font-bold tracking-[0.04em] uppercase">
-          {KIND_LABEL[kind]}
+          {label ?? KIND_LABEL[kind]}
           {place ? ` · ${place}` : ''}
         </p>
         <h3 className={`font-heading mt-1 pr-24 font-bold ${wide ? 'text-h2' : 'text-h3'}`}>

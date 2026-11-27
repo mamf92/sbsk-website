@@ -8,6 +8,8 @@ import { stubSanityWithContent } from '../fixtures/sanity';
 const ROUTES: [string, string][] = [
   ['/', 'Neste spillkveld'],
   ['/kalender', 'Sesongen på ett brett'],
+  ['/arrangementer/spillkveld-torsdag', 'Med støtte fra'],
+  ['/board-game-masters', 'Program'],
   ['/kalender/alle', 'Neste arrangement'],
   [
     '/kalender/alle?visning=maned',

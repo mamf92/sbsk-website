@@ -400,7 +400,7 @@ export function FestivalPageRedesign({ festival }: { festival: FestivalTypes }) 
       )}
 
       {festival.relatedPosts?.length ? (
-        <div className="max-w-shell mx-auto px-4 py-10 sm:px-6 print:hidden">
+        <div className="max-w-shell text-darkestblue mx-auto px-4 py-10 sm:px-6 dark:text-white print:hidden">
           <RelatedPosts posts={festival.relatedPosts} />
         </div>
       ) : null}

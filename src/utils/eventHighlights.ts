@@ -1,3 +1,4 @@
+import { signupState } from './signup';
 import type { SanityImageSource } from '@sanity/image-url';
 import type { CalendarEventTypes } from '../sanity/queryHelpers/events';
 import { eventDetailPath } from './eventLinks';
@@ -67,6 +68,8 @@ export interface Highlight {
   image: SanityImageSource | null;
   /** The event document behind it, for sign-up. Absent for a festival. */
   event?: CalendarEventTypes;
+  /** The poster's tag when it is not the kind's own: Board Game Masters is a «Turnering». */
+  label?: string;
 }
 
 /**
@@ -96,6 +99,7 @@ export function eventHighlights(events: CalendarEventTypes[], now: Date): Highli
         location: event.location,
         href: `/arrangementer/${event.festival.slug}`,
         image: event.festival.image ?? null,
+        label: event.festival.series === 'bgm' ? KIND_LABEL.turnering : undefined,
       };
       festivals.set(event.festival.slug, highlight);
       out.push(highlight);
@@ -115,6 +119,17 @@ export function eventHighlights(events: CalendarEventTypes[], now: Date): Highli
     });
   }
   return out;
+}
+
+/**
+ * Whether a member signs up to this event with the club's own «Bli med». Only where there is no
+ * other way in (drop-in, or no sign-up set): an event with Spond or a link has one way to sign
+ * up, the same for everyone (Martin, 27 Nov 2026). A festival day has no RSVP of its own.
+ */
+export function takesClubSignUp(event: CalendarEventTypes, now: Date): boolean {
+  if (event.festivalDay) return false;
+  const state = signupState(event.signup, now);
+  return state === 'dropIn' || state === 'none';
 }
 
 /** The label a poster or row carries for its kind. */

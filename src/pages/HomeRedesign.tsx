@@ -18,6 +18,7 @@ import {
   nextGameNight,
   upcomingEvents,
   visitorAttendance,
+  takesClubSignUp,
 } from '../utils/eventHighlights';
 import type { CalendarEventTypes } from '../sanity/queryHelpers/events';
 
@@ -81,7 +82,7 @@ export default function HomeRedesign() {
                   </p>
                 ) : null,
                 actions:
-                  next && !next.festivalDay ? (
+                  next && takesClubSignUp(next, now) ? (
                     <div className="pt-2">
                       <EventSignUp event={next} rsvp={rsvp} size="lg" />
                     </div>
@@ -111,12 +112,12 @@ export default function HomeRedesign() {
           <PosterGrid
             highlights={highlights}
             attendance={(h) =>
-              member && h.event && !h.event.festivalDay
+              member && h.event && takesClubSignUp(h.event, now)
                 ? `${rsvp.attendeesOf(h.event._id).length} kommer`
                 : visitorAttendance(h)
             }
             actions={(h) =>
-              member && h.event && !h.event.festivalDay ? (
+              member && h.event && takesClubSignUp(h.event, now) ? (
                 <EventSignUp event={h.event} rsvp={rsvp} size="md" />
               ) : undefined
             }
