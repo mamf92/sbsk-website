@@ -1,7 +1,7 @@
 name: Build site
 description: >-
-  Build the live site from the current checkout into ./dist, then, if a `redesign` branch exists,
-  build it into ./dist/redesign/ as a noindex preview. Both share one GitHub Pages deployment,
+  Build the live site from the current checkout into ./dist, then build the same checkout again
+  with the redesign flag on into ./dist/redesign/ as a noindex preview. Both share one GitHub Pages deployment,
   because a repository only gets one Pages site and each deploy replaces the whole of it: the
   live build and the preview have to be uploaded together or one wipes the other.
 
@@ -44,27 +44,27 @@ runs:
         VITE_ENABLE_I18N: 'true'
 
     - name: Build redesign preview
-      # Same flags as the live build, so the preview shows what would ship (the redesign branch
-      # has no VITE_ENABLE_I18N to read, so it is left out). Only the root
-      # 404.html is ever served by Pages; it routes /<repo>/redesign/* deep links here.
+      # The same `main` checkout built a second time with VITE_ENABLE_REDESIGN on, so the preview
+      # shows the new front page and calendar on today's code and data (27 Nov 2026). It used to
+      # build the old `redesign` branch, which stopped at 12 Nov and is kept only for reference.
+      # Every other flag matches the live build. Only the root 404.html is ever served by Pages;
+      # it routes /<repo>/redesign/* deep links here.
       shell: bash
       env:
         VITE_BASE: /${{ github.event.repository.name }}/redesign/
         VITE_SUPABASE_URL: ${{ inputs.supabase-url }}
         VITE_SUPABASE_PUBLISHABLE_KEY: ${{ inputs.supabase-publishable-key }}
-        VITE_ENABLE_MEMBER_PORTAL: 'false'
+        VITE_ENABLE_MEMBER_PORTAL: 'true'
+        VITE_ENABLE_PORTAL_ROUTES: 'true'
         VITE_ENABLE_CONTACT_FORM: 'false'
+        VITE_ENABLE_I18N: 'true'
+        VITE_ENABLE_REDESIGN: 'true'
       run: |
-        if ! git ls-remote --exit-code --heads origin redesign >/dev/null; then
-          echo "No redesign branch; deploying the live site only."
-          exit 0
-        fi
-        git fetch --depth=1 origin redesign
-        git worktree add "$RUNNER_TEMP/redesign" FETCH_HEAD
-        cd "$RUNNER_TEMP/redesign"
-        npm ci
+        live="$(mktemp -d)"
+        mv dist "$live/dist"
         npm run build
         rm -f dist/404.html
         # Keep the preview out of search results; robots.txt can't do it from a project subpath.
         sed -i 's|<head>|<head><meta name="robots" content="noindex, nofollow">|' dist/index.html
-        cp -r dist "$GITHUB_WORKSPACE/dist/redesign"
+        mv dist "$live/dist/redesign"
+        mv "$live/dist" dist

@@ -75,11 +75,14 @@ In rough order of what it buys:
 
 ## The redesign preview
 
-A repository gets exactly one Pages site, and every deploy replaces all of it. The UI refresh
-lives on the long-lived `redesign` branch and is previewed at `/sbsk-website/redesign/`, so the
-live build and the preview are built and uploaded together by `.github/actions/build-site` —
-from the `deploy` job on a push to `main`, and from `.github/workflows/preview.yml` when CI goes
-green on a push to `redesign`. The preview carries `noindex` and the same feature flags as the
+A repository gets exactly one Pages site, and every deploy replaces all of it. The preview at
+`/sbsk-website/redesign/` is therefore built in the same `deploy` job as the live site, by
+`.github/actions/build-site`: the same `main` checkout is built twice, the second time with
+`VITE_ENABLE_REDESIGN=true` and `VITE_BASE=/sbsk-website/redesign/`, and both are uploaded
+together. The flag swaps in the new front page and calendar (`src/utils/featureFlags.ts`); every
+other page is today's. The preview carries `noindex` and otherwise the same feature flags as the
 live site. Pages only ever serves the root `404.html`, which sends `/sbsk-website/redesign/*`
-deep links to the preview's own `index.html`. Delete the `redesign` branch and the next deploy
-drops the preview.
+deep links to the preview's own `index.html`.
+
+Until 27 Nov 2026 the preview was built from a long-lived `redesign` branch (a proof of concept
+from 12 Nov). That branch is no longer built and is kept only for reference.

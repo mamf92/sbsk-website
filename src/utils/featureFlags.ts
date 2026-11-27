@@ -40,3 +40,13 @@ export const contactFormEnabled = import.meta.env.VITE_ENABLE_CONTACT_FORM === '
  * Playwright config set it on.
  */
 export const i18nEnabled = import.meta.env.VITE_ENABLE_I18N === 'true';
+
+/**
+ * The new front page, calendar overview and «Alle arrangementer» (front page and calendar
+ * revamp, 27 Nov 2026). Off on the live site; on in the `/redesign/` preview, which
+ * `.github/actions/build-site` builds from the same `main` checkout with this flag set. Going
+ * live means setting it in the live build, then deleting the old Home and Calendar code.
+ * Unit tests render the new pages directly, so they do not need it; the Playwright `redesign`
+ * project builds with it on.
+ */
+export const redesignEnabled = import.meta.env.VITE_ENABLE_REDESIGN === 'true';
