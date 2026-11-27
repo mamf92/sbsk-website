@@ -94,6 +94,10 @@ export function downloadIcs(
   const link = document.createElement('a');
   link.href = url;
   link.download = filename;
+  document.body.appendChild(link);
   link.click();
-  URL.revokeObjectURL(url);
+  link.remove();
+  // Revoked on the next tick: some browsers (Firefox, older Safari) read the blob after
+  // `click()` returns, and an object URL revoked at once gives them an empty download.
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 }

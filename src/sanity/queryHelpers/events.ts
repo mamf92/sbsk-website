@@ -143,10 +143,11 @@ export async function calendarEventsLoader() {
   return { events: events ?? [] };
 }
 
-// Bli medlem's «Mens du venter»: the one next game night, nothing else. Uses the row
+// Bli medlem's «Mens du venter»: the one next game night that has not started yet (the note
+// says «fra 17:00», so one already under way would be the wrong invitation). Uses the row
 // projection so the result is an ordinary calendar row.
 export const NEXT_GAME_NIGHT_QUERY = `*[
-  _type == "event" && category == "spillkveld" && eventEndTime >= now()
+  _type == "event" && category == "spillkveld" && eventStartTime >= now()
 ] | order(eventStartTime asc)[0]{
   ${EVENT_ROW_PROJECTION}
 }`;

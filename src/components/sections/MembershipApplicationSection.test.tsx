@@ -77,9 +77,11 @@ describe('MembershipApplicationSection', () => {
 
   it('answers a filled honeypot with the normal success and sends nothing', async () => {
     const send = renderForm();
+    await fill();
     await userEvent.type(screen.getByLabelText('Nettside'), 'spam.example');
     await userEvent.click(screen.getByRole('button', { name: 'Meld meg inn' }));
-    expect(screen.getByRole('heading', { name: 'Takk!' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Takk, Sara!' })).toBeInTheDocument();
+    expect(screen.getByText('sara@example.no')).toBeInTheDocument();
     expect(send).not.toHaveBeenCalled();
   });
 

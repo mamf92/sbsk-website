@@ -16,11 +16,11 @@ describe('becomeAMemberLoader', () => {
   it('returns the next game night', async () => {
     const event = { _id: 'spillkveld-1', title: 'Spillkveld' };
     nextGameNightLoader.mockResolvedValue(event);
-    expect(await becomeAMemberLoader()).toEqual({ nextGameNight: event });
+    expect(await becomeAMemberLoader().nextGameNight).toEqual(event);
   });
 
   it('keeps the page when Sanity fails, without the note', async () => {
     nextGameNightLoader.mockRejectedValue(new Error('offline'));
-    expect(await becomeAMemberLoader()).toEqual({ nextGameNight: null });
+    expect(await becomeAMemberLoader().nextGameNight).toBeNull();
   });
 });

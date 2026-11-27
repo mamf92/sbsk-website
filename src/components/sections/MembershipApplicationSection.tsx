@@ -81,6 +81,8 @@ export default function MembershipApplicationSection({
     e.preventDefault();
     setApiError(false);
     if (honeypot) {
+      // Looks exactly like a real success, so a bot cannot tell it was caught.
+      setSentTo({ name: values.name.trim(), email: values.email.trim() });
       setSent(true);
       return;
     }
@@ -140,7 +142,7 @@ export default function MembershipApplicationSection({
   const cardName = `${values.name.trim()} ${values.surname.trim()}`.trim();
 
   return (
-    <section className="bg-darkblue dot-pattern w-full text-white">
+    <section className="bg-darkblue surface-dark dot-pattern w-full text-white">
       <div className="max-w-shell mx-auto grid items-start gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-12 lg:py-16">
         {/* Why join, with your own card filling in as you type. */}
         <div className="flex flex-col gap-6">
@@ -165,9 +167,10 @@ export default function MembershipApplicationSection({
           </div>
         </div>
 
-        {/* The form, on paper. The sheet casts the page's own shadow (darkestblue, white in dark
-            mode); what is on it takes `surface-light`, set on the inner blocks because the
-            utility also re-points the element it sits on. */}
+        {/* The form, on paper. The sheet casts the band's white shadow (`surface-dark` on the
+            section: darkestblue on darkblue is only 1.24:1); what is on it takes
+            `surface-light`, set on the inner blocks because the utility also re-points the
+            element it sits on. */}
         <div className="bg-cream text-darkestblue shadow-4 border-2 border-black">
           <div className="flex flex-col gap-1 p-5 pb-0 sm:p-7 sm:pb-0">
             <h2 className="font-heading text-h2 font-bold">
