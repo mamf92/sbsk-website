@@ -191,7 +191,7 @@ export function NextEventHero({
                         aria-hidden="true"
                         className={`size-2.5 flex-none outline-1 outline-white/60 ${eventCategory(event.category).chip}`}
                       />
-                      <strong className="font-heading">
+                      <strong className="font-heading whitespace-nowrap">
                         {dayOfMonth(date)}. {monthAbbreviation(date)}
                       </strong>
                       {event.title}

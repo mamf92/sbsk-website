@@ -7,6 +7,35 @@ import type { PostTypes } from '../sanity/queryHelpers/posts';
 import HomeRedesign from './HomeRedesign';
 
 let loaderData: HomeRedesignData;
+let auth: { isAuthenticated: boolean; user: Record<string, unknown> | null };
+
+vi.mock('../hooks/authContext/authContext', () => ({
+  useAuth: () => ({ ...auth, authResolved: true, isAdmin: false }),
+}));
+vi.mock('../supabase/queryHelpers/eventParticipants', () => ({
+  getEventAttendees: vi.fn(async () => ({
+    Spillkveld: [
+      { supabase_id: 'me', name: 'Kari', surname: 'Nordmann', photo_url: '', hidden: false },
+      { supabase_id: null, name: null, surname: null, photo_url: '', hidden: true },
+    ],
+  })),
+  joinEvent: vi.fn(),
+  leaveEvent: vi.fn(),
+}));
+vi.mock('../supabase/queryHelpers/getMember', () => ({
+  getMember: vi.fn(async () => ({ id: 'm1', name: 'Kari' })),
+}));
+vi.mock('../supabase/queryHelpers/getMyActivity', () => ({
+  getMyActivity: vi.fn(async () => ({ checkIns: 7, signups: 2 })),
+}));
+vi.mock('../supabase/queryHelpers/badges', () => ({
+  getMyBadges: vi.fn(async () => [
+    { slug: 'first-roll', kind: 'auto', awarded_at: '2026-09-03', progress: 1, target: 1 },
+  ]),
+}));
+vi.mock('../supabase/queryHelpers/getSeasonStatus', () => ({
+  getMemberSeasonStatus: vi.fn(async () => ({ paid: true, paidAt: '2026-01-10' })),
+}));
 
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
@@ -36,6 +65,7 @@ const post = (id: string): PostTypes => ({
 });
 
 beforeEach(() => {
+  auth = { isAuthenticated: false, user: null };
   vi.useFakeTimers({ toFake: ['Date'] });
   vi.setSystemTime(new Date('2026-11-27T12:00:00Z'));
   loaderData = {
@@ -94,5 +124,31 @@ describe('HomeRedesign', () => {
     renderPage();
     expect(screen.getByText('Neste spillkveld er ikke lagt inn ennå.')).toBeInTheDocument();
     expect(screen.queryByRole('region', { name: 'Kommende høydepunkter' })).toBeNull();
+  });
+
+  it('swaps in the member view when signed in', async () => {
+    auth = {
+      isAuthenticated: true,
+      user: { supabase_id: 'me', name: 'Kari', surname: 'Nordmann', photo_url: null },
+    };
+    renderPage();
+    const hero = screen.getByRole('region', { name: 'Din neste spillkveld' });
+    expect(within(hero).getByText('Hei, Kari!')).toBeInTheDocument();
+    expect(await within(hero).findByText('2 kommer')).toBeInTheDocument();
+    expect(within(hero).getByRole('button', { name: 'Meld av Spillkveld' })).toBeInTheDocument();
+    expect(await within(hero).findByText('Kveld nr. 8 for deg!')).toBeInTheDocument();
+    // The member corner replaces «Tre trekk».
+    expect(screen.queryByRole('heading', { name: 'Tre trekk, så er du i gang' })).toBeNull();
+    const corner = screen.getByRole('region', { name: 'Ditt medlemskap' });
+    expect(await within(corner).findByText('Første kast')).toBeInTheDocument();
+    expect(within(corner).getByRole('link', { name: 'Min side' })).toHaveAttribute(
+      'href',
+      '/medlemsportal',
+    );
+    // Posters offer sign-up.
+    const highlights = screen.getByRole('region', { name: 'Kommende høydepunkter' });
+    expect(
+      within(highlights).getByRole('button', { name: 'Meld på Julespillkveld' }),
+    ).toBeInTheDocument();
   });
 });
