@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import svgr from 'vite-plugin-svgr';
 import { buildContentSecurityPolicy, type CspOptions } from './src/security/csp.ts';
+import { calendarLoader } from './src/loaders/calendar-loader.ts';
+import { CALENDAR_FEED_FILE, buildCalendarFeed } from './src/utils/calendarFeed.ts';
 
 // GitHub Pages cannot set response headers, so the Content-Security-Policy has to ride in the
 // HTML. It is injected here rather than written into index.html by hand because it depends on
@@ -31,6 +33,33 @@ function contentSecurityPolicy(options: CspOptions): Plugin {
   };
 }
 
+// `kalender.ics`, the calendar subscription feed, written into each build from Sanity. The site
+// is static, so the feed is only as fresh as the last build: `.github/workflows/nightly.yml`
+// rebuilds and redeploys every night. A failed fetch must never fail a deploy, so the build then
+// ships without a feed rather than an empty one (an empty feed would wipe subscribers' calendars).
+function calendarFeed(siteUrl: string): Plugin {
+  return {
+    name: 'sbsk-calendar-feed',
+    apply: 'build',
+    async generateBundle() {
+      try {
+        const { events, eventsFailed } = await calendarLoader();
+        if (eventsFailed || events.length === 0) {
+          this.warn(`${CALENDAR_FEED_FILE} skipped: no events from Sanity`);
+          return;
+        }
+        this.emitFile({
+          type: 'asset',
+          fileName: CALENDAR_FEED_FILE,
+          source: buildCalendarFeed(events, siteUrl),
+        });
+      } catch (error) {
+        this.warn(`${CALENDAR_FEED_FILE} skipped: ${String(error)}`);
+      }
+    },
+  };
+}
+
 export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
@@ -41,6 +70,10 @@ export default defineConfig(({ mode, command }) => {
       react(),
       svgr(),
       contentSecurityPolicy({ supabaseUrl: env.VITE_SUPABASE_URL, dev: command === 'serve' }),
+      // The Pages origin, as in `src/utils/internalLinks.ts`; `SITE_ORIGIN` overrides it.
+      calendarFeed(
+        new URL(env.VITE_BASE || '/', env.SITE_ORIGIN || 'https://mamf92.github.io').href,
+      ),
     ],
   };
 });

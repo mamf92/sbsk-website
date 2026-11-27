@@ -4,6 +4,7 @@ import { toPlainText } from '@portabletext/react';
 import type { CalendarEventTypes } from '../sanity/queryHelpers/events';
 import { EventRow } from '../components/sections/CalendarSection';
 import { MonthGrid, Legend } from '../components/sections/redesign/MonthGrid';
+import { SubscribeCalendar } from '../components/sections/redesign/SubscribeCalendar';
 import { Button } from '../components/ui/Buttons';
 import { Chip, type ChipCategory } from '../components/ui/Chip';
 import { Divider } from '../components/ui/Divider';
@@ -267,12 +268,15 @@ export default function CalendarAll() {
     <div className="dark:bg-darkestblue bg-white">
       <section className="bg-darkblue surface-dark dot-pattern relative overflow-hidden text-white">
         <div className="max-w-content relative mx-auto flex flex-col gap-4 px-4 pt-6 pb-5 sm:px-6">
-          <Link
-            to="/kalender"
-            className="font-heading inline-flex w-fit items-center gap-1.5 text-sm font-bold text-white/90 underline-offset-4 hover:underline"
-          >
-            <ArrowLeft aria-hidden="true" className="h-4 w-4 fill-current" /> Kalender
-          </Link>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <Link
+              to="/kalender"
+              className="font-heading inline-flex w-fit items-center gap-1.5 text-sm font-bold text-white/90 underline-offset-4 hover:underline"
+            >
+              <ArrowLeft aria-hidden="true" className="h-4 w-4 fill-current" /> Kalender
+            </Link>
+            <SubscribeCalendar size="sm" />
+          </div>
           <h1 className="font-heading text-[clamp(2.1rem,5vw,3rem)] leading-none font-extrabold">
             Alle arrangementer
           </h1>

@@ -26,6 +26,31 @@ function escapeIcsText(value: string): string {
     .replace(/\n/g, '\\n');
 }
 
+/**
+ * RFC 5545 §3.1: a content line longer than 75 octets continues on the next line after CRLF and
+ * one space. Counted in UTF-8 bytes, and never split inside a character (æ, ø, å are two bytes).
+ */
+export function foldIcsLine(line: string): string {
+  const encoder = new TextEncoder();
+  if (encoder.encode(line).length <= 75) return line;
+  const parts: string[] = [];
+  let current = '';
+  let bytes = 0;
+  for (const char of line) {
+    const size = encoder.encode(char).length;
+    // The first line holds 75 octets; continuation lines 74 after their leading space.
+    if (bytes + size > (parts.length === 0 ? 75 : 74)) {
+      parts.push(current);
+      current = '';
+      bytes = 0;
+    }
+    current += char;
+    bytes += size;
+  }
+  parts.push(current);
+  return parts.join('\r\n ');
+}
+
 function toIcsUtc(date: Date): string {
   return date
     .toISOString()
@@ -63,19 +88,47 @@ function vevent(event: IcsEventInput, stamp: string): string[] {
   return lines;
 }
 
-/** Builds a minimal RFC 5545 .ics document holding every event given, e.g. a festival's programme. */
-export function buildIcsCalendar(events: IcsEventInput[]): string {
+/** What a subscribed calendar shows as its name, and how often apps should fetch it again. */
+export interface IcsFeedOptions {
+  name: string;
+  description?: string;
+  /** ISO 8601 duration, e.g. `PT12H`. */
+  refresh: string;
+}
+
+/**
+ * Builds a minimal RFC 5545 .ics document holding every event given, e.g. a festival's
+ * programme. `feed` makes it a subscription: a calendar name and a refresh interval
+ * (RFC 7986, plus the `X-` names Google and Outlook read).
+ */
+export function buildIcsCalendar(events: IcsEventInput[], feed?: IcsFeedOptions): string {
   const stamp = toIcsUtc(new Date());
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     'PRODID:-//Stavanger Brettspillklubb//SBSK Website//NO',
     'CALSCALE:GREGORIAN',
+    ...(feed
+      ? [
+          'METHOD:PUBLISH',
+          `NAME:${escapeIcsText(feed.name)}`,
+          `X-WR-CALNAME:${escapeIcsText(feed.name)}`,
+          ...(feed.description
+            ? [
+                `DESCRIPTION:${escapeIcsText(feed.description)}`,
+                `X-WR-CALDESC:${escapeIcsText(feed.description)}`,
+              ]
+            : []),
+          'X-WR-TIMEZONE:Europe/Oslo',
+          `REFRESH-INTERVAL;VALUE=DURATION:${feed.refresh}`,
+          `X-PUBLISHED-TTL:${feed.refresh}`,
+        ]
+      : []),
     ...events.flatMap((event) => vevent(event, stamp)),
     'END:VCALENDAR',
   ];
-  // RFC 5545 requires CRLF line endings.
-  return lines.join('\r\n');
+  // RFC 5545 requires CRLF line endings, and lines of at most 75 octets.
+  return lines.map(foldIcsLine).join('\r\n');
 }
 
 /** Builds a minimal RFC 5545 .ics document for a single event. */

@@ -2,7 +2,10 @@
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
     "target": "ES2023",
-    "lib": ["ES2023"],
+    "lib": ["ES2023", "DOM"],
+    // vite.config.ts builds `kalender.ics` from the app's own loader and helpers, which read
+    // `import.meta.env` and (in code the config never calls) the DOM.
+    "types": ["node", "vite/client"],
     "module": "ESNext",
     "skipLibCheck": true,
 
