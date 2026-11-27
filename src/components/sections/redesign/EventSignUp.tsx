@@ -5,7 +5,8 @@ import { toAvatarPeople, type useRsvp } from '../../../hooks/useRsvp';
 
 /**
  * A member's sign-up on the new pages: the toggle, who is coming, and the error if a toggle
- * failed. `lg` is the hero's «Jeg kommer»; `md` sits on a poster; `xs` fits a date token.
+ * failed. `lg` is the hero's; `md` sits on a poster, full width like «Les mer», and leaves the
+ * head count to the card's facts strip; `xs` fits a date token.
  */
 export function EventSignUp({
   event,
@@ -23,19 +24,20 @@ export function EventSignUp({
     <div
       className={`flex flex-wrap items-center gap-3 ${size === 'lg' ? '' : 'flex-col'} ${
         size === 'xs' ? 'gap-1.5' : ''
-      }`}
+      } ${size === 'md' ? 'items-stretch' : ''}`}
     >
       <RsvpButton
         attending={attending}
-        joinLabel={size === 'lg' ? 'Jeg kommer' : size === 'xs' ? 'Kommer' : 'Meld meg på'}
-        attendingLabel={size === 'lg' ? 'Du kommer' : 'Påmeldt!'}
+        joinLabel="Bli med"
+        attendingLabel="Påmeldt!"
         leaveLabel="Meld av"
         ariaLabel={attending ? `Meld av ${event.title}` : `Meld på ${event.title}`}
         size={size}
+        className={size === 'md' ? 'w-full' : undefined}
         disabled={rsvp.pending[event._id]}
         onClick={() => rsvp.toggle(event._id)}
       />
-      {attendees.length > 0 && size !== 'xs' && (
+      {attendees.length > 0 && size === 'lg' && (
         <span className="font-body flex items-center gap-2 text-sm">
           <AvatarStack people={toAvatarPeople(attendees)} hiddenCount={hidden} max={5} size="xs" />
           {attendees.length} kommer

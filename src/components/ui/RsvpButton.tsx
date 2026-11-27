@@ -14,6 +14,7 @@ type RsvpButtonProps = {
   joinVariant?: ButtonVariant;
   size?: 'xs' | 'sm' | 'md' | 'lg';
   disabled?: boolean;
+  className?: string;
   onClick: () => void;
 };
 
@@ -35,6 +36,7 @@ export function RsvpButton({
   joinVariant = 'primary',
   size = 'sm',
   disabled,
+  className,
   onClick,
 }: RsvpButtonProps) {
   return (
@@ -43,7 +45,7 @@ export function RsvpButton({
       size={size}
       disabled={disabled}
       aria-label={ariaLabel}
-      className="group"
+      className={className ? `group ${className}` : 'group'}
       onClick={onClick}
     >
       {attending ? (
