@@ -23,9 +23,11 @@ runs:
       # Vite automatically — it must not be overwritten with a copy of index.html here, which
       # is what used to serve every deep link with a bare 404 status instead of the redirect.
       shell: bash
-      run: npm run build
+      # The repository name from GITHUB_REPOSITORY ("owner/name"), not
+      # github.event.repository.name: a scheduled run's event has no repository object, and
+      # an empty name would make the base `//` (see .github/workflows/nightly.yml).
+      run: VITE_BASE="/${GITHUB_REPOSITORY#*/}/" npm run build
       env:
-        VITE_BASE: /${{ github.event.repository.name }}/
         VITE_SUPABASE_URL: ${{ inputs.supabase-url }}
         VITE_SUPABASE_PUBLISHABLE_KEY: ${{ inputs.supabase-publishable-key }}
         # Member portal on (26 Nov 2026, opened for testing): the Bli medlem form, board
@@ -51,7 +53,6 @@ runs:
       # it routes /<repo>/redesign/* deep links here.
       shell: bash
       env:
-        VITE_BASE: /${{ github.event.repository.name }}/redesign/
         VITE_SUPABASE_URL: ${{ inputs.supabase-url }}
         VITE_SUPABASE_PUBLISHABLE_KEY: ${{ inputs.supabase-publishable-key }}
         VITE_ENABLE_MEMBER_PORTAL: 'true'
@@ -62,7 +63,7 @@ runs:
       run: |
         live="$(mktemp -d)"
         mv dist "$live/dist"
-        npm run build
+        VITE_BASE="/${GITHUB_REPOSITORY#*/}/redesign/" npm run build
         rm -f dist/404.html
         # Keep the preview out of search results; robots.txt can't do it from a project subpath.
         sed -i 's|<head>|<head><meta name="robots" content="noindex, nofollow">|' dist/index.html

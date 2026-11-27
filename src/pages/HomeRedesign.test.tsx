@@ -119,6 +119,24 @@ describe('HomeRedesign', () => {
     expect(titles).toEqual(['Julespillkveld', 'Vårturnering']);
   });
 
+  it('shows the night’s «Beskjed på forsiden» on the hero', () => {
+    loaderData = {
+      ...loaderData,
+      events: [event('Spillkveld', '2026-12-10T16:00:00Z', { frontPageNotice: ' Avlyst ' })],
+    };
+    renderPage();
+    const hero = screen.getByRole('region', { name: 'Neste spillkveld' });
+    expect(within(hero).getByText('Avlyst')).toBeInTheDocument();
+    expect(within(hero).getByText('Beskjed:', { exact: false })).toBeInTheDocument();
+  });
+
+  it('says the calendar could not be fetched rather than that nothing is planned', () => {
+    loaderData = { ...loaderData, events: [], eventsFailed: true };
+    renderPage();
+    expect(screen.getByText(/Vi fikk ikke hentet kalenderen/)).toBeInTheDocument();
+    expect(screen.queryByText('Neste spillkveld er ikke lagt inn ennå.')).toBeNull();
+  });
+
   it('says so when no game night is in the calendar', () => {
     loaderData = { ...loaderData, events: [] };
     renderPage();

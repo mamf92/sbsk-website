@@ -31,7 +31,8 @@ import type { CalendarEventTypes } from '../sanity/queryHelpers/events';
  * sign-up with who is coming on the posters.
  */
 export default function HomeRedesign() {
-  const { homeHero, posts, postsFailed, events } = useLoaderData() as HomeRedesignData;
+  const { homeHero, posts, postsFailed, events, eventsFailed } =
+    useLoaderData() as HomeRedesignData;
   const { isAuthenticated, user } = useAuth();
   const member = memberPortalEnabled && isAuthenticated && !!user;
   const now = new Date();
@@ -45,7 +46,7 @@ export default function HomeRedesign() {
     (event): event is CalendarEventTypes => !!event && !event.festivalDay,
   );
   const rsvp = useRsvp(member ? rsvpEvents : []);
-  const home = useMemberHome();
+  const home = useMemberHome(member);
   const isNew = useUnreadPosts(member);
   const firstName = user?.name?.trim() || home?.me?.name || '';
   const fullName = [user?.name, user?.surname].filter(Boolean).join(' ').trim();
@@ -64,6 +65,7 @@ export default function HomeRedesign() {
       <NextEventHero
         next={next}
         later={later}
+        failed={eventsFailed}
         photo={homeHero?.image}
         now={now}
         member={

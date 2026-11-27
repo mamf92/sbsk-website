@@ -12,6 +12,7 @@ import {
   osloDateKey,
   osloDaysBetween,
   parseInstant,
+  shortTimeText,
   timeRange,
   weekdayAbbreviation,
 } from './eventDateFormat';
@@ -93,5 +94,26 @@ describe('parseInstant', () => {
     expect(parseInstant(undefined)).toBeNull();
     expect(parseInstant('')).toBeNull();
     expect(parseInstant('snart')).toBeNull();
+  });
+});
+
+describe('shortTimeText', () => {
+  it('covers an evening, a whole day, past midnight, a span and a span across months', () => {
+    const at = (iso: string) => new Date(iso);
+    expect(shortTimeText(at('2026-12-10T16:00:00Z'), at('2026-12-10T21:00:00Z'))).toBe(
+      '17:00–22:00',
+    );
+    expect(shortTimeText(at('2027-06-04T22:00:00Z'), at('2027-06-05T21:59:00Z'), true)).toBe(
+      'Hele dagen',
+    );
+    expect(shortTimeText(at('2027-01-29T17:00:00Z'), at('2027-01-30T00:00:00Z'))).toBe(
+      '18:00–01:00',
+    );
+    expect(shortTimeText(at('2027-01-28T08:00:00Z'), at('2027-01-31T17:00:00Z'))).toBe(
+      '28.–31. jan',
+    );
+    expect(shortTimeText(at('2027-01-30T08:00:00Z'), at('2027-02-01T17:00:00Z'))).toBe(
+      '30. jan–1. feb',
+    );
   });
 });

@@ -47,6 +47,7 @@ export function PosterGrid({
               title={h.title}
               start={h.start}
               end={h.end}
+              allDay={h.allDay}
               location={h.location}
               image={h.image}
               href={h.href}

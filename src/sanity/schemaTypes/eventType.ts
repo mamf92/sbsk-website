@@ -66,6 +66,14 @@ export const eventType = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
+      title: 'Beskjed på forsiden',
+      name: 'frontPageNotice',
+      type: 'string',
+      description:
+        'Vises først etter redesign. Kort beskjed på forsiden, for eksempel «Avlyst» eller «Nytt lokale».',
+      validation: (rule) => rule.max(60),
+    }),
+    defineField({
       title: 'Bilde',
       name: 'image',
       type: 'image',

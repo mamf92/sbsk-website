@@ -22,7 +22,11 @@ export async function homeRedesignLoader() {
     homeHero: hero.data ?? null,
     posts: posts.data ?? [],
     postsFailed: posts.failed,
-    events: [...(events.data ?? []), ...(festivals.data ?? []).flatMap(festivalDayRows)],
+    // Like `calendarLoader`: festival days alone would pass for the whole programme and put a
+    // festival in the game night's place on the hero.
+    events: events.failed
+      ? []
+      : [...(events.data ?? []), ...(festivals.data ?? []).flatMap(festivalDayRows)],
     eventsFailed: events.failed,
   };
 }

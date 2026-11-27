@@ -7,7 +7,8 @@ import calendarArt from '../assets/images/calendar-default.webp';
 /** House art in the poster style (docs/IMAGE_DESIGN_LANGUAGE.md) for an event with no image. */
 export function posterArt(kind: HighlightKind, title: string): string {
   if (kind === 'festival') return festivalArt;
-  if (/jul/i.test(title)) return julArt;
+  // «Jul», «Julespillkveld», «Julebord», but not «juli».
+  if (/(^|[^a-zæøå])jul(?!i)/i.test(title)) return julArt;
   if (kind === 'turnering' || /turnering/i.test(title)) return turneringArt;
   return calendarArt;
 }

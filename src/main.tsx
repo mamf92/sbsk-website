@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import type { ShouldRevalidateFunctionArgs } from 'react-router-dom';
 import AuthProvider from './hooks/authContext/authProvider';
 import { MotionProvider } from './hooks/motion/MotionProvider';
 import { ThemeProvider } from './hooks/theme/ThemeProvider';
@@ -142,7 +143,16 @@ const router = createBrowserRouter(
             ...(redesignEnabled
               ? [
                   { path: 'innlegg', element: <Posts />, loader: allPostsLoader },
-                  { path: 'kalender/alle', element: <CalendarAll />, loader: calendarLoader },
+                  {
+                    path: 'kalender/alle',
+                    element: <CalendarAll />,
+                    loader: calendarLoader,
+                    // Search, filters and the month all live in the query string and filter the
+                    // loaded list in the browser. Refetching on each keystroke would hold the
+                    // input on the old value until Sanity answered, and drop typed characters.
+                    shouldRevalidate: ({ currentUrl, nextUrl }: ShouldRevalidateFunctionArgs) =>
+                      currentUrl.pathname !== nextUrl.pathname,
+                  },
                 ]
               : []),
             // Gated behind #213: no member/board portal for the MVP launch, so these four

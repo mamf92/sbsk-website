@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import type { SanityImageSource } from '@sanity/image-url';
 import { urlFor } from '../../sanity/sanityImageUrl';
 import { KIND_LABEL, type HighlightKind } from '../../utils/eventHighlights';
-import { dayOfMonth, monthAbbreviation, osloDateKey, timeRange } from '../../utils/eventDateFormat';
+import { shortTimeText } from '../../utils/eventDateFormat';
 import { buttonClasses } from './buttonClasses';
 import { posterArt } from '../../utils/posterArt';
 import { DateStamp } from './DateStamp';
@@ -17,6 +17,8 @@ export type EventPosterCardProps = {
   title: string;
   start: Date;
   end: Date;
+  /** Only dates are known: «Hele dagen» instead of clock times. */
+  allDay?: boolean;
   location?: string;
   image: SanityImageSource | null;
   /** Where «Les mer» goes. Without it the card shows `actions` only. */
@@ -38,6 +40,7 @@ export function EventPosterCard({
   title,
   start,
   end,
+  allDay = false,
   location,
   image,
   href,
@@ -45,7 +48,6 @@ export function EventPosterCard({
   actions,
   wide = false,
 }: EventPosterCardProps) {
-  const sameDay = osloDateKey(start) === osloDateKey(end);
   const place = location?.split(',')[0];
   const src = image
     ? urlFor(image)
@@ -90,9 +92,7 @@ export function EventPosterCard({
               ),
               content: (
                 <span className="font-heading text-xs font-bold">
-                  {sameDay
-                    ? timeRange(start, end).replace(/^\S+\s/, '')
-                    : `${dayOfMonth(start)}.–${dayOfMonth(end)}. ${monthAbbreviation(end).toLowerCase()}`}
+                  {shortTimeText(start, end, allDay)}
                 </span>
               ),
             },

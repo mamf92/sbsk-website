@@ -28,6 +28,22 @@ test.describe('visitor', () => {
     await expect(special.getByRole('link', { name: 'Søk i alle arrangementer' })).toBeVisible();
   });
 
+  test('«Abonner på kalenderen» offers the feed as webcal, Google and a link', async ({ page }) => {
+    await page.goto('/kalender');
+    await page.getByRole('button', { name: 'Abonner på kalenderen' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Abonner på kalenderen' });
+    await expect(dialog.getByRole('link', { name: 'Åpne i kalender-appen' })).toHaveAttribute(
+      'href',
+      /^webcal:\/\/.+\/kalender\.ics$/,
+    );
+    await expect(dialog.getByRole('link', { name: 'Legg til i Google Kalender' })).toHaveAttribute(
+      'href',
+      /^https:\/\/calendar\.google\.com\/calendar\/r\?cid=webcal/,
+    );
+    await dialog.getByRole('button', { name: 'Lukk' }).click();
+    await expect(dialog).toBeHidden();
+  });
+
   test('has no horizontal page scroll on a phone', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 800 });
     await page.goto('/kalender');

@@ -5,6 +5,7 @@ import { GameNightStrip } from '../components/sections/redesign/GameNightStrip';
 import { SeasonBoard } from '../components/sections/redesign/SeasonBoard';
 import { PosterGrid } from '../components/sections/redesign/UpcomingHighlights';
 import { EventSignUp } from '../components/sections/redesign/EventSignUp';
+import { SubscribeCalendar } from '../components/sections/redesign/SubscribeCalendar';
 import { SectionHeading } from '../components/ui/SectionHeading';
 import { buttonClasses } from '../components/ui/buttonClasses';
 import { useAuth } from '../hooks/authContext/authContext';
@@ -44,18 +45,21 @@ export default function CalendarRedesign() {
         title="Kalender"
         intro="Spillkveld annenhver torsdag. Turneringer, julespill og festivalen innimellom."
         actions={
-          member && mineCount > 0 ? (
-            <Link
-              to="/kalender/alle?kategori=mine"
-              className={buttonClasses({
-                variant: 'tertiary',
-                size: 'lg',
-                className: 'border-2 border-white text-white',
-              })}
-            >
-              Mine påmeldinger ({mineCount})
-            </Link>
-          ) : undefined
+          <>
+            <SubscribeCalendar />
+            {member && mineCount > 0 && (
+              <Link
+                to="/kalender/alle?kategori=mine"
+                className={buttonClasses({
+                  variant: 'tertiary',
+                  size: 'lg',
+                  className: 'border-2 border-white text-white',
+                })}
+              >
+                Mine påmeldinger ({mineCount})
+              </Link>
+            )}
+          </>
         }
       />
       {eventsFailed ? (

@@ -2,11 +2,13 @@ import * as React from 'react';
 import sun from '../../assets/icons/symbols/sun.svg?react';
 import moon from '../../assets/icons/symbols/moon.svg?react';
 import calendarAdd from '../../assets/icons/symbols/calendar-add.svg?react';
+import arrowLeft from '../../assets/icons/arrows/arrowleft.svg?react';
+import arrowRight from '../../assets/icons/arrows/arrowright.svg?react';
 
 import { iconButtonClasses } from './iconButtonClasses';
 import type { IconButtonSize, IconButtonVariant } from './iconButtonClasses';
 
-const icons = { sun, moon, calendarAdd } as const;
+const icons = { sun, moon, calendarAdd, arrowLeft, arrowRight } as const;
 
 export type IconButtonIcon = keyof typeof icons;
 

@@ -38,7 +38,9 @@ export function DateStamp({
         {span && <span className="text-xl">–{dayOfMonth(end)}</span>}
       </span>
       <span className="font-heading text-xs font-extrabold tracking-[0.16em] uppercase">
-        {monthAbbreviation(span ? end : start)}
+        {span && monthAbbreviation(start) !== monthAbbreviation(end)
+          ? `${monthAbbreviation(start)}–${monthAbbreviation(end)}`
+          : monthAbbreviation(span ? end : start)}
       </span>
     </span>
   );

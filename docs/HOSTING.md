@@ -86,3 +86,17 @@ deep links to the preview's own `index.html`.
 
 Until 27 Nov 2026 the preview was built from a long-lived `redesign` branch (a proof of concept
 from 12 Nov). That branch is no longer built and is kept only for reference.
+
+## The calendar feed (`kalender.ics`)
+
+«Abonner på kalenderen» subscribes a calendar app to `/sbsk-website/kalender.ics` (and the
+preview's own copy under `/redesign/`). Pages cannot run code, so the feed is a static file: a
+plugin in `vite.config.ts` fetches the events from Sanity at build time and writes it with
+`buildCalendarFeed` (`src/utils/calendarFeed.ts`). It is therefore only as fresh as the last
+deploy, and `.github/workflows/nightly.yml` rebuilds and redeploys `main` every night at 02:17
+UTC so a new event reaches subscribers by morning. Calendar apps fetch the feed on their own
+schedule (the feed asks for every 12 hours; Google takes up to a day).
+
+If Sanity cannot be reached during a build, the build still succeeds and ships without the file
+rather than with an empty one, because an empty feed would remove every event from subscribers'
+calendars. A deploy without the feed leaves subscribers on their last copy until the next one.

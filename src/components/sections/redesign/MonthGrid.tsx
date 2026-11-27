@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { CalendarEventTypes } from '../../../sanity/queryHelpers/events';
 import { Button } from '../../ui/Buttons';
-import { iconButtonClasses } from '../../ui/iconButtonClasses';
+import { IconButton } from '../../ui/IconButton';
 import { clockTime } from '../../../utils/eventDateFormat';
 import {
   MONTHS,
@@ -12,10 +12,6 @@ import {
   monthWeeks,
 } from '../../../utils/monthGrid';
 import { EVENT_CATEGORY, eventCategory } from './eventStyles';
-import ArrowLeft from '../../../assets/icons/arrows/arrowleft.svg?react';
-import ArrowRight from '../../../assets/icons/arrows/arrowright.svg?react';
-
-const navButton = iconButtonClasses({ variant: 'ghost', size: 'sm', className: 'text-white' });
 
 /** A lettered square (S/T/A) for a phone's month grid, where no name fits in a cell. */
 function LetterSquare({ category }: { category: CalendarEventTypes['category'] }) {
@@ -77,14 +73,13 @@ export function MonthGrid({
   return (
     <div className="text-darkestblue dark:bg-darkestblue w-full border border-black bg-white dark:border-white dark:text-white">
       <div className="bg-darkblue surface-dark flex items-center gap-2 p-2 text-white">
-        <button
-          type="button"
-          className={navButton}
-          aria-label="Forrige måned"
+        <IconButton
+          icon="arrowLeft"
+          label="Forrige måned"
+          size="sm"
+          className="text-white"
           onClick={() => onMonth(-1)}
-        >
-          <ArrowLeft aria-hidden="true" className="h-5 w-5 fill-current" />
-        </button>
+        />
         <h2
           aria-live="polite"
           className="font-heading tracking-heading sm:text-h3 min-w-0 flex-1 text-center text-base font-bold"
@@ -94,14 +89,13 @@ export function MonthGrid({
         <Button variant="primary" size="xs" onClick={onToday}>
           I dag
         </Button>
-        <button
-          type="button"
-          className={navButton}
-          aria-label="Neste måned"
+        <IconButton
+          icon="arrowRight"
+          label="Neste måned"
+          size="sm"
+          className="text-white"
           onClick={() => onMonth(1)}
-        >
-          <ArrowRight aria-hidden="true" className="h-5 w-5 fill-current" />
-        </button>
+        />
       </div>
 
       <div
@@ -190,6 +184,8 @@ export function MonthGrid({
               ].join(' ')}
             >
               {dayEvents.length > 0 ? (
+                // A raw button on purpose: a grid cell is not one of `Button`'s variants, and
+                // takes the cell's whole area as its target.
                 <button
                   type="button"
                   aria-label={label}

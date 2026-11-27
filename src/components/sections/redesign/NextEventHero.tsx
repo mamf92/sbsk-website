@@ -22,6 +22,7 @@ import { eventCategory } from './eventStyles';
 import Clock from '../../../assets/icons/symbols/clock.svg?react';
 import Pin from '../../../assets/icons/symbols/locationpin.svg?react';
 import Meeple from '../../../assets/icons/symbols/meeple.svg?react';
+import AlertTriangle from '../../../assets/icons/symbols/alert-triangle.svg?react';
 
 function capitalise(text: string) {
   return text.charAt(0).toUpperCase() + text.slice(1);
@@ -38,11 +39,14 @@ function capitalise(text: string) {
 export function NextEventHero({
   next,
   later,
+  failed = false,
   photo,
   now,
   member,
 }: {
   next: CalendarEventTypes | null;
+  /** The events could not be fetched: say so rather than «not entered yet». */
+  failed?: boolean;
   later: CalendarEventTypes[];
   photo?: SanityImageSource | null;
   now: Date;
@@ -71,6 +75,17 @@ export function NextEventHero({
             )}
           </div>
           {member?.greeting}
+          {next?.frontPageNotice?.trim() && (
+            // «Beskjed på forsiden»: the one-off news about this night (cancelled, new venue),
+            // where everyone who checks «is there something tonight?» will see it.
+            <p className="font-heading text-darkestblue border-orange flex w-fit items-center gap-2.5 border-l-8 bg-white px-3 py-2 text-lg font-extrabold">
+              <AlertTriangle aria-hidden="true" className="h-5 w-5 flex-none fill-current" />
+              <span>
+                <span className="sr-only">Beskjed: </span>
+                {next.frontPageNotice.trim()}
+              </span>
+            </p>
+          )}
           {next && start && end ? (
             <>
               <p className="font-heading text-poster font-extrabold">
@@ -106,7 +121,9 @@ export function NextEventHero({
             </>
           ) : (
             <p className="font-heading text-h1 font-bold">
-              Neste spillkveld er ikke lagt inn ennå.
+              {failed
+                ? 'Vi fikk ikke hentet kalenderen akkurat nå. Prøv igjen om litt.'
+                : 'Neste spillkveld er ikke lagt inn ennå.'}
             </p>
           )}
 

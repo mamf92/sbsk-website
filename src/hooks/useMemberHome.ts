@@ -24,9 +24,10 @@ export interface MemberHome {
  *
  * Returns null for a visitor, and while a member's data is still on its way.
  */
-export function useMemberHome(): MemberHome | null {
+export function useMemberHome(enabled = true): MemberHome | null {
   const { isAuthenticated, user } = useAuth();
-  const supabaseId = isAuthenticated ? (user?.supabase_id ?? null) : null;
+  // `enabled` false (member portal off) fetches nothing, though someone may be signed in.
+  const supabaseId = enabled && isAuthenticated ? (user?.supabase_id ?? null) : null;
   const [state, setState] = useState<{ id: string; data: MemberHome } | null>(null);
 
   useEffect(() => {
