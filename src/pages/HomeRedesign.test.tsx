@@ -119,6 +119,17 @@ describe('HomeRedesign', () => {
     expect(titles).toEqual(['Julespillkveld', 'Vårturnering']);
   });
 
+  it('shows the night’s «Beskjed på forsiden» on the hero', () => {
+    loaderData = {
+      ...loaderData,
+      events: [event('Spillkveld', '2026-12-10T16:00:00Z', { frontPageNotice: ' Avlyst ' })],
+    };
+    renderPage();
+    const hero = screen.getByRole('region', { name: 'Neste spillkveld' });
+    expect(within(hero).getByText('Avlyst')).toBeInTheDocument();
+    expect(within(hero).getByText('Beskjed:', { exact: false })).toBeInTheDocument();
+  });
+
   it('says so when no game night is in the calendar', () => {
     loaderData = { ...loaderData, events: [] };
     renderPage();

@@ -30,6 +30,8 @@ export interface CalendarEventTypes {
   category: 'spillkveld' | 'turnering' | 'annet';
   eventSlug?: string;
   location?: string;
+  /** «Beskjed på forsiden»: a short line such as «Avlyst» shown on the new front page's hero. */
+  frontPageNotice?: string;
   links?: { label: string; url: string }[];
   /** Whether the event has its own page at `/arrangementer/:slug` — a content decision, not
    *  something inferred from category or from having inline content. */
@@ -71,7 +73,8 @@ const EVENT_ROW_PROJECTION = `
   "eventSlug": slug.current,
   location,
   links,
-  hasDetailPage
+  hasDetailPage,
+  frontPageNotice
 `;
 
 const EVENTS_LIST_QUERY = `*[

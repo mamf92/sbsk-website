@@ -22,6 +22,7 @@ import { eventCategory } from './eventStyles';
 import Clock from '../../../assets/icons/symbols/clock.svg?react';
 import Pin from '../../../assets/icons/symbols/locationpin.svg?react';
 import Meeple from '../../../assets/icons/symbols/meeple.svg?react';
+import AlertTriangle from '../../../assets/icons/symbols/alert-triangle.svg?react';
 
 function capitalise(text: string) {
   return text.charAt(0).toUpperCase() + text.slice(1);
@@ -71,6 +72,17 @@ export function NextEventHero({
             )}
           </div>
           {member?.greeting}
+          {next?.frontPageNotice?.trim() && (
+            // «Beskjed på forsiden»: the one-off news about this night (cancelled, new venue),
+            // where everyone who checks «is there something tonight?» will see it.
+            <p className="font-heading text-darkestblue border-orange flex w-fit items-center gap-2.5 border-l-8 bg-white px-3 py-2 text-lg font-extrabold">
+              <AlertTriangle aria-hidden="true" className="h-5 w-5 flex-none fill-current" />
+              <span>
+                <span className="sr-only">Beskjed: </span>
+                {next.frontPageNotice.trim()}
+              </span>
+            </p>
+          )}
           {next && start && end ? (
             <>
               <p className="font-heading text-poster font-extrabold">
