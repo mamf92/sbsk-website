@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { buttonClasses } from './buttonClasses';
+import { FactsStrip } from './FactsStrip';
 import Signal from '../../assets/icons/symbols/signal.svg?react';
 import Clock from '../../assets/icons/symbols/clock.svg?react';
 import Players from '../../assets/icons/symbols/players.svg?react';
@@ -119,41 +120,57 @@ export function GameCard({
           </p>
         )}
 
-        <div className="my-3 flex border-t border-b border-black dark:border-white">
-          <div className="flex flex-1 flex-row items-center justify-center gap-1.5 p-2 text-center">
-            <Signal aria-hidden="true" className="h-[18px] w-[18px] fill-current" />
-            <span
-              className="flex gap-[3px]"
-              role="img"
-              aria-label={`Vanskelighetsgrad: ${difficultyLabel}`}
-            >
-              {[1, 2, 3].map((n) => (
+        <FactsStrip
+          facts={[
+            {
+              key: 'difficulty',
+              icon: <Signal aria-hidden="true" className="h-[18px] w-[18px] fill-current" />,
+              content: (
                 <span
-                  key={n}
+                  className="flex gap-[3px]"
+                  role="img"
+                  aria-label={`Vanskelighetsgrad: ${difficultyLabel}`}
+                >
+                  {[1, 2, 3].map((n) => (
+                    <span
+                      key={n}
+                      aria-hidden="true"
+                      className={
+                        'h-[9px] w-[9px] border ' +
+                        (n <= difficulty
+                          ? 'border-darkorange bg-orange'
+                          : 'border-darkestblue bg-transparent dark:border-white')
+                      }
+                    />
+                  ))}
+                </span>
+              ),
+            },
+            {
+              key: 'time',
+              icon: <Clock aria-hidden="true" className="h-[18px] w-[18px] fill-current" />,
+              content: (
+                <span className="font-heading text-xs font-bold">
+                  {time} {timeUnit}
+                </span>
+              ),
+            },
+            {
+              key: 'players',
+              icon: (
+                <Players
                   aria-hidden="true"
-                  className={
-                    'h-[9px] w-[9px] border ' +
-                    (n <= difficulty
-                      ? 'border-darkorange bg-orange'
-                      : 'border-darkestblue bg-transparent dark:border-white')
-                  }
+                  className="h-[18px] w-[18px] fill-none stroke-current"
                 />
-              ))}
-            </span>
-          </div>
-          <div className="flex flex-1 flex-row items-center justify-center gap-1.5 border-l border-gray-300 p-2 text-center dark:border-white/30">
-            <Clock aria-hidden="true" className="h-[18px] w-[18px] fill-current" />
-            <span className="font-heading text-xs font-bold">
-              {time} {timeUnit}
-            </span>
-          </div>
-          <div className="flex flex-1 flex-row items-center justify-center gap-1.5 border-l border-gray-300 p-2 text-center dark:border-white/30">
-            <Players aria-hidden="true" className="h-[18px] w-[18px] fill-none stroke-current" />
-            <span className="font-heading text-xs font-bold">
-              {players} {playersUnit}
-            </span>
-          </div>
-        </div>
+              ),
+              content: (
+                <span className="font-heading text-xs font-bold">
+                  {players} {playersUnit}
+                </span>
+              ),
+            },
+          ]}
+        />
 
         <div className="mt-auto flex flex-col gap-2.5">
           {buyHref && (
