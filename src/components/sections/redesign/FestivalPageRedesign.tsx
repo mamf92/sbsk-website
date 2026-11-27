@@ -2,7 +2,7 @@ import * as React from 'react';
 import { PortableText } from '@portabletext/react';
 import { EventHeroBand } from '../../ui/EventHeroBand';
 import { HeroFact, HeroFactNote } from '../../ui/HeroFact';
-import { InfoCard, InfoList, InfoRow } from '../../ui/InfoCard';
+import { InfoCard } from '../../ui/InfoCard';
 import { Eyebrow } from '../../ui/Eyebrow';
 import { Button } from '../../ui/Buttons';
 import { buttonClasses } from '../../ui/buttonClasses';
@@ -13,6 +13,7 @@ import { SponsorLine } from '../../ui/Sponsors';
 import { RelatedPosts } from '../../ui/RelatedPosts';
 import { Link } from '../../ui/Link';
 import { FestivalProgram } from './FestivalProgram';
+import { VenueDetails } from './VenueDetails';
 import { PrintProgram } from '../FestivalPage/PrintProgram';
 import { useEventsT } from '../../../i18n';
 import { pickLocale } from '../../../i18n/pickLocale';
@@ -261,28 +262,7 @@ export function FestivalPageRedesign({ festival }: { festival: FestivalTypes }) 
               )}
               {hasVenueDetails && (
                 <InfoCard title={t('redesign.goodToKnow')}>
-                  <InfoList>
-                    {meetingPoint && (
-                      <InfoRow label={t('venue.title')} lang={langOf(meetingPoint.lang)}>
-                        {meetingPoint.value}
-                      </InfoRow>
-                    )}
-                    {directions && (
-                      <InfoRow label={t('venue.directions')} lang={langOf(directions.lang)}>
-                        <div className="sbsk-rt">
-                          <PortableText value={directions.value} components={components} />
-                        </div>
-                      </InfoRow>
-                    )}
-                    {accessibility && (
-                      <InfoRow label={t('venue.accessibility')} lang={langOf(accessibility.lang)}>
-                        {accessibility.value}
-                      </InfoRow>
-                    )}
-                    {venue?.contact && (
-                      <InfoRow label={t('festival.contactTitle')}>{venue.contact}</InfoRow>
-                    )}
-                  </InfoList>
+                  <VenueDetails venue={venue} />
                 </InfoCard>
               )}
             </aside>

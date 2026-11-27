@@ -101,4 +101,38 @@ describe('FestivalPageRedesign', () => {
       'true',
     );
   });
+
+  it("before the programme, keeps a day's own sign-up and other venue reachable", () => {
+    renderPage({
+      ...bgm,
+      days: [
+        { _key: '28', date: '2099-01-28' },
+        {
+          _key: '29',
+          date: '2099-01-29',
+          signup: { method: 'lenke', url: 'https://example.no/finale' },
+          venue: {
+            name: 'Sølvberget',
+            address: 'Kulturtorget 1',
+            meetingPoint: { nb: 'Inngang B' },
+          },
+        },
+      ],
+    });
+    expect(screen.getByRole('heading', { name: /29\. januar/ })).toBeInTheDocument();
+    expect(screen.getByText('Sølvberget')).toBeInTheDocument();
+    expect(screen.getByText('Inngang B')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Meld deg på/ })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /28\. januar/ })).not.toBeInTheDocument();
+  });
+
+  it("shows a day's other venue in its programme panel", () => {
+    const days = withProgramme.days!.map((d) =>
+      d._key === 'lor' ? { ...d, venue: { name: 'Sølvberget', contact: 'Kari, 99 99 99 99' } } : d,
+    );
+    renderPage({ ...withProgramme, days }, '/arrangementer/x?dag=2');
+    expect(screen.getAllByText('Sølvberget').length).toBeGreaterThan(0);
+    expect(screen.getByText('Kari, 99 99 99 99')).toBeInTheDocument();
+    expect(screen.getAllByRole('link', { name: 'Vis i kart' })).toHaveLength(2);
+  });
 });

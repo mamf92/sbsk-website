@@ -122,6 +122,7 @@ const EVENT_DETAIL_PROJECTION = `{
   location,
   links,
   hasDetailPage,
+  frontPageNotice,
   "signup": select(
     defined(signup.method) => signup${SIGNUP_PROJECTION},
     defined(signupUrl.url) => {
