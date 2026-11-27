@@ -165,3 +165,49 @@ export const SponsorGrid = React.forwardRef<HTMLElement, SponsorListProps>(
 );
 
 SponsorGrid.displayName = 'SponsorGrid';
+
+/**
+ * Every sponsor as one quiet row under a page's own text, «Med støtte fra» and the logos in
+ * tier order (main sponsors larger), each with its offer. The new event pages use this instead
+ * of a band at the top and a grid at the bottom, so a sponsor is shown once.
+ */
+export const SponsorLine = React.forwardRef<HTMLElement, SponsorListProps>(
+  ({ sponsors, className = '', ...props }, ref) => {
+    const t = useEventsT();
+    const groups = groupSponsorsByTier(sponsors ?? []);
+    if (groups.length === 0) return null;
+    return (
+      <section
+        ref={ref}
+        aria-label={t('sponsors.supportedBy')}
+        className={[
+          'flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-black/15 pt-4 dark:border-white/20',
+          className,
+        ].join(' ')}
+        {...props}
+      >
+        <p className="font-heading text-xs font-bold tracking-[0.16em] uppercase opacity-70">
+          {t('sponsors.supportedBy')}
+        </p>
+        <ul className="flex flex-wrap items-center gap-x-8 gap-y-3">
+          {groups.flatMap((group) =>
+            group.sponsors.map((sponsor, index) => (
+              <li
+                key={sponsor._key ?? `${group.tier}-${index}`}
+                className="flex flex-col items-start gap-1"
+              >
+                <SponsorLogo
+                  sponsor={sponsor}
+                  size={group.tier === 'hovedsponsor' ? 'sponsor' : 'partner'}
+                />
+                <SponsorOffer sponsor={sponsor} />
+              </li>
+            )),
+          )}
+        </ul>
+      </section>
+    );
+  },
+);
+
+SponsorLine.displayName = 'SponsorLine';
