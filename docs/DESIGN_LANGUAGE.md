@@ -712,3 +712,16 @@ an icon button next to a text button is exactly as tall. Header and toolbar cont
 language toggle, portal link, profile dropdown, burger) are all `md`, the touch-target size.
 `xs`/`sm` are for dense lists and in-card actions, `lg` for form submits and empty-state actions.
 Never write `h-8`/`h-11`/`size-10` on a control; add a step to the scale instead.
+
+## Paper on a band (Bli medlem, Nov 2026)
+
+The first piece of the round 3 look, adopted on `/bli-medlem`. Three tokens, all in `src/index.css`:
+
+- `--color-cream` (`bg-cream`): a form or note that reads as a printed sheet on a dark band.
+  Light in both themes; put `surface-light` on the blocks inside it, not on the sheet itself.
+- `--shadow-4` / `--shadow-accent-4`: a 10px hard offset for a sheet or card that rests on a
+  band. It never lifts, so it is not part of the lift utilities.
+- `dot-pattern`: the faint white dot grid on a dark brand fill.
+
+Shared pieces: `Eyebrow`, `StepStrip`, `MembershipCardFace` in `src/components/ui/`, and the
+`meeple` icon.

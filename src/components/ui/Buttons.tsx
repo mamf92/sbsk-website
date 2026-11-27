@@ -11,6 +11,7 @@ import AscIcon from '../../assets/icons/symbols/asc.svg?react';
 import DescIcon from '../../assets/icons/symbols/desc.svg?react';
 import Add from '../../assets/icons/symbols/add.svg?react';
 import Motion from '../../assets/icons/symbols/motion.svg?react';
+import CalendarAdd from '../../assets/icons/symbols/calendar-add.svg?react';
 import { LoadingPips } from './LoadingIndicator';
 import { buttonClasses } from './buttonClasses';
 import type { ButtonSize, ButtonVariant } from './buttonClasses';
@@ -38,6 +39,7 @@ type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
     | 'desc'
     | 'add'
     | 'motion'
+    | 'calendar'
     | 'none';
 };
 
@@ -68,6 +70,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       desc: DescIcon,
       add: Add,
       motion: Motion,
+      calendar: CalendarAdd,
       none: null,
     };
 
