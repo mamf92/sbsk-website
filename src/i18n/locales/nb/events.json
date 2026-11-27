@@ -109,9 +109,24 @@
     "category": {
       "spillkveld": "Spillkveld",
       "turnering": "Turnering",
-      "annet": "Arrangement"
+      "annet": "Arrangement",
+      "bgm": "Turnering"
     },
     "signupSoon": "Påmeldingen åpner snart",
-    "past": "Arrangementet er over"
+    "past": "Arrangementet er over",
+    "festivalCategory": "Festival",
+    "festivalWhole": "Legg hele festivalen i kalenderen",
+    "programmeComing": "Programmet kommer. Det legges ut her når det er klart.",
+    "days_one": "{{count}} dag",
+    "days_other": "{{count}} dager",
+    "chooseDay": "Velg dag",
+    "dayCalendar": "Legg dagen i kalenderen",
+    "faqContact": "Fant du ikke svaret? Send e-post til",
+    "questions_one": "{{count}} spørsmål",
+    "questions_other": "{{count}} spørsmål",
+    "about": "Om {{name}}",
+    "howItWorks": "Slik foregår det",
+    "galleryKicker": "Galleri",
+    "signupComing": "Påmelding kommer"
   }
 }

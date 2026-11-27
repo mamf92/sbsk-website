@@ -22,6 +22,9 @@ type SessionCardProps = Omit<React.HTMLAttributes<HTMLElement>, 'children'> & {
   /** The festival sponsor named by `session.sponsor`, when there is one. */
   sponsor?: SponsorTypes;
   now?: Date;
+  /** `row`: a line in the new pages' programme, with the time in its own column and a hairline
+   *  above instead of a box. */
+  layout?: 'card' | 'row';
 };
 
 // Competitive formats in orange, teaching formats in blue; the rest are named in plain text, so
@@ -42,7 +45,10 @@ const LONG_DESCRIPTION = 140;
  * state never rests on colour alone.
  */
 export const SessionCard = React.forwardRef<HTMLElement, SessionCardProps>(
-  ({ session, start, end, status, sponsor, now, className = '', ...props }, ref) => {
+  (
+    { session, start, end, status, sponsor, now, layout = 'card', className = '', ...props },
+    ref,
+  ) => {
     const t = useEventsT();
     const { locale } = useLocale();
     const [expanded, setExpanded] = React.useState(false);
@@ -58,18 +64,34 @@ export const SessionCard = React.forwardRef<HTMLElement, SessionCardProps>(
     const long = (description?.value.length ?? 0) > LONG_DESCRIPTION;
     const game = session.game;
     const langOf = (lang?: string) => (lang && lang !== locale ? lang : undefined);
+    const row = layout === 'row';
 
     return (
       <article
         ref={ref}
         className={[
-          'font-body dark:bg-darkestblue flex gap-4 border border-black bg-white p-4 dark:border-white',
-          status === 'now' ? 'border-l-orange border-l-4' : '',
+          row
+            ? 'font-body grid grid-cols-[4.5rem_minmax(0,1fr)] gap-4 border-t border-black/15 py-4 first:border-t-0 sm:grid-cols-[7.5rem_minmax(0,1fr)] dark:border-white/20'
+            : 'font-body dark:bg-darkestblue flex gap-4 border border-black bg-white p-4 dark:border-white',
+          status === 'now'
+            ? row
+              ? 'border-l-orange border-l-4 pl-3'
+              : 'border-l-orange border-l-4'
+            : '',
           className,
         ].join(' ')}
         {...props}
       >
-        {game?.image && (
+        {row && (
+          <time
+            dateTime={start.toISOString()}
+            className="font-heading flex flex-col text-lg font-extrabold sm:flex-row sm:whitespace-nowrap"
+          >
+            <span>{clockTime(start)}</span>
+            <span className="opacity-70 max-sm:text-sm">–{clockTime(end)}</span>
+          </time>
+        )}
+        {!row && game?.image && (
           <img
             src={urlFor(game.image).width(128).height(128).fit('crop').auto('format').url()}
             alt=""
@@ -81,9 +103,11 @@ export const SessionCard = React.forwardRef<HTMLElement, SessionCardProps>(
         )}
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2 text-sm">
-            <time dateTime={start.toISOString()} className="font-bold">
-              {clockTime(start)}–{clockTime(end)}
-            </time>
+            {!row && (
+              <time dateTime={start.toISOString()} className="font-bold">
+                {clockTime(start)}–{clockTime(end)}
+              </time>
+            )}
             {session.format &&
               (tone ? (
                 <Tag tone={tone}>{t(`format.${session.format}`)}</Tag>
