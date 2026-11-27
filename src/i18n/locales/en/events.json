@@ -97,5 +97,21 @@
   "relatedPosts": "Posts about this event",
   "addEventToCalendar": "Add {{title}} to your calendar",
   "keyInfo": "Key information",
-  "addToCalendar": "Add to calendar"
+  "addToCalendar": "Add to calendar",
+  "redesign": {
+    "calendar": "Calendar",
+    "inShort": "In short",
+    "goodToKnow": "Good to know",
+    "links": "Links",
+    "notice": "Notice",
+    "signupOpenUntil": "Sign-up open until {{date}}",
+    "signupOpen": "Sign-up open",
+    "category": {
+      "spillkveld": "Game night",
+      "turnering": "Tournament",
+      "annet": "Event"
+    },
+    "signupSoon": "Sign-up opens soon",
+    "past": "This event is over"
+  }
 }
