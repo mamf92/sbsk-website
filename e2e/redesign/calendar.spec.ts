@@ -21,8 +21,13 @@ test.describe('visitor', () => {
       'href',
       /\/kalender\/alle\?kategori=spillkveld$/,
     );
+    // A date with its own page links to it; one without opens on «Alle arrangementer».
+    await expect(nights.locator('a[href$="/arrangementer/spillkveld-torsdag"]')).toBeVisible();
     const board = page.getByRole('region', { name: 'Sesongen på ett brett' });
     await expect(board.getByText('Du er her')).toBeVisible();
+    await expect(
+      board.getByRole('link', { name: new RegExp(UPCOMING_TOURNAMENT.title) }),
+    ).toHaveAttribute('href', /\/kalender\/alle\?arrangement=event-tournament$/);
     const special = page.getByRole('region', { name: 'Spesielle arrangementer' });
     await expect(special.getByRole('heading', { name: UPCOMING_TOURNAMENT.title })).toBeVisible();
     await expect(special.getByRole('link', { name: 'Søk i alle arrangementer' })).toBeVisible();

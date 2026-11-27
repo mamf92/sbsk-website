@@ -10,7 +10,8 @@ import { TextLink } from '../../ui/TextLink';
 import { countdownLabel } from '../../../utils/eventHighlights';
 import { calendarEventIcs } from '../../../utils/eventIcs';
 import { downloadIcs } from '../../../utils/ics';
-import { mapUrl } from '../../../utils/mapUrl';
+import { googleMapsUrl } from '../../../utils/mapUrl';
+import { eventLink } from '../../../utils/eventLinks';
 import { siteUrl } from '../../../utils/siteUrl';
 import {
   dayOfMonth,
@@ -108,7 +109,7 @@ export function NextEventHero({
                     />
                     {next.location}
                     <a
-                      href={mapUrl(next.location)}
+                      href={googleMapsUrl(next.location)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="focus-visible:outline-focus-ring text-sm underline underline-offset-4 opacity-85 hover:opacity-100 focus-visible:outline-2"
@@ -203,15 +204,22 @@ export function NextEventHero({
                 {later.map((event) => {
                   const date = new Date(event.eventStartTime);
                   return (
-                    <li key={event._id} className="inline-flex items-center gap-2">
-                      <span
-                        aria-hidden="true"
-                        className={`size-2.5 flex-none outline-1 outline-white/60 ${eventCategory(event.category).chip}`}
-                      />
-                      <strong className="font-heading whitespace-nowrap">
-                        {dayOfMonth(date)}. {monthAbbreviation(date)}
-                      </strong>
-                      {event.title}
+                    <li key={event._id}>
+                      {/* Its own page when it has one, otherwise the event opened on
+                          «Alle arrangementer» (`eventLink`). */}
+                      <Link
+                        to={eventLink(event)}
+                        className="focus-visible:outline-focus-ring inline-flex items-center gap-2 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"
+                      >
+                        <span
+                          aria-hidden="true"
+                          className={`size-2.5 flex-none outline-1 outline-white/60 ${eventCategory(event.category).chip}`}
+                        />
+                        <strong className="font-heading whitespace-nowrap">
+                          {dayOfMonth(date)}. {monthAbbreviation(date)}
+                        </strong>
+                        {event.title}
+                      </Link>
                     </li>
                   );
                 })}

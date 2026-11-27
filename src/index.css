@@ -736,6 +736,26 @@
   }
 }
 
+/* «This is the one you clicked»: an event opened from a link elsewhere (`?arrangement=` on
+   /kalender/alle) wears an orange ring that pulses three times, then stays still so the visitor
+   can find it again. Reduced motion keeps the ring and drops the pulse. Put it on a wrapper of
+   the row, not the row itself, so it never fights the row's own `lift-card` transition. */
+@utility focus-pulse {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 4px;
+
+  @variant motion-safe {
+    animation: sbsk-focus-pulse 0.8s ease-in-out 3;
+  }
+}
+
+@keyframes sbsk-focus-pulse {
+  50% {
+    outline-offset: 10px;
+    outline-color: transparent;
+  }
+}
+
 @keyframes sbsk-hero-drift {
   to {
     translate: 0 25%;
